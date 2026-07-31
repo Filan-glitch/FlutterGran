@@ -10,10 +10,13 @@ Full design and milestones: `docs/PLAN.md`.
 
 ```
 flutter analyze
-flutter test                       # everything
-flutter test test/domain           # engine + checkout only
+flutter test                          # everything
+dart test test/domain test/data       # engine, checkout and protocol, no Flutter
 dart run build_runner build --delete-conflicting-outputs   # drift codegen
 ```
+
+`test/domain` and `test/data` run under plain `dart test` because neither layer
+imports Flutter. `test/app` needs `flutter test`.
 
 ## Layering rule
 
