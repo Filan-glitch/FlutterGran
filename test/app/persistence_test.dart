@@ -229,6 +229,89 @@ void main() {
     });
   });
 
+  group('finding a leg to resume', () {
+    test('a leg with darts and no result is resumable', () async {
+      await seedGame();
+      controller().addDart(t(20));
+      await settle();
+
+      expect(await repository.findResumableGameId(), gameId());
+    });
+
+    test('a leg nobody has thrown at is not offered', () async {
+      await seedGame();
+      await settle();
+
+      expect(await repository.findResumableGameId(), isNull);
+    });
+
+    test('a finished leg is not offered', () async {
+      await seedGame(startScore: 40);
+      controller().addDart(d(20));
+      await settle();
+
+      expect(await repository.findResumableGameId(), isNull);
+    });
+
+    test('undoing a checkout makes the leg resumable again', () async {
+      // 100: a treble 20 leaves 40, then the double wins it.
+      await seedGame(startScore: 100);
+      controller()
+        ..addDart(t(20))
+        ..addDart(d(20));
+      await settle();
+      expect(await repository.findResumableGameId(), isNull);
+
+      controller().undo();
+      await settle();
+
+      // Back in play with the first dart still on the board.
+      expect(await repository.findResumableGameId(), gameId());
+    });
+
+    test('the most recent unfinished leg wins', () async {
+      await seedGame();
+      controller().addDart(t(20));
+      await settle();
+      final first = gameId();
+
+      await seedGame();
+      controller()
+        ..restart()
+        ..addDart(t(19));
+      await settle();
+      final second = gameId();
+
+      expect(second, isNot(first));
+      expect(await repository.findResumableGameId(), second);
+    });
+
+    test('nothing to resume on an empty database', () async {
+      expect(await repository.findResumableGameId(), isNull);
+    });
+
+    test('a resumed log folds back to the state it was left in', () async {
+      await seedGame();
+      controller()
+        ..addDart(t(20))
+        ..addDart(t(20))
+        ..addDart(t(5))
+        ..confirmTurn()
+        ..addDart(t(19));
+      await settle();
+      final before = session().leg;
+
+      final resumableId = await repository.findResumableGameId();
+      final config = await repository.loadConfig(resumableId!);
+      final darts = await repository.loadLog(resumableId);
+      controller().resume(config!, darts);
+
+      expect(session().leg.remaining, before.remaining);
+      expect(session().leg.currentPlayerId, before.currentPlayerId);
+      expect(session().leg.dartsThrownThisTurn, before.dartsThrownThisTurn);
+    });
+  });
+
   test('nothing is written when no game is being persisted', () async {
     container.listen(gameProvider, (_, _) {});
     controller().addDart(t(20));

@@ -11,6 +11,7 @@ import '../domain/checkout/checkout_table.dart';
 import '../domain/segment.dart';
 import '../domain/stats/player_stats.dart';
 import '../domain/x01/game_config.dart';
+import '../domain/x01/leg_reducer.dart';
 import '../domain/x01/leg_state.dart';
 import 'game_controller.dart';
 
@@ -187,6 +188,42 @@ final segmentCountsProvider = FutureProvider.family<Map<Segment, int>, int>(
     return ref.watch(gameRepositoryProvider).segmentCounts(playerId);
   },
 );
+
+/// A leg that was left unfinished, ready to be picked back up.
+class ResumableLeg {
+  const ResumableLeg({required this.gameId, required this.leg});
+
+  final int gameId;
+
+  /// Replayed from the stored dart log, so the banner can show real scores.
+  final LegState leg;
+}
+
+/// The leg the setup screen offers to resume, or null when there is none.
+///
+/// Watches the games table rather than loading once: finishing or abandoning a
+/// leg has to make the offer appear or disappear without a manual refresh.
+final resumableLegProvider = StreamProvider<ResumableLeg?>((ref) async* {
+  final repository = ref.watch(gameRepositoryProvider);
+
+  await for (final gameId in repository.watchResumableGameId()) {
+    if (gameId == null) {
+      yield null;
+      continue;
+    }
+
+    final config = await repository.loadConfig(gameId);
+    if (config == null || config.playerIds.isEmpty) {
+      yield null;
+      continue;
+    }
+
+    yield ResumableLeg(
+      gameId: gameId,
+      leg: foldLeg(config, await repository.loadLog(gameId)),
+    );
+  }
+});
 
 /// The game rows are being written to, or null when nothing is persisted.
 class CurrentGameId extends Notifier<int?> {

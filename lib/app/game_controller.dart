@@ -35,6 +35,14 @@ class GameSession {
 /// of the darts thrown. Undo does not reverse anything - it replays a shorter
 /// log.
 class GameController extends Notifier<GameSession> {
+  /// Whether a leg is open in front of someone.
+  ///
+  /// Distinct from whether a game is being persisted: this is about whether
+  /// anyone is looking. Board input is ignored when it is false, which is what
+  /// stops a dart thrown at the board scoring into a leg the player already
+  /// walked away from.
+  bool _live = false;
+
   @override
   GameSession build() {
     final config = ref.watch(gameConfigProvider);
@@ -48,6 +56,10 @@ class GameController extends Notifier<GameSession> {
   }
 
   void handleBoardEvent(BoardEvent event) {
+    // Only the board path is gated. `addDart` is the manual entry path, driven
+    // by a screen that by definition is open.
+    if (!_live) return;
+
     switch (event) {
       case DartHit(:final segment):
         addDart(ThrownDart(segment));
@@ -136,9 +148,32 @@ class GameController extends Notifier<GameSession> {
 
   /// Starts a fresh leg under [config], or the current one if omitted.
   void restart([GameConfig? config]) {
+    _live = true;
     state = GameSession(
       leg: initialLegState(config ?? state.leg.config),
       acknowledgedTurns: 0,
+    );
+  }
+
+  /// Steps away from the leg without ending it.
+  ///
+  /// The leg stays in the database exactly as it was, unfinished and
+  /// resumable. All this does is stop the board scoring into it.
+  void leave() => _live = false;
+
+  /// Picks a leg back up from its stored dart log.
+  ///
+  /// Callers must set [gameConfigProvider] before calling this: [build] watches
+  /// it and rebuilds to an empty leg whenever it changes, which would discard
+  /// whatever was just restored.
+  void resume(GameConfig config, List<ThrownDart> darts) {
+    _live = true;
+    final leg = foldLeg(config, darts);
+    state = GameSession(
+      leg: leg,
+      // Every completed turn counts as already acknowledged. Resuming must not
+      // re-present the summary of a turn the player confirmed before leaving.
+      acknowledgedTurns: leg.turns.length,
     );
   }
 }

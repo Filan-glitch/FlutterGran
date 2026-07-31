@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,7 +13,8 @@ import 'package:fluttergran/main.dart';
 /// Not `pumpAndSettle`: a focused text field blinks its cursor forever, so
 /// there is no settled state to wait for.
 Future<void> pumpFrames(WidgetTester tester) async {
-  for (var i = 0; i < 5; i++) {
+  // Long enough to cover a route transition, which is around 300ms.
+  for (var i = 0; i < 25; i++) {
     await tester.pump(const Duration(milliseconds: 20));
   }
 }
@@ -90,6 +93,75 @@ void main() {
     expect(find.text('501 · DOUBLE OUT'), findsOneWidget);
     // Both the scoreboard and the start-score choice show 501 at this point.
     expect(find.text('501'), findsWidgets);
+
+    await closeApp(tester);
+  });
+
+  testWidgets('leaving a leg keeps it, and it can be resumed', (tester) async {
+    await launch(tester, database);
+
+    await tester.enterText(find.byType(TextField), 'Finn');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await pumpFrames(tester);
+    await tester.tap(find.text('START LEG'));
+    await pumpFrames(tester);
+
+    // Throw a treble 20: 501 becomes 441.
+    await tester.tap(find.text('TREBLE'));
+    await tester.pump();
+    await tester.tap(find.text('20'));
+    await pumpFrames(tester);
+    expect(find.text('441'), findsOneWidget);
+
+    // Back raises the confirmation rather than leaving.
+    final route = ModalRoute.of(tester.element(find.text('441')))!;
+    unawaited(route.navigator!.maybePop());
+    await pumpFrames(tester);
+    expect(find.text('Leave this leg?'), findsOneWidget);
+
+    // Staying returns to the leg untouched.
+    await tester.tap(find.text('STAY'));
+    await pumpFrames(tester);
+    expect(find.text('Leave this leg?'), findsNothing);
+    expect(find.text('441'), findsOneWidget);
+
+    // Leaving returns to setup, where the leg is offered back.
+    unawaited(route.navigator!.maybePop());
+    await pumpFrames(tester);
+    await tester.tap(find.text('LEAVE'));
+    await pumpFrames(tester);
+
+    expect(find.text('FLUTTERGRAN'), findsOneWidget);
+    expect(find.text('LEG IN PROGRESS'), findsOneWidget);
+    expect(find.text('441'), findsOneWidget);
+
+    // Resuming puts the score back exactly where it was.
+    await tester.tap(find.text('RESUME'));
+    await pumpFrames(tester);
+
+    expect(find.text('501 · DOUBLE OUT'), findsOneWidget);
+    expect(find.text('441'), findsOneWidget);
+
+    await closeApp(tester);
+  });
+
+  testWidgets('a leg with no darts leaves without asking', (tester) async {
+    await launch(tester, database);
+
+    await tester.enterText(find.byType(TextField), 'Finn');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await pumpFrames(tester);
+    await tester.tap(find.text('START LEG'));
+    await pumpFrames(tester);
+
+    final route = ModalRoute.of(tester.element(find.text('501 · DOUBLE OUT')))!;
+    unawaited(route.navigator!.maybePop());
+    await pumpFrames(tester);
+
+    // Nothing thrown, nothing to protect.
+    expect(find.text('Leave this leg?'), findsNothing);
+    expect(find.text('FLUTTERGRAN'), findsOneWidget);
+    expect(find.text('LEG IN PROGRESS'), findsNothing);
 
     await closeApp(tester);
   });

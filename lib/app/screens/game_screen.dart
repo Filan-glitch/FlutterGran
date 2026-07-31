@@ -29,6 +29,67 @@ class GameScreen extends ConsumerWidget {
               .watch(checkoutTableProvider)
               .routesFor(leg.currentRemaining, leg.dartsLeftThisTurn);
 
+    // A leg with darts in it is worth confirming before leaving; a fresh or
+    // finished one is not, and gets out of the way with the platform's own
+    // back gesture intact.
+    final confirmBeforeLeaving = leg.darts.isNotEmpty && !leg.isFinished;
+
+    return PopScope(
+      canPop: !confirmBeforeLeaving,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        if (!await _confirmLeave(context)) return;
+
+        // Stop board input being scored into a leg nobody is watching, and
+        // stop writing to it. The row itself is left alone, unfinished and
+        // ready to resume.
+        controller.leave();
+        ref.read(currentGameIdProvider.notifier).set(null);
+        if (context.mounted) Navigator.of(context).pop();
+      },
+      child: _build(context, ref, session, controller, names, leg, routes),
+    );
+  }
+
+  /// Asks before leaving, and says plainly that nothing is being thrown away.
+  ///
+  /// This is a "we are keeping it" confirmation, not a warning. Telling someone
+  /// they are about to lose a leg when they are not would teach them to fear
+  /// the back button.
+  Future<bool> _confirmLeave(BuildContext context) async {
+    final leave = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Leave this leg?'),
+        content: Text(
+          'Your darts are saved. Resume from the setup screen whenever '
+          'you like.',
+          style: Type.body.copyWith(color: Palette.chalkDim),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('STAY'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('LEAVE'),
+          ),
+        ],
+      ),
+    );
+    return leave ?? false;
+  }
+
+  Widget _build(
+    BuildContext context,
+    WidgetRef ref,
+    GameSession session,
+    GameController controller,
+    Map<int, String> names,
+    LegState leg,
+    List<CheckoutRoute> routes,
+  ) {
     return Scaffold(
       appBar: AppBar(
         title: Text('${leg.config.startScore} · DOUBLE OUT'),

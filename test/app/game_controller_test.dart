@@ -138,6 +138,20 @@ void main() {
   });
 
   group('driven by the board', () {
+    // Board input is ignored unless a leg is open, so every test here has to
+    // open one first.
+    setUp(() => controller().restart());
+
+    test('a hit is ignored when no leg is open', () async {
+      controller().leave();
+
+      board.hit(const Segment(20, Ring.triple));
+      await settle();
+
+      expect(session().leg.darts, isEmpty);
+      expect(session().leg.remaining[1], 501);
+    });
+
     test('a hit scores, through framing and decoding', () async {
       board.hit(const Segment(20, Ring.triple));
       await settle();
@@ -202,6 +216,50 @@ void main() {
       await settle();
 
       expect(session().pendingTurn!.scored, 60 + 20 + 40);
+    });
+  });
+
+  group('resuming a stored leg', () {
+    test('restores the scores and whose turn it is', () {
+      final config = GameConfig(startScore: 501, playerIds: const [1, 2]);
+      controller().resume(config, [t(20), t(20), t(20), t(5)]);
+
+      expect(session().leg.remaining[1], 321);
+      expect(session().leg.remaining[2], 486);
+      expect(session().leg.currentPlayerId, 2);
+      expect(session().leg.dartsThrownThisTurn, 1);
+    });
+
+    test('does not re-present a turn the player already confirmed', () {
+      final config = GameConfig(startScore: 501, playerIds: const [1, 2]);
+      // The log ends exactly on a completed turn, which is the case that would
+      // pop the summary open again on resume.
+      controller().resume(config, [t(20), t(20), t(20)]);
+
+      expect(session().awaitingTurnConfirm, isFalse);
+      expect(session().leg.currentPlayerId, 2);
+    });
+
+    test('an empty log resumes as a fresh leg', () {
+      final config = GameConfig(startScore: 301, playerIds: const [1]);
+      controller().resume(config, const []);
+
+      expect(session().leg.remaining[1], 301);
+      expect(session().leg.darts, isEmpty);
+    });
+
+    test('reopens the leg to board input', () async {
+      controller()
+        ..leave()
+        ..resume(
+          GameConfig(startScore: 501, playerIds: const [1, 2]),
+          [t(20)],
+        );
+
+      board.hit(const Segment(20, Ring.triple));
+      await settle();
+
+      expect(session().leg.darts, hasLength(2));
     });
   });
 

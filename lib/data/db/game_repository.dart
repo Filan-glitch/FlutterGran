@@ -144,6 +144,43 @@ class GameRepository {
     ];
   }
 
+  /// The most recent leg that was started, thrown at, and never finished.
+  ///
+  /// Darts already having been thrown is what separates a leg worth offering to
+  /// resume from one abandoned at the setup screen.
+  JoinedSelectStatement<HasResultSet, dynamic> _resumableQuery() {
+    return db.select(db.games).join([
+      innerJoin(
+        db.dartEvents,
+        db.dartEvents.gameId.equalsExp(db.games.id),
+        useColumns: false,
+      ),
+    ])
+      ..where(db.games.finishedAt.isNull())
+      ..groupBy([db.games.id])
+      // Id breaks the tie: startedAt has second resolution, so two legs begun
+      // in the same second would otherwise come back in an arbitrary order.
+      ..orderBy([
+        OrderingTerm.desc(db.games.startedAt),
+        OrderingTerm.desc(db.games.id),
+      ])
+      ..limit(1);
+  }
+
+  /// The leg to offer, or null when there is nothing to pick up.
+  Future<int?> findResumableGameId() async =>
+      (await _resumableQuery().getSingleOrNull())?.readTable(db.games).id;
+
+  /// The same answer, kept current.
+  ///
+  /// Watching the join rather than the games table is what makes this react to
+  /// a dart being thrown: a stream built from `select(games)` alone is only
+  /// invalidated by writes to games, so it would never notice the first dart
+  /// turning a leg into one worth resuming.
+  Stream<int?> watchResumableGameId() => _resumableQuery()
+      .watch()
+      .map((rows) => rows.singleOrNull?.readTable(db.games).id);
+
   /// Every stored game, replayed into leg state.
   ///
   /// Emits again whenever a game changes, so statistics refresh themselves
