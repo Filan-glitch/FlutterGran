@@ -256,7 +256,7 @@ class _DartSlot extends StatelessWidget {
       height: 40,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: empty ? Palette.slateSunk : Palette.slateRaised,
+        color: empty ? Palette.sunk : Palette.raised,
         borderRadius: BorderRadius.circular(4),
         border: Border.all(color: Palette.edge),
       ),

@@ -67,7 +67,7 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
         actions: [
           IconButton(
             tooltip: 'Board diagnostics',
-            icon: const Icon(Icons.sensors),
+            icon: const Icon(Icons.bluetooth),
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
                 builder: (context) => const DiagnosticsScreen(),
@@ -199,7 +199,7 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: Gap.sm),
       child: Material(
-        color: selected ? Palette.slateRaised : Colors.transparent,
+        color: selected ? Palette.raised : Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(4),
           side: BorderSide(
@@ -282,7 +282,7 @@ class _ScoreChoice extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: selected ? Palette.chalk : Palette.slateRaised,
+      color: selected ? Palette.chalk : Palette.raised,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(4),
         side: BorderSide(color: selected ? Palette.chalk : Palette.edge),
@@ -296,7 +296,7 @@ class _ScoreChoice extends StatelessWidget {
             child: Text(
               '$score',
               style: Type.scoreSmall.copyWith(
-                color: selected ? Palette.slate : Palette.chalkDim,
+                color: selected ? Palette.ground : Palette.chalkDim,
               ),
             ),
           ),

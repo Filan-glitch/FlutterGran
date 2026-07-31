@@ -33,7 +33,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
               child: DropdownButton<int>(
                 value: selected,
                 underline: const SizedBox.shrink(),
-                dropdownColor: Palette.slateRaised,
+                dropdownColor: Palette.raised,
                 iconEnabledColor: Palette.chalkDim,
                 style: Type.body.copyWith(color: Palette.chalk),
                 items: [

@@ -2,36 +2,41 @@ import 'package:flutter/material.dart';
 
 /// Visual language for the app.
 ///
-/// The reference is the pub chalk scoreboard, not a dashboard: slate ground,
-/// chalk-white numerals, a hairline dividing the players. Everything is sized
-/// to be read from the oche - about two and a half metres away, holding darts -
-/// which is why the numerals are enormous and everything else is deliberately
-/// small and quiet.
+/// The reference is the pub chalk scoreboard, not a dashboard: a deep forest
+/// ground, chalk-white numerals, a hairline dividing the players. Everything is
+/// sized to be read from the oche - about two and a half metres away, holding
+/// darts - which is why the numerals are enormous and everything else is
+/// deliberately small and quiet.
 ///
-/// The two accent colours are taken from the board itself rather than picked:
-/// [trebleBed] is the green of the treble bed, [doubleBed] the red of the double.
-/// [oche] is the only invented colour, and it means one thing - live.
+/// The ground is forest green rather than neutral, so the app reads as green
+/// throughout without spending an accent on it. The accent stays amber: green
+/// already means something specific here - [trebleBed] is the green of the
+/// treble bed, [doubleBed] the red of the double - and a green highlight on a
+/// green field could not signal anything at all. [oche] is the only invented
+/// colour, and it means one thing: live.
 abstract final class Palette {
-  /// Ground. A cold blue-grey, the colour of slate rather than of "dark mode".
-  static const Color slate = Color(0xFF14171C);
+  /// Ground. Deep forest, dark enough that chalk numerals carry across a room.
+  static const Color ground = Color(0xFF0E1611);
 
   /// Raised surfaces: cards, keys, the keypad.
-  static const Color slateRaised = Color(0xFF1C2027);
+  static const Color raised = Color(0xFF16211A);
 
   /// Pressed or recessed surfaces.
-  static const Color slateSunk = Color(0xFF101317);
+  static const Color sunk = Color(0xFF0A110C);
 
   /// Hairlines and dividers.
-  static const Color edge = Color(0xFF2A2F38);
+  static const Color edge = Color(0xFF24332B);
 
   /// Primary text. Warm off-white, like chalk dust, never pure white.
   static const Color chalk = Color(0xFFF0EDE4);
 
-  /// Secondary text and the player who is not throwing.
-  static const Color chalkDim = Color(0xFF868D97);
+  /// Secondary text and the player who is not throwing. Warmed towards the
+  /// ground so it recedes into it rather than sitting on top of it.
+  static const Color chalkDim = Color(0xFF8A9A8E);
 
-  /// The treble bed.
-  static const Color trebleBed = Color(0xFF2E7D52);
+  /// The treble bed. Brighter than the ground it now sits on, or a treble key
+  /// would disappear into the background.
+  static const Color trebleBed = Color(0xFF3D9C64);
 
   /// The double bed. Also a bust.
   static const Color doubleBed = Color(0xFFBF3B30);
@@ -185,8 +190,8 @@ abstract final class Type {
 const ColorScheme _scheme = ColorScheme(
   brightness: Brightness.dark,
   primary: Palette.oche,
-  onPrimary: Palette.slate,
-  primaryContainer: Palette.slateRaised,
+  onPrimary: Palette.ground,
+  primaryContainer: Palette.raised,
   onPrimaryContainer: Palette.chalk,
   secondary: Palette.trebleBed,
   onSecondary: Palette.chalk,
@@ -194,9 +199,9 @@ const ColorScheme _scheme = ColorScheme(
   onTertiary: Palette.chalk,
   error: Palette.doubleBed,
   onError: Palette.chalk,
-  surface: Palette.slate,
+  surface: Palette.ground,
   onSurface: Palette.chalk,
-  surfaceContainerHighest: Palette.slateRaised,
+  surfaceContainerHighest: Palette.raised,
   onSurfaceVariant: Palette.chalkDim,
   outline: Palette.edge,
   outlineVariant: Palette.edge,
@@ -207,7 +212,7 @@ ThemeData buildTheme() {
   final base = ThemeData(colorScheme: _scheme, useMaterial3: true);
 
   return base.copyWith(
-    scaffoldBackgroundColor: Palette.slate,
+    scaffoldBackgroundColor: Palette.ground,
     dividerTheme: const DividerThemeData(
       color: Palette.edge,
       thickness: 1,
@@ -225,7 +230,7 @@ ThemeData buildTheme() {
       bodySmall: Type.body.copyWith(color: Palette.chalkDim),
     ),
     appBarTheme: const AppBarTheme(
-      backgroundColor: Palette.slate,
+      backgroundColor: Palette.ground,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       centerTitle: false,
@@ -244,8 +249,8 @@ ThemeData buildTheme() {
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
         backgroundColor: Palette.oche,
-        foregroundColor: Palette.slate,
-        disabledBackgroundColor: Palette.slateRaised,
+        foregroundColor: Palette.ground,
+        disabledBackgroundColor: Palette.raised,
         disabledForegroundColor: Palette.chalkDim,
         padding: const EdgeInsets.symmetric(vertical: Gap.lg),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
@@ -281,14 +286,14 @@ ThemeData buildTheme() {
         ),
         foregroundColor: WidgetStateProperty.resolveWith(
           (states) => states.contains(WidgetState.selected)
-              ? Palette.slate
+              ? Palette.ground
               : Palette.chalkDim,
         ),
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: Palette.slateRaised,
+      fillColor: Palette.raised,
       isDense: true,
       contentPadding: const EdgeInsets.symmetric(
         horizontal: Gap.md,
@@ -315,23 +320,23 @@ ThemeData buildTheme() {
     ),
     progressIndicatorTheme: const ProgressIndicatorThemeData(
       color: Palette.oche,
-      linearTrackColor: Palette.slateRaised,
+      linearTrackColor: Palette.raised,
       linearMinHeight: 3,
     ),
     chipTheme: ChipThemeData(
-      backgroundColor: Palette.slateRaised,
+      backgroundColor: Palette.raised,
       side: const BorderSide(color: Palette.edge),
       labelStyle: Type.notation.copyWith(color: Palette.chalk),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
     ),
     dialogTheme: DialogThemeData(
-      backgroundColor: Palette.slateRaised,
+      backgroundColor: Palette.raised,
       surfaceTintColor: Colors.transparent,
       titleTextStyle: Type.title.copyWith(color: Palette.chalk),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
     ),
     bottomSheetTheme: const BottomSheetThemeData(
-      backgroundColor: Palette.slateRaised,
+      backgroundColor: Palette.raised,
       surfaceTintColor: Colors.transparent,
     ),
   );

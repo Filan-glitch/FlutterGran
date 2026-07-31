@@ -184,10 +184,11 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen> {
   }
 }
 
-/// Connection state as a word and a colour, not an icon.
+/// Connection state as a bluetooth glyph, a word, and a colour.
 ///
-/// "scanning" and "connecting" look identical as a bluetooth glyph, and telling
-/// them apart is the whole point during bring-up.
+/// The glyph says what this is about at a glance; the word carries the state,
+/// because "scanning" and "connecting" are indistinguishable as icons and
+/// telling them apart is the whole point during bring-up.
 class _ConnectionPill extends StatelessWidget {
   const _ConnectionPill({required this.state});
 
@@ -202,14 +203,17 @@ class _ConnectionPill extends StatelessWidget {
       BoardConnectionState.disconnected => Palette.chalkDim,
     };
 
+    final glyph = switch (state) {
+      BoardConnectionState.connected => Icons.bluetooth_connected,
+      BoardConnectionState.scanning => Icons.bluetooth_searching,
+      BoardConnectionState.connecting => Icons.bluetooth_searching,
+      BoardConnectionState.disconnected => Icons.bluetooth_disabled,
+    };
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(color: colour, shape: BoxShape.circle),
-        ),
+        Icon(glyph, size: 18, color: colour),
         const SizedBox(width: Gap.sm),
         Text(
           state.name.toUpperCase(),
@@ -274,7 +278,7 @@ class _CoverageSummary extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4),
                   color: coverage.contains(segment)
                       ? Palette.trebleBed
-                      : Palette.slateSunk,
+                      : Palette.sunk,
                   border: Border.all(color: Palette.edge),
                 ),
                 child: Text(

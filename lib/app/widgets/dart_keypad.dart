@@ -167,8 +167,8 @@ class _Key extends StatelessWidget {
         Palette.chalk,
       ),
       Ring.triple || Ring.outerBull => (Palette.trebleBed, Palette.chalk),
-      null => (Palette.slateSunk, Palette.chalkDim),
-      _ => (Palette.slateRaised, Palette.chalk),
+      null => (Palette.sunk, Palette.chalkDim),
+      _ => (Palette.raised, Palette.chalk),
     };
 
     return Semantics(
