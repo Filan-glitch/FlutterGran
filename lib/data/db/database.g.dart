@@ -1445,6 +1445,379 @@ class DartEventsCompanion extends UpdateCompanion<DartEvent> {
   }
 }
 
+class $SegmentCalibrationsTable extends SegmentCalibrations
+    with TableInfo<$SegmentCalibrationsTable, SegmentCalibration> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SegmentCalibrationsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _bodyMeta = const VerificationMeta('body');
+  @override
+  late final GeneratedColumn<String> body = GeneratedColumn<String>(
+    'body',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _numberMeta = const VerificationMeta('number');
+  @override
+  late final GeneratedColumn<int> number = GeneratedColumn<int>(
+    'number',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<Ring, String> ring =
+      GeneratedColumn<String>(
+        'ring',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<Ring>($SegmentCalibrationsTable.$converterring);
+  static const VerificationMeta _correctedMeta = const VerificationMeta(
+    'corrected',
+  );
+  @override
+  late final GeneratedColumn<bool> corrected = GeneratedColumn<bool>(
+    'corrected',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("corrected" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _verifiedAtMeta = const VerificationMeta(
+    'verifiedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> verifiedAt = GeneratedColumn<DateTime>(
+    'verified_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    body,
+    number,
+    ring,
+    corrected,
+    verifiedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'segment_calibrations';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SegmentCalibration> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('body')) {
+      context.handle(
+        _bodyMeta,
+        body.isAcceptableOrUnknown(data['body']!, _bodyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bodyMeta);
+    }
+    if (data.containsKey('number')) {
+      context.handle(
+        _numberMeta,
+        number.isAcceptableOrUnknown(data['number']!, _numberMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_numberMeta);
+    }
+    if (data.containsKey('corrected')) {
+      context.handle(
+        _correctedMeta,
+        corrected.isAcceptableOrUnknown(data['corrected']!, _correctedMeta),
+      );
+    }
+    if (data.containsKey('verified_at')) {
+      context.handle(
+        _verifiedAtMeta,
+        verifiedAt.isAcceptableOrUnknown(data['verified_at']!, _verifiedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {body};
+  @override
+  SegmentCalibration map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SegmentCalibration(
+      body: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}body'],
+      )!,
+      number: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}number'],
+      )!,
+      ring: $SegmentCalibrationsTable.$converterring.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}ring'],
+        )!,
+      ),
+      corrected: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}corrected'],
+      )!,
+      verifiedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}verified_at'],
+      )!,
+    );
+  }
+
+  @override
+  $SegmentCalibrationsTable createAlias(String alias) {
+    return $SegmentCalibrationsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<Ring, String, String> $converterring =
+      const EnumNameConverter<Ring>(Ring.values);
+}
+
+class SegmentCalibration extends DataClass
+    implements Insertable<SegmentCalibration> {
+  /// Frame body, `@` stripped.
+  final String body;
+  final int number;
+  final Ring ring;
+
+  /// Whether this differs from the shipped GranBoard table.
+  final bool corrected;
+  final DateTime verifiedAt;
+  const SegmentCalibration({
+    required this.body,
+    required this.number,
+    required this.ring,
+    required this.corrected,
+    required this.verifiedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['body'] = Variable<String>(body);
+    map['number'] = Variable<int>(number);
+    {
+      map['ring'] = Variable<String>(
+        $SegmentCalibrationsTable.$converterring.toSql(ring),
+      );
+    }
+    map['corrected'] = Variable<bool>(corrected);
+    map['verified_at'] = Variable<DateTime>(verifiedAt);
+    return map;
+  }
+
+  SegmentCalibrationsCompanion toCompanion(bool nullToAbsent) {
+    return SegmentCalibrationsCompanion(
+      body: Value(body),
+      number: Value(number),
+      ring: Value(ring),
+      corrected: Value(corrected),
+      verifiedAt: Value(verifiedAt),
+    );
+  }
+
+  factory SegmentCalibration.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SegmentCalibration(
+      body: serializer.fromJson<String>(json['body']),
+      number: serializer.fromJson<int>(json['number']),
+      ring: $SegmentCalibrationsTable.$converterring.fromJson(
+        serializer.fromJson<String>(json['ring']),
+      ),
+      corrected: serializer.fromJson<bool>(json['corrected']),
+      verifiedAt: serializer.fromJson<DateTime>(json['verifiedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'body': serializer.toJson<String>(body),
+      'number': serializer.toJson<int>(number),
+      'ring': serializer.toJson<String>(
+        $SegmentCalibrationsTable.$converterring.toJson(ring),
+      ),
+      'corrected': serializer.toJson<bool>(corrected),
+      'verifiedAt': serializer.toJson<DateTime>(verifiedAt),
+    };
+  }
+
+  SegmentCalibration copyWith({
+    String? body,
+    int? number,
+    Ring? ring,
+    bool? corrected,
+    DateTime? verifiedAt,
+  }) => SegmentCalibration(
+    body: body ?? this.body,
+    number: number ?? this.number,
+    ring: ring ?? this.ring,
+    corrected: corrected ?? this.corrected,
+    verifiedAt: verifiedAt ?? this.verifiedAt,
+  );
+  SegmentCalibration copyWithCompanion(SegmentCalibrationsCompanion data) {
+    return SegmentCalibration(
+      body: data.body.present ? data.body.value : this.body,
+      number: data.number.present ? data.number.value : this.number,
+      ring: data.ring.present ? data.ring.value : this.ring,
+      corrected: data.corrected.present ? data.corrected.value : this.corrected,
+      verifiedAt: data.verifiedAt.present
+          ? data.verifiedAt.value
+          : this.verifiedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SegmentCalibration(')
+          ..write('body: $body, ')
+          ..write('number: $number, ')
+          ..write('ring: $ring, ')
+          ..write('corrected: $corrected, ')
+          ..write('verifiedAt: $verifiedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(body, number, ring, corrected, verifiedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SegmentCalibration &&
+          other.body == this.body &&
+          other.number == this.number &&
+          other.ring == this.ring &&
+          other.corrected == this.corrected &&
+          other.verifiedAt == this.verifiedAt);
+}
+
+class SegmentCalibrationsCompanion extends UpdateCompanion<SegmentCalibration> {
+  final Value<String> body;
+  final Value<int> number;
+  final Value<Ring> ring;
+  final Value<bool> corrected;
+  final Value<DateTime> verifiedAt;
+  final Value<int> rowid;
+  const SegmentCalibrationsCompanion({
+    this.body = const Value.absent(),
+    this.number = const Value.absent(),
+    this.ring = const Value.absent(),
+    this.corrected = const Value.absent(),
+    this.verifiedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SegmentCalibrationsCompanion.insert({
+    required String body,
+    required int number,
+    required Ring ring,
+    this.corrected = const Value.absent(),
+    this.verifiedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : body = Value(body),
+       number = Value(number),
+       ring = Value(ring);
+  static Insertable<SegmentCalibration> custom({
+    Expression<String>? body,
+    Expression<int>? number,
+    Expression<String>? ring,
+    Expression<bool>? corrected,
+    Expression<DateTime>? verifiedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (body != null) 'body': body,
+      if (number != null) 'number': number,
+      if (ring != null) 'ring': ring,
+      if (corrected != null) 'corrected': corrected,
+      if (verifiedAt != null) 'verified_at': verifiedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SegmentCalibrationsCompanion copyWith({
+    Value<String>? body,
+    Value<int>? number,
+    Value<Ring>? ring,
+    Value<bool>? corrected,
+    Value<DateTime>? verifiedAt,
+    Value<int>? rowid,
+  }) {
+    return SegmentCalibrationsCompanion(
+      body: body ?? this.body,
+      number: number ?? this.number,
+      ring: ring ?? this.ring,
+      corrected: corrected ?? this.corrected,
+      verifiedAt: verifiedAt ?? this.verifiedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (body.present) {
+      map['body'] = Variable<String>(body.value);
+    }
+    if (number.present) {
+      map['number'] = Variable<int>(number.value);
+    }
+    if (ring.present) {
+      map['ring'] = Variable<String>(
+        $SegmentCalibrationsTable.$converterring.toSql(ring.value),
+      );
+    }
+    if (corrected.present) {
+      map['corrected'] = Variable<bool>(corrected.value);
+    }
+    if (verifiedAt.present) {
+      map['verified_at'] = Variable<DateTime>(verifiedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SegmentCalibrationsCompanion(')
+          ..write('body: $body, ')
+          ..write('number: $number, ')
+          ..write('ring: $ring, ')
+          ..write('corrected: $corrected, ')
+          ..write('verifiedAt: $verifiedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1452,6 +1825,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $GamesTable games = $GamesTable(this);
   late final $GameSeatsTable gameSeats = $GameSeatsTable(this);
   late final $DartEventsTable dartEvents = $DartEventsTable(this);
+  late final $SegmentCalibrationsTable segmentCalibrations =
+      $SegmentCalibrationsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1461,6 +1836,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     games,
     gameSeats,
     dartEvents,
+    segmentCalibrations,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -3262,6 +3638,225 @@ typedef $$DartEventsTableProcessedTableManager =
       DartEvent,
       PrefetchHooks Function({bool gameId, bool playerId})
     >;
+typedef $$SegmentCalibrationsTableCreateCompanionBuilder =
+    SegmentCalibrationsCompanion Function({
+      required String body,
+      required int number,
+      required Ring ring,
+      Value<bool> corrected,
+      Value<DateTime> verifiedAt,
+      Value<int> rowid,
+    });
+typedef $$SegmentCalibrationsTableUpdateCompanionBuilder =
+    SegmentCalibrationsCompanion Function({
+      Value<String> body,
+      Value<int> number,
+      Value<Ring> ring,
+      Value<bool> corrected,
+      Value<DateTime> verifiedAt,
+      Value<int> rowid,
+    });
+
+class $$SegmentCalibrationsTableFilterComposer
+    extends Composer<_$AppDatabase, $SegmentCalibrationsTable> {
+  $$SegmentCalibrationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get body => $composableBuilder(
+    column: $table.body,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get number => $composableBuilder(
+    column: $table.number,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<Ring, Ring, String> get ring =>
+      $composableBuilder(
+        column: $table.ring,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnFilters<bool> get corrected => $composableBuilder(
+    column: $table.corrected,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get verifiedAt => $composableBuilder(
+    column: $table.verifiedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SegmentCalibrationsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SegmentCalibrationsTable> {
+  $$SegmentCalibrationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get body => $composableBuilder(
+    column: $table.body,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get number => $composableBuilder(
+    column: $table.number,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ring => $composableBuilder(
+    column: $table.ring,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get corrected => $composableBuilder(
+    column: $table.corrected,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get verifiedAt => $composableBuilder(
+    column: $table.verifiedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SegmentCalibrationsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SegmentCalibrationsTable> {
+  $$SegmentCalibrationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get body =>
+      $composableBuilder(column: $table.body, builder: (column) => column);
+
+  GeneratedColumn<int> get number =>
+      $composableBuilder(column: $table.number, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<Ring, String> get ring =>
+      $composableBuilder(column: $table.ring, builder: (column) => column);
+
+  GeneratedColumn<bool> get corrected =>
+      $composableBuilder(column: $table.corrected, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get verifiedAt => $composableBuilder(
+    column: $table.verifiedAt,
+    builder: (column) => column,
+  );
+}
+
+class $$SegmentCalibrationsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SegmentCalibrationsTable,
+          SegmentCalibration,
+          $$SegmentCalibrationsTableFilterComposer,
+          $$SegmentCalibrationsTableOrderingComposer,
+          $$SegmentCalibrationsTableAnnotationComposer,
+          $$SegmentCalibrationsTableCreateCompanionBuilder,
+          $$SegmentCalibrationsTableUpdateCompanionBuilder,
+          (
+            SegmentCalibration,
+            BaseReferences<
+              _$AppDatabase,
+              $SegmentCalibrationsTable,
+              SegmentCalibration
+            >,
+          ),
+          SegmentCalibration,
+          PrefetchHooks Function()
+        > {
+  $$SegmentCalibrationsTableTableManager(
+    _$AppDatabase db,
+    $SegmentCalibrationsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SegmentCalibrationsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SegmentCalibrationsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$SegmentCalibrationsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> body = const Value.absent(),
+                Value<int> number = const Value.absent(),
+                Value<Ring> ring = const Value.absent(),
+                Value<bool> corrected = const Value.absent(),
+                Value<DateTime> verifiedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SegmentCalibrationsCompanion(
+                body: body,
+                number: number,
+                ring: ring,
+                corrected: corrected,
+                verifiedAt: verifiedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String body,
+                required int number,
+                required Ring ring,
+                Value<bool> corrected = const Value.absent(),
+                Value<DateTime> verifiedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SegmentCalibrationsCompanion.insert(
+                body: body,
+                number: number,
+                ring: ring,
+                corrected: corrected,
+                verifiedAt: verifiedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SegmentCalibrationsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SegmentCalibrationsTable,
+      SegmentCalibration,
+      $$SegmentCalibrationsTableFilterComposer,
+      $$SegmentCalibrationsTableOrderingComposer,
+      $$SegmentCalibrationsTableAnnotationComposer,
+      $$SegmentCalibrationsTableCreateCompanionBuilder,
+      $$SegmentCalibrationsTableUpdateCompanionBuilder,
+      (
+        SegmentCalibration,
+        BaseReferences<
+          _$AppDatabase,
+          $SegmentCalibrationsTable,
+          SegmentCalibration
+        >,
+      ),
+      SegmentCalibration,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -3274,4 +3869,6 @@ class $AppDatabaseManager {
       $$GameSeatsTableTableManager(_db, _db.gameSeats);
   $$DartEventsTableTableManager get dartEvents =>
       $$DartEventsTableTableManager(_db, _db.dartEvents);
+  $$SegmentCalibrationsTableTableManager get segmentCalibrations =>
+      $$SegmentCalibrationsTableTableManager(_db, _db.segmentCalibrations);
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/board/ble_board_source.dart';
 import '../data/board/board_source.dart';
 import '../data/board/fake_board_source.dart';
+import '../data/board/segment_codec.dart';
 import '../data/db/database.dart';
 import '../data/db/game_repository.dart';
 import '../domain/board_event.dart';
@@ -49,10 +50,46 @@ final boardSourceProvider = Provider<BoardSource>((ref) {
   return source;
 });
 
+/// A single long-lived codec.
+///
+/// Kept out of [boardReaderProvider] so calibration corrections can be applied
+/// to it in place. Rebuilding it would tear down the board connection every
+/// time a segment was corrected - exactly while someone is standing at the
+/// board throwing darts at it.
+final segmentCodecProvider = Provider<SegmentCodec>((ref) => SegmentCodec());
+
 final boardReaderProvider = Provider<BoardReader>((ref) {
-  final reader = BoardReader(source: ref.watch(boardSourceProvider));
+  final reader = BoardReader(
+    source: ref.watch(boardSourceProvider),
+    codec: ref.watch(segmentCodecProvider),
+  );
   ref.onDispose(reader.dispose);
   return reader;
+});
+
+/// Codes verified against this particular board.
+final calibrationsProvider = StreamProvider<List<SegmentCalibration>>(
+  (ref) => ref.watch(gameRepositoryProvider).watchCalibrations(),
+);
+
+/// Segments whose code has been confirmed, for the coverage checklist.
+final calibrationCoverageProvider = Provider<Set<Segment>>((ref) {
+  final rows = ref.watch(calibrationsProvider).value ?? const [];
+  return {for (final row in rows) Segment(row.number, row.ring)};
+});
+
+/// Keeps the decoder in step with what calibration has learned.
+///
+/// Corrections are pushed into the live codec rather than rebuilt around it, so
+/// the next dart decodes correctly without reconnecting.
+final calibrationSyncProvider = Provider<void>((ref) {
+  final codec = ref.watch(segmentCodecProvider);
+  final rows = ref.watch(calibrationsProvider).value ?? const [];
+
+  codec.clearAllOverrides();
+  for (final row in rows.where((row) => row.corrected)) {
+    codec.setOverride(row.body, Segment(row.number, row.ring));
+  }
 });
 
 final boardEventsProvider = StreamProvider<BoardEvent>(

@@ -36,6 +36,21 @@ abstract class BoardSource {
   Future<void> dispose();
 }
 
+/// A decoded frame together with the body it came from.
+///
+/// The body is dropped from [BoardEvent] on purpose - scoring has no use for
+/// it - but calibration needs to know which code produced which segment, so it
+/// travels alongside rather than inside the domain type.
+class ObservedFrame {
+  const ObservedFrame(this.body, this.event);
+
+  final String body;
+  final BoardEvent event;
+
+  @override
+  String toString() => '$body -> $event';
+}
+
 /// Composes a [BoardSource] with framing and decoding into board events.
 ///
 /// This is the only place the three layers are wired together, so the fake and
@@ -58,11 +73,14 @@ class BoardReader {
   final SegmentCodec codec;
 
   /// Optional capture of the raw stream, recorded before any parsing so a
-  /// replay reproduces exactly what the hardware sent.
-  final FrameRecorder? recorder;
+  /// replay reproduces exactly what the hardware sent. Settable so recording
+  /// can be started from the diagnostics screen without reconnecting.
+  FrameRecorder? recorder;
 
   final StreamController<BoardEvent> _events =
       StreamController<BoardEvent>.broadcast();
+  final StreamController<ObservedFrame> _frames =
+      StreamController<ObservedFrame>.broadcast();
 
   late final StreamSubscription<List<int>> _rawSubscription;
   late final StreamSubscription<BoardConnectionState> _stateSubscription;
@@ -71,6 +89,9 @@ class BoardReader {
 
   Stream<BoardEvent> get events => _events.stream;
 
+  /// Decoded frames with their raw bodies, for diagnostics and calibration.
+  Stream<ObservedFrame> get frames => _frames.stream;
+
   Stream<BoardConnectionState> get connectionState => source.connectionState;
 
   BoardConnectionState get currentState => source.currentState;
@@ -78,7 +99,9 @@ class BoardReader {
   void _onRaw(List<int> chunk) {
     recorder?.record(chunk);
     for (final body in assembler.feed(chunk)) {
-      _events.add(codec.decode(body));
+      final event = codec.decode(body);
+      _events.add(event);
+      _frames.add(ObservedFrame(body, event));
     }
   }
 
@@ -95,5 +118,6 @@ class BoardReader {
     await _rawSubscription.cancel();
     await _stateSubscription.cancel();
     await _events.close();
+    await _frames.close();
   }
 }

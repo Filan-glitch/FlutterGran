@@ -73,11 +73,45 @@ class DartEvents extends Table {
   ];
 }
 
-@DriftDatabase(tables: [Players, Games, GameSeats, DartEvents])
+/// What a frame code has been confirmed to mean on this particular board.
+///
+/// A row is written whenever a code is verified during calibration. Rows where
+/// [corrected] is true disagree with the shipped table and become the codec's
+/// override layer; the rest are confirmations, which are what the coverage
+/// checklist counts.
+class SegmentCalibrations extends Table {
+  /// Frame body, `@` stripped.
+  TextColumn get body => text()();
+
+  IntColumn get number => integer()();
+  TextColumn get ring => textEnum<Ring>()();
+
+  /// Whether this differs from the shipped GranBoard table.
+  BoolColumn get corrected =>
+      boolean().withDefault(const Constant(false))();
+
+  DateTimeColumn get verifiedAt =>
+      dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column<Object>> get primaryKey => {body};
+}
+
+@DriftDatabase(
+  tables: [Players, Games, GameSeats, DartEvents, SegmentCalibrations],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
     : super(executor ?? driftDatabase(name: 'fluttergran'));
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (m) => m.createAll(),
+    onUpgrade: (m, from, to) async {
+      if (from < 2) await m.createTable(segmentCalibrations);
+    },
+  );
 }

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/db/database.dart';
 import '../../domain/x01/game_config.dart';
 import '../providers.dart';
+import 'diagnostics_screen.dart';
 import 'game_screen.dart';
 import 'stats_screen.dart';
 
@@ -63,6 +64,15 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
       appBar: AppBar(
         title: const Text('New leg'),
         actions: [
+          IconButton(
+            tooltip: 'Board diagnostics',
+            icon: const Icon(Icons.bluetooth_searching),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (context) => const DiagnosticsScreen(),
+              ),
+            ),
+          ),
           IconButton(
             tooltip: 'Statistics',
             icon: const Icon(Icons.insights),

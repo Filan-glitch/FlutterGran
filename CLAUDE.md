@@ -41,6 +41,23 @@ The segment table currently shipped is derived from the **GRANBOARD 3s**. No pub
 source has ever verified the 132. Treat the table as provisional data until the
 calibration screen confirms it against real hardware.
 
+## Hardware day
+
+Open **Board diagnostics** from the setup screen, switch the source to Bluetooth,
+and connect. Throw at every segment: each frame shows its raw body and what the
+table thinks it means, with `Right` to confirm and `Wrong` to correct. Corrections
+are written to `SegmentCalibrations` and pushed into the live decoder immediately,
+so the next dart scores correctly without reconnecting. The coverage bar reaches
+82 when every scoring area has been verified.
+
+Things to settle while the board is connected:
+
+- Does the 132's matrix match the 3s table, or does calibration fill up with
+  corrections?
+- Does the touch sensor emit `BTN@`? Nothing needed for play depends on it.
+- Does `OUT@` ever fire? The 3s reportedly never sends it.
+- What is the full advertised name? Only the prefix `GRAN` is confirmed.
+
 ## Dependency constraints (learned the hard way)
 
 - **`flutter_blue_plus` is not open source.** Free for personal use only; any for-profit
