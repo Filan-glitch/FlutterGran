@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'app/screens/game_screen.dart';
+import 'app/screens/new_game_screen.dart';
 
 void main() {
   runApp(const ProviderScope(child: FlutterGranApp()));
@@ -23,7 +23,7 @@ class FlutterGranApp extends StatelessWidget {
           brightness: Brightness.dark,
         ),
       ),
-      home: const GameScreen(),
+      home: const NewGameScreen(),
     );
   }
 }

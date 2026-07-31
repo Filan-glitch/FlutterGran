@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/db/game_repository.dart';
 import '../domain/board_event.dart';
 import '../domain/x01/game_config.dart';
 import '../domain/x01/leg_reducer.dart';
@@ -67,10 +69,26 @@ class GameController extends Notifier<GameSession> {
   void addDart(ThrownDart dart) {
     if (state.leg.isFinished || state.awaitingTurnConfirm) return;
 
+    final ordinal = state.leg.darts.length;
+    final thrownBy = state.leg.currentPlayerId;
+
+    final leg = foldLeg(state.leg.config, [...state.leg.darts, dart]);
     state = GameSession(
-      leg: foldLeg(state.leg.config, [...state.leg.darts, dart]),
+      leg: leg,
       acknowledgedTurns: state.acknowledgedTurns,
     );
+
+    _persist((repository, gameId) async {
+      await repository.appendDart(
+        gameId: gameId,
+        ordinal: ordinal,
+        playerId: thrownBy,
+        dart: dart,
+      );
+      if (leg.winnerId case final winner?) {
+        await repository.finishGame(gameId, winner);
+      }
+    });
   }
 
   /// Drops the last dart thrown and replays the leg without it.
@@ -80,11 +98,31 @@ class GameController extends Notifier<GameSession> {
     final darts = state.leg.darts;
     if (darts.isEmpty) return;
 
+    final wasFinished = state.leg.isFinished;
     final leg = foldLeg(state.leg.config, darts.sublist(0, darts.length - 1));
     state = GameSession(
       leg: leg,
       acknowledgedTurns: min(state.acknowledgedTurns, leg.turns.length),
     );
+
+    _persist((repository, gameId) async {
+      await repository.truncateLog(gameId, leg.darts.length);
+      if (wasFinished && !leg.isFinished) {
+        await repository.reopenGame(gameId);
+      }
+    });
+  }
+
+  /// Mirrors a change into the database, if a game is being persisted.
+  ///
+  /// Fire and forget: the in-memory log is the source of truth during play, and
+  /// blocking a dart on disk would put storage latency in the way of scoring.
+  void _persist(
+    Future<void> Function(GameRepository repository, int gameId) write,
+  ) {
+    final gameId = ref.read(currentGameIdProvider);
+    if (gameId == null) return;
+    unawaited(write(ref.read(gameRepositoryProvider), gameId));
   }
 
   /// Dismisses the turn summary and hands over.

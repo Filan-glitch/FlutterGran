@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/board/board_source.dart';
 import '../data/board/fake_board_source.dart';
+import '../data/db/database.dart';
+import '../data/db/game_repository.dart';
 import '../domain/board_event.dart';
 import '../domain/checkout/checkout_table.dart';
 import '../domain/x01/game_config.dart';
@@ -78,5 +80,35 @@ final gameProvider = NotifierProvider<GameController, GameSession>(
   GameController.new,
 );
 
-/// Placeholder names until the roster arrives.
-String playerName(int playerId) => 'Player $playerId';
+/// Overridden in tests with an in-memory database.
+final databaseProvider = Provider<AppDatabase>((ref) {
+  final database = AppDatabase();
+  ref.onDispose(database.close);
+  return database;
+});
+
+final gameRepositoryProvider = Provider<GameRepository>(
+  (ref) => GameRepository(ref.watch(databaseProvider)),
+);
+
+final playersProvider = StreamProvider<List<Player>>(
+  (ref) => ref.watch(gameRepositoryProvider).watchPlayers(),
+);
+
+/// Player id to name, for labelling the scoreboard.
+final playerNamesProvider = Provider<Map<int, String>>((ref) {
+  final players = ref.watch(playersProvider).value ?? const <Player>[];
+  return {for (final player in players) player.id: player.name};
+});
+
+/// The game rows are being written to, or null when nothing is persisted.
+class CurrentGameId extends Notifier<int?> {
+  @override
+  int? build() => null;
+
+  void set(int? gameId) => state = gameId;
+}
+
+final currentGameIdProvider = NotifierProvider<CurrentGameId, int?>(
+  CurrentGameId.new,
+);

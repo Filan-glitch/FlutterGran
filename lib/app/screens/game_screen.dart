@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/checkout/checkout_search.dart';
-import '../../domain/x01/game_config.dart';
 import '../../domain/x01/leg_state.dart';
 import '../../domain/x01/thrown_dart.dart';
 import '../providers.dart';
 import '../widgets/board_widget.dart';
+
+/// Falls back to a seat label for a player who has since been deleted.
+String nameFor(Map<int, String> names, int playerId) =>
+    names[playerId] ?? 'Player $playerId';
 
 class GameScreen extends ConsumerWidget {
   const GameScreen({super.key});
@@ -15,6 +18,7 @@ class GameScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(gameProvider);
     final controller = ref.read(gameProvider.notifier);
+    final names = ref.watch(playerNamesProvider);
     final leg = session.leg;
 
     final routes = leg.isFinished
@@ -32,11 +36,6 @@ class GameScreen extends ConsumerWidget {
             icon: const Icon(Icons.undo),
             tooltip: 'Undo last dart',
           ),
-          IconButton(
-            onPressed: () => _showSetup(context, ref),
-            icon: const Icon(Icons.tune),
-            tooltip: 'New leg',
-          ),
         ],
       ),
       body: SafeArea(
@@ -44,8 +43,8 @@ class GameScreen extends ConsumerWidget {
           children: [
             Column(
               children: [
-                _Scoreboard(leg: leg),
-                _CheckoutStrip(routes: routes, leg: leg),
+                _Scoreboard(leg: leg, names: names),
+                _CheckoutStrip(routes: routes, leg: leg, names: names),
                 _CurrentTurn(leg: leg),
                 Expanded(
                   child: Padding(
@@ -76,6 +75,7 @@ class GameScreen extends ConsumerWidget {
               _TurnSummaryOverlay(
                 turn: session.pendingTurn!,
                 leg: leg,
+                names: names,
                 onConfirm: controller.confirmTurn,
                 onUndo: controller.undo,
               ),
@@ -84,23 +84,13 @@ class GameScreen extends ConsumerWidget {
       ),
     );
   }
-
-  Future<void> _showSetup(BuildContext context, WidgetRef ref) async {
-    final config = ref.read(gameConfigProvider);
-    final chosen = await showModalBottomSheet<GameConfig>(
-      context: context,
-      builder: (context) => _SetupSheet(initial: config),
-    );
-    if (chosen == null) return;
-    ref.read(gameConfigProvider.notifier).update(chosen);
-    ref.read(gameProvider.notifier).restart(chosen);
-  }
 }
 
 class _Scoreboard extends StatelessWidget {
-  const _Scoreboard({required this.leg});
+  const _Scoreboard({required this.leg, required this.names});
 
   final LegState leg;
+  final Map<int, String> names;
 
   @override
   Widget build(BuildContext context) {
@@ -125,7 +115,7 @@ class _Scoreboard extends StatelessWidget {
                   child: Column(
                     children: [
                       Text(
-                        playerName(playerId),
+                        nameFor(names, playerId),
                         style: theme.textTheme.labelMedium,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -156,10 +146,15 @@ class _Scoreboard extends StatelessWidget {
 }
 
 class _CheckoutStrip extends StatelessWidget {
-  const _CheckoutStrip({required this.routes, required this.leg});
+  const _CheckoutStrip({
+    required this.routes,
+    required this.leg,
+    required this.names,
+  });
 
   final List<CheckoutRoute> routes;
   final LegState leg;
+  final Map<int, String> names;
 
   @override
   Widget build(BuildContext context) {
@@ -169,7 +164,7 @@ class _CheckoutStrip extends StatelessWidget {
       return Padding(
         padding: const EdgeInsets.all(12),
         child: Text(
-          '${playerName(leg.winnerId!)} wins',
+          '${nameFor(names, leg.winnerId!)} wins',
           style: theme.textTheme.titleLarge?.copyWith(
             color: theme.colorScheme.primary,
             fontWeight: FontWeight.bold,
@@ -238,12 +233,14 @@ class _TurnSummaryOverlay extends StatelessWidget {
   const _TurnSummaryOverlay({
     required this.turn,
     required this.leg,
+    required this.names,
     required this.onConfirm,
     required this.onUndo,
   });
 
   final Turn turn;
   final LegState leg;
+  final Map<int, String> names;
   final VoidCallback onConfirm;
   final VoidCallback onUndo;
 
@@ -265,7 +262,7 @@ class _TurnSummaryOverlay extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      playerName(turn.playerId),
+                      nameFor(names, turn.playerId),
                       style: theme.textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
@@ -314,69 +311,6 @@ class _TurnSummaryOverlay extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _SetupSheet extends StatefulWidget {
-  const _SetupSheet({required this.initial});
-
-  final GameConfig initial;
-
-  @override
-  State<_SetupSheet> createState() => _SetupSheetState();
-}
-
-class _SetupSheetState extends State<_SetupSheet> {
-  late int _startScore = widget.initial.startScore;
-  late int _players = widget.initial.playerIds.length;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Start score', style: Theme.of(context).textTheme.labelLarge),
-          const SizedBox(height: 8),
-          SegmentedButton<int>(
-            segments: [
-              for (final score in GameConfig.offeredStartScores)
-                ButtonSegment(value: score, label: Text('$score')),
-            ],
-            selected: {_startScore},
-            onSelectionChanged: (selection) =>
-                setState(() => _startScore = selection.first),
-          ),
-          const SizedBox(height: 20),
-          Text('Players', style: Theme.of(context).textTheme.labelLarge),
-          const SizedBox(height: 8),
-          SegmentedButton<int>(
-            segments: [
-              for (var count = 1; count <= GameConfig.maxPlayers; count++)
-                ButtonSegment(value: count, label: Text('$count')),
-            ],
-            selected: {_players},
-            onSelectionChanged: (selection) =>
-                setState(() => _players = selection.first),
-          ),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              onPressed: () => Navigator.of(context).pop(
-                GameConfig(
-                  startScore: _startScore,
-                  playerIds: [for (var i = 1; i <= _players; i++) i],
-                ),
-              ),
-              child: const Text('Start leg'),
-            ),
-          ),
-        ],
       ),
     );
   }
