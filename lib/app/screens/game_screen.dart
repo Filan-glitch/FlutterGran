@@ -5,7 +5,7 @@ import '../../domain/checkout/checkout_search.dart';
 import '../../domain/x01/leg_state.dart';
 import '../../domain/x01/thrown_dart.dart';
 import '../providers.dart';
-import '../widgets/board_widget.dart';
+import '../widgets/dart_keypad.dart';
 
 /// Falls back to a seat label for a player who has since been deleted.
 String nameFor(Map<int, String> names, int playerId) =>
@@ -48,25 +48,16 @@ class GameScreen extends ConsumerWidget {
                 _CurrentTurn(leg: leg),
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: BoardWidget(
-                      onSegmentTapped: (segment) =>
+                    padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+                    child: DartKeypad(
+                      onDart: (segment) =>
                           controller.addDart(ThrownDart(segment)),
-                      onMissTapped: () =>
+                      onMiss: () =>
                           controller.addDart(const ThrownDart.miss()),
                       highlight: routes.isEmpty
                           ? const {}
                           : routes.first.darts.toSet(),
                     ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                  child: OutlinedButton.icon(
-                    onPressed: () =>
-                        controller.addDart(const ThrownDart.miss()),
-                    icon: const Icon(Icons.not_interested),
-                    label: const Text('Miss / bounce-out'),
                   ),
                 ),
               ],

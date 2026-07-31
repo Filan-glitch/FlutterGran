@@ -90,29 +90,40 @@ class BoardWidget extends StatelessWidget {
         // Leave room outside the double ring for the numbers.
         final radius = side / 2 * (showNumbers ? 0.86 : 0.98);
 
-        return GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTapUp: (details) {
-            final centre = Offset(side / 2, side / 2);
-            final segment = BoardGeometry.segmentAt(
-              details.localPosition - centre,
-              radius,
-            );
-            if (segment == null) {
-              onMissTapped?.call();
-            } else {
-              onSegmentTapped?.call(segment);
-            }
-          },
-          child: CustomPaint(
-            size: Size.square(side),
-            painter: _BoardPainter(
-              radius: radius,
-              highlight: highlight,
-              heat: heat,
-              showNumbers: showNumbers,
-              highlightColour: Theme.of(context).colorScheme.primary,
-              numberColour: Theme.of(context).colorScheme.onSurface,
+        // The SizedBox is what makes taps land where the board is drawn. A
+        // CustomPaint with no child takes whatever size its constraints force,
+        // ignoring the `size` argument, so under the tight constraints of a
+        // Column it fills a non-square box and paints the board off-centre
+        // from where the hit test expects it. Pinning a square box means the
+        // painter and the hit test share one centre.
+        return Center(
+          child: SizedBox.square(
+            dimension: side,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTapUp: (details) {
+                final centre = Offset(side / 2, side / 2);
+                final segment = BoardGeometry.segmentAt(
+                  details.localPosition - centre,
+                  radius,
+                );
+                if (segment == null) {
+                  onMissTapped?.call();
+                } else {
+                  onSegmentTapped?.call(segment);
+                }
+              },
+              child: CustomPaint(
+                size: Size.square(side),
+                painter: _BoardPainter(
+                  radius: radius,
+                  highlight: highlight,
+                  heat: heat,
+                  showNumbers: showNumbers,
+                  highlightColour: Theme.of(context).colorScheme.primary,
+                  numberColour: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
             ),
           ),
         );
