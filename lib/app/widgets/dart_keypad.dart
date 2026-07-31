@@ -190,7 +190,7 @@ class _Key extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(4),
           side: highlighted
-              ? const BorderSide(color: Palette.oche, width: 2.5)
+              ? const BorderSide(color: Palette.live, width: 2.5)
               : BorderSide(color: Palette.edge.withValues(alpha: 0.6)),
         ),
         child: InkWell(

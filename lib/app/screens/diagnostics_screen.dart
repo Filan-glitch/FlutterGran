@@ -199,7 +199,7 @@ class _ConnectionPill extends StatelessWidget {
     final colour = switch (state) {
       BoardConnectionState.connected => Palette.trebleBed,
       BoardConnectionState.scanning ||
-      BoardConnectionState.connecting => Palette.oche,
+      BoardConnectionState.connecting => Palette.live,
       BoardConnectionState.disconnected => Palette.chalkDim,
     };
 
@@ -340,7 +340,7 @@ class _FrameRow extends StatelessWidget {
         width: 64,
         child: Text(
           frame.body,
-          style: Type.data.copyWith(color: Palette.oche),
+          style: Type.data.copyWith(color: Palette.live),
         ),
       ),
       title: Text(label, style: Type.notation.copyWith(color: colour)),

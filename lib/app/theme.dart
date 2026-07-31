@@ -8,12 +8,13 @@ import 'package:flutter/material.dart';
 /// darts - which is why the numerals are enormous and everything else is
 /// deliberately small and quiet.
 ///
-/// Green runs through the whole app: the ground it sits on, and [brand], the
-/// colour of every control you press. Amber is reserved for state and never
-/// used for a control - whose throw it is, the checkout that is on, the segment
-/// a suggestion points at - which is what keeps it rare enough to mean
-/// something. The board's own colours keep their meaning throughout:
-/// [trebleBed] is a treble, [doubleBed] a double.
+/// The app is green throughout, so the greens are told apart by how light they
+/// are rather than by hue. Darkest to lightest: the [ground] it sits on,
+/// [brand] for the controls you press, [trebleBed] for a treble, and [live] -
+/// pale enough to read as lit from across a room - for state, and only state:
+/// whose throw it is, the checkout that is on, the segment a suggestion points
+/// at. Red is the one colour that is not green, because [doubleBed] means a
+/// double, and a bust.
 abstract final class Palette {
   /// Ground. Deep forest, dark enough that chalk numerals carry across a room.
   static const Color ground = Color(0xFF0E1611);
@@ -48,7 +49,11 @@ abstract final class Palette {
   /// Live state, and only ever state: whose turn it is, the checkout that is
   /// on, the segment a suggestion is pointing at. Never a control, which is
   /// what keeps it rare enough to mean something.
-  static const Color oche = Color(0xFFE5B23C);
+  ///
+  /// Pale rather than saturated: with every accent green, lightness is the only
+  /// axis left to separate them on, and this has to out-read both [brand] and
+  /// [trebleBed] at a glance.
+  static const Color live = Color(0xFF7BE8AA);
 }
 
 /// Spacing scale. Every gap in the app is one of these.
@@ -195,7 +200,7 @@ abstract final class Type {
 /// information: green is a treble, red is a double.
 const ColorScheme _scheme = ColorScheme(
   brightness: Brightness.dark,
-  primary: Palette.oche,
+  primary: Palette.live,
   onPrimary: Palette.ground,
   primaryContainer: Palette.raised,
   onPrimaryContainer: Palette.chalk,
@@ -316,7 +321,7 @@ ThemeData buildTheme() {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(4),
-        borderSide: const BorderSide(color: Palette.oche),
+        borderSide: const BorderSide(color: Palette.live),
       ),
     ),
     listTileTheme: const ListTileThemeData(
@@ -325,7 +330,7 @@ ThemeData buildTheme() {
       iconColor: Palette.chalkDim,
     ),
     progressIndicatorTheme: const ProgressIndicatorThemeData(
-      color: Palette.oche,
+      color: Palette.live,
       linearTrackColor: Palette.raised,
       linearMinHeight: 3,
     ),

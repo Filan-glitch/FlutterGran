@@ -184,7 +184,7 @@ class _Headline extends StatelessWidget {
       children: [
         Text(
           label.toUpperCase(),
-          style: Type.eyebrow.copyWith(color: Palette.oche),
+          style: Type.eyebrow.copyWith(color: Palette.live),
         ),
         const SizedBox(height: Gap.sm),
         FittedBox(

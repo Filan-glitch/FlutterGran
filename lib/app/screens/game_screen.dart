@@ -90,7 +90,7 @@ class GameScreen extends ConsumerWidget {
 
 /// Players side by side, split by a hairline, as on a chalk scoreboard.
 ///
-/// Only the player at the oche is lit: their column carries the amber rule and
+/// Only the player at the oche is lit: their column carries the pale rule and
 /// chalk-white numerals, everyone else recedes. At throwing distance that is
 /// the fastest way to answer "whose turn, and what do they need".
 class _Scoreboard extends StatelessWidget {
@@ -145,13 +145,14 @@ class _PlayerColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = won ? Palette.trebleBed : Palette.oche;
+    final accent = won ? Palette.trebleBed : Palette.live;
     final lit = live || won;
 
     return Column(
       children: [
         // The rule above the name is the only thing marking the throw. It is
-        // three pixels tall and it is enough, because nothing else is amber.
+        // three pixels tall and it is enough, because nothing else on the
+        // screen is this pale.
         Container(
           height: 3,
           margin: const EdgeInsets.symmetric(horizontal: Gap.lg),
@@ -232,7 +233,7 @@ class _TurnLedger extends StatelessWidget {
               style: busted
                   ? Type.notation.copyWith(color: Palette.doubleBed)
                   : Type.scoreSmall.copyWith(
-                      color: darts.isEmpty ? Palette.chalkDim : Palette.oche,
+                      color: darts.isEmpty ? Palette.chalkDim : Palette.live,
                     ),
             ),
           ),
@@ -294,13 +295,13 @@ class _CheckoutStrip extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text('CHECKOUT', style: Type.eyebrow.copyWith(color: Palette.oche)),
+          Text('CHECKOUT', style: Type.eyebrow.copyWith(color: Palette.live)),
           const SizedBox(width: Gap.md),
           Expanded(
             child: Text(
               routes.first.toString(),
               style: Type.notation.copyWith(
-                color: Palette.oche,
+                color: Palette.live,
                 fontSize: 22,
               ),
             ),

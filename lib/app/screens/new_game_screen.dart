@@ -129,7 +129,7 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
                   child: TextField(
                     controller: _newPlayer,
                     style: Type.body.copyWith(color: Palette.chalk),
-                    cursorColor: Palette.oche,
+                    cursorColor: Palette.live,
                     decoration: const InputDecoration(labelText: 'Add a player'),
                     textInputAction: TextInputAction.done,
                     onSubmitted: (_) => _addPlayer(),
@@ -203,7 +203,7 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(4),
           side: BorderSide(
-            color: selected ? Palette.oche : Palette.edge,
+            color: selected ? Palette.live : Palette.edge,
           ),
         ),
         clipBehavior: Clip.antiAlias,
@@ -226,7 +226,7 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
                   width: 26,
                   child: Text(
                     selected ? '${seat + 1}' : '',
-                    style: Type.notation.copyWith(color: Palette.oche),
+                    style: Type.notation.copyWith(color: Palette.live),
                   ),
                 ),
                 Expanded(
