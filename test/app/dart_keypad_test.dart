@@ -39,7 +39,7 @@ void main() {
       final entered = <Segment>[];
       await pumpKeypad(tester, entered);
 
-      await tester.tap(find.text('Treble'));
+      await tester.tap(find.text('TREBLE'));
       await tester.pump();
       await tester.tap(find.text('20'));
       await tester.pump();
@@ -52,7 +52,7 @@ void main() {
       final entered = <Segment>[];
       await pumpKeypad(tester, entered);
 
-      await tester.tap(find.text('Double'));
+      await tester.tap(find.text('DOUBLE'));
       await tester.pump();
       await tester.tap(find.text('16'));
       await tester.pump();
@@ -65,7 +65,7 @@ void main() {
       final entered = <Segment>[];
       await pumpKeypad(tester, entered);
 
-      await tester.tap(find.text('Treble'));
+      await tester.tap(find.text('TREBLE'));
       await tester.pump();
       await tester.tap(find.text('20'));
       await tester.pump();
@@ -106,7 +106,7 @@ void main() {
       final entered = <Segment>[];
       await pumpKeypad(tester, entered);
 
-      await tester.tap(find.text('Bull'));
+      await tester.tap(find.text('BULL'));
       await tester.pump();
 
       expect(entered.single, Segment.innerBull);
@@ -118,9 +118,9 @@ void main() {
       final entered = <Segment>[];
       await pumpKeypad(tester, entered);
 
-      await tester.tap(find.text('Treble'));
+      await tester.tap(find.text('TREBLE'));
       await tester.pump();
-      await tester.tap(find.text('Bull'));
+      await tester.tap(find.text('BULL'));
       await tester.pump();
 
       // There is no treble bull; the key means what it says.
@@ -132,7 +132,7 @@ void main() {
       var missed = 0;
       await pumpKeypad(tester, entered, onMiss: () => missed++);
 
-      await tester.tap(find.text('Miss'));
+      await tester.tap(find.text('MISS'));
       await tester.pump();
 
       expect(missed, 1);
@@ -159,7 +159,7 @@ void main() {
         isNot(isSemantics(isSelected: true)),
       );
 
-      await tester.tap(find.text('Double'));
+      await tester.tap(find.text('DOUBLE'));
       await tester.pump();
 
       expect(
@@ -176,7 +176,7 @@ void main() {
       await pumpKeypad(tester, [], highlight: {Segment.innerBull});
 
       expect(
-        tester.getSemantics(find.text('Bull')),
+        tester.getSemantics(find.text('BULL')),
         isSemantics(isSelected: true),
       );
       expect(

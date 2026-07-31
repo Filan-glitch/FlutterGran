@@ -7,6 +7,7 @@ import '../../data/board/board_source.dart';
 import '../../domain/board_event.dart';
 import '../../domain/segment.dart';
 import '../providers.dart';
+import '../theme.dart';
 import '../widgets/board_widget.dart';
 
 /// Hardware bring-up: watch what the board actually sends, and correct the
@@ -88,7 +89,7 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Board diagnostics'),
+        title: const Text('BOARD DIAGNOSTICS'),
         actions: [
           IconButton(
             tooltip: 'Clear calibration',
@@ -105,7 +106,10 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen> {
             SegmentedButton<BoardMode>(
               segments: [
                 for (final option in BoardMode.values)
-                  ButtonSegment(value: option, label: Text(option.label)),
+                  ButtonSegment(
+                    value: option,
+                    label: Text(option.label.toUpperCase()),
+                  ),
               ],
               selected: {mode},
               onSelectionChanged: (selection) async {
@@ -119,37 +123,42 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen> {
             const SizedBox(height: 12),
             Row(
               children: [
-                Chip(
-                  label: Text(
-                    (connection ?? source.currentState).name,
-                  ),
-                  avatar: Icon(
-                    (connection ?? source.currentState).isConnected
-                        ? Icons.bluetooth_connected
-                        : Icons.bluetooth_disabled,
-                    size: 18,
-                  ),
-                ),
+                _ConnectionPill(state: connection ?? source.currentState),
                 const Spacer(),
-                FilledButton.tonal(
+                FilledButton(
                   onPressed: source.connect,
-                  child: const Text('Connect'),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: Gap.lg,
+                      vertical: Gap.md,
+                    ),
+                  ),
+                  child: const Text('CONNECT'),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: Gap.sm),
                 OutlinedButton(
                   onPressed: source.disconnect,
-                  child: const Text('Disconnect'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: Gap.lg,
+                      vertical: Gap.md,
+                    ),
+                  ),
+                  child: const Text('DISCONNECT'),
                 ),
               ],
             ),
             const SizedBox(height: 20),
             _CoverageSummary(coverage: coverage),
             const SizedBox(height: 20),
-            Text('Frames', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 4),
+            Text(
+              'FRAMES',
+              style: Type.eyebrow.copyWith(color: Palette.chalkDim),
+            ),
+            const SizedBox(height: Gap.xs),
             Text(
               'Throw at a segment, then confirm the label or correct it.',
-              style: Theme.of(context).textTheme.labelSmall,
+              style: Type.label.copyWith(color: Palette.chalkDim),
             ),
             const SizedBox(height: 8),
             if (_history.isEmpty)
@@ -175,6 +184,42 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen> {
   }
 }
 
+/// Connection state as a word and a colour, not an icon.
+///
+/// "scanning" and "connecting" look identical as a bluetooth glyph, and telling
+/// them apart is the whole point during bring-up.
+class _ConnectionPill extends StatelessWidget {
+  const _ConnectionPill({required this.state});
+
+  final BoardConnectionState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final colour = switch (state) {
+      BoardConnectionState.connected => Palette.trebleBed,
+      BoardConnectionState.scanning ||
+      BoardConnectionState.connecting => Palette.oche,
+      BoardConnectionState.disconnected => Palette.chalkDim,
+    };
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(color: colour, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: Gap.sm),
+        Text(
+          state.name.toUpperCase(),
+          style: Type.eyebrow.copyWith(color: colour),
+        ),
+      ],
+    );
+  }
+}
+
 class _CoverageSummary extends StatelessWidget {
   const _CoverageSummary({required this.coverage});
 
@@ -182,21 +227,38 @@ class _CoverageSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final total = Segment.all.length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Coverage', style: theme.textTheme.titleMedium),
-        const SizedBox(height: 4),
         Text(
-          '${coverage.length} of $total segments verified',
-          style: theme.textTheme.labelSmall,
+          'COVERAGE',
+          style: Type.eyebrow.copyWith(color: Palette.chalkDim),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: Gap.sm),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            Text(
+              '${coverage.length}',
+              style: Type.scoreSmall.copyWith(
+                color: coverage.length == total
+                    ? Palette.trebleBed
+                    : Palette.chalk,
+              ),
+            ),
+            const SizedBox(width: Gap.xs),
+            Text(
+              'of $total segments verified',
+              style: Type.label.copyWith(color: Palette.chalkDim),
+            ),
+          ],
+        ),
+        const SizedBox(height: Gap.sm),
         LinearProgressIndicator(value: coverage.length / total),
-        const SizedBox(height: 12),
+        const SizedBox(height: Gap.md),
         // One cell per scoring area, so it is obvious what has not been thrown
         // at yet. Order follows the board, not the segment list.
         Wrap(
@@ -211,15 +273,17 @@ class _CoverageSummary extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(4),
                   color: coverage.contains(segment)
-                      ? theme.colorScheme.primaryContainer
-                      : theme.colorScheme.surfaceContainerHighest,
+                      ? Palette.trebleBed
+                      : Palette.slateSunk,
+                  border: Border.all(color: Palette.edge),
                 ),
                 child: Text(
                   segment.label,
-                  style: theme.textTheme.labelSmall?.copyWith(
+                  style: Type.eyebrow.copyWith(
+                    letterSpacing: 0.4,
                     color: coverage.contains(segment)
-                        ? theme.colorScheme.onPrimaryContainer
-                        : theme.colorScheme.outline,
+                        ? Palette.chalk
+                        : Palette.chalkDim,
                   ),
                 ),
               ),
@@ -258,13 +322,11 @@ class _FrameRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     final (label, colour) = switch (frame.event) {
-      DartHit(:final segment) => (segment.label, null),
-      ButtonPress() => ('button', null),
-      BoardMiss() => ('miss', null),
-      UnknownFrame() => ('UNKNOWN', theme.colorScheme.error),
+      DartHit(:final segment) => (segment.label, Palette.chalk),
+      ButtonPress() => ('BUTTON', Palette.chalkDim),
+      BoardMiss() => ('MISS', Palette.chalkDim),
+      UnknownFrame() => ('UNKNOWN', Palette.doubleBed),
     };
 
     return ListTile(
@@ -274,15 +336,10 @@ class _FrameRow extends StatelessWidget {
         width: 64,
         child: Text(
           frame.body,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            fontFamily: 'monospace',
-          ),
+          style: Type.data.copyWith(color: Palette.oche),
         ),
       ),
-      title: Text(
-        label,
-        style: theme.textTheme.titleMedium?.copyWith(color: colour),
-      ),
+      title: Text(label, style: Type.notation.copyWith(color: colour)),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -292,8 +349,8 @@ class _FrameRow extends StatelessWidget {
               child: Icon(Icons.check, size: 18),
             ),
           if (onConfirm != null)
-            TextButton(onPressed: onConfirm, child: const Text('Right')),
-          TextButton(onPressed: onCorrect, child: const Text('Wrong')),
+            TextButton(onPressed: onConfirm, child: const Text('RIGHT')),
+          TextButton(onPressed: onCorrect, child: const Text('WRONG')),
         ],
       ),
     );

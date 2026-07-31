@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/db/database.dart';
 import '../../domain/x01/game_config.dart';
 import '../providers.dart';
+import '../theme.dart';
 import 'diagnostics_screen.dart';
 import 'game_screen.dart';
 import 'stats_screen.dart';
@@ -62,11 +63,11 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('New leg'),
+        title: const Text('FLUTTERGRAN'),
         actions: [
           IconButton(
             tooltip: 'Board diagnostics',
-            icon: const Icon(Icons.bluetooth_searching),
+            icon: const Icon(Icons.sensors),
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
                 builder: (context) => const DiagnosticsScreen(),
@@ -82,67 +83,87 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
               ),
             ),
           ),
+          const SizedBox(width: Gap.xs),
         ],
       ),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.sm, Gap.lg, Gap.lg),
           children: [
-            Text('Start score', style: Theme.of(context).textTheme.labelLarge),
-            const SizedBox(height: 8),
-            SegmentedButton<int>(
-              segments: [
-                for (final score in GameConfig.offeredStartScores)
-                  ButtonSegment(value: score, label: Text('$score')),
-              ],
-              selected: {_startScore},
-              onSelectionChanged: (selection) =>
-                  setState(() => _startScore = selection.first),
-            ),
-            const SizedBox(height: 24),
+            // The start score set as a scoreboard number rather than a form
+            // field: it is the number everyone is about to count down from.
+            const _Eyebrow('Start score'),
+            const SizedBox(height: Gap.md),
             Row(
               children: [
-                Text(
-                  'Players',
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
+                for (final score in GameConfig.offeredStartScores) ...[
+                  if (score != GameConfig.offeredStartScores.first)
+                    const SizedBox(width: Gap.sm),
+                  Expanded(
+                    child: _ScoreChoice(
+                      score: score,
+                      selected: score == _startScore,
+                      onTap: () => setState(() => _startScore = score),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            const SizedBox(height: Gap.xl),
+            Row(
+              children: [
+                const _Eyebrow('Players'),
                 const Spacer(),
                 Text(
                   _seats.isEmpty
                       ? 'tap to add, in throwing order'
                       : '${_seats.length} of ${GameConfig.maxPlayers}',
-                  style: Theme.of(context).textTheme.labelSmall,
+                  style: Type.label.copyWith(color: Palette.chalkDim),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: Gap.md),
             Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: _newPlayer,
-                    decoration: const InputDecoration(
-                      labelText: 'Add a player',
-                      isDense: true,
-                      border: OutlineInputBorder(),
-                    ),
+                    style: Type.body.copyWith(color: Palette.chalk),
+                    cursorColor: Palette.oche,
+                    decoration: const InputDecoration(labelText: 'Add a player'),
                     textInputAction: TextInputAction.done,
                     onSubmitted: (_) => _addPlayer(),
                   ),
                 ),
-                const SizedBox(width: 8),
-                IconButton.filled(
-                  onPressed: _addPlayer,
-                  icon: const Icon(Icons.person_add),
+                const SizedBox(width: Gap.sm),
+                SizedBox(
+                  height: 46,
+                  width: 46,
+                  child: FilledButton(
+                    onPressed: _addPlayer,
+                    style: FilledButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    child: const Icon(Icons.add, size: 22),
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: Gap.md),
             switch (players) {
-              AsyncError(:final error) => Text('Could not load players: $error'),
-              AsyncData(:final value) when value.isEmpty => const Padding(
-                padding: EdgeInsets.symmetric(vertical: 24),
-                child: Text('No players yet. Add the first one above.'),
+              AsyncError(:final error) => Text(
+                'Could not load players: $error',
+                style: Type.body.copyWith(color: Palette.doubleBed),
+              ),
+              AsyncData(:final value) when value.isEmpty => Padding(
+                padding: const EdgeInsets.symmetric(vertical: Gap.xl),
+                child: Text(
+                  'No players yet. Add the first one above.',
+                  style: Type.body.copyWith(color: Palette.chalkDim),
+                ),
               ),
               AsyncData(:final value) => Column(
                 children: [for (final player in value) _tile(player)],
@@ -156,11 +177,14 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
         ),
       ),
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16),
-        child: FilledButton(
-          onPressed: _seats.isEmpty ? null : _start,
-          child: Text(
-            _seats.isEmpty ? 'Pick at least one player' : 'Start leg',
+        padding: const EdgeInsets.fromLTRB(Gap.lg, 0, Gap.lg, Gap.lg),
+        child: SizedBox(
+          width: double.infinity,
+          child: FilledButton(
+            onPressed: _seats.isEmpty ? null : _start,
+            child: Text(
+              _seats.isEmpty ? 'PICK AT LEAST ONE PLAYER' : 'START LEG',
+            ),
           ),
         ),
       ),
@@ -172,28 +196,111 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
     final selected = seat >= 0;
     final full = _seats.length >= GameConfig.maxPlayers;
 
-    return ListTile(
-      onTap: selected
-          ? () => setState(() => _seats.remove(player.id))
-          : full
-          ? null
-          : () => setState(() => _seats.add(player.id)),
-      leading: CircleAvatar(
-        backgroundColor: selected
-            ? Theme.of(context).colorScheme.primary
-            : Theme.of(context).colorScheme.surfaceContainerHighest,
-        foregroundColor: selected
-            ? Theme.of(context).colorScheme.onPrimary
-            : null,
-        child: Text(selected ? '${seat + 1}' : ''),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: Gap.sm),
+      child: Material(
+        color: selected ? Palette.slateRaised : Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(4),
+          side: BorderSide(
+            color: selected ? Palette.oche : Palette.edge,
+          ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: selected
+              ? () => setState(() => _seats.remove(player.id))
+              : full
+              ? null
+              : () => setState(() => _seats.add(player.id)),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: Gap.md,
+              vertical: Gap.md,
+            ),
+            child: Row(
+              children: [
+                // The seat number is the throwing order, so it only appears
+                // once a player actually has one.
+                SizedBox(
+                  width: 26,
+                  child: Text(
+                    selected ? '${seat + 1}' : '',
+                    style: Type.notation.copyWith(color: Palette.oche),
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    player.name,
+                    style: Type.body.copyWith(
+                      color: selected ? Palette.chalk : Palette.chalkDim,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close, size: 18),
+                  tooltip: 'Remove ${player.name}',
+                  onPressed: () async {
+                    setState(() => _seats.remove(player.id));
+                    await ref
+                        .read(gameRepositoryProvider)
+                        .removePlayer(player.id);
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
-      title: Text(player.name),
-      trailing: IconButton(
-        icon: const Icon(Icons.delete_outline),
-        onPressed: () async {
-          setState(() => _seats.remove(player.id));
-          await ref.read(gameRepositoryProvider).removePlayer(player.id);
-        },
+    );
+  }
+}
+
+class _Eyebrow extends StatelessWidget {
+  const _Eyebrow(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Text(
+    text.toUpperCase(),
+    style: Type.eyebrow.copyWith(color: Palette.chalkDim),
+  );
+}
+
+class _ScoreChoice extends StatelessWidget {
+  const _ScoreChoice({
+    required this.score,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final int score;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected ? Palette.chalk : Palette.slateRaised,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(4),
+        side: BorderSide(color: selected ? Palette.chalk : Palette.edge),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: Gap.md),
+          child: Center(
+            child: Text(
+              '$score',
+              style: Type.scoreSmall.copyWith(
+                color: selected ? Palette.slate : Palette.chalkDim,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

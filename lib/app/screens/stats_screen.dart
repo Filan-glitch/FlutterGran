@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/db/database.dart';
 import '../../domain/segment.dart';
 import '../providers.dart';
+import '../theme.dart';
 import '../widgets/board_widget.dart';
 
 /// A player's record across every leg they have played.
@@ -24,14 +25,17 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Statistics'),
+        title: const Text('STATISTICS'),
         actions: [
           if (players.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.only(right: 12),
+              padding: const EdgeInsets.only(right: Gap.md),
               child: DropdownButton<int>(
                 value: selected,
                 underline: const SizedBox.shrink(),
+                dropdownColor: Palette.slateRaised,
+                iconEnabledColor: Palette.chalkDim,
+                style: Type.body.copyWith(color: Palette.chalk),
                 items: [
                   for (final player in players)
                     DropdownMenuItem(
@@ -46,7 +50,10 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
       ),
       body: SafeArea(
         child: selected == null
-            ? const Center(child: Text('No players yet.'))
+            ? _Empty(
+                headline: 'No players yet',
+                detail: 'Add one on the setup screen to start a record.',
+              )
             : _Body(playerId: selected),
       ),
     );
@@ -66,65 +73,74 @@ class _Body extends ConsumerWidget {
         const <Segment, int>{};
 
     if (stats.legsPlayed == 0) {
-      return const Center(child: Text('No legs played yet.'));
+      return _Empty(
+        headline: 'No legs yet',
+        detail: 'Play a leg and every dart in it lands here.',
+      );
     }
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.sm, Gap.lg, Gap.xxl),
       children: [
+        // The three-dart average is the number a darts player quotes when
+        // asked how they play, so it is the headline and everything else is
+        // supporting evidence.
+        _Headline(
+          value: stats.average == null
+              ? '—'
+              : stats.average!.toStringAsFixed(2),
+          label: 'Three-dart average',
+          detail: '${stats.dartsThrown} darts over ${stats.legsPlayed} '
+              '${stats.legsPlayed == 1 ? 'leg' : 'legs'}',
+        ),
+        const SizedBox(height: Gap.xl),
         _Section(
           title: 'Scoring',
-          tiles: [
-            _Tile('3-dart average', _decimal(stats.average)),
-            _Tile('First 9 average', _decimal(stats.firstNineAverage)),
-            _Tile('Best turn', '${stats.bestTurn}'),
-            _Tile('Darts thrown', '${stats.dartsThrown}'),
-          ],
-        ),
-        _Section(
-          title: 'Big turns',
-          tiles: [
-            _Tile('180s', '${stats.turnsOf180}'),
-            _Tile('140+', '${stats.turnsOf140Plus}'),
-            _Tile('100+', '${stats.turnsOf100Plus}'),
-            _Tile('60+', '${stats.turnsOf60Plus}'),
+          rows: [
+            _Row('First 9 average', _decimal(stats.firstNineAverage)),
+            _Row('Best turn', '${stats.bestTurn}'),
+            _Row('180s', '${stats.turnsOf180}'),
+            _Row('140+', '${stats.turnsOf140Plus}'),
+            _Row('100+', '${stats.turnsOf100Plus}'),
+            _Row('60+', '${stats.turnsOf60Plus}'),
           ],
         ),
         _Section(
           title: 'Finishing',
-          tiles: [
-            _Tile('Checkout %', _percent(stats.checkoutRate)),
-            _Tile(
+          rows: [
+            _Row('Checkout', _percent(stats.checkoutRate)),
+            _Row(
               'Darts at double',
               '${stats.doublesHit}/${stats.dartsAtDouble}',
             ),
-            _Tile('Best checkout', _optional(stats.bestCheckout)),
-            _Tile('Best leg', _optional(stats.fewestDartsToWin, suffix: ' darts')),
+            _Row('Best checkout', _optional(stats.bestCheckout)),
+            _Row('Best leg', _optional(stats.fewestDartsToWin, suffix: ' darts')),
           ],
         ),
         _Section(
           title: 'Legs',
-          tiles: [
-            _Tile('Played', '${stats.legsPlayed}'),
-            _Tile('Won', '${stats.legsWon}'),
-            _Tile('Win rate', _percent(stats.winRate)),
+          rows: [
+            _Row('Won', '${stats.legsWon} of ${stats.legsPlayed}'),
+            _Row('Win rate', _percent(stats.winRate)),
           ],
         ),
-        const SizedBox(height: 24),
-        Text('Where the darts land', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 4),
+        const SizedBox(height: Gap.lg),
+        Text(
+          'WHERE THE DARTS LAND',
+          style: Type.eyebrow.copyWith(color: Palette.chalkDim),
+        ),
+        const SizedBox(height: Gap.xs),
         Text(
           counts.isEmpty
               ? 'No darts recorded yet.'
-              : 'Shaded by how often each segment is hit.',
-          style: Theme.of(context).textTheme.labelSmall,
+              : 'Shaded against the busiest segment.',
+          style: Type.label.copyWith(color: Palette.chalkDim),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: Gap.md),
         AspectRatio(
           aspectRatio: 1,
           child: BoardWidget(heat: _normalise(counts), showNumbers: false),
         ),
-        const SizedBox(height: 24),
       ],
     );
   }
@@ -141,7 +157,7 @@ class _Body extends ConsumerWidget {
   }
 
   static String _decimal(double? value) =>
-      value == null ? '—' : value.toStringAsFixed(1);
+      value == null ? '—' : value.toStringAsFixed(2);
 
   static String _percent(double? value) =>
       value == null ? '—' : '${(value * 100).toStringAsFixed(0)}%';
@@ -150,56 +166,118 @@ class _Body extends ConsumerWidget {
       value == null ? '—' : '$value$suffix';
 }
 
+class _Headline extends StatelessWidget {
+  const _Headline({
+    required this.value,
+    required this.label,
+    required this.detail,
+  });
+
+  final String value;
+  final String label;
+  final String detail;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: Type.eyebrow.copyWith(color: Palette.oche),
+        ),
+        const SizedBox(height: Gap.sm),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(value, style: Type.score.copyWith(color: Palette.chalk)),
+        ),
+        const SizedBox(height: Gap.sm),
+        Text(detail, style: Type.label.copyWith(color: Palette.chalkDim)),
+      ],
+    );
+  }
+}
+
+/// Rows rather than tiles: these are label-and-number pairs, and a row of them
+/// under one heading is easier to scan down than a grid of boxes.
 class _Section extends StatelessWidget {
-  const _Section({required this.title, required this.tiles});
+  const _Section({required this.title, required this.rows});
 
   final String title;
-  final List<_Tile> tiles;
+  final List<_Row> rows;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: Gap.xl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
-          Wrap(spacing: 8, runSpacing: 8, children: tiles),
+          Text(
+            title.toUpperCase(),
+            style: Type.eyebrow.copyWith(color: Palette.chalkDim),
+          ),
+          const SizedBox(height: Gap.sm),
+          const Divider(),
+          for (final row in rows) row,
         ],
       ),
     );
   }
 }
 
-class _Tile extends StatelessWidget {
-  const _Tile(this.label, this.value);
+class _Row extends StatelessWidget {
+  const _Row(this.label, this.value);
 
   final String label;
   final String value;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Container(
-      width: 150,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Palette.edge)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.symmetric(vertical: Gap.md),
+      child: Row(
         children: [
-          Text(label, style: theme.textTheme.labelSmall),
-          Text(
-            value,
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
+          Expanded(
+            child: Text(
+              label,
+              style: Type.body.copyWith(color: Palette.chalkDim),
             ),
           ),
+          Text(value, style: Type.notation.copyWith(color: Palette.chalk)),
         ],
+      ),
+    );
+  }
+}
+
+class _Empty extends StatelessWidget {
+  const _Empty({required this.headline, required this.detail});
+
+  final String headline;
+  final String detail;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(Gap.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(headline, style: Type.title.copyWith(color: Palette.chalk)),
+            const SizedBox(height: Gap.sm),
+            Text(
+              detail,
+              textAlign: TextAlign.center,
+              style: Type.body.copyWith(color: Palette.chalkDim),
+            ),
+          ],
+        ),
       ),
     );
   }

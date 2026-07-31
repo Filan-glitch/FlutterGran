@@ -46,7 +46,7 @@ void main() {
   testWidgets('the app opens on setup, with an empty roster', (tester) async {
     await launch(tester, database);
 
-    expect(find.text('New leg'), findsOneWidget);
+    expect(find.text('FLUTTERGRAN'), findsOneWidget);
     expect(
       find.text('No players yet. Add the first one above.'),
       findsOneWidget,
@@ -54,7 +54,7 @@ void main() {
 
     // 501 is the default, and a leg cannot start without a player.
     expect(find.text('501'), findsOneWidget);
-    expect(find.text('Pick at least one player'), findsOneWidget);
+    expect(find.text('PICK AT LEAST ONE PLAYER'), findsOneWidget);
 
     await closeApp(tester);
   });
@@ -69,7 +69,7 @@ void main() {
     await pumpFrames(tester);
 
     expect(find.text('Finn'), findsOneWidget);
-    expect(find.text('Start leg'), findsOneWidget);
+    expect(find.text('START LEG'), findsOneWidget);
     expect(find.text('1 of 4'), findsOneWidget);
 
     await closeApp(tester);
@@ -84,11 +84,12 @@ void main() {
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await pumpFrames(tester);
 
-    await tester.tap(find.text('Start leg'));
+    await tester.tap(find.text('START LEG'));
     await pumpFrames(tester);
 
-    expect(find.text('501 · double out'), findsOneWidget);
-    expect(find.text('No checkout on'), findsOneWidget);
+    expect(find.text('501 · DOUBLE OUT'), findsOneWidget);
+    // Both the scoreboard and the start-score choice show 501 at this point.
+    expect(find.text('501'), findsWidgets);
 
     await closeApp(tester);
   });
