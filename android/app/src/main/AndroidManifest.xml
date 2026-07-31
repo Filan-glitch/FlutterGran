@@ -1,4 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
+      The board advertises its GATT service UUID, so the scan filters by service
+      and never needs to infer location from nearby devices. neverForLocation is
+      what keeps Android 12+ from prompting for location at all.
+    -->
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
+                     android:usesPermissionFlags="neverForLocation" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+
     <application
         android:label="fluttergran"
         android:name="${applicationName}"

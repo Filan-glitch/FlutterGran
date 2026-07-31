@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/board/ble_board_source.dart';
 import '../data/board/board_source.dart';
 import '../data/board/fake_board_source.dart';
 import '../data/db/database.dart';
@@ -12,13 +13,38 @@ import '../domain/x01/game_config.dart';
 import '../domain/x01/leg_state.dart';
 import 'game_controller.dart';
 
+/// Which board the app is reading.
+enum BoardMode {
+  /// Scripted bytes, for playing and testing without hardware.
+  fake,
+
+  /// A real GranBoard over Bluetooth.
+  bluetooth;
+
+  String get label => this == BoardMode.fake ? 'Simulated' : 'Bluetooth';
+}
+
+class BoardModeController extends Notifier<BoardMode> {
+  @override
+  BoardMode build() => BoardMode.fake;
+
+  void set(BoardMode mode) => state = mode;
+}
+
+final boardModeProvider = NotifierProvider<BoardModeController, BoardMode>(
+  BoardModeController.new,
+);
+
 /// The board the app is reading.
 ///
-/// Defaults to the fake. Overriding this one provider is the whole mechanism
-/// for swapping in real Bluetooth, or a recorded session, and it is why the
-/// rest of the app never learns which it is talking to.
+/// Switching this one provider is the whole mechanism for swapping the fake for
+/// real Bluetooth, which is why nothing above it ever learns which it is
+/// talking to. Tests override it directly.
 final boardSourceProvider = Provider<BoardSource>((ref) {
-  final source = FakeBoardSource();
+  final source = switch (ref.watch(boardModeProvider)) {
+    BoardMode.fake => FakeBoardSource(),
+    BoardMode.bluetooth => BleBoardSource(),
+  };
   ref.onDispose(source.dispose);
   return source;
 });
