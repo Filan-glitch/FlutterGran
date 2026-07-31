@@ -8,12 +8,12 @@ import 'package:flutter/material.dart';
 /// darts - which is why the numerals are enormous and everything else is
 /// deliberately small and quiet.
 ///
-/// The ground is forest green rather than neutral, so the app reads as green
-/// throughout without spending an accent on it. The accent stays amber: green
-/// already means something specific here - [trebleBed] is the green of the
-/// treble bed, [doubleBed] the red of the double - and a green highlight on a
-/// green field could not signal anything at all. [oche] is the only invented
-/// colour, and it means one thing: live.
+/// Green runs through the whole app: the ground it sits on, and [brand], the
+/// colour of every control you press. Amber is reserved for state and never
+/// used for a control - whose throw it is, the checkout that is on, the segment
+/// a suggestion points at - which is what keeps it rare enough to mean
+/// something. The board's own colours keep their meaning throughout:
+/// [trebleBed] is a treble, [doubleBed] a double.
 abstract final class Palette {
   /// Ground. Deep forest, dark enough that chalk numerals carry across a room.
   static const Color ground = Color(0xFF0E1611);
@@ -41,7 +41,13 @@ abstract final class Palette {
   /// The double bed. Also a bust.
   static const Color doubleBed = Color(0xFFBF3B30);
 
-  /// Live: whose turn it is, and the checkout that is on.
+  /// Controls: the buttons you press. Green, because the app is green - but
+  /// lighter than the ground so a filled button reads as raised.
+  static const Color brand = Color(0xFF2F8F5B);
+
+  /// Live state, and only ever state: whose turn it is, the checkout that is
+  /// on, the segment a suggestion is pointing at. Never a control, which is
+  /// what keeps it rare enough to mean something.
   static const Color oche = Color(0xFFE5B23C);
 }
 
@@ -248,8 +254,8 @@ ThemeData buildTheme() {
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        backgroundColor: Palette.oche,
-        foregroundColor: Palette.ground,
+        backgroundColor: Palette.brand,
+        foregroundColor: Palette.chalk,
         disabledBackgroundColor: Palette.raised,
         disabledForegroundColor: Palette.chalkDim,
         padding: const EdgeInsets.symmetric(vertical: Gap.lg),
@@ -268,7 +274,7 @@ ThemeData buildTheme() {
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        foregroundColor: Palette.oche,
+        foregroundColor: Palette.brand,
         textStyle: Type.eyebrow,
       ),
     ),
