@@ -6,7 +6,10 @@ import '../data/db/database.dart';
 import '../data/db/game_repository.dart';
 import '../domain/board_event.dart';
 import '../domain/checkout/checkout_table.dart';
+import '../domain/segment.dart';
+import '../domain/stats/player_stats.dart';
 import '../domain/x01/game_config.dart';
+import '../domain/x01/leg_state.dart';
 import 'game_controller.dart';
 
 /// The board the app is reading.
@@ -100,6 +103,27 @@ final playerNamesProvider = Provider<Map<int, String>>((ref) {
   final players = ref.watch(playersProvider).value ?? const <Player>[];
   return {for (final player in players) player.id: player.name};
 });
+
+/// Every stored leg, replayed. Refreshes itself when a game changes.
+final allLegsProvider = StreamProvider<List<LegState>>(
+  (ref) => ref.watch(gameRepositoryProvider).watchAllLegs(),
+);
+
+/// A player's all-time record.
+final playerStatsProvider = Provider.family<PlayerStats, int>((ref, playerId) {
+  final legs = ref.watch(allLegsProvider).value;
+  if (legs == null) return PlayerStats.empty;
+  return computePlayerStats(playerId, legs);
+});
+
+/// Where a player's darts have landed, for the accuracy heatmap.
+final segmentCountsProvider = FutureProvider.family<Map<Segment, int>, int>(
+  (ref, playerId) {
+    // Depend on the legs stream so the map refreshes as games are played.
+    ref.watch(allLegsProvider);
+    return ref.watch(gameRepositoryProvider).segmentCounts(playerId);
+  },
+);
 
 /// The game rows are being written to, or null when nothing is persisted.
 class CurrentGameId extends Notifier<int?> {

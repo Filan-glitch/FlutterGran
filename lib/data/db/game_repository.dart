@@ -2,6 +2,8 @@ import 'package:drift/drift.dart';
 
 import '../../domain/segment.dart';
 import '../../domain/x01/game_config.dart';
+import '../../domain/x01/leg_reducer.dart';
+import '../../domain/x01/leg_state.dart';
 import '../../domain/x01/thrown_dart.dart';
 import 'database.dart';
 
@@ -140,6 +142,46 @@ class GameRepository {
         else
           ThrownDart(Segment(row.number!, row.ring!)),
     ];
+  }
+
+  /// Every stored game, replayed into leg state.
+  ///
+  /// Emits again whenever a game changes, so statistics refresh themselves
+  /// after a leg finishes.
+  Stream<List<LegState>> watchAllLegs() =>
+      db.select(db.games).watch().asyncMap((games) async {
+        final legs = <LegState>[];
+        for (final game in games) {
+          final config = await loadConfig(game.id);
+          if (config == null || config.playerIds.isEmpty) continue;
+          legs.add(foldLeg(config, await loadLog(game.id)));
+        }
+        return legs;
+      });
+
+  /// How many darts a player has landed in each segment.
+  ///
+  /// The one statistic that is genuinely a SQL aggregate: where a dart landed
+  /// does not depend on any rule, so it needs no replay.
+  Future<Map<Segment, int>> segmentCounts(int playerId) async {
+    final hits = db.dartEvents.id.count();
+    final rows =
+        await (db.selectOnly(db.dartEvents)
+              ..addColumns([db.dartEvents.number, db.dartEvents.ring, hits])
+              ..where(
+                db.dartEvents.playerId.equals(playerId) &
+                    db.dartEvents.number.isNotNull() &
+                    db.dartEvents.ring.isNotNull(),
+              )
+              ..groupBy([db.dartEvents.number, db.dartEvents.ring]))
+            .get();
+
+    return {
+      for (final row in rows)
+        if (row.read(db.dartEvents.number) case final number?)
+          if (row.readWithConverter(db.dartEvents.ring) case final ring?)
+            Segment(number, ring): row.read(hits) ?? 0,
+    };
   }
 
   /// Rebuilds the configuration a game was played under.

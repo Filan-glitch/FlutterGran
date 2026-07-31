@@ -5,6 +5,7 @@ import '../../data/db/database.dart';
 import '../../domain/x01/game_config.dart';
 import '../providers.dart';
 import 'game_screen.dart';
+import 'stats_screen.dart';
 
 /// Picks who is playing and under what rules, then starts a persisted leg.
 class NewGameScreen extends ConsumerStatefulWidget {
@@ -59,7 +60,20 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
     final players = ref.watch(playersProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('New leg')),
+      appBar: AppBar(
+        title: const Text('New leg'),
+        actions: [
+          IconButton(
+            tooltip: 'Statistics',
+            icon: const Icon(Icons.insights),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (context) => const StatsScreen(),
+              ),
+            ),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),
