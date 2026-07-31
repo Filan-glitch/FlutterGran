@@ -39,6 +39,29 @@ Duration reconnectDelay(int attempt, {Random? random}) {
   return Duration(milliseconds: ((seconds + jitter) * 1000).round());
 }
 
+/// Android refuses a scan when an app starts more than five within 30 seconds,
+/// answering `onScannerRegistered(status=6)` - "scanning too frequently" - and
+/// the rejection is silent from Dart's side. Once tripped, the board stays
+/// undiscoverable even though it is advertising, so scans are spaced out.
+const Duration minimumScanInterval = Duration(seconds: 7);
+
+/// How long to hold off before starting another scan.
+///
+/// Zero when the last scan is old enough, or there has not been one.
+Duration scanCooldown(DateTime? lastScanAt, DateTime now) {
+  if (lastScanAt == null) return Duration.zero;
+  final since = now.difference(lastScanAt);
+  if (since >= minimumScanInterval || since.isNegative) return Duration.zero;
+  return minimumScanInterval - since;
+}
+
+/// Consecutive failures against a known board before scanning again.
+///
+/// Reconnecting to a device we have already seen needs no scan, which is both
+/// faster and immune to the throttle. But a board that has been replaced or
+/// re-paired will never connect by that route, so eventually give up and look.
+const int reconnectsBeforeRescan = 3;
+
 /// Reads a real GranBoard over Bluetooth Low Energy.
 ///
 /// Deliberately thin: it produces raw notification bytes and connection state,
@@ -59,6 +82,7 @@ class BleBoardSource implements BoardSource {
   StreamSubscription<List<int>>? _valueSubscription;
   StreamSubscription<BluetoothConnectionState>? _deviceStateSubscription;
   Timer? _reconnect;
+  DateTime? _lastScanAt;
   int _attempt = 0;
   bool _wantConnection = false;
   bool _disposed = false;
@@ -92,9 +116,13 @@ class BleBoardSource implements BoardSource {
     if (_disposed || !_wantConnection) return;
 
     try {
-      _setState(BoardConnectionState.scanning);
-
-      final board = await _findBoard();
+      // A board we have already seen can be reconnected to directly. That
+      // skips the scan entirely, which is faster and cannot hit the throttle.
+      var board = _device;
+      if (board == null) {
+        _setState(BoardConnectionState.scanning);
+        board = await _findBoard();
+      }
       if (board == null) {
         _scheduleReconnect();
         return;
@@ -116,12 +144,17 @@ class BleBoardSource implements BoardSource {
     } on Exception {
       // Any failure - adapter off, scan timeout, GATT error - is the same
       // situation: no board. Back off and try again.
+      if (_attempt >= reconnectsBeforeRescan) _device = null;
       _scheduleReconnect();
     }
   }
 
   /// Finds a board by advertised service, falling back to the name prefix.
   Future<BluetoothDevice?> _findBoard() async {
+    final cooldown = scanCooldown(_lastScanAt, DateTime.now());
+    if (cooldown > Duration.zero) await Future<void>.delayed(cooldown);
+    _lastScanAt = DateTime.now();
+
     final found = Completer<BluetoothDevice?>();
 
     final subscription = FlutterBluePlus.onScanResults.listen((results) {

@@ -60,6 +60,8 @@ void main() {
     });
   });
 
+  _scanCooldownTests();
+
   group('GATT identifiers', () {
     test('match the values every implementation agrees on', () {
       expect(
@@ -75,6 +77,51 @@ void main() {
         '442f1572-8a00-9a28-cbe1-e1d4212d53eb',
       );
       expect(GranBoardGatt.namePrefix, 'GRAN');
+    });
+  });
+}
+
+void _scanCooldownTests() {
+  group('scan throttling', () {
+    final now = DateTime(2026, 7, 31, 20);
+
+    test('the first scan is never delayed', () {
+      expect(scanCooldown(null, now), Duration.zero);
+    });
+
+    test('a scan straight after another waits out the interval', () {
+      expect(scanCooldown(now, now), minimumScanInterval);
+    });
+
+    test('the wait shrinks as time passes', () {
+      expect(
+        scanCooldown(now.subtract(const Duration(seconds: 3)), now),
+        minimumScanInterval - const Duration(seconds: 3),
+      );
+    });
+
+    test('an old enough scan imposes no wait', () {
+      expect(
+        scanCooldown(now.subtract(const Duration(seconds: 30)), now),
+        Duration.zero,
+      );
+      expect(scanCooldown(now.subtract(minimumScanInterval), now), Duration.zero);
+    });
+
+    test('a clock that jumped backwards does not produce a negative wait', () {
+      expect(
+        scanCooldown(now.add(const Duration(minutes: 5)), now),
+        Duration.zero,
+      );
+    });
+
+    test('stays under the five-scans-per-30-seconds cap', () {
+      // Worst case: every attempt fails instantly, so the cooldown is the only
+      // thing spacing scans out.
+      final scansIn30Seconds =
+          const Duration(seconds: 30).inMilliseconds ~/
+          minimumScanInterval.inMilliseconds;
+      expect(scansIn30Seconds, lessThanOrEqualTo(5));
     });
   });
 }
