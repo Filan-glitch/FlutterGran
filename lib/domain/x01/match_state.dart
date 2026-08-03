@@ -3,6 +3,12 @@ import 'game_config.dart';
 /// Best-of formats offered in the UI. The engine accepts any positive count.
 const List<int> offeredLegsToPlay = [1, 3, 5, 7];
 
+/// Legs needed to take a best of [legsToPlay]: more than half of them.
+///
+/// Free-standing because the setup screen has to name the format before there
+/// is a [MatchConfig] to ask.
+int legsToWinFor(int legsToPlay) => (legsToPlay ~/ 2) + 1;
+
 /// Which seat throws first in leg [legNumber] of a match between
 /// [playerCount] players.
 ///
@@ -16,9 +22,17 @@ int startingSeatForLeg(int legNumber, int playerCount) =>
 
 /// The format a match is played to.
 ///
-/// A match is a run of legs under one set of rules, won by whoever takes more
-/// than half of them. Best of one is a legitimate match, and is what every leg
-/// played before matches existed amounts to.
+/// A match is a run of legs under one set of rules, won by the first player to
+/// [legsToWin]. Best of one is a legitimate match, and is what every leg played
+/// before matches existed amounts to.
+///
+/// Head to head, first to [legsToWin] and best of [legsToPlay] are the same
+/// thing: one of the two has to take more than half. With three or more players
+/// they are not. Nobody need reach the target inside [legsToPlay] legs - three
+/// players taking one each in a best of three leaves all three on one - and the
+/// match runs on until somebody does. The target is the rule; [legsToPlay] only
+/// sets it, which is why [formatLabel] stops saying "best of" the moment a
+/// third player sits down.
 class MatchConfig {
   MatchConfig({
     required this.startScore,
@@ -41,10 +55,21 @@ class MatchConfig {
   final int legsToPlay;
 
   /// Legs it takes to win: more than half of [legsToPlay].
-  int get legsToWin => (legsToPlay ~/ 2) + 1;
+  int get legsToWin => legsToWinFor(legsToPlay);
 
   /// Whether this format is more than the single leg the app has always played.
   bool get isMultiLeg => legsToPlay > 1;
+
+  /// Whether "best of" means what it says: two players, one of whom must take
+  /// more than half.
+  bool get isHeadToHead => playerIds.length == 2;
+
+  /// How the format reads on screen.
+  ///
+  /// `BEST OF 5` head to head, because that is what darts calls it, and
+  /// `FIRST TO 3` otherwise, because that is what is actually being played.
+  String get formatLabel =>
+      isHeadToHead ? 'BEST OF $legsToPlay' : 'FIRST TO $legsToWin';
 
   int startingSeatFor(int legNumber) =>
       startingSeatForLeg(legNumber, playerIds.length);
@@ -116,8 +141,13 @@ MatchState foldMatch(MatchConfig config, Iterable<int> legWinners) {
     // darts logged after a checkout cannot change a leg.
     if (winnerId != null) break;
 
+    // A winner who is not in the match cannot have won a leg of it. Nothing in
+    // the app can produce one, but the winners come off stored rows, and a row
+    // that disagrees with its own match is not allowed to decide it.
+    if (!legsWon.containsKey(playerId)) continue;
+
     counted.add(playerId);
-    legsWon[playerId] = (legsWon[playerId] ?? 0) + 1;
+    legsWon[playerId] = legsWon[playerId]! + 1;
     if (legsWon[playerId]! >= config.legsToWin) winnerId = playerId;
   }
 

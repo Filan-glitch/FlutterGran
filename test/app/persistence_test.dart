@@ -194,6 +194,21 @@ void main() {
 
       expect(stored!.playerIds, config.playerIds);
     });
+
+    test('a game with no seats has no config to replay', () async {
+      // A half-written row: the game is there, the seats it was played by are
+      // not. There is nothing to fold, so the caller is told so rather than
+      // handed a leg with no players in it.
+      final orphan = await database
+          .into(database.games)
+          .insert(GamesCompanion.insert(startScore: 501));
+
+      expect(await repository.loadConfig(orphan), isNull);
+    });
+
+    test('a game that was never written has no config either', () async {
+      expect(await repository.loadConfig(9999), isNull);
+    });
   });
 
   group('finishing', () {

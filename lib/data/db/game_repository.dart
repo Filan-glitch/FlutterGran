@@ -209,7 +209,7 @@ class GameRepository {
     final legs = <LegState>[];
     for (final game in await query.get()) {
       final config = await loadConfig(game.id);
-      if (config == null || config.playerIds.isEmpty) continue;
+      if (config == null) continue;
       legs.add(foldLeg(config, await loadLog(game.id)));
     }
     return legs;
@@ -340,7 +340,7 @@ class GameRepository {
         final legs = <LegState>[];
         for (final game in games) {
           final config = await loadConfig(game.id);
-          if (config == null || config.playerIds.isEmpty) continue;
+          if (config == null) continue;
           legs.add(foldLeg(config, await loadLog(game.id)));
         }
         return legs;
@@ -407,11 +407,18 @@ class GameRepository {
       db.delete(db.segmentCalibrations).go();
 
   /// Rebuilds the configuration a game was played under.
+  ///
+  /// Null for a game that cannot be replayed at all: one that is not there, and
+  /// one whose seats are not. A leg with no seats is a half-written row - the
+  /// rules it was played under are gone with them - and every caller already
+  /// has to handle the missing case, so it is handed the same nothing rather
+  /// than a config with no players that would trip [GameConfig]'s own assert.
   Future<GameConfig?> loadConfig(int gameId) async {
     final game = await loadGame(gameId);
     if (game == null) return null;
 
     final seats = await _seatsOf(gameId);
+    if (seats.isEmpty) return null;
 
     return GameConfig(
       startScore: game.startScore,
@@ -419,7 +426,7 @@ class GameRepository {
       doubleOut: game.doubleOut,
       // Who threw first is not stored: it follows from the leg's position in
       // its match, and a leg outside a match always opens on the first seat.
-      startingSeat: game.legNumber == null || seats.isEmpty
+      startingSeat: game.legNumber == null
           ? 0
           : startingSeatForLeg(game.legNumber!, seats.length),
     );

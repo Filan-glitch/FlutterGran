@@ -71,6 +71,44 @@ void main() {
       expect(state.legsWon, {1: 0, 2: 0, 3: 2});
       expect(state.winnerId, 3);
     });
+
+    test('three players taking one each carries on past the third leg', () {
+      final state = foldMatch(
+        config(legsToPlay: 3, players: 3),
+        const [1, 2, 3],
+      );
+      expect(state.winnerId, isNull, reason: 'nobody has two');
+      expect(state.legsPlayed, 3);
+      expect(state.nextLegNumber, 3, reason: 'the target is the rule');
+      expect(state.nextLegConfig, isNotNull);
+    });
+
+    test('a leg won by somebody outside the match decides nothing', () {
+      final state = foldMatch(config(), const [1, 9, 1]);
+      expect(state.legsWon, {1: 2, 2: 0});
+      expect(state.legsPlayed, 2, reason: 'the stray leg was never counted');
+      expect(state.winnerId, 1);
+    });
+  });
+
+  group('what the format is called', () {
+    test('two players play a best of', () {
+      expect(config(legsToPlay: 5).isHeadToHead, isTrue);
+      expect(config(legsToPlay: 5).formatLabel, 'BEST OF 5');
+    });
+
+    test('three players play to a target, because best of is not one', () {
+      final format = config(legsToPlay: 5, players: 3);
+      expect(format.isHeadToHead, isFalse);
+      expect(format.formatLabel, 'FIRST TO 3');
+      expect(format.legsToPlay, 5, reason: 'the stored format is untouched');
+    });
+
+    test('the free-standing threshold agrees with the config', () {
+      for (final legs in offeredLegsToPlay) {
+        expect(legsToWinFor(legs), config(legsToPlay: legs).legsToWin);
+      }
+    });
   });
 
   group('who throws first', () {

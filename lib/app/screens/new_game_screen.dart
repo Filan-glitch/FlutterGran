@@ -30,6 +30,13 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
   /// played it.
   int _legsToPlay = 1;
 
+  /// Whether the format can honestly be called a best of.
+  ///
+  /// A field of one or two is decided by more than half the legs. A bigger one
+  /// is not, so it is offered as the target instead. Empty counts as head to
+  /// head: the roster starts empty and two is what fills it.
+  bool get _headToHead => _seats.length <= 2;
+
   @override
   void dispose() {
     _newPlayer.dispose();
@@ -166,7 +173,12 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
             // Directly under the start score and styled identically, because
             // the two together are the format: what you count down from, and
             // how many times.
-            const _Eyebrow('Best of'),
+            //
+            // Above two players, more than half of the legs is a target nobody
+            // need reach - three players can take one each - so the same choice
+            // is named for the target it really sets. The stored format does
+            // not change with the wording.
+            _Eyebrow(_headToHead ? 'Best of' : 'First to'),
             const SizedBox(height: Gap.md),
             Row(
               children: [
@@ -175,7 +187,7 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
                     const SizedBox(width: Gap.sm),
                   Expanded(
                     child: _ScoreChoice(
-                      score: legs,
+                      score: _headToHead ? legs : legsToWinFor(legs),
                       selected: legs == _legsToPlay,
                       onTap: () => setState(() => _legsToPlay = legs),
                     ),

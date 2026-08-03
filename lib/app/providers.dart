@@ -244,7 +244,7 @@ final resumableLegProvider = StreamProvider<ResumableLeg?>((ref) async* {
     }
 
     final config = await repository.loadConfig(gameId);
-    if (config == null || config.playerIds.isEmpty) {
+    if (config == null) {
       yield null;
       continue;
     }

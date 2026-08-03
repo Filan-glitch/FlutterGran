@@ -97,7 +97,7 @@ class GameScreen extends ConsumerWidget {
     // Only a real match says so. A best of one is the single leg the app has
     // always played, and labelling it would be noise.
     final format = match != null && match.config.isMultiLeg
-        ? ' · BEST OF ${match.config.legsToPlay}'
+        ? ' · ${match.config.formatLabel}'
         : '';
 
     return Scaffold(
@@ -319,7 +319,7 @@ class _NextLeg extends StatelessWidget {
         children: [
           Text(
             leader == 0
-                ? 'BEST OF ${match.config.legsToPlay}'
+                ? match.config.formatLabel
                 : '${match.legsToWinFrom} '
                       '${match.legsToWinFrom == 1 ? 'LEG' : 'LEGS'} TO WIN IT',
             style: Type.eyebrow.copyWith(color: Palette.chalkDim),
