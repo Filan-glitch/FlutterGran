@@ -71,7 +71,11 @@ class _DartKeypadState extends State<DartKeypad> {
         // exactly the space available and never scroll. A grid with square
         // cells needs more height than a phone has, so the bottom row ends up
         // clipped off the screen.
+        //
+        // Four parts against the bull row's one, so all five rows come out the
+        // same height whatever height there is to divide.
         Expanded(
+          flex: 4,
           child: Column(
             children: [
               for (var row = 0; row < 4; row++) ...[
@@ -103,8 +107,11 @@ class _DartKeypadState extends State<DartKeypad> {
           ),
         ),
         const SizedBox(height: Gap.xs + 2),
-        SizedBox(
-          height: 52,
+        // A fifth row of the same height as the four above it, rather than a
+        // fixed 52. On a short viewport a fixed row keeps its size while the
+        // twenty wedge keys divide up what is left, which is exactly backwards:
+        // the wedges are what gets tapped.
+        Expanded(
           child: Row(
             children: [
               Expanded(
@@ -162,10 +169,7 @@ class _Key extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (background, foreground) = switch (ring) {
-      Ring.doubleRing || Ring.innerBull => (
-        Palette.doubleBed,
-        Palette.chalk,
-      ),
+      Ring.doubleRing || Ring.innerBull => (Palette.doubleBed, Palette.chalk),
       Ring.triple || Ring.outerBull => (Palette.trebleBed, Palette.chalk),
       null => (Palette.sunk, Palette.chalkDim),
       _ => (Palette.raised, Palette.chalk),
@@ -198,10 +202,7 @@ class _Key extends StatelessWidget {
           splashColor: Palette.chalk.withValues(alpha: 0.12),
           highlightColor: Palette.chalk.withValues(alpha: 0.06),
           child: Center(
-            child: Text(
-              label,
-              style: Type.key.copyWith(color: foreground),
-            ),
+            child: Text(label, style: Type.key.copyWith(color: foreground)),
           ),
         ),
       ),

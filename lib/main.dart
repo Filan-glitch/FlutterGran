@@ -19,7 +19,42 @@ class FlutterGranApp extends StatelessWidget {
       // has no business being white, and a light variant would mean a second
       // set of decisions for a situation that does not arise.
       theme: buildTheme(),
+      // The child is the navigator MaterialApp builds around `home`, and is
+      // null only for an app that has no routes at all. This one always has
+      // one, so the empty case is a placeholder for a state that cannot arise
+      // rather than a screen anybody sees.
+      builder: (context, child) =>
+          _Scaled(child: child ?? const SizedBox.shrink()),
       home: const NewGameScreen(),
+    );
+  }
+}
+
+/// Grows the type with the device, on top of whatever text size the platform
+/// itself is set to.
+///
+/// Applied once around the whole app rather than per screen: every screen wants
+/// the same thing, and a number that changed size between the scoreboard and
+/// the statistics that explain it would read as two different numbers.
+///
+/// The platform's own preference is folded in by measuring what it does to a
+/// nominal size and multiplying. That flattens a non-linear curve into a linear
+/// one, which is a fair trade for keeping someone's accessibility setting
+/// working rather than overwriting it with a constant.
+class _Scaled extends StatelessWidget {
+  const _Scaled({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final media = MediaQuery.of(context);
+    final platform = media.textScaler.scale(100) / 100;
+    final scale = platform * typeScaleFor(media.size);
+
+    return MediaQuery(
+      data: media.copyWith(textScaler: TextScaler.linear(scale)),
+      child: child,
     );
   }
 }
