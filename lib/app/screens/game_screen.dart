@@ -125,60 +125,118 @@ class GameScreen extends ConsumerWidget {
         // different screen.
         child: Stack(
           children: [
-            Column(
-              children: [
-                _Scoreboard(leg: leg, names: names, match: match),
-                const Divider(),
-                _TurnLedger(session: session, names: names),
-                const Divider(),
-                if (session.awaitingTurnConfirm)
-                  Expanded(
-                    child: _TurnConfirm(
-                      turn: session.pendingTurn!,
-                      leg: leg,
-                      names: names,
-                      onConfirm: controller.confirmTurn,
-                      onUndo: controller.undo,
-                    ),
-                  )
-                else if (leg.isFinished) ...[
-                  Expanded(
-                    child: _LegWon(
-                      leg: leg,
-                      names: names,
-                      match: match,
-                      onNextLeg: ref.read(matchProvider.notifier).startNextLeg,
-                    ),
-                  ),
-                ] else ...[
-                  _CheckoutStrip(routes: routes),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        Gap.md,
-                        Gap.sm,
-                        Gap.md,
-                        Gap.md,
+            LayoutBuilder(
+              builder: (context, constraints) {
+                // Whatever is asking for a decision right now: the keypad, the
+                // turn being confirmed, or the leg that has just ended. It is
+                // the same widget either way round - only where it sits moves.
+                final Widget play;
+                if (session.awaitingTurnConfirm) {
+                  play = _TurnConfirm(
+                    turn: session.pendingTurn!,
+                    leg: leg,
+                    names: names,
+                    onConfirm: controller.confirmTurn,
+                    onUndo: controller.undo,
+                  );
+                } else if (leg.isFinished) {
+                  play = _LegWon(
+                    leg: leg,
+                    names: names,
+                    match: match,
+                    onNextLeg: ref.read(matchProvider.notifier).startNextLeg,
+                  );
+                } else {
+                  play = Column(
+                    children: [
+                      _CheckoutStrip(routes: routes),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(
+                            Gap.md,
+                            Gap.sm,
+                            Gap.md,
+                            Gap.md,
+                          ),
+                          child: DartKeypad(
+                            onDart: (segment) =>
+                                controller.addDart(ThrownDart(segment)),
+                            onMiss: () =>
+                                controller.addDart(const ThrownDart.miss()),
+                            highlight: routes.isEmpty
+                                ? const {}
+                                : routes.first.darts.toSet(),
+                          ),
+                        ),
                       ),
-                      child: DartKeypad(
-                        onDart: (segment) =>
-                            controller.addDart(ThrownDart(segment)),
-                        onMiss: () =>
-                            controller.addDart(const ThrownDart.miss()),
-                        highlight: routes.isEmpty
-                            ? const {}
-                            : routes.first.darts.toSet(),
+                    ],
+                  );
+                }
+
+                final board = [
+                  _Scoreboard(leg: leg, names: names, match: match),
+                  const Divider(),
+                  _TurnLedger(session: session, names: names),
+                ];
+
+                // Side by side once there is width for it. Stacked, the score
+                // and the keypad are both squeezed into a height neither has;
+                // beside each other they each get a whole half and nothing has
+                // to shrink - which is the point, because the size of the score
+                // is what makes it readable from the oche.
+                if (constraints.maxWidth >= wideLayout) {
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: Column(children: board),
+                        ),
                       ),
-                    ),
-                  ),
-                ],
-              ],
+                      const VerticalDivider(width: 1),
+                      Expanded(child: play),
+                    ],
+                  );
+                }
+
+                return Column(
+                  children: [
+                    ...board,
+                    const Divider(),
+                    Expanded(child: play),
+                  ],
+                );
+              },
             ),
             if (match != null && match.isFinished)
               Positioned.fill(
                 child: _MatchWon(match: match, names: names),
               ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Lays its child out at the height it is given, and scrolls it when that is
+/// not enough.
+///
+/// The panels that end a turn or a leg are built around [Spacer]s, which need a
+/// bounded height, and are also the first thing to overflow on a phone lying on
+/// its side. This gives them the height when there is height, and a scroll when
+/// there is not, rather than making them choose one for both cases.
+class _FitOrScroll extends StatelessWidget {
+  const _FitOrScroll({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: IntrinsicHeight(child: child),
         ),
       ),
     );
@@ -346,8 +404,10 @@ class _TurnLedger extends StatelessWidget {
             ),
           ],
           const SizedBox(width: Gap.lg),
-          SizedBox(
-            width: 72,
+          ConstrainedBox(
+            // Room for 180 at the current type size, and no more: the slots
+            // beside it are what should take the rest of the row.
+            constraints: const BoxConstraints(minWidth: 72),
             child: Text(
               busted ? 'BUST' : '$total',
               textAlign: TextAlign.right,
@@ -375,7 +435,11 @@ class _DartSlot extends StatelessWidget {
     final empty = dart == null;
 
     return Container(
-      height: 40,
+      // A floor rather than a height: the notation inside it grows with the
+      // platform's text size and with the viewport, and a box that could not
+      // follow it would clip the dart it is there to show.
+      constraints: const BoxConstraints(minHeight: 40),
+      padding: const EdgeInsets.symmetric(vertical: Gap.xs),
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: empty ? Palette.sunk : Palette.raised,
@@ -461,52 +525,54 @@ class _TurnConfirm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(Gap.xl),
-      child: Column(
-        children: [
-          const Spacer(),
-          Text(
-            nameFor(names, turn.playerId).toUpperCase(),
-            style: Type.eyebrow.copyWith(color: Palette.chalkDim),
-          ),
-          const SizedBox(height: Gap.md),
-          Text(
-            turn.busted ? 'BUST' : '${turn.scored}',
-            style: Type.score.copyWith(
-              color: turn.busted ? Palette.doubleBed : Palette.chalk,
+    return _FitOrScroll(
+      child: Padding(
+        padding: const EdgeInsets.all(Gap.xl),
+        child: Column(
+          children: [
+            const Spacer(),
+            Text(
+              nameFor(names, turn.playerId).toUpperCase(),
+              style: Type.eyebrow.copyWith(color: Palette.chalkDim),
             ),
-          ),
-          const SizedBox(height: Gap.sm),
-          Text(
-            '${turn.scoreBefore} → ${turn.scoreAfter}',
-            style: Type.label.copyWith(color: Palette.chalkDim),
-          ),
-          const Spacer(),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: onUndo,
-                  child: const Text('WRONG'),
-                ),
+            const SizedBox(height: Gap.md),
+            Text(
+              turn.busted ? 'BUST' : '${turn.scored}',
+              style: Type.score.copyWith(
+                color: turn.busted ? Palette.doubleBed : Palette.chalk,
               ),
-              const SizedBox(width: Gap.md),
-              Expanded(
-                flex: 2,
-                child: FilledButton(
-                  onPressed: onConfirm,
-                  child: Text(leg.isFinished ? 'FINISH' : 'NEXT PLAYER'),
+            ),
+            const SizedBox(height: Gap.sm),
+            Text(
+              '${turn.scoreBefore} → ${turn.scoreAfter}',
+              style: Type.label.copyWith(color: Palette.chalkDim),
+            ),
+            const Spacer(),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: onUndo,
+                    child: const Text('WRONG'),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: Gap.md),
-          Text(
-            'or press the board button',
-            style: Type.label.copyWith(color: Palette.chalkDim),
-          ),
-        ],
+                const SizedBox(width: Gap.md),
+                Expanded(
+                  flex: 2,
+                  child: FilledButton(
+                    onPressed: onConfirm,
+                    child: Text(leg.isFinished ? 'FINISH' : 'NEXT PLAYER'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: Gap.md),
+            Text(
+              'or press the board button',
+              style: Type.label.copyWith(color: Palette.chalkDim),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -540,45 +606,47 @@ class _LegWon extends StatelessWidget {
     final match = this.match;
     final running = match != null && !match.isFinished;
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(Gap.xl, Gap.xl, Gap.xl, Gap.lg),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'LEG WON',
-            style: Type.eyebrow.copyWith(color: Palette.trebleBed),
-          ),
-          const SizedBox(height: Gap.md),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              nameFor(names, winner).toUpperCase(),
-              style: Type.score.copyWith(color: Palette.chalk),
-            ),
-          ),
-          const SizedBox(height: Gap.lg),
-          Text(
-            '${leg.dartsThrownBy(winner)} darts · '
-            '${leg.averageFor(winner)?.toStringAsFixed(1) ?? '—'} average',
-            style: Type.label.copyWith(color: Palette.chalkDim),
-          ),
-          if (running) ...[
-            const Spacer(),
+    return _FitOrScroll(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(Gap.xl, Gap.xl, Gap.xl, Gap.lg),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
             Text(
-              _standing(match),
-              style: Type.eyebrow.copyWith(color: Palette.chalkDim),
+              'LEG WON',
+              style: Type.eyebrow.copyWith(color: Palette.trebleBed),
             ),
             const SizedBox(height: Gap.md),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: onNextLeg,
-                child: Text('THROW LEG ${match.nextLegNumber + 1}'),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                nameFor(names, winner).toUpperCase(),
+                style: Type.score.copyWith(color: Palette.chalk),
               ),
             ),
+            const SizedBox(height: Gap.lg),
+            Text(
+              '${leg.dartsThrownBy(winner)} darts · '
+              '${leg.averageFor(winner)?.toStringAsFixed(1) ?? '—'} average',
+              style: Type.label.copyWith(color: Palette.chalkDim),
+            ),
+            if (running) ...[
+              const Spacer(),
+              Text(
+                _standing(match),
+                style: Type.eyebrow.copyWith(color: Palette.chalkDim),
+              ),
+              const SizedBox(height: Gap.md),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: onNextLeg,
+                  child: Text('THROW LEG ${match.nextLegNumber + 1}'),
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
