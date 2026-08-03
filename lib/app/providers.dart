@@ -278,8 +278,6 @@ class BoolSetting extends Notifier<bool> {
     await (await _preferences())?.setBool(_key, value);
   }
 
-  void toggle() => unawaited(set(!state));
-
   /// Null when there is no platform behind the channel.
   ///
   /// That is the test binding, where no preference has ever been written and
