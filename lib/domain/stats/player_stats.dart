@@ -1,4 +1,5 @@
 import '../x01/leg_state.dart';
+import '../x01/match_state.dart';
 
 /// Whether a score can be finished with a single dart at a double.
 ///
@@ -12,6 +13,8 @@ class PlayerStats {
   const PlayerStats({
     required this.legsPlayed,
     required this.legsWon,
+    required this.matchesPlayed,
+    required this.matchesWon,
     required this.dartsThrown,
     required this.pointsScored,
     required this.bestTurn,
@@ -30,6 +33,8 @@ class PlayerStats {
   static const PlayerStats empty = PlayerStats(
     legsPlayed: 0,
     legsWon: 0,
+    matchesPlayed: 0,
+    matchesWon: 0,
     dartsThrown: 0,
     pointsScored: 0,
     bestTurn: 0,
@@ -47,6 +52,16 @@ class PlayerStats {
 
   final int legsPlayed;
   final int legsWon;
+
+  /// Matches entered, whether or not they are decided yet.
+  ///
+  /// Deliberately a separate count from [legsPlayed] rather than a
+  /// reinterpretation of it: a best of five is one match and up to five legs,
+  /// and both numbers are worth knowing.
+  final int matchesPlayed;
+
+  final int matchesWon;
+
   final int dartsThrown;
 
   /// Points that survived - a busted turn contributes nothing.
@@ -87,16 +102,31 @@ class PlayerStats {
   double? get checkoutRate =>
       dartsAtDouble == 0 ? null : doublesHit / dartsAtDouble;
 
+  /// Share of legs won, 0 to 1. Legs, not matches - this is what it has always
+  /// meant and what the rest of the app reads it as.
   double? get winRate => legsPlayed == 0 ? null : legsWon / legsPlayed;
+
+  double? get matchWinRate =>
+      matchesPlayed == 0 ? null : matchesWon / matchesPlayed;
 }
 
 /// Aggregates a player's record across any number of replayed legs.
 ///
 /// Takes folded [LegState]s rather than raw rows, so every number here agrees
 /// with what was shown during play by construction.
-PlayerStats computePlayerStats(int playerId, Iterable<LegState> legs) {
+///
+/// [matches] is separate because a match is not derivable from a pile of legs:
+/// legs carry no record of which match they belonged to. Callers that only care
+/// about the throwing figures can leave it off.
+PlayerStats computePlayerStats(
+  int playerId,
+  Iterable<LegState> legs, {
+  Iterable<MatchState> matches = const [],
+}) {
   var legsPlayed = 0;
   var legsWon = 0;
+  var matchesPlayed = 0;
+  var matchesWon = 0;
   var dartsThrown = 0;
   var pointsScored = 0;
   var bestTurn = 0;
@@ -164,9 +194,17 @@ PlayerStats computePlayerStats(int playerId, Iterable<LegState> legs) {
     }
   }
 
+  for (final match in matches) {
+    if (!match.config.playerIds.contains(playerId)) continue;
+    matchesPlayed++;
+    if (match.winnerId == playerId) matchesWon++;
+  }
+
   return PlayerStats(
     legsPlayed: legsPlayed,
     legsWon: legsWon,
+    matchesPlayed: matchesPlayed,
+    matchesWon: matchesWon,
     dartsThrown: dartsThrown,
     pointsScored: pointsScored,
     bestTurn: bestTurn,

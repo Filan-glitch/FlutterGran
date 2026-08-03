@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/db/database.dart';
 import '../../domain/x01/game_config.dart';
+import '../../domain/x01/match_state.dart';
 import '../providers.dart';
 import '../theme.dart';
 import 'diagnostics_screen.dart';
@@ -25,6 +26,10 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
 
   int _startScore = 501;
 
+  /// Best of this many legs. One is a single leg, exactly as the app has always
+  /// played it.
+  int _legsToPlay = 1;
+
   @override
   void dispose() {
     _newPlayer.dispose();
@@ -43,14 +48,19 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
   }
 
   Future<void> _start() async {
-    final config = GameConfig(startScore: _startScore, playerIds: _seats);
-
-    final gameId = await ref.read(gameRepositoryProvider).startGame(config);
+    // Every game is a match, a single leg being a best of one. One path
+    // through the app beats a special case for the format that happens to be
+    // the default.
+    await ref
+        .read(matchProvider.notifier)
+        .start(
+          MatchConfig(
+            startScore: _startScore,
+            playerIds: _seats,
+            legsToPlay: _legsToPlay,
+          ),
+        );
     if (!mounted) return;
-
-    ref.read(gameConfigProvider.notifier).update(config);
-    ref.read(currentGameIdProvider.notifier).set(gameId);
-    ref.read(gameProvider.notifier).restart(config);
 
     await Navigator.of(context).push(
       MaterialPageRoute<void>(builder: (context) => const GameScreen()),
@@ -67,6 +77,11 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
     final config = await repository.loadConfig(resumable.gameId);
     if (config == null || !mounted) return;
     final darts = await repository.loadLog(resumable.gameId);
+    if (!mounted) return;
+
+    // Before the config is set, for the same reason: this rebuilds nothing,
+    // but a leg resumed without its match would lose the tally behind it.
+    await ref.read(matchProvider.notifier).resumeFrom(resumable.gameId);
     if (!mounted) return;
 
     ref.read(gameConfigProvider.notifier).update(config);
@@ -147,6 +162,27 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
                 ],
               ],
             ),
+            const SizedBox(height: Gap.lg),
+            // Directly under the start score and styled identically, because
+            // the two together are the format: what you count down from, and
+            // how many times.
+            const _Eyebrow('Best of'),
+            const SizedBox(height: Gap.md),
+            Row(
+              children: [
+                for (final legs in offeredLegsToPlay) ...[
+                  if (legs != offeredLegsToPlay.first)
+                    const SizedBox(width: Gap.sm),
+                  Expanded(
+                    child: _ScoreChoice(
+                      score: legs,
+                      selected: legs == _legsToPlay,
+                      onTap: () => setState(() => _legsToPlay = legs),
+                    ),
+                  ),
+                ],
+              ],
+            ),
             const SizedBox(height: Gap.xl),
             Row(
               children: [
@@ -221,7 +257,11 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
           child: FilledButton(
             onPressed: _seats.isEmpty ? null : _start,
             child: Text(
-              _seats.isEmpty ? 'PICK AT LEAST ONE PLAYER' : 'START LEG',
+              _seats.isEmpty
+                  ? 'PICK AT LEAST ONE PLAYER'
+                  : _legsToPlay == 1
+                  ? 'START LEG'
+                  : 'START BEST OF $_legsToPlay',
             ),
           ),
         ),
@@ -306,6 +346,8 @@ class _Eyebrow extends StatelessWidget {
   );
 }
 
+/// One number in a row of them, set as a scoreboard numeral rather than a form
+/// control. Used for both halves of the format: the start score and the best-of.
 class _ScoreChoice extends StatelessWidget {
   const _ScoreChoice({
     required this.score,
