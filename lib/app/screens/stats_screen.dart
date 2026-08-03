@@ -124,6 +124,17 @@ class _Body extends ConsumerWidget {
             _Row('Win rate', _percent(stats.winRate)),
           ],
         ),
+        // Its own section, under the legs rather than mixed into them: a leg
+        // and a match are different things to have won, and the figures above
+        // have always meant legs.
+        if (stats.matchesPlayed > 0)
+          _Section(
+            title: 'Matches',
+            rows: [
+              _Row('Won', '${stats.matchesWon} of ${stats.matchesPlayed}'),
+              _Row('Win rate', _percent(stats.matchWinRate)),
+            ],
+          ),
         const SizedBox(height: Gap.lg),
         Text(
           'WHERE THE DARTS LAND',

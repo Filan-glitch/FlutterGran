@@ -17,9 +17,11 @@ import '../domain/stats/player_stats.dart';
 import '../domain/x01/game_config.dart';
 import '../domain/x01/leg_reducer.dart';
 import '../domain/x01/leg_state.dart';
+import '../domain/x01/match_state.dart';
 import 'audio/sound_controller.dart';
 import 'audio/sound_player.dart';
 import 'game_controller.dart';
+import 'match_controller.dart';
 
 /// Which board the app is reading.
 enum BoardMode {
@@ -136,8 +138,11 @@ class GameConfigController extends Notifier<GameConfig> {
     startScore: startScore,
     playerIds: state.playerIds,
     doubleOut: state.doubleOut,
+    startingSeat: state.startingSeat,
   );
 
+  /// Reseats the leg, which resets the lead: a different field is a different
+  /// leg, and there is no seat to carry over.
   void setPlayerCount(int count) => state = GameConfig(
     startScore: state.startScore,
     playerIds: [for (var i = 1; i <= count; i++) i],
@@ -152,6 +157,23 @@ final gameConfigProvider = NotifierProvider<GameConfigController, GameConfig>(
 final gameProvider = NotifierProvider<GameController, GameSession>(
   GameController.new,
 );
+
+final matchProvider = NotifierProvider<MatchController, MatchSession?>(
+  MatchController.new,
+);
+
+/// Where the match stands, the leg on screen included.
+///
+/// Null when a leg is being played outside a match at all. Folding the current
+/// leg's winner in here rather than storing it is what keeps the tally honest
+/// through an undo.
+final matchStateProvider = Provider<MatchState?>((ref) {
+  final session = ref.watch(matchProvider);
+  if (session == null) return null;
+
+  final current = ref.watch(gameProvider).leg.winnerId;
+  return foldMatch(session.config, [...session.decidedLegs, ?current]);
+});
 
 /// Overridden in tests with an in-memory database.
 final databaseProvider = Provider<AppDatabase>((ref) {
@@ -179,11 +201,20 @@ final allLegsProvider = StreamProvider<List<LegState>>(
   (ref) => ref.watch(gameRepositoryProvider).watchAllLegs(),
 );
 
+/// Every stored match, folded from its legs.
+final allMatchesProvider = StreamProvider<List<MatchState>>(
+  (ref) => ref.watch(gameRepositoryProvider).watchAllMatches(),
+);
+
 /// A player's all-time record.
 final playerStatsProvider = Provider.family<PlayerStats, int>((ref, playerId) {
   final legs = ref.watch(allLegsProvider).value;
   if (legs == null) return PlayerStats.empty;
-  return computePlayerStats(playerId, legs);
+  return computePlayerStats(
+    playerId,
+    legs,
+    matches: ref.watch(allMatchesProvider).value ?? const [],
+  );
 });
 
 /// Where a player's darts have landed, for the accuracy heatmap.
@@ -219,7 +250,7 @@ final resumableLegProvider = StreamProvider<ResumableLeg?>((ref) async* {
     }
 
     final config = await repository.loadConfig(gameId);
-    if (config == null || config.playerIds.isEmpty) {
+    if (config == null) {
       yield null;
       continue;
     }

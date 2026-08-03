@@ -13,7 +13,7 @@ LegState foldLeg(GameConfig config, List<ThrownDart> darts) {
   };
   final turns = <Turn>[];
 
-  var playerIndex = 0;
+  var playerIndex = config.startingSeat;
   var turnDarts = <ThrownDart>[];
   var turnStart = config.startScore;
   int? winnerId;

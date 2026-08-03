@@ -14,12 +14,52 @@ class Players extends Table {
       dateTime().withDefault(currentDateAndTime)();
 }
 
-/// One leg. The MVP plays a single leg per game.
+/// A run of legs played to a best-of, won by whoever takes more than half.
+///
+/// The rules are repeated here rather than read off the first leg because they
+/// are the format that was agreed before anyone threw: the match owns them, and
+/// every leg it spawns inherits them.
+// Named explicitly: drift would otherwise singularise `Matches` to `Matche`.
+@DataClassName('Match')
+class Matches extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get startScore => integer()();
+  BoolColumn get doubleOut =>
+      boolean().withDefault(const Constant(true))();
+
+  /// Best of this many legs. 1 is a single leg, which is what every game
+  /// recorded before matches existed is.
+  IntColumn get legsToPlay => integer()();
+
+  DateTimeColumn get startedAt =>
+      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get finishedAt => dateTime().nullable()();
+  IntColumn get winnerPlayerId =>
+      integer().nullable().references(Players, #id)();
+}
+
+/// One leg. A leg may belong to a match, or stand on its own.
+///
+/// [matchId] and [legNumber] are nullable because they have to be: every leg
+/// stored before matches existed is a real leg with no match around it, and
+/// nothing that reads legs - statistics, the resume offer, the fold - may start
+/// depending on a match being there.
 class Games extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get startScore => integer()();
   BoolColumn get doubleOut =>
       boolean().withDefault(const Constant(true))();
+
+  IntColumn get matchId =>
+      integer().nullable().references(Matches, #id)();
+
+  /// Position in the match, from zero. Null for a leg outside a match.
+  ///
+  /// This is also what pins who threw first: the starting seat is rebuilt from
+  /// the leg number when the leg is replayed, so the alternation rule and this
+  /// column have to stay in step.
+  IntColumn get legNumber => integer().nullable()();
+
   DateTimeColumn get startedAt =>
       dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get finishedAt => dateTime().nullable()();
@@ -98,20 +138,28 @@ class SegmentCalibrations extends Table {
 }
 
 @DriftDatabase(
-  tables: [Players, Games, GameSeats, DartEvents, SegmentCalibrations],
+  tables: [Players, Matches, Games, GameSeats, DartEvents, SegmentCalibrations],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
     : super(executor ?? driftDatabase(name: 'fluttergran'));
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) => m.createAll(),
     onUpgrade: (m, from, to) async {
       if (from < 2) await m.createTable(segmentCalibrations);
+      if (from < 3) {
+        await m.createTable(matches);
+        // Added rather than backfilled: a leg thrown before matches existed
+        // belongs to no match, and inventing one for it would invent a result
+        // nobody played for.
+        await m.addColumn(games, games.matchId);
+        await m.addColumn(games, games.legNumber);
+      }
     },
   );
 }
