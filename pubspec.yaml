@@ -39,6 +39,14 @@ dependencies:
   drift_flutter: ^0.3.1
   flutter_blue_plus: ^2.3.11
   path_provider: ^2.1.6
+  # MIT. Two players are kept open at once - see lib/app/audio/sound_player.dart
+  # - because the cues need PlayerMode.lowLatency and the commentary does not.
+  audioplayers: ^6.8.1
+  # BSD-3, from flutter/packages. Holds the two sound toggles. The drift
+  # database is the history of every dart thrown; a preference is neither
+  # history nor relational, and a table for two booleans would cost a schema
+  # migration - see the note on soundEnabledProvider in lib/app/providers.dart.
+  shared_preferences: ^2.5.5
 
 dev_dependencies:
   flutter_test:
@@ -60,6 +68,19 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   uses-material-design: true
+
+  # Every line the app can speak, rendered once at build time by
+  # tool/make_speech.py, plus the four synthesised cues from tool/make_cues.py.
+  # The vocabulary of a darts commentator is closed - the totals 0 to 180 and
+  # five fixed calls - so there is nothing for a text-to-speech engine on the
+  # phone to do that has not already been done here.
+  #
+  # The voice model itself is build-time only and is never shipped. Its licence
+  # and attribution are in assets/sounds/SPEECH-VOICE-LICENCE.txt, beside the
+  # audio it produced.
+  assets:
+    - assets/sounds/cues/
+    - assets/sounds/speech/
 
   # Ubuntu Sans is a variable font: one file carries both a width and a weight
   # axis, so the condensed heavy numerals on the scoreboard and the normal-width

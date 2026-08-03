@@ -1,4 +1,8 @@
+import 'dart:async';
+
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/board/ble_board_source.dart';
 import '../data/board/board_source.dart';
@@ -13,6 +17,8 @@ import '../domain/stats/player_stats.dart';
 import '../domain/x01/game_config.dart';
 import '../domain/x01/leg_reducer.dart';
 import '../domain/x01/leg_state.dart';
+import 'audio/sound_controller.dart';
+import 'audio/sound_player.dart';
 import 'game_controller.dart';
 
 /// Which board the app is reading.
@@ -236,3 +242,106 @@ class CurrentGameId extends Notifier<int?> {
 final currentGameIdProvider = NotifierProvider<CurrentGameId, int?>(
   CurrentGameId.new,
 );
+
+/// One remembered on/off switch.
+///
+/// Kept in shared_preferences rather than in the drift database, and the reason
+/// is not that a table would be hard. The database is the history of every dart
+/// ever thrown - relational, migrated, replayed through the scoring engine - and
+/// a pair of booleans is none of those things. Giving them a table costs a
+/// schema version, and `feat/multi-leg` has already claimed version 3 for
+/// `Matches`. That branch and this one were meant to run in parallel; two
+/// branches minting the same schema version is a merge nobody enjoys, over two
+/// bits of state that have no business being in a games database anyway.
+class BoolSetting extends Notifier<bool> {
+  BoolSetting(this._key);
+
+  final String _key;
+
+  @override
+  bool build() {
+    // Both settings default on, and correct themselves a frame later if the
+    // stored value disagrees. Holding the first frame on a disk read to avoid
+    // one frame of the default is the wrong way round: the default is right for
+    // everyone who has never touched the switch.
+    unawaited(_load());
+    return true;
+  }
+
+  Future<void> _load() async {
+    final stored = (await _preferences())?.getBool(_key);
+    if (stored != null) state = stored;
+  }
+
+  Future<void> set(bool value) async {
+    state = value;
+    await (await _preferences())?.setBool(_key, value);
+  }
+
+  void toggle() => unawaited(set(!state));
+
+  /// Null when there is no platform behind the channel.
+  ///
+  /// That is the test binding, where no preference has ever been written and
+  /// the defaults are exactly what the tests want. It is the only case this
+  /// swallows - a genuine read failure on a device would still surface.
+  Future<SharedPreferences?> _preferences() async {
+    try {
+      return await SharedPreferences.getInstance();
+    } on MissingPluginException {
+      return null;
+    }
+  }
+}
+
+/// The master switch: off means silence, cues and commentary alike.
+final soundEnabledProvider = NotifierProvider<BoolSetting, bool>(
+  () => BoolSetting('sound.enabled'),
+);
+
+/// The spoken commentary alone.
+///
+/// Separate from [soundEnabledProvider] because the two wear out at different
+/// rates. Being told your own score out loud every turn gets old long before a
+/// 45ms click does, and someone who turns the talking off should not lose the
+/// dart cue with it.
+final speechEnabledProvider = NotifierProvider<BoolSetting, bool>(
+  () => BoolSetting('speech.enabled'),
+);
+
+/// Overridden in tests with a fake that records rather than plays.
+final soundPlayerProvider = Provider<SoundPlayer>((ref) {
+  final player = AudioPlayersSoundPlayer();
+  ref.onDispose(player.dispose);
+  return player;
+});
+
+/// Watches the game and plays what it hears.
+///
+/// A listener rather than something the screens or the controller call. Audio
+/// is a consequence of the leg, not a step in it, so nothing on the scoring
+/// path - and nothing at all in `lib/domain` - has to know it exists. The game
+/// screen keeps this alive simply by watching it.
+final soundControllerProvider = Provider<SoundController>((ref) {
+  final controller = SoundController(ref.watch(soundPlayerProvider));
+
+  ref.listen(gameProvider, (previous, next) {
+    controller.observe(
+      previous,
+      next,
+      soundEnabled: ref.read(soundEnabledProvider),
+      speechEnabled: ref.read(speechEnabledProvider),
+    );
+  });
+
+  // Silence what is already queued the moment a switch goes off, rather than
+  // letting the line that was waiting behind a cue arrive after it.
+  ref.listen(soundEnabledProvider, (_, enabled) {
+    if (!enabled) controller.player.silence();
+  });
+  ref.listen(speechEnabledProvider, (_, enabled) {
+    if (!enabled) controller.player.silence();
+  });
+
+  return controller;
+});

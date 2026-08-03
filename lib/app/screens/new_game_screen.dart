@@ -211,6 +211,26 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
               // worse than nothing.
               _ => const SizedBox.shrink(),
             },
+            const SizedBox(height: Gap.xl),
+            const _Eyebrow('Sound'),
+            const SizedBox(height: Gap.sm),
+            _SoundToggle(
+              label: 'Cues and commentary',
+              detail: 'A click per dart, a buzz on a bust, a fanfare for a 180',
+              value: ref.watch(soundEnabledProvider),
+              onChanged: ref.read(soundEnabledProvider.notifier).set,
+            ),
+            _SoundToggle(
+              label: 'Spoken totals',
+              detail: 'Each turn read out loud',
+              value: ref.watch(speechEnabledProvider),
+              // With the master off there is nothing for this one to control,
+              // so it greys out rather than pretending. Its own setting is
+              // untouched underneath: turning sound back on returns the
+              // commentary to however the player last left it.
+              enabled: ref.watch(soundEnabledProvider),
+              onChanged: ref.read(speechEnabledProvider.notifier).set,
+            ),
           ],
         ),
       ),
@@ -304,6 +324,73 @@ class _Eyebrow extends StatelessWidget {
     text.toUpperCase(),
     style: Type.eyebrow.copyWith(color: Palette.chalkDim),
   );
+}
+
+/// One remembered switch, in the setup screen's idiom rather than Material's.
+///
+/// Sound is set here and not behind a settings icon because this is the screen
+/// you are on when you are still deciding what kind of session this is. Turning
+/// the commentary off is part of setting up a quiet leg, the same as picking
+/// the start score.
+class _SoundToggle extends StatelessWidget {
+  const _SoundToggle({
+    required this.label,
+    required this.detail,
+    required this.value,
+    required this.onChanged,
+    this.enabled = true,
+  });
+
+  final String label;
+  final String detail;
+  final bool value;
+  final bool enabled;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final lit = enabled && value;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: Gap.sm),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: Type.body.copyWith(
+                    color: enabled ? Palette.chalk : Palette.chalkDim,
+                  ),
+                ),
+                const SizedBox(height: Gap.xs),
+                Text(
+                  detail,
+                  style: Type.label.copyWith(
+                    color: Palette.chalkDim,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: Gap.md),
+          Switch(
+            value: value,
+            onChanged: enabled ? onChanged : null,
+            // Live green, because this is state rather than a control.
+            activeThumbColor: Palette.ground,
+            activeTrackColor: lit ? Palette.live : Palette.chalkDim,
+            inactiveThumbColor: Palette.chalkDim,
+            inactiveTrackColor: Palette.sunk,
+            trackOutlineColor: const WidgetStatePropertyAll(Palette.edge),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _ScoreChoice extends StatelessWidget {

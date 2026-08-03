@@ -23,6 +23,11 @@ class GameScreen extends ConsumerWidget {
     final names = ref.watch(playerNamesProvider);
     final leg = session.leg;
 
+    // Nothing is read from it. Watching is what keeps the sound controller
+    // alive for as long as a leg is on screen, and its own listener on the game
+    // does the rest - which is the point: this screen never asks for a sound.
+    ref.watch(soundControllerProvider);
+
     final routes = leg.isFinished || session.awaitingTurnConfirm
         ? const <CheckoutRoute>[]
         : ref

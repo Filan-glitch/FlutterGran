@@ -43,3 +43,11 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Piper voice models. tool/make_speech.py needs one to render the commentary and
+# keeps it in ~/.local/share/piper-voices, but --voices-dir can point anywhere,
+# and 63MB of model is build-time input, not a shipped asset. The rendered Ogg
+# files under assets/sounds/speech/ are what the app carries.
+*.onnx
+*.onnx.json
+*.onnx.part
