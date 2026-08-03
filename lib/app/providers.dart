@@ -175,6 +175,25 @@ final matchStateProvider = Provider<MatchState?>((ref) {
   return foldMatch(session.config, [...session.decidedLegs, ?current]);
 });
 
+/// The legs of the match on screen that are already in the books.
+///
+/// Keyed on the session rather than the game on purpose: the legs behind the
+/// current one cannot change while it is being thrown, so this reads the
+/// database once per leg rather than once per dart. The leg on screen is left
+/// out because it is in [gameProvider], live and un-stored - whoever wants the
+/// whole match adds it on the end.
+final decidedMatchLegsProvider = FutureProvider<List<LegState>>((ref) async {
+  final session = ref.watch(matchProvider);
+  if (session == null) return const [];
+
+  return ref
+      .watch(gameRepositoryProvider)
+      .loadMatchLegs(
+        session.matchId,
+        beforeLegNumber: session.decidedLegs.length,
+      );
+});
+
 /// Overridden in tests with an in-memory database.
 final databaseProvider = Provider<AppDatabase>((ref) {
   final database = AppDatabase();
