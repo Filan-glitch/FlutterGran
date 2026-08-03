@@ -83,6 +83,28 @@ abstract final class Width {
   static const double normal = 100;
 }
 
+/// Width at which the game screen stops stacking and puts the keypad beside
+/// the scoreboard.
+///
+/// 600 is where a phone on its side lands and a tablet always is. Below it a
+/// column is the only arrangement that fits a keypad; above it the column would
+/// leave the score marooned at the top of a very wide screen.
+const double wideLayout = 600;
+
+/// How much larger type should be on a viewport of [size].
+///
+/// The sizes in [Type] are chosen for a phone at arm's length. A tablet is not
+/// a big phone: it is further away, on a table or a stand, so the same 62px
+/// score that reads as a headline in the hand reads as ordinary across a room.
+/// Keyed to the shortest side, because that is what says how big the device is
+/// rather than which way up it is being held.
+double typeScaleFor(Size size) {
+  final short = size.shortestSide;
+  if (short >= 900) return 1.5;
+  if (short >= 700) return 1.25;
+  return 1;
+}
+
 /// Type roles, named for their job rather than their size.
 abstract final class Type {
   /// The remaining score. The largest thing on the screen by a wide margin.
