@@ -11,6 +11,9 @@ import '../providers.dart';
 import '../theme.dart';
 import '../widgets/dart_keypad.dart';
 
+/// The block of per-player figures on the match card.
+const Key matchFiguresKey = Key('match-figures');
+
 /// Falls back to a seat label for a player who has since been deleted.
 String nameFor(Map<int, String> names, int playerId) =>
     names[playerId] ?? 'Player $playerId';
@@ -615,8 +618,18 @@ class _MatchWon extends ConsumerWidget {
     // The leg that ended it is still live rather than re-read: it was won a
     // frame ago, and its last dart may not have reached the database yet.
     final current = ref.watch(gameProvider).leg;
-    final decided = ref.watch(decidedMatchLegsProvider).value ?? const [];
-    final legs = [...decided, current];
+    final decided = ref.watch(decidedMatchLegsProvider);
+
+    // Null until every leg of the match is in hand. The earlier legs are read
+    // when this card mounts, so there is a frame or two before they arrive, and
+    // a query that fails never arrives at all. Averaging the final leg on its
+    // own would put a number under BEST LEG that nobody played to - a figure
+    // that is wrong reads exactly like a figure that is right, so until they
+    // are all here there is no figure.
+    final legs = switch (decided) {
+      AsyncData(:final value) => [...value, current],
+      _ => null,
+    };
 
     final players = match.config.playerIds;
     final winner = match.winnerId!;
@@ -651,6 +664,9 @@ class _MatchWon extends ConsumerWidget {
               ),
               const SizedBox(height: Gap.xl),
               IntrinsicHeight(
+                // Named so a test can ask what this block says without
+                // catching the scoreboard showing the same numbers behind it.
+                key: matchFiguresKey,
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -659,7 +675,9 @@ class _MatchWon extends ConsumerWidget {
                       Expanded(
                         child: _MatchFigures(
                           name: nameFor(names, players[seat]),
-                          stats: computePlayerStats(players[seat], legs),
+                          stats: legs == null
+                              ? null
+                              : computePlayerStats(players[seat], legs),
                           won: players[seat] == winner,
                         ),
                       ),
@@ -667,6 +685,13 @@ class _MatchWon extends ConsumerWidget {
                   ],
                 ),
               ),
+              if (decided.hasError) ...[
+                const SizedBox(height: Gap.md),
+                Text(
+                  'THE EARLIER LEGS COULD NOT BE READ',
+                  style: Type.eyebrow.copyWith(color: Palette.doubleBed),
+                ),
+              ],
               const SizedBox(height: Gap.xl),
               SizedBox(
                 width: double.infinity,
@@ -707,7 +732,12 @@ class _MatchFigures extends StatelessWidget {
   });
 
   final String name;
-  final PlayerStats stats;
+
+  /// Null while the match's legs are still being read, and if they cannot be.
+  /// The rows keep their places and show nothing, so the card neither jumps nor
+  /// claims a total it has not got.
+  final PlayerStats? stats;
+
   final bool won;
 
   @override
@@ -724,11 +754,11 @@ class _MatchFigures extends StatelessWidget {
             ),
           ),
           const SizedBox(height: Gap.md),
-          _Figure('AVERAGE', _decimal(stats.average)),
-          _Figure('FIRST NINE', _decimal(stats.firstNineAverage)),
-          _Figure('180s', '${stats.turnsOf180}'),
-          _Figure('BEST OUT', _whole(stats.bestCheckout)),
-          _Figure('BEST LEG', _whole(stats.fewestDartsToWin)),
+          _Figure('AVERAGE', _decimal(stats?.average)),
+          _Figure('FIRST NINE', _decimal(stats?.firstNineAverage)),
+          _Figure('180s', _whole(stats?.turnsOf180)),
+          _Figure('BEST OUT', _whole(stats?.bestCheckout)),
+          _Figure('BEST LEG', _whole(stats?.fewestDartsToWin)),
         ],
       ),
     );

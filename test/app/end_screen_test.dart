@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +12,7 @@ import 'package:fluttergran/data/board/fake_board_source.dart';
 import 'package:fluttergran/data/db/database.dart';
 import 'package:fluttergran/data/db/game_repository.dart';
 import 'package:fluttergran/domain/segment.dart';
+import 'package:fluttergran/domain/x01/leg_state.dart';
 import 'package:fluttergran/domain/x01/match_state.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
 
@@ -96,6 +99,13 @@ void main() {
     }
   }
 
+  /// What the figures block says, ignoring the scoreboard behind it - which
+  /// shows the same numbers for the leg that has just ended.
+  Finder inFigures(String text) => find.descendant(
+    of: find.byKey(matchFiguresKey),
+    matching: find.text(text),
+  );
+
   testWidgets('a leg won mid-match offers the next one', (tester) async {
     await open(tester);
     await checkout(tester);
@@ -143,6 +153,74 @@ void main() {
     // 40 checked out in one dart, from the winner's column only.
     expect(find.text('40'), findsWidgets);
     expect(find.text('1'), findsWidgets);
+  });
+
+  testWidgets('the figures wait for the legs they are computed from', (
+    tester,
+  ) async {
+    // Held open, so the card is caught in the state it mounts in.
+    final held = Completer<List<LegState>>();
+    container.dispose();
+    container = ProviderContainer(
+      overrides: [
+        databaseProvider.overrideWithValue(database),
+        boardSourceProvider.overrideWithValue(board),
+        soundPlayerProvider.overrideWithValue(_MutePlayer()),
+        decidedMatchLegsProvider.overrideWith((ref) => held.future),
+      ],
+    );
+
+    await open(tester, legsToPlay: 1);
+    await checkout(tester);
+
+    expect(find.text('MATCH WON'), findsOneWidget);
+    // Ten rows, every one of them empty: a figure computed from the final leg
+    // alone is not a match figure, and would read exactly like one.
+    expect(find.text('AVERAGE'), findsNWidgets(2));
+    expect(inFigures('—'), findsNWidgets(10));
+
+    held.complete(const []);
+    await frames(tester);
+
+    expect(inFigures('120.0'), findsWidgets, reason: '40 in one dart');
+  });
+
+  testWidgets('legs that cannot be read are said to be missing', (
+    tester,
+  ) async {
+    container.dispose();
+    container = ProviderContainer(
+      overrides: [
+        databaseProvider.overrideWithValue(database),
+        boardSourceProvider.overrideWithValue(board),
+        soundPlayerProvider.overrideWithValue(_MutePlayer()),
+        decidedMatchLegsProvider.overrideWith(
+          (ref) => Future<List<LegState>>.error(Exception('no database')),
+        ),
+      ],
+    );
+
+    await open(tester, legsToPlay: 1);
+    await checkout(tester);
+
+    expect(find.text('THE EARLIER LEGS COULD NOT BE READ'), findsOneWidget);
+    expect(
+      inFigures('—'),
+      findsNWidgets(10),
+      reason: 'the final leg on its own is not the match',
+    );
+
+    // The match itself is not in doubt - it was folded from the darts, not
+    // read back - so the winner and the way out are still there.
+    expect(find.text('MATCH WON'), findsOneWidget);
+    expect(find.text('REMATCH'), findsOneWidget);
+
+    // Torn down inside the test rather than at teardown: a failed provider is
+    // disposed with the tree, and the timers that cancel its subscription need
+    // frames to fire in or they are reported as still pending.
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pump(const Duration(seconds: 1));
   });
 
   testWidgets('undoing the winning dart takes the match back', (tester) async {
