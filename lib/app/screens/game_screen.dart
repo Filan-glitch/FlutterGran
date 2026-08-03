@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/checkout/checkout_search.dart';
+import '../../domain/stats/player_stats.dart';
 import '../../domain/x01/leg_state.dart';
 import '../../domain/x01/match_state.dart';
 import '../../domain/x01/thrown_dart.dart';
@@ -118,55 +119,65 @@ class GameScreen extends ConsumerWidget {
         ],
       ),
       body: SafeArea(
-        child: Column(
+        // The match card is stacked over the board rather than pushed as a
+        // route: a leg ends where it was played, and the scoreboard behind the
+        // card is what makes it read as the end of a game instead of a
+        // different screen.
+        child: Stack(
           children: [
-            _Scoreboard(leg: leg, names: names, match: match),
-            const Divider(),
-            _TurnLedger(session: session, names: names),
-            const Divider(),
-            if (session.awaitingTurnConfirm)
-              Expanded(
-                child: _TurnConfirm(
-                  turn: session.pendingTurn!,
-                  leg: leg,
-                  names: names,
-                  onConfirm: controller.confirmTurn,
-                  onUndo: controller.undo,
-                ),
-              )
-            else if (leg.isFinished) ...[
-              Expanded(child: _WinnerPanel(leg: leg, names: names)),
-              // The seam for feat/end-screen. Everything about what happens
-              // after a leg lives here rather than inside _WinnerPanel, which
-              // that branch replaces wholesale: it needs the same two facts -
-              // whether the match is still running, and how to throw the next
-              // leg - and can lift this straight out.
-              if (match != null && !match.isFinished)
-                _NextLeg(
-                  match: match,
-                  onNextLeg: ref.read(matchProvider.notifier).startNextLeg,
-                ),
-            ] else ...[
-              _CheckoutStrip(routes: routes),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    Gap.md,
-                    Gap.sm,
-                    Gap.md,
-                    Gap.md,
+            Column(
+              children: [
+                _Scoreboard(leg: leg, names: names, match: match),
+                const Divider(),
+                _TurnLedger(session: session, names: names),
+                const Divider(),
+                if (session.awaitingTurnConfirm)
+                  Expanded(
+                    child: _TurnConfirm(
+                      turn: session.pendingTurn!,
+                      leg: leg,
+                      names: names,
+                      onConfirm: controller.confirmTurn,
+                      onUndo: controller.undo,
+                    ),
+                  )
+                else if (leg.isFinished) ...[
+                  Expanded(
+                    child: _LegWon(
+                      leg: leg,
+                      names: names,
+                      match: match,
+                      onNextLeg: ref.read(matchProvider.notifier).startNextLeg,
+                    ),
                   ),
-                  child: DartKeypad(
-                    onDart: (segment) =>
-                        controller.addDart(ThrownDart(segment)),
-                    onMiss: () => controller.addDart(const ThrownDart.miss()),
-                    highlight: routes.isEmpty
-                        ? const {}
-                        : routes.first.darts.toSet(),
+                ] else ...[
+                  _CheckoutStrip(routes: routes),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        Gap.md,
+                        Gap.sm,
+                        Gap.md,
+                        Gap.md,
+                      ),
+                      child: DartKeypad(
+                        onDart: (segment) =>
+                            controller.addDart(ThrownDart(segment)),
+                        onMiss: () =>
+                            controller.addDart(const ThrownDart.miss()),
+                        highlight: routes.isEmpty
+                            ? const {}
+                            : routes.first.darts.toSet(),
+                      ),
+                    ),
                   ),
-                ),
+                ],
+              ],
+            ),
+            if (match != null && match.isFinished)
+              Positioned.fill(
+                child: _MatchWon(match: match, names: names),
               ),
-            ],
           ],
         ),
       ),
@@ -267,9 +278,7 @@ class _PlayerColumn extends StatelessWidget {
           name.toUpperCase(),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: Type.eyebrow.copyWith(
-            color: lit ? accent : Palette.chalkDim,
-          ),
+          style: Type.eyebrow.copyWith(color: lit ? accent : Palette.chalkDim),
         ),
         const SizedBox(height: Gap.sm),
         FittedBox(
@@ -303,46 +312,6 @@ class _PlayerColumn extends StatelessWidget {
   }
 }
 
-/// The one thing a leg that ended mid-match needs: a way on to the next one.
-///
-/// Deliberately a bare button under the winner panel rather than part of it.
-/// feat/end-screen replaces that panel with a proper card, and this is what it
-/// takes over.
-class _NextLeg extends StatelessWidget {
-  const _NextLeg({required this.match, required this.onNextLeg});
-
-  final MatchState match;
-  final VoidCallback onNextLeg;
-
-  @override
-  Widget build(BuildContext context) {
-    final leader = match.legsWon.values.fold<int>(0, (a, b) => a > b ? a : b);
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(Gap.xl, 0, Gap.xl, Gap.xl),
-      child: Column(
-        children: [
-          Text(
-            leader == 0
-                ? match.config.formatLabel
-                : '${match.legsToWinFrom} '
-                      '${match.legsToWinFrom == 1 ? 'LEG' : 'LEGS'} TO WIN IT',
-            style: Type.eyebrow.copyWith(color: Palette.chalkDim),
-          ),
-          const SizedBox(height: Gap.md),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              onPressed: onNextLeg,
-              child: Text('THROW LEG ${match.nextLegNumber + 1}'),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 /// The turn in progress, written out dart by dart with a running total.
 ///
 /// This is the chalk line a scorer keeps beside the board: three marks and what
@@ -361,14 +330,10 @@ class _TurnLedger extends StatelessWidget {
     final darts = pending?.darts ?? session.leg.currentTurnDarts;
     final busted = pending?.busted ?? false;
     final total =
-        pending?.scored ??
-        darts.fold<int>(0, (sum, dart) => sum + dart.value);
+        pending?.scored ?? darts.fold<int>(0, (sum, dart) => sum + dart.value);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: Gap.md,
-        vertical: Gap.md,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: Gap.md, vertical: Gap.md),
       child: Row(
         children: [
           for (var i = 0; i < dartsPerTurn; i++) ...[
@@ -456,10 +421,7 @@ class _CheckoutStrip extends StatelessWidget {
           Expanded(
             child: Text(
               routes.first.toString(),
-              style: Type.notation.copyWith(
-                color: Palette.live,
-                fontSize: 22,
-              ),
+              style: Type.notation.copyWith(color: Palette.live, fontSize: 22),
             ),
           ),
           if (routes.length > 1)
@@ -550,18 +512,36 @@ class _TurnConfirm extends StatelessWidget {
   }
 }
 
-class _WinnerPanel extends StatelessWidget {
-  const _WinnerPanel({required this.leg, required this.names});
+/// The end of a leg, in the space the keypad has just given up.
+///
+/// A leg inside a running match is a checkpoint rather than an ending, so this
+/// stays small and says only what the next thing to do is. The match ending is
+/// [_MatchWon]'s job, over the top of this one.
+class _LegWon extends StatelessWidget {
+  const _LegWon({
+    required this.leg,
+    required this.names,
+    required this.match,
+    required this.onNextLeg,
+  });
 
   final LegState leg;
   final Map<int, String> names;
 
+  /// The match this leg belonged to, or null for a leg played outside one -
+  /// which is every leg the app stored before matches existed.
+  final MatchState? match;
+
+  final VoidCallback onNextLeg;
+
   @override
   Widget build(BuildContext context) {
     final winner = leg.winnerId!;
+    final match = this.match;
+    final running = match != null && !match.isFinished;
 
     return Padding(
-      padding: const EdgeInsets.all(Gap.xl),
+      padding: const EdgeInsets.fromLTRB(Gap.xl, Gap.xl, Gap.xl, Gap.lg),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -583,6 +563,199 @@ class _WinnerPanel extends StatelessWidget {
             '${leg.averageFor(winner)?.toStringAsFixed(1) ?? '—'} average',
             style: Type.label.copyWith(color: Palette.chalkDim),
           ),
+          if (running) ...[
+            const Spacer(),
+            Text(
+              _standing(match),
+              style: Type.eyebrow.copyWith(color: Palette.chalkDim),
+            ),
+            const SizedBox(height: Gap.md),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: onNextLeg,
+                child: Text('THROW LEG ${match.nextLegNumber + 1}'),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// The tally and what is left of the match, on one line.
+  ///
+  /// Somebody has just won a leg, so there is always a tally to read and always
+  /// something still to win - a match that had been decided would be showing
+  /// [_MatchWon] instead.
+  String _standing(MatchState match) {
+    final tally = [
+      for (final id in match.config.playerIds) '${match.legsWon[id] ?? 0}',
+    ].join(' – ');
+
+    final left = match.legsToWinFrom;
+    return '$tally · $left ${left == 1 ? 'LEG' : 'LEGS'} TO WIN IT';
+  }
+}
+
+/// The end of the match, over the board it was won on.
+///
+/// Every figure here comes from [computePlayerStats] over this match's legs, so
+/// a number shown at the end of a match is arrived at the same way as the same
+/// number on the statistics screen - there is one implementation of what a
+/// first-nine average is, and this is not a second one.
+class _MatchWon extends ConsumerWidget {
+  const _MatchWon({required this.match, required this.names});
+
+  final MatchState match;
+  final Map<int, String> names;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // The leg that ended it is still live rather than re-read: it was won a
+    // frame ago, and its last dart may not have reached the database yet.
+    final current = ref.watch(gameProvider).leg;
+    final decided = ref.watch(decidedMatchLegsProvider).value ?? const [];
+    final legs = [...decided, current];
+
+    final players = match.config.playerIds;
+    final winner = match.winnerId!;
+
+    return ColoredBox(
+      // Not quite opaque: the scoreboard reads through it, which is what says
+      // this happened here rather than somewhere else.
+      color: Palette.ground.withValues(alpha: 0.95),
+      child: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(Gap.xl),
+          child: Column(
+            children: [
+              Text(
+                'MATCH WON',
+                style: Type.eyebrow.copyWith(color: Palette.live),
+              ),
+              const SizedBox(height: Gap.md),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  nameFor(names, winner).toUpperCase(),
+                  style: Type.score.copyWith(color: Palette.chalk),
+                ),
+              ),
+              const SizedBox(height: Gap.sm),
+              Text(
+                [
+                  for (final id in players) '${match.legsWon[id] ?? 0}',
+                ].join(' – '),
+                style: Type.scoreSmall.copyWith(color: Palette.chalkDim),
+              ),
+              const SizedBox(height: Gap.xl),
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (var seat = 0; seat < players.length; seat++) ...[
+                      if (seat > 0) const VerticalDivider(width: 1),
+                      Expanded(
+                        child: _MatchFigures(
+                          name: nameFor(names, players[seat]),
+                          stats: computePlayerStats(players[seat], legs),
+                          won: players[seat] == winner,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(height: Gap.xl),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: ref.read(matchProvider.notifier).rematch,
+                  child: const Text('REMATCH'),
+                ),
+              ),
+              const SizedBox(height: Gap.sm),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () {
+                    // The same wind-down as leaving a leg, minus the question:
+                    // there is nothing unfinished left to keep.
+                    ref.read(gameProvider.notifier).leave();
+                    ref.read(matchProvider.notifier).leave();
+                    ref.read(currentGameIdProvider.notifier).set(null);
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('BACK TO SETUP'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// One player's match, as a column of figures under their name.
+class _MatchFigures extends StatelessWidget {
+  const _MatchFigures({
+    required this.name,
+    required this.stats,
+    required this.won,
+  });
+
+  final String name;
+  final PlayerStats stats;
+  final bool won;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: Gap.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            name.toUpperCase(),
+            style: Type.eyebrow.copyWith(
+              color: won ? Palette.chalk : Palette.chalkDim,
+            ),
+          ),
+          const SizedBox(height: Gap.md),
+          _Figure('AVERAGE', _decimal(stats.average)),
+          _Figure('FIRST NINE', _decimal(stats.firstNineAverage)),
+          _Figure('180s', '${stats.turnsOf180}'),
+          _Figure('BEST OUT', _whole(stats.bestCheckout)),
+          _Figure('BEST LEG', _whole(stats.fewestDartsToWin)),
+        ],
+      ),
+    );
+  }
+
+  static String _decimal(double? value) => value?.toStringAsFixed(1) ?? '—';
+
+  static String _whole(int? value) => value?.toString() ?? '—';
+}
+
+/// A label and its number, on one line, in the statistics screen's idiom.
+class _Figure extends StatelessWidget {
+  const _Figure(this.label, this.value);
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: Gap.sm),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: Type.label.copyWith(color: Palette.chalkDim)),
+          const SizedBox(width: Gap.sm),
+          Text(value, style: Type.data.copyWith(color: Palette.chalk)),
         ],
       ),
     );

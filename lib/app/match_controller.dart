@@ -132,6 +132,22 @@ class MatchController extends Notifier<MatchSession?> {
     );
   }
 
+  /// Plays the same format again, with the same players in the same seats.
+  ///
+  /// A new match rather than a continuation: the one just finished keeps its
+  /// result, and the rematch starts on leg one with the throw back at the first
+  /// seat. Asking for it from the setup screen would mean re-picking a roster
+  /// that has not changed.
+  Future<void> rematch() async {
+    final session = state;
+    if (session == null) return;
+
+    // The old match's result is written and done with; the new one has not
+    // been called yet, and must not be compared against it.
+    _recordedWinner = null;
+    await start(session.config);
+  }
+
   /// Steps away from the match without ending it. The rows stay exactly as
   /// they are, and [resumeFrom] can pick the whole thing back up.
   void leave() {
