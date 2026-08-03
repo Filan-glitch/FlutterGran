@@ -19,7 +19,12 @@ class FlutterGranApp extends StatelessWidget {
       // has no business being white, and a light variant would mean a second
       // set of decisions for a situation that does not arise.
       theme: buildTheme(),
-      builder: (context, child) => _Scaled(child: child!),
+      // The child is the navigator MaterialApp builds around `home`, and is
+      // null only for an app that has no routes at all. This one always has
+      // one, so the empty case is a placeholder for a state that cannot arise
+      // rather than a screen anybody sees.
+      builder: (context, child) =>
+          _Scaled(child: child ?? const SizedBox.shrink()),
       home: const NewGameScreen(),
     );
   }

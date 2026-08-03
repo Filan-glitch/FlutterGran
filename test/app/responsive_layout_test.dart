@@ -91,7 +91,7 @@ void main() {
               data: media.copyWith(
                 textScaler: TextScaler.linear(typeScaleFor(media.size)),
               ),
-              child: child!,
+              child: child ?? const SizedBox.shrink(),
             );
           },
           home: const GameScreen(),
