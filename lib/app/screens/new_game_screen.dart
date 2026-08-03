@@ -93,7 +93,7 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('FLUTTERGRAN'),
+        title: const Text('CHALK'),
         actions: [
           IconButton(
             tooltip: 'Board diagnostics',

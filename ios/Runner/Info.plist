@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Fluttergran</string>
+	<string>Chalk</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>Connects to your GranBoard to read the darts you throw.</string>
 	<key>CFBundleExecutable</key>

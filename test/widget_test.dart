@@ -49,7 +49,7 @@ void main() {
   testWidgets('the app opens on setup, with an empty roster', (tester) async {
     await launch(tester, database);
 
-    expect(find.text('FLUTTERGRAN'), findsOneWidget);
+    expect(find.text('CHALK'), findsOneWidget);
     expect(
       find.text('No players yet. Add the first one above.'),
       findsOneWidget,
@@ -131,7 +131,7 @@ void main() {
     await tester.tap(find.text('LEAVE'));
     await pumpFrames(tester);
 
-    expect(find.text('FLUTTERGRAN'), findsOneWidget);
+    expect(find.text('CHALK'), findsOneWidget);
     expect(find.text('LEG IN PROGRESS'), findsOneWidget);
     expect(find.text('441'), findsOneWidget);
 
@@ -160,7 +160,7 @@ void main() {
 
     // Nothing thrown, nothing to protect.
     expect(find.text('Leave this leg?'), findsNothing);
-    expect(find.text('FLUTTERGRAN'), findsOneWidget);
+    expect(find.text('CHALK'), findsOneWidget);
     expect(find.text('LEG IN PROGRESS'), findsNothing);
 
     await closeApp(tester);

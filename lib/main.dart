@@ -14,7 +14,7 @@ class FlutterGranApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'FlutterGran',
+      title: 'Chalk',
       // One theme, always dark. A scoreboard read across a room in a garage
       // has no business being white, and a light variant would mean a second
       // set of decisions for a situation that does not arise.
