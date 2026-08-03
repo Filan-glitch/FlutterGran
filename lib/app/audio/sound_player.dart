@@ -62,7 +62,7 @@ class AudioPlayersSoundPlayer implements SoundPlayer {
   @override
   void playCue(String asset) {
     if (!_live) return;
-    unawaited(_cues.play(AssetSource(asset)));
+    _fire(_cues, asset);
   }
 
   @override
@@ -82,7 +82,20 @@ class AudioPlayersSoundPlayer implements SoundPlayer {
 
   void _speak(String asset) {
     if (!_live) return;
-    unawaited(_speech.play(AssetSource(asset)));
+    _fire(_speech, asset);
+  }
+
+  /// Plays an asset on the given player, with error recovery.
+  ///
+  /// If the player cannot decode the asset, one failure disables audio for the
+  /// entire session. Going silent is better than raising the same unhandled
+  /// exception on every dart, three times a turn for the rest of the leg.
+  void _fire(AudioPlayer player, String asset) {
+    unawaited(
+      player.play(AssetSource(asset)).onError((_, _) {
+        _ready = false;
+      }),
+    );
   }
 
   @override

@@ -205,15 +205,17 @@ def main() -> int:
     scratch.mkdir(exist_ok=True)
 
     total = 0
-    for index, (stem, text, scale) in enumerate(lines, start=1):
-        wav = scratch / f"{stem}.wav"
-        ogg = OUT_DIR / f"{stem}.ogg"
-        synthesise(args.piper, model, text, wav, scale)
-        encode(wav, ogg, args.quality)
-        total += ogg.stat().st_size
-        print(f"[{index:>3}/{len(lines)}] {ogg.name:<28} {text}", flush=True)
+    try:
+        for index, (stem, text, scale) in enumerate(lines, start=1):
+            wav = scratch / f"{stem}.wav"
+            ogg = OUT_DIR / f"{stem}.ogg"
+            synthesise(args.piper, model, text, wav, scale)
+            encode(wav, ogg, args.quality)
+            total += ogg.stat().st_size
+            print(f"[{index:>3}/{len(lines)}] {ogg.name:<28} {text}", flush=True)
+    finally:
+        shutil.rmtree(scratch, ignore_errors=True)
 
-    shutil.rmtree(scratch)
     print(f"\n{len(lines)} files, {total / 1024:.0f} KiB in {OUT_DIR}")
     return 0
 
