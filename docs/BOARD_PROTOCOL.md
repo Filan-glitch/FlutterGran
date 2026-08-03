@@ -3,6 +3,10 @@
 Everything known about how a GranBoard talks, and which parts of it are still
 guesses.
 
+Companion documents: [HARDWARE.md](HARDWARE.md) for the board itself and its
+sensor matrix, [CONNECTIVITY.md](CONNECTIVITY.md) for finding and holding the
+Bluetooth connection that delivers these frames.
+
 ## In one paragraph
 
 The board sends ASCII frames terminated by `@`, e.g. `3.4@`. The payload is a

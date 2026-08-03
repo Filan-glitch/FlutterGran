@@ -92,7 +92,9 @@ Full detail: **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
 | Document | What is in it |
 |---|---|
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Layers, the folds, the provider graph, audio, responsive layout |
-| [BOARD_PROTOCOL.md](docs/BOARD_PROTOCOL.md) | Frame format, the greeting, dedupe, the segment table, calibration, hardware day |
+| [HARDWARE.md](docs/HARDWARE.md) | What the GranBoard 132 is, its sensor matrix, the segment table, and what is verified versus assumed |
+| [CONNECTIVITY.md](docs/CONNECTIVITY.md) | GATT service, scanning and Android's throttle, reconnect backoff, permissions, playing without a board |
+| [BOARD_PROTOCOL.md](docs/BOARD_PROTOCOL.md) | Frame format, the greeting, dedupe, calibration, hardware day |
 | [DATA_MODEL.md](docs/DATA_MODEL.md) | Every table, schema v1 → v3, and what the migrations do and deliberately do not do |
 | [DEVELOPMENT.md](docs/DEVELOPMENT.md) | Commands, codegen, the asset generators, dependency constraints, test layout |
 | [PLAN.md](docs/PLAN.md) | The original design and milestones |
