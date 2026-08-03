@@ -248,6 +248,482 @@ class PlayersCompanion extends UpdateCompanion<Player> {
   }
 }
 
+class $MatchesTable extends Matches with TableInfo<$MatchesTable, Match> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MatchesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _startScoreMeta = const VerificationMeta(
+    'startScore',
+  );
+  @override
+  late final GeneratedColumn<int> startScore = GeneratedColumn<int>(
+    'start_score',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _doubleOutMeta = const VerificationMeta(
+    'doubleOut',
+  );
+  @override
+  late final GeneratedColumn<bool> doubleOut = GeneratedColumn<bool>(
+    'double_out',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("double_out" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _legsToPlayMeta = const VerificationMeta(
+    'legsToPlay',
+  );
+  @override
+  late final GeneratedColumn<int> legsToPlay = GeneratedColumn<int>(
+    'legs_to_play',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _startedAtMeta = const VerificationMeta(
+    'startedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> startedAt = GeneratedColumn<DateTime>(
+    'started_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _finishedAtMeta = const VerificationMeta(
+    'finishedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> finishedAt = GeneratedColumn<DateTime>(
+    'finished_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _winnerPlayerIdMeta = const VerificationMeta(
+    'winnerPlayerId',
+  );
+  @override
+  late final GeneratedColumn<int> winnerPlayerId = GeneratedColumn<int>(
+    'winner_player_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES players (id)',
+    ),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    startScore,
+    doubleOut,
+    legsToPlay,
+    startedAt,
+    finishedAt,
+    winnerPlayerId,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'matches';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Match> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('start_score')) {
+      context.handle(
+        _startScoreMeta,
+        startScore.isAcceptableOrUnknown(data['start_score']!, _startScoreMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startScoreMeta);
+    }
+    if (data.containsKey('double_out')) {
+      context.handle(
+        _doubleOutMeta,
+        doubleOut.isAcceptableOrUnknown(data['double_out']!, _doubleOutMeta),
+      );
+    }
+    if (data.containsKey('legs_to_play')) {
+      context.handle(
+        _legsToPlayMeta,
+        legsToPlay.isAcceptableOrUnknown(
+          data['legs_to_play']!,
+          _legsToPlayMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_legsToPlayMeta);
+    }
+    if (data.containsKey('started_at')) {
+      context.handle(
+        _startedAtMeta,
+        startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta),
+      );
+    }
+    if (data.containsKey('finished_at')) {
+      context.handle(
+        _finishedAtMeta,
+        finishedAt.isAcceptableOrUnknown(data['finished_at']!, _finishedAtMeta),
+      );
+    }
+    if (data.containsKey('winner_player_id')) {
+      context.handle(
+        _winnerPlayerIdMeta,
+        winnerPlayerId.isAcceptableOrUnknown(
+          data['winner_player_id']!,
+          _winnerPlayerIdMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Match map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Match(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      startScore: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}start_score'],
+      )!,
+      doubleOut: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}double_out'],
+      )!,
+      legsToPlay: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}legs_to_play'],
+      )!,
+      startedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}started_at'],
+      )!,
+      finishedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}finished_at'],
+      ),
+      winnerPlayerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}winner_player_id'],
+      ),
+    );
+  }
+
+  @override
+  $MatchesTable createAlias(String alias) {
+    return $MatchesTable(attachedDatabase, alias);
+  }
+}
+
+class Match extends DataClass implements Insertable<Match> {
+  final int id;
+  final int startScore;
+  final bool doubleOut;
+
+  /// Best of this many legs. 1 is a single leg, which is what every game
+  /// recorded before matches existed is.
+  final int legsToPlay;
+  final DateTime startedAt;
+  final DateTime? finishedAt;
+  final int? winnerPlayerId;
+  const Match({
+    required this.id,
+    required this.startScore,
+    required this.doubleOut,
+    required this.legsToPlay,
+    required this.startedAt,
+    this.finishedAt,
+    this.winnerPlayerId,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['start_score'] = Variable<int>(startScore);
+    map['double_out'] = Variable<bool>(doubleOut);
+    map['legs_to_play'] = Variable<int>(legsToPlay);
+    map['started_at'] = Variable<DateTime>(startedAt);
+    if (!nullToAbsent || finishedAt != null) {
+      map['finished_at'] = Variable<DateTime>(finishedAt);
+    }
+    if (!nullToAbsent || winnerPlayerId != null) {
+      map['winner_player_id'] = Variable<int>(winnerPlayerId);
+    }
+    return map;
+  }
+
+  MatchesCompanion toCompanion(bool nullToAbsent) {
+    return MatchesCompanion(
+      id: Value(id),
+      startScore: Value(startScore),
+      doubleOut: Value(doubleOut),
+      legsToPlay: Value(legsToPlay),
+      startedAt: Value(startedAt),
+      finishedAt: finishedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(finishedAt),
+      winnerPlayerId: winnerPlayerId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(winnerPlayerId),
+    );
+  }
+
+  factory Match.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Match(
+      id: serializer.fromJson<int>(json['id']),
+      startScore: serializer.fromJson<int>(json['startScore']),
+      doubleOut: serializer.fromJson<bool>(json['doubleOut']),
+      legsToPlay: serializer.fromJson<int>(json['legsToPlay']),
+      startedAt: serializer.fromJson<DateTime>(json['startedAt']),
+      finishedAt: serializer.fromJson<DateTime?>(json['finishedAt']),
+      winnerPlayerId: serializer.fromJson<int?>(json['winnerPlayerId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'startScore': serializer.toJson<int>(startScore),
+      'doubleOut': serializer.toJson<bool>(doubleOut),
+      'legsToPlay': serializer.toJson<int>(legsToPlay),
+      'startedAt': serializer.toJson<DateTime>(startedAt),
+      'finishedAt': serializer.toJson<DateTime?>(finishedAt),
+      'winnerPlayerId': serializer.toJson<int?>(winnerPlayerId),
+    };
+  }
+
+  Match copyWith({
+    int? id,
+    int? startScore,
+    bool? doubleOut,
+    int? legsToPlay,
+    DateTime? startedAt,
+    Value<DateTime?> finishedAt = const Value.absent(),
+    Value<int?> winnerPlayerId = const Value.absent(),
+  }) => Match(
+    id: id ?? this.id,
+    startScore: startScore ?? this.startScore,
+    doubleOut: doubleOut ?? this.doubleOut,
+    legsToPlay: legsToPlay ?? this.legsToPlay,
+    startedAt: startedAt ?? this.startedAt,
+    finishedAt: finishedAt.present ? finishedAt.value : this.finishedAt,
+    winnerPlayerId: winnerPlayerId.present
+        ? winnerPlayerId.value
+        : this.winnerPlayerId,
+  );
+  Match copyWithCompanion(MatchesCompanion data) {
+    return Match(
+      id: data.id.present ? data.id.value : this.id,
+      startScore: data.startScore.present
+          ? data.startScore.value
+          : this.startScore,
+      doubleOut: data.doubleOut.present ? data.doubleOut.value : this.doubleOut,
+      legsToPlay: data.legsToPlay.present
+          ? data.legsToPlay.value
+          : this.legsToPlay,
+      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
+      finishedAt: data.finishedAt.present
+          ? data.finishedAt.value
+          : this.finishedAt,
+      winnerPlayerId: data.winnerPlayerId.present
+          ? data.winnerPlayerId.value
+          : this.winnerPlayerId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Match(')
+          ..write('id: $id, ')
+          ..write('startScore: $startScore, ')
+          ..write('doubleOut: $doubleOut, ')
+          ..write('legsToPlay: $legsToPlay, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('finishedAt: $finishedAt, ')
+          ..write('winnerPlayerId: $winnerPlayerId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    startScore,
+    doubleOut,
+    legsToPlay,
+    startedAt,
+    finishedAt,
+    winnerPlayerId,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Match &&
+          other.id == this.id &&
+          other.startScore == this.startScore &&
+          other.doubleOut == this.doubleOut &&
+          other.legsToPlay == this.legsToPlay &&
+          other.startedAt == this.startedAt &&
+          other.finishedAt == this.finishedAt &&
+          other.winnerPlayerId == this.winnerPlayerId);
+}
+
+class MatchesCompanion extends UpdateCompanion<Match> {
+  final Value<int> id;
+  final Value<int> startScore;
+  final Value<bool> doubleOut;
+  final Value<int> legsToPlay;
+  final Value<DateTime> startedAt;
+  final Value<DateTime?> finishedAt;
+  final Value<int?> winnerPlayerId;
+  const MatchesCompanion({
+    this.id = const Value.absent(),
+    this.startScore = const Value.absent(),
+    this.doubleOut = const Value.absent(),
+    this.legsToPlay = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.finishedAt = const Value.absent(),
+    this.winnerPlayerId = const Value.absent(),
+  });
+  MatchesCompanion.insert({
+    this.id = const Value.absent(),
+    required int startScore,
+    this.doubleOut = const Value.absent(),
+    required int legsToPlay,
+    this.startedAt = const Value.absent(),
+    this.finishedAt = const Value.absent(),
+    this.winnerPlayerId = const Value.absent(),
+  }) : startScore = Value(startScore),
+       legsToPlay = Value(legsToPlay);
+  static Insertable<Match> custom({
+    Expression<int>? id,
+    Expression<int>? startScore,
+    Expression<bool>? doubleOut,
+    Expression<int>? legsToPlay,
+    Expression<DateTime>? startedAt,
+    Expression<DateTime>? finishedAt,
+    Expression<int>? winnerPlayerId,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (startScore != null) 'start_score': startScore,
+      if (doubleOut != null) 'double_out': doubleOut,
+      if (legsToPlay != null) 'legs_to_play': legsToPlay,
+      if (startedAt != null) 'started_at': startedAt,
+      if (finishedAt != null) 'finished_at': finishedAt,
+      if (winnerPlayerId != null) 'winner_player_id': winnerPlayerId,
+    });
+  }
+
+  MatchesCompanion copyWith({
+    Value<int>? id,
+    Value<int>? startScore,
+    Value<bool>? doubleOut,
+    Value<int>? legsToPlay,
+    Value<DateTime>? startedAt,
+    Value<DateTime?>? finishedAt,
+    Value<int?>? winnerPlayerId,
+  }) {
+    return MatchesCompanion(
+      id: id ?? this.id,
+      startScore: startScore ?? this.startScore,
+      doubleOut: doubleOut ?? this.doubleOut,
+      legsToPlay: legsToPlay ?? this.legsToPlay,
+      startedAt: startedAt ?? this.startedAt,
+      finishedAt: finishedAt ?? this.finishedAt,
+      winnerPlayerId: winnerPlayerId ?? this.winnerPlayerId,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (startScore.present) {
+      map['start_score'] = Variable<int>(startScore.value);
+    }
+    if (doubleOut.present) {
+      map['double_out'] = Variable<bool>(doubleOut.value);
+    }
+    if (legsToPlay.present) {
+      map['legs_to_play'] = Variable<int>(legsToPlay.value);
+    }
+    if (startedAt.present) {
+      map['started_at'] = Variable<DateTime>(startedAt.value);
+    }
+    if (finishedAt.present) {
+      map['finished_at'] = Variable<DateTime>(finishedAt.value);
+    }
+    if (winnerPlayerId.present) {
+      map['winner_player_id'] = Variable<int>(winnerPlayerId.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MatchesCompanion(')
+          ..write('id: $id, ')
+          ..write('startScore: $startScore, ')
+          ..write('doubleOut: $doubleOut, ')
+          ..write('legsToPlay: $legsToPlay, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('finishedAt: $finishedAt, ')
+          ..write('winnerPlayerId: $winnerPlayerId')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $GamesTable extends Games with TableInfo<$GamesTable, Game> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -292,6 +768,31 @@ class $GamesTable extends Games with TableInfo<$GamesTable, Game> {
     ),
     defaultValue: const Constant(true),
   );
+  static const VerificationMeta _matchIdMeta = const VerificationMeta(
+    'matchId',
+  );
+  @override
+  late final GeneratedColumn<int> matchId = GeneratedColumn<int>(
+    'match_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES matches (id)',
+    ),
+  );
+  static const VerificationMeta _legNumberMeta = const VerificationMeta(
+    'legNumber',
+  );
+  @override
+  late final GeneratedColumn<int> legNumber = GeneratedColumn<int>(
+    'leg_number',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _startedAtMeta = const VerificationMeta(
     'startedAt',
   );
@@ -334,6 +835,8 @@ class $GamesTable extends Games with TableInfo<$GamesTable, Game> {
     id,
     startScore,
     doubleOut,
+    matchId,
+    legNumber,
     startedAt,
     finishedAt,
     winnerPlayerId,
@@ -365,6 +868,18 @@ class $GamesTable extends Games with TableInfo<$GamesTable, Game> {
       context.handle(
         _doubleOutMeta,
         doubleOut.isAcceptableOrUnknown(data['double_out']!, _doubleOutMeta),
+      );
+    }
+    if (data.containsKey('match_id')) {
+      context.handle(
+        _matchIdMeta,
+        matchId.isAcceptableOrUnknown(data['match_id']!, _matchIdMeta),
+      );
+    }
+    if (data.containsKey('leg_number')) {
+      context.handle(
+        _legNumberMeta,
+        legNumber.isAcceptableOrUnknown(data['leg_number']!, _legNumberMeta),
       );
     }
     if (data.containsKey('started_at')) {
@@ -409,6 +924,14 @@ class $GamesTable extends Games with TableInfo<$GamesTable, Game> {
         DriftSqlType.bool,
         data['${effectivePrefix}double_out'],
       )!,
+      matchId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}match_id'],
+      ),
+      legNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}leg_number'],
+      ),
       startedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}started_at'],
@@ -434,6 +957,14 @@ class Game extends DataClass implements Insertable<Game> {
   final int id;
   final int startScore;
   final bool doubleOut;
+  final int? matchId;
+
+  /// Position in the match, from zero. Null for a leg outside a match.
+  ///
+  /// This is also what pins who threw first: the starting seat is rebuilt from
+  /// the leg number when the leg is replayed, so the alternation rule and this
+  /// column have to stay in step.
+  final int? legNumber;
   final DateTime startedAt;
   final DateTime? finishedAt;
   final int? winnerPlayerId;
@@ -441,6 +972,8 @@ class Game extends DataClass implements Insertable<Game> {
     required this.id,
     required this.startScore,
     required this.doubleOut,
+    this.matchId,
+    this.legNumber,
     required this.startedAt,
     this.finishedAt,
     this.winnerPlayerId,
@@ -451,6 +984,12 @@ class Game extends DataClass implements Insertable<Game> {
     map['id'] = Variable<int>(id);
     map['start_score'] = Variable<int>(startScore);
     map['double_out'] = Variable<bool>(doubleOut);
+    if (!nullToAbsent || matchId != null) {
+      map['match_id'] = Variable<int>(matchId);
+    }
+    if (!nullToAbsent || legNumber != null) {
+      map['leg_number'] = Variable<int>(legNumber);
+    }
     map['started_at'] = Variable<DateTime>(startedAt);
     if (!nullToAbsent || finishedAt != null) {
       map['finished_at'] = Variable<DateTime>(finishedAt);
@@ -466,6 +1005,12 @@ class Game extends DataClass implements Insertable<Game> {
       id: Value(id),
       startScore: Value(startScore),
       doubleOut: Value(doubleOut),
+      matchId: matchId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(matchId),
+      legNumber: legNumber == null && nullToAbsent
+          ? const Value.absent()
+          : Value(legNumber),
       startedAt: Value(startedAt),
       finishedAt: finishedAt == null && nullToAbsent
           ? const Value.absent()
@@ -485,6 +1030,8 @@ class Game extends DataClass implements Insertable<Game> {
       id: serializer.fromJson<int>(json['id']),
       startScore: serializer.fromJson<int>(json['startScore']),
       doubleOut: serializer.fromJson<bool>(json['doubleOut']),
+      matchId: serializer.fromJson<int?>(json['matchId']),
+      legNumber: serializer.fromJson<int?>(json['legNumber']),
       startedAt: serializer.fromJson<DateTime>(json['startedAt']),
       finishedAt: serializer.fromJson<DateTime?>(json['finishedAt']),
       winnerPlayerId: serializer.fromJson<int?>(json['winnerPlayerId']),
@@ -497,6 +1044,8 @@ class Game extends DataClass implements Insertable<Game> {
       'id': serializer.toJson<int>(id),
       'startScore': serializer.toJson<int>(startScore),
       'doubleOut': serializer.toJson<bool>(doubleOut),
+      'matchId': serializer.toJson<int?>(matchId),
+      'legNumber': serializer.toJson<int?>(legNumber),
       'startedAt': serializer.toJson<DateTime>(startedAt),
       'finishedAt': serializer.toJson<DateTime?>(finishedAt),
       'winnerPlayerId': serializer.toJson<int?>(winnerPlayerId),
@@ -507,6 +1056,8 @@ class Game extends DataClass implements Insertable<Game> {
     int? id,
     int? startScore,
     bool? doubleOut,
+    Value<int?> matchId = const Value.absent(),
+    Value<int?> legNumber = const Value.absent(),
     DateTime? startedAt,
     Value<DateTime?> finishedAt = const Value.absent(),
     Value<int?> winnerPlayerId = const Value.absent(),
@@ -514,6 +1065,8 @@ class Game extends DataClass implements Insertable<Game> {
     id: id ?? this.id,
     startScore: startScore ?? this.startScore,
     doubleOut: doubleOut ?? this.doubleOut,
+    matchId: matchId.present ? matchId.value : this.matchId,
+    legNumber: legNumber.present ? legNumber.value : this.legNumber,
     startedAt: startedAt ?? this.startedAt,
     finishedAt: finishedAt.present ? finishedAt.value : this.finishedAt,
     winnerPlayerId: winnerPlayerId.present
@@ -527,6 +1080,8 @@ class Game extends DataClass implements Insertable<Game> {
           ? data.startScore.value
           : this.startScore,
       doubleOut: data.doubleOut.present ? data.doubleOut.value : this.doubleOut,
+      matchId: data.matchId.present ? data.matchId.value : this.matchId,
+      legNumber: data.legNumber.present ? data.legNumber.value : this.legNumber,
       startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
       finishedAt: data.finishedAt.present
           ? data.finishedAt.value
@@ -543,6 +1098,8 @@ class Game extends DataClass implements Insertable<Game> {
           ..write('id: $id, ')
           ..write('startScore: $startScore, ')
           ..write('doubleOut: $doubleOut, ')
+          ..write('matchId: $matchId, ')
+          ..write('legNumber: $legNumber, ')
           ..write('startedAt: $startedAt, ')
           ..write('finishedAt: $finishedAt, ')
           ..write('winnerPlayerId: $winnerPlayerId')
@@ -555,6 +1112,8 @@ class Game extends DataClass implements Insertable<Game> {
     id,
     startScore,
     doubleOut,
+    matchId,
+    legNumber,
     startedAt,
     finishedAt,
     winnerPlayerId,
@@ -566,6 +1125,8 @@ class Game extends DataClass implements Insertable<Game> {
           other.id == this.id &&
           other.startScore == this.startScore &&
           other.doubleOut == this.doubleOut &&
+          other.matchId == this.matchId &&
+          other.legNumber == this.legNumber &&
           other.startedAt == this.startedAt &&
           other.finishedAt == this.finishedAt &&
           other.winnerPlayerId == this.winnerPlayerId);
@@ -575,6 +1136,8 @@ class GamesCompanion extends UpdateCompanion<Game> {
   final Value<int> id;
   final Value<int> startScore;
   final Value<bool> doubleOut;
+  final Value<int?> matchId;
+  final Value<int?> legNumber;
   final Value<DateTime> startedAt;
   final Value<DateTime?> finishedAt;
   final Value<int?> winnerPlayerId;
@@ -582,6 +1145,8 @@ class GamesCompanion extends UpdateCompanion<Game> {
     this.id = const Value.absent(),
     this.startScore = const Value.absent(),
     this.doubleOut = const Value.absent(),
+    this.matchId = const Value.absent(),
+    this.legNumber = const Value.absent(),
     this.startedAt = const Value.absent(),
     this.finishedAt = const Value.absent(),
     this.winnerPlayerId = const Value.absent(),
@@ -590,6 +1155,8 @@ class GamesCompanion extends UpdateCompanion<Game> {
     this.id = const Value.absent(),
     required int startScore,
     this.doubleOut = const Value.absent(),
+    this.matchId = const Value.absent(),
+    this.legNumber = const Value.absent(),
     this.startedAt = const Value.absent(),
     this.finishedAt = const Value.absent(),
     this.winnerPlayerId = const Value.absent(),
@@ -598,6 +1165,8 @@ class GamesCompanion extends UpdateCompanion<Game> {
     Expression<int>? id,
     Expression<int>? startScore,
     Expression<bool>? doubleOut,
+    Expression<int>? matchId,
+    Expression<int>? legNumber,
     Expression<DateTime>? startedAt,
     Expression<DateTime>? finishedAt,
     Expression<int>? winnerPlayerId,
@@ -606,6 +1175,8 @@ class GamesCompanion extends UpdateCompanion<Game> {
       if (id != null) 'id': id,
       if (startScore != null) 'start_score': startScore,
       if (doubleOut != null) 'double_out': doubleOut,
+      if (matchId != null) 'match_id': matchId,
+      if (legNumber != null) 'leg_number': legNumber,
       if (startedAt != null) 'started_at': startedAt,
       if (finishedAt != null) 'finished_at': finishedAt,
       if (winnerPlayerId != null) 'winner_player_id': winnerPlayerId,
@@ -616,6 +1187,8 @@ class GamesCompanion extends UpdateCompanion<Game> {
     Value<int>? id,
     Value<int>? startScore,
     Value<bool>? doubleOut,
+    Value<int?>? matchId,
+    Value<int?>? legNumber,
     Value<DateTime>? startedAt,
     Value<DateTime?>? finishedAt,
     Value<int?>? winnerPlayerId,
@@ -624,6 +1197,8 @@ class GamesCompanion extends UpdateCompanion<Game> {
       id: id ?? this.id,
       startScore: startScore ?? this.startScore,
       doubleOut: doubleOut ?? this.doubleOut,
+      matchId: matchId ?? this.matchId,
+      legNumber: legNumber ?? this.legNumber,
       startedAt: startedAt ?? this.startedAt,
       finishedAt: finishedAt ?? this.finishedAt,
       winnerPlayerId: winnerPlayerId ?? this.winnerPlayerId,
@@ -641,6 +1216,12 @@ class GamesCompanion extends UpdateCompanion<Game> {
     }
     if (doubleOut.present) {
       map['double_out'] = Variable<bool>(doubleOut.value);
+    }
+    if (matchId.present) {
+      map['match_id'] = Variable<int>(matchId.value);
+    }
+    if (legNumber.present) {
+      map['leg_number'] = Variable<int>(legNumber.value);
     }
     if (startedAt.present) {
       map['started_at'] = Variable<DateTime>(startedAt.value);
@@ -660,6 +1241,8 @@ class GamesCompanion extends UpdateCompanion<Game> {
           ..write('id: $id, ')
           ..write('startScore: $startScore, ')
           ..write('doubleOut: $doubleOut, ')
+          ..write('matchId: $matchId, ')
+          ..write('legNumber: $legNumber, ')
           ..write('startedAt: $startedAt, ')
           ..write('finishedAt: $finishedAt, ')
           ..write('winnerPlayerId: $winnerPlayerId')
@@ -1822,6 +2405,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $PlayersTable players = $PlayersTable(this);
+  late final $MatchesTable matches = $MatchesTable(this);
   late final $GamesTable games = $GamesTable(this);
   late final $GameSeatsTable gameSeats = $GameSeatsTable(this);
   late final $DartEventsTable dartEvents = $DartEventsTable(this);
@@ -1833,6 +2417,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     players,
+    matches,
     games,
     gameSeats,
     dartEvents,
@@ -1873,6 +2458,25 @@ typedef $$PlayersTableUpdateCompanionBuilder =
 final class $$PlayersTableReferences
     extends BaseReferences<_$AppDatabase, $PlayersTable, Player> {
   $$PlayersTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$MatchesTable, List<Match>> _matchesRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.matches,
+    aliasName: 'players__id__matches__winner_player_id',
+  );
+
+  $$MatchesTableProcessedTableManager get matchesRefs {
+    final manager = $$MatchesTableTableManager(
+      $_db,
+      $_db.matches,
+    ).filter((f) => f.winnerPlayerId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_matchesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 
   static MultiTypedResultKey<$GamesTable, List<Game>> _gamesRefsTable(
     _$AppDatabase db,
@@ -1953,6 +2557,31 @@ class $$PlayersTableFilterComposer
     column: $table.createdAt,
     builder: (column) => ColumnFilters(column),
   );
+
+  Expression<bool> matchesRefs(
+    Expression<bool> Function($$MatchesTableFilterComposer f) f,
+  ) {
+    final $$MatchesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.matches,
+      getReferencedColumn: (t) => t.winnerPlayerId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MatchesTableFilterComposer(
+            $db: $db,
+            $table: $db.matches,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 
   Expression<bool> gamesRefs(
     Expression<bool> Function($$GamesTableFilterComposer f) f,
@@ -2073,6 +2702,31 @@ class $$PlayersTableAnnotationComposer
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
+  Expression<T> matchesRefs<T extends Object>(
+    Expression<T> Function($$MatchesTableAnnotationComposer a) f,
+  ) {
+    final $$MatchesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.matches,
+      getReferencedColumn: (t) => t.winnerPlayerId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MatchesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.matches,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
   Expression<T> gamesRefs<T extends Object>(
     Expression<T> Function($$GamesTableAnnotationComposer a) f,
   ) {
@@ -2163,6 +2817,7 @@ class $$PlayersTableTableManager
           (Player, $$PlayersTableReferences),
           Player,
           PrefetchHooks Function({
+            bool matchesRefs,
             bool gamesRefs,
             bool gameSeatsRefs,
             bool dartEventsRefs,
@@ -2205,6 +2860,7 @@ class $$PlayersTableTableManager
               .toList(),
           prefetchHooksCallback:
               ({
+                matchesRefs = false,
                 gamesRefs = false,
                 gameSeatsRefs = false,
                 dartEventsRefs = false,
@@ -2212,6 +2868,7 @@ class $$PlayersTableTableManager
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
+                    if (matchesRefs) db.matches,
                     if (gamesRefs) db.games,
                     if (gameSeatsRefs) db.gameSeats,
                     if (dartEventsRefs) db.dartEvents,
@@ -2219,6 +2876,23 @@ class $$PlayersTableTableManager
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
                     return [
+                      if (matchesRefs)
+                        await $_getPrefetchedData<Player, $PlayersTable, Match>(
+                          currentTable: table,
+                          referencedTable: $$PlayersTableReferences
+                              ._matchesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$PlayersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).matchesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.winnerPlayerId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (gamesRefs)
                         await $_getPrefetchedData<Player, $PlayersTable, Game>(
                           currentTable: table,
@@ -2295,16 +2969,456 @@ typedef $$PlayersTableProcessedTableManager =
       (Player, $$PlayersTableReferences),
       Player,
       PrefetchHooks Function({
+        bool matchesRefs,
         bool gamesRefs,
         bool gameSeatsRefs,
         bool dartEventsRefs,
       })
+    >;
+typedef $$MatchesTableCreateCompanionBuilder =
+    MatchesCompanion Function({
+      Value<int> id,
+      required int startScore,
+      Value<bool> doubleOut,
+      required int legsToPlay,
+      Value<DateTime> startedAt,
+      Value<DateTime?> finishedAt,
+      Value<int?> winnerPlayerId,
+    });
+typedef $$MatchesTableUpdateCompanionBuilder =
+    MatchesCompanion Function({
+      Value<int> id,
+      Value<int> startScore,
+      Value<bool> doubleOut,
+      Value<int> legsToPlay,
+      Value<DateTime> startedAt,
+      Value<DateTime?> finishedAt,
+      Value<int?> winnerPlayerId,
+    });
+
+final class $$MatchesTableReferences
+    extends BaseReferences<_$AppDatabase, $MatchesTable, Match> {
+  $$MatchesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $PlayersTable _winnerPlayerIdTable(_$AppDatabase db) =>
+      db.players.createAlias('matches__winner_player_id__players__id');
+
+  $$PlayersTableProcessedTableManager? get winnerPlayerId {
+    final $_column = $_itemColumn<int>('winner_player_id');
+    if ($_column == null) return null;
+    final manager = $$PlayersTableTableManager(
+      $_db,
+      $_db.players,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_winnerPlayerIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$GamesTable, List<Game>> _gamesRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.games,
+    aliasName: 'matches__id__games__match_id',
+  );
+
+  $$GamesTableProcessedTableManager get gamesRefs {
+    final manager = $$GamesTableTableManager(
+      $_db,
+      $_db.games,
+    ).filter((f) => f.matchId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_gamesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$MatchesTableFilterComposer
+    extends Composer<_$AppDatabase, $MatchesTable> {
+  $$MatchesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get startScore => $composableBuilder(
+    column: $table.startScore,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get doubleOut => $composableBuilder(
+    column: $table.doubleOut,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get legsToPlay => $composableBuilder(
+    column: $table.legsToPlay,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get finishedAt => $composableBuilder(
+    column: $table.finishedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$PlayersTableFilterComposer get winnerPlayerId {
+    final $$PlayersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.winnerPlayerId,
+      referencedTable: $db.players,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlayersTableFilterComposer(
+            $db: $db,
+            $table: $db.players,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> gamesRefs(
+    Expression<bool> Function($$GamesTableFilterComposer f) f,
+  ) {
+    final $$GamesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.games,
+      getReferencedColumn: (t) => t.matchId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$GamesTableFilterComposer(
+            $db: $db,
+            $table: $db.games,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$MatchesTableOrderingComposer
+    extends Composer<_$AppDatabase, $MatchesTable> {
+  $$MatchesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get startScore => $composableBuilder(
+    column: $table.startScore,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get doubleOut => $composableBuilder(
+    column: $table.doubleOut,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get legsToPlay => $composableBuilder(
+    column: $table.legsToPlay,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get finishedAt => $composableBuilder(
+    column: $table.finishedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$PlayersTableOrderingComposer get winnerPlayerId {
+    final $$PlayersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.winnerPlayerId,
+      referencedTable: $db.players,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlayersTableOrderingComposer(
+            $db: $db,
+            $table: $db.players,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MatchesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $MatchesTable> {
+  $$MatchesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get startScore => $composableBuilder(
+    column: $table.startScore,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get doubleOut =>
+      $composableBuilder(column: $table.doubleOut, builder: (column) => column);
+
+  GeneratedColumn<int> get legsToPlay => $composableBuilder(
+    column: $table.legsToPlay,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get startedAt =>
+      $composableBuilder(column: $table.startedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get finishedAt => $composableBuilder(
+    column: $table.finishedAt,
+    builder: (column) => column,
+  );
+
+  $$PlayersTableAnnotationComposer get winnerPlayerId {
+    final $$PlayersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.winnerPlayerId,
+      referencedTable: $db.players,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlayersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.players,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> gamesRefs<T extends Object>(
+    Expression<T> Function($$GamesTableAnnotationComposer a) f,
+  ) {
+    final $$GamesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.games,
+      getReferencedColumn: (t) => t.matchId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$GamesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.games,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$MatchesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $MatchesTable,
+          Match,
+          $$MatchesTableFilterComposer,
+          $$MatchesTableOrderingComposer,
+          $$MatchesTableAnnotationComposer,
+          $$MatchesTableCreateCompanionBuilder,
+          $$MatchesTableUpdateCompanionBuilder,
+          (Match, $$MatchesTableReferences),
+          Match,
+          PrefetchHooks Function({bool winnerPlayerId, bool gamesRefs})
+        > {
+  $$MatchesTableTableManager(_$AppDatabase db, $MatchesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MatchesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$MatchesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$MatchesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> startScore = const Value.absent(),
+                Value<bool> doubleOut = const Value.absent(),
+                Value<int> legsToPlay = const Value.absent(),
+                Value<DateTime> startedAt = const Value.absent(),
+                Value<DateTime?> finishedAt = const Value.absent(),
+                Value<int?> winnerPlayerId = const Value.absent(),
+              }) => MatchesCompanion(
+                id: id,
+                startScore: startScore,
+                doubleOut: doubleOut,
+                legsToPlay: legsToPlay,
+                startedAt: startedAt,
+                finishedAt: finishedAt,
+                winnerPlayerId: winnerPlayerId,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int startScore,
+                Value<bool> doubleOut = const Value.absent(),
+                required int legsToPlay,
+                Value<DateTime> startedAt = const Value.absent(),
+                Value<DateTime?> finishedAt = const Value.absent(),
+                Value<int?> winnerPlayerId = const Value.absent(),
+              }) => MatchesCompanion.insert(
+                id: id,
+                startScore: startScore,
+                doubleOut: doubleOut,
+                legsToPlay: legsToPlay,
+                startedAt: startedAt,
+                finishedAt: finishedAt,
+                winnerPlayerId: winnerPlayerId,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$MatchesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({winnerPlayerId = false, gamesRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [if (gamesRefs) db.games],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (winnerPlayerId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.winnerPlayerId,
+                                referencedTable: $$MatchesTableReferences
+                                    ._winnerPlayerIdTable(db),
+                                referencedColumn: $$MatchesTableReferences
+                                    ._winnerPlayerIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (gamesRefs)
+                    await $_getPrefetchedData<Match, $MatchesTable, Game>(
+                      currentTable: table,
+                      referencedTable: $$MatchesTableReferences._gamesRefsTable(
+                        db,
+                      ),
+                      managerFromTypedResult: (p0) =>
+                          $$MatchesTableReferences(db, table, p0).gamesRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.matchId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$MatchesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $MatchesTable,
+      Match,
+      $$MatchesTableFilterComposer,
+      $$MatchesTableOrderingComposer,
+      $$MatchesTableAnnotationComposer,
+      $$MatchesTableCreateCompanionBuilder,
+      $$MatchesTableUpdateCompanionBuilder,
+      (Match, $$MatchesTableReferences),
+      Match,
+      PrefetchHooks Function({bool winnerPlayerId, bool gamesRefs})
     >;
 typedef $$GamesTableCreateCompanionBuilder =
     GamesCompanion Function({
       Value<int> id,
       required int startScore,
       Value<bool> doubleOut,
+      Value<int?> matchId,
+      Value<int?> legNumber,
       Value<DateTime> startedAt,
       Value<DateTime?> finishedAt,
       Value<int?> winnerPlayerId,
@@ -2314,6 +3428,8 @@ typedef $$GamesTableUpdateCompanionBuilder =
       Value<int> id,
       Value<int> startScore,
       Value<bool> doubleOut,
+      Value<int?> matchId,
+      Value<int?> legNumber,
       Value<DateTime> startedAt,
       Value<DateTime?> finishedAt,
       Value<int?> winnerPlayerId,
@@ -2322,6 +3438,23 @@ typedef $$GamesTableUpdateCompanionBuilder =
 final class $$GamesTableReferences
     extends BaseReferences<_$AppDatabase, $GamesTable, Game> {
   $$GamesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $MatchesTable _matchIdTable(_$AppDatabase db) =>
+      db.matches.createAlias('games__match_id__matches__id');
+
+  $$MatchesTableProcessedTableManager? get matchId {
+    final $_column = $_itemColumn<int>('match_id');
+    if ($_column == null) return null;
+    final manager = $$MatchesTableTableManager(
+      $_db,
+      $_db.matches,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_matchIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
 
   static $PlayersTable _winnerPlayerIdTable(_$AppDatabase db) =>
       db.players.createAlias('games__winner_player_id__players__id');
@@ -2400,6 +3533,11 @@ class $$GamesTableFilterComposer extends Composer<_$AppDatabase, $GamesTable> {
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<int> get legNumber => $composableBuilder(
+    column: $table.legNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<DateTime> get startedAt => $composableBuilder(
     column: $table.startedAt,
     builder: (column) => ColumnFilters(column),
@@ -2409,6 +3547,29 @@ class $$GamesTableFilterComposer extends Composer<_$AppDatabase, $GamesTable> {
     column: $table.finishedAt,
     builder: (column) => ColumnFilters(column),
   );
+
+  $$MatchesTableFilterComposer get matchId {
+    final $$MatchesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.matchId,
+      referencedTable: $db.matches,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MatchesTableFilterComposer(
+            $db: $db,
+            $table: $db.matches,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 
   $$PlayersTableFilterComposer get winnerPlayerId {
     final $$PlayersTableFilterComposer composer = $composerBuilder(
@@ -2508,6 +3669,11 @@ class $$GamesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get legNumber => $composableBuilder(
+    column: $table.legNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get startedAt => $composableBuilder(
     column: $table.startedAt,
     builder: (column) => ColumnOrderings(column),
@@ -2517,6 +3683,29 @@ class $$GamesTableOrderingComposer
     column: $table.finishedAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  $$MatchesTableOrderingComposer get matchId {
+    final $$MatchesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.matchId,
+      referencedTable: $db.matches,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MatchesTableOrderingComposer(
+            $db: $db,
+            $table: $db.matches,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 
   $$PlayersTableOrderingComposer get winnerPlayerId {
     final $$PlayersTableOrderingComposer composer = $composerBuilder(
@@ -2562,6 +3751,9 @@ class $$GamesTableAnnotationComposer
   GeneratedColumn<bool> get doubleOut =>
       $composableBuilder(column: $table.doubleOut, builder: (column) => column);
 
+  GeneratedColumn<int> get legNumber =>
+      $composableBuilder(column: $table.legNumber, builder: (column) => column);
+
   GeneratedColumn<DateTime> get startedAt =>
       $composableBuilder(column: $table.startedAt, builder: (column) => column);
 
@@ -2569,6 +3761,29 @@ class $$GamesTableAnnotationComposer
     column: $table.finishedAt,
     builder: (column) => column,
   );
+
+  $$MatchesTableAnnotationComposer get matchId {
+    final $$MatchesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.matchId,
+      referencedTable: $db.matches,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MatchesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.matches,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 
   $$PlayersTableAnnotationComposer get winnerPlayerId {
     final $$PlayersTableAnnotationComposer composer = $composerBuilder(
@@ -2658,6 +3873,7 @@ class $$GamesTableTableManager
           (Game, $$GamesTableReferences),
           Game,
           PrefetchHooks Function({
+            bool matchId,
             bool winnerPlayerId,
             bool gameSeatsRefs,
             bool dartEventsRefs,
@@ -2679,6 +3895,8 @@ class $$GamesTableTableManager
                 Value<int> id = const Value.absent(),
                 Value<int> startScore = const Value.absent(),
                 Value<bool> doubleOut = const Value.absent(),
+                Value<int?> matchId = const Value.absent(),
+                Value<int?> legNumber = const Value.absent(),
                 Value<DateTime> startedAt = const Value.absent(),
                 Value<DateTime?> finishedAt = const Value.absent(),
                 Value<int?> winnerPlayerId = const Value.absent(),
@@ -2686,6 +3904,8 @@ class $$GamesTableTableManager
                 id: id,
                 startScore: startScore,
                 doubleOut: doubleOut,
+                matchId: matchId,
+                legNumber: legNumber,
                 startedAt: startedAt,
                 finishedAt: finishedAt,
                 winnerPlayerId: winnerPlayerId,
@@ -2695,6 +3915,8 @@ class $$GamesTableTableManager
                 Value<int> id = const Value.absent(),
                 required int startScore,
                 Value<bool> doubleOut = const Value.absent(),
+                Value<int?> matchId = const Value.absent(),
+                Value<int?> legNumber = const Value.absent(),
                 Value<DateTime> startedAt = const Value.absent(),
                 Value<DateTime?> finishedAt = const Value.absent(),
                 Value<int?> winnerPlayerId = const Value.absent(),
@@ -2702,6 +3924,8 @@ class $$GamesTableTableManager
                 id: id,
                 startScore: startScore,
                 doubleOut: doubleOut,
+                matchId: matchId,
+                legNumber: legNumber,
                 startedAt: startedAt,
                 finishedAt: finishedAt,
                 winnerPlayerId: winnerPlayerId,
@@ -2714,6 +3938,7 @@ class $$GamesTableTableManager
               .toList(),
           prefetchHooksCallback:
               ({
+                matchId = false,
                 winnerPlayerId = false,
                 gameSeatsRefs = false,
                 dartEventsRefs = false,
@@ -2740,6 +3965,19 @@ class $$GamesTableTableManager
                           dynamic
                         >
                       >(state) {
+                        if (matchId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.matchId,
+                                    referencedTable: $$GamesTableReferences
+                                        ._matchIdTable(db),
+                                    referencedColumn: $$GamesTableReferences
+                                        ._matchIdTable(db)
+                                        .id,
+                                  )
+                                  as T;
+                        }
                         if (winnerPlayerId) {
                           state =
                               state.withJoin(
@@ -2813,6 +4051,7 @@ typedef $$GamesTableProcessedTableManager =
       (Game, $$GamesTableReferences),
       Game,
       PrefetchHooks Function({
+        bool matchId,
         bool winnerPlayerId,
         bool gameSeatsRefs,
         bool dartEventsRefs,
@@ -3863,6 +5102,8 @@ class $AppDatabaseManager {
   $AppDatabaseManager(this._db);
   $$PlayersTableTableManager get players =>
       $$PlayersTableTableManager(_db, _db.players);
+  $$MatchesTableTableManager get matches =>
+      $$MatchesTableTableManager(_db, _db.matches);
   $$GamesTableTableManager get games =>
       $$GamesTableTableManager(_db, _db.games);
   $$GameSeatsTableTableManager get gameSeats =>

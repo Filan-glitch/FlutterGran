@@ -13,12 +13,17 @@ final ThrownDart sbull = ThrownDart(Segment.outerBull);
 
 /// Most rule tests start from a contrived low score so the interesting dart is
 /// the first one thrown.
-GameConfig config(int start, {int players = 1, bool doubleOut = true}) =>
-    GameConfig(
-      startScore: start,
-      playerIds: [for (var i = 1; i <= players; i++) i],
-      doubleOut: doubleOut,
-    );
+GameConfig config(
+  int start, {
+  int players = 1,
+  bool doubleOut = true,
+  int startingSeat = 0,
+}) => GameConfig(
+  startScore: start,
+  playerIds: [for (var i = 1; i <= players; i++) i],
+  doubleOut: doubleOut,
+  startingSeat: startingSeat,
+);
 
 void main() {
   group('opening state', () {
@@ -147,6 +152,33 @@ void main() {
         s(1), s(1), s(1), //   player 2: 3
       ]);
       expect(state.remaining, {1: 321, 2: 498});
+    });
+  });
+
+  group('starting seat', () {
+    test('the first seat leads off unless told otherwise', () {
+      expect(initialLegState(config(501, players: 2)).currentPlayerId, 1);
+    });
+
+    test('a later seat really does throw the first dart', () {
+      final state = foldLeg(config(501, players: 2, startingSeat: 1), [t(20)]);
+      expect(state.currentPlayerId, 2);
+      expect(state.remaining, {1: 501, 2: 441});
+      expect(state.dartsThrownBy(2), 1);
+      expect(state.dartsThrownBy(1), 0);
+    });
+
+    test('rotation carries on from wherever it started', () {
+      final state = foldLeg(config(501, players: 3, startingSeat: 2), [
+        for (var i = 0; i < 6; i++) miss,
+      ]);
+      expect(state.turns.map((turn) => turn.playerId), [3, 1]);
+      expect(state.currentPlayerId, 2);
+    });
+
+    test('the leg can still be won by whoever leads off', () {
+      final state = foldLeg(config(40, players: 2, startingSeat: 1), [d(20)]);
+      expect(state.winnerId, 2);
     });
   });
 

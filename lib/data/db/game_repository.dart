@@ -4,6 +4,7 @@ import '../../domain/segment.dart';
 import '../../domain/x01/game_config.dart';
 import '../../domain/x01/leg_reducer.dart';
 import '../../domain/x01/leg_state.dart';
+import '../../domain/x01/match_state.dart';
 import '../../domain/x01/thrown_dart.dart';
 import 'database.dart';
 
@@ -37,8 +38,15 @@ class GameRepository {
 
   // Games
 
-  /// Creates a game and seats its players in throwing order.
-  Future<int> startGame(GameConfig config) async {
+  /// Creates a leg and seats its players in throwing order.
+  ///
+  /// [matchId] and [legNumber] are left off for a leg played on its own, which
+  /// is every leg the app recorded before matches existed.
+  Future<int> startGame(
+    GameConfig config, {
+    int? matchId,
+    int? legNumber,
+  }) async {
     return db.transaction(() async {
       final gameId = await db
           .into(db.games)
@@ -46,6 +54,8 @@ class GameRepository {
             GamesCompanion.insert(
               startScore: config.startScore,
               doubleOut: Value(config.doubleOut),
+              matchId: Value(matchId),
+              legNumber: Value(legNumber),
             ),
           );
 
@@ -99,6 +109,146 @@ class GameRepository {
     await (db.delete(db.games)
           ..where((g) => g.id.isNotIn(withDarts) & g.finishedAt.isNull()))
         .go();
+  }
+
+  // Matches
+
+  /// Opens a match and throws its first leg.
+  ///
+  /// The two go together on purpose: a match with no leg under it has no
+  /// seating, and so nothing could be read back off it.
+  Future<({int matchId, int gameId})> startMatch(MatchConfig config) async {
+    return db.transaction(() async {
+      final matchId = await db
+          .into(db.matches)
+          .insert(
+            MatchesCompanion.insert(
+              startScore: config.startScore,
+              doubleOut: Value(config.doubleOut),
+              legsToPlay: config.legsToPlay,
+            ),
+          );
+      final gameId = await startNextLeg(matchId: matchId, config: config, legNumber: 0);
+      return (matchId: matchId, gameId: gameId);
+    });
+  }
+
+  /// Throws leg [legNumber] of a match, with the lead rotated into place.
+  Future<int> startNextLeg({
+    required int matchId,
+    required MatchConfig config,
+    required int legNumber,
+  }) => startGame(
+    config.legConfig(legNumber),
+    matchId: matchId,
+    legNumber: legNumber,
+  );
+
+  Future<void> finishMatch(int matchId, int winnerPlayerId) =>
+      (db.update(db.matches)..where((m) => m.id.equals(matchId))).write(
+        MatchesCompanion(
+          winnerPlayerId: Value(winnerPlayerId),
+          finishedAt: Value(DateTime.now()),
+        ),
+      );
+
+  /// Clears a result, for when the checkout that won the match is undone.
+  Future<void> reopenMatch(int matchId) =>
+      (db.update(db.matches)..where((m) => m.id.equals(matchId))).write(
+        const MatchesCompanion(
+          winnerPlayerId: Value(null),
+          finishedAt: Value(null),
+        ),
+      );
+
+  /// Rebuilds the format a match is being played to.
+  ///
+  /// Seating comes from the first leg rather than the match: everyone plays
+  /// every leg in the same order, so storing it twice would only give it a
+  /// chance to disagree with itself.
+  Future<MatchConfig?> loadMatchConfig(int matchId) async {
+    final match = await (db.select(db.matches)
+          ..where((m) => m.id.equals(matchId)))
+        .getSingleOrNull();
+    if (match == null) return null;
+
+    final first =
+        await (db.select(db.games)
+              ..where((g) => g.matchId.equals(matchId))
+              ..orderBy([(g) => OrderingTerm(expression: g.legNumber)])
+              ..limit(1))
+            .getSingleOrNull();
+    if (first == null) return null;
+
+    final seats = await _seatsOf(first.id);
+    if (seats.isEmpty) return null;
+
+    return MatchConfig(
+      startScore: match.startScore,
+      playerIds: seats,
+      doubleOut: match.doubleOut,
+      legsToPlay: match.legsToPlay,
+    );
+  }
+
+  /// A match's legs, replayed, in the order they were thrown.
+  ///
+  /// [beforeLegNumber] takes only the legs already decided by the time a given
+  /// leg started, which is what resuming mid-match needs.
+  Future<List<LegState>> loadMatchLegs(
+    int matchId, {
+    int? beforeLegNumber,
+  }) async {
+    final query = db.select(db.games)
+      ..where((g) => g.matchId.equals(matchId))
+      ..orderBy([(g) => OrderingTerm(expression: g.legNumber)]);
+    if (beforeLegNumber != null) {
+      query.where((g) => g.legNumber.isSmallerThanValue(beforeLegNumber));
+    }
+
+    final legs = <LegState>[];
+    for (final game in await query.get()) {
+      final config = await loadConfig(game.id);
+      if (config == null) continue;
+      legs.add(foldLeg(config, await loadLog(game.id)));
+    }
+    return legs;
+  }
+
+  /// Every match, folded from its legs.
+  ///
+  /// Joined to games rather than read from the matches table alone so that a
+  /// leg being won re-emits the tally: a stream over `select(matches)` is only
+  /// invalidated by writes to matches, and a match in progress never touches
+  /// its own row.
+  Stream<List<MatchState>> watchAllMatches() =>
+      (db.select(db.matches).join([
+            innerJoin(
+              db.games,
+              db.games.matchId.equalsExp(db.matches.id),
+              useColumns: false,
+            ),
+          ])
+            ..groupBy([db.matches.id]))
+          .watch()
+          .asyncMap((rows) async {
+            final states = <MatchState>[];
+            for (final row in rows) {
+              final id = row.readTable(db.matches).id;
+              final config = await loadMatchConfig(id);
+              if (config == null) continue;
+              states.add(foldMatch(config, await legWinners(id)));
+            }
+            return states;
+          });
+
+  /// Winners of a match's decided legs, oldest first.
+  Future<List<int>> legWinners(int matchId, {int? beforeLegNumber}) async {
+    final legs = await loadMatchLegs(
+      matchId,
+      beforeLegNumber: beforeLegNumber,
+    );
+    return [for (final leg in legs) ?leg.winnerId];
   }
 
   // Darts
@@ -190,7 +340,7 @@ class GameRepository {
         final legs = <LegState>[];
         for (final game in games) {
           final config = await loadConfig(game.id);
-          if (config == null || config.playerIds.isEmpty) continue;
+          if (config == null) continue;
           legs.add(foldLeg(config, await loadLog(game.id)));
         }
         return legs;
@@ -257,22 +407,42 @@ class GameRepository {
       db.delete(db.segmentCalibrations).go();
 
   /// Rebuilds the configuration a game was played under.
+  ///
+  /// Null for a game that cannot be replayed at all: one that is not there, and
+  /// one whose seats are not. A leg with no seats is a half-written row - the
+  /// rules it was played under are gone with them - and every caller already
+  /// has to handle the missing case, so it is handed the same nothing rather
+  /// than a config with no players that would trip [GameConfig]'s own assert.
   Future<GameConfig?> loadConfig(int gameId) async {
-    final game = await (db.select(db.games)
-          ..where((g) => g.id.equals(gameId)))
-        .getSingleOrNull();
+    final game = await loadGame(gameId);
     if (game == null) return null;
 
-    final seats =
+    final seats = await _seatsOf(gameId);
+    if (seats.isEmpty) return null;
+
+    return GameConfig(
+      startScore: game.startScore,
+      playerIds: seats,
+      doubleOut: game.doubleOut,
+      // Who threw first is not stored: it follows from the leg's position in
+      // its match, and a leg outside a match always opens on the first seat.
+      startingSeat: game.legNumber == null
+          ? 0
+          : startingSeatForLeg(game.legNumber!, seats.length),
+    );
+  }
+
+  Future<Game?> loadGame(int gameId) =>
+      (db.select(db.games)..where((g) => g.id.equals(gameId)))
+          .getSingleOrNull();
+
+  /// Player ids of a game, in throwing order.
+  Future<List<int>> _seatsOf(int gameId) async {
+    final rows =
         await (db.select(db.gameSeats)
               ..where((s) => s.gameId.equals(gameId))
               ..orderBy([(s) => OrderingTerm(expression: s.seat)]))
             .get();
-
-    return GameConfig(
-      startScore: game.startScore,
-      playerIds: [for (final seat in seats) seat.playerId],
-      doubleOut: game.doubleOut,
-    );
+    return [for (final row in rows) row.playerId];
   }
 }

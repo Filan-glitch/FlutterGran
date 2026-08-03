@@ -89,6 +89,7 @@ class GameController extends Notifier<GameSession> {
       leg: leg,
       acknowledgedTurns: state.acknowledgedTurns,
     );
+    _tellTheMatch(leg);
 
     _persist((repository, gameId) async {
       await repository.appendDart(
@@ -116,6 +117,7 @@ class GameController extends Notifier<GameSession> {
       leg: leg,
       acknowledgedTurns: min(state.acknowledgedTurns, leg.turns.length),
     );
+    _tellTheMatch(leg);
 
     _persist((repository, gameId) async {
       await repository.truncateLog(gameId, leg.darts.length);
@@ -124,6 +126,13 @@ class GameController extends Notifier<GameSession> {
       }
     });
   }
+
+  /// Lets the match record a result the moment a leg produces or loses one.
+  ///
+  /// The match is told the leg's winner rather than an event, so undoing a
+  /// checkout says exactly as much as throwing one did.
+  void _tellTheMatch(LegState leg) =>
+      ref.read(matchProvider.notifier).legSettled(leg.winnerId);
 
   /// Mirrors a change into the database, if a game is being persisted.
   ///

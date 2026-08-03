@@ -3,6 +3,7 @@ import 'package:fluttergran/domain/stats/player_stats.dart';
 import 'package:fluttergran/domain/x01/game_config.dart';
 import 'package:fluttergran/domain/x01/leg_reducer.dart';
 import 'package:fluttergran/domain/x01/leg_state.dart';
+import 'package:fluttergran/domain/x01/match_state.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
 import 'package:test/test.dart';
 
@@ -209,6 +210,78 @@ void main() {
       final winner = computePlayerStats(2, [lost]);
       expect(winner.legsWon, 1);
       expect(winner.bestCheckout, 40);
+    });
+  });
+
+  group('matches, counted alongside legs and never instead of them', () {
+    MatchState match(List<int> legWinners, {int legsToPlay = 3}) => foldMatch(
+      MatchConfig(
+        startScore: 501,
+        playerIds: const [1, 2],
+        legsToPlay: legsToPlay,
+      ),
+      legWinners,
+    );
+
+    test('no matches means no match figures, and legs are untouched', () {
+      final stats = statsFor([
+        leg(501, [t(20), t(20), t(20)]),
+      ]);
+
+      expect(stats.legsPlayed, 1);
+      expect(stats.matchesPlayed, 0);
+      expect(stats.matchesWon, 0);
+      expect(stats.matchWinRate, isNull);
+    });
+
+    test('a best of three won two one is one match and three legs', () {
+      final stats = computePlayerStats(
+        1,
+        [
+          leg(40, [d(20)], players: 2),
+          leg(40, [d(20)], players: 2),
+          leg(40, [d(20)], players: 2),
+        ],
+        matches: [
+          match(const [1, 2, 1]),
+        ],
+      );
+
+      expect(stats.legsPlayed, 3, reason: 'legs still mean legs');
+      expect(stats.matchesPlayed, 1);
+      expect(stats.matchesWon, 1);
+      expect(stats.matchWinRate, 1.0);
+    });
+
+    test('losing a match counts as played, not won', () {
+      final stats = computePlayerStats(
+        1,
+        const [],
+        matches: [
+          match(const [2, 2]),
+        ],
+      );
+
+      expect(stats.matchesPlayed, 1);
+      expect(stats.matchesWon, 0);
+      expect(stats.matchWinRate, 0.0);
+    });
+
+    test('a match still running counts as played', () {
+      final stats = computePlayerStats(1, const [], matches: [match(const [1])]);
+
+      expect(stats.matchesPlayed, 1);
+      expect(stats.matchesWon, 0);
+    });
+
+    test('a match somebody else played is skipped', () {
+      final stats = computePlayerStats(
+        9,
+        const [],
+        matches: [match(const [1, 1])],
+      );
+
+      expect(stats.matchesPlayed, 0);
     });
   });
 
