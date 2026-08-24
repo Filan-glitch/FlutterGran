@@ -172,6 +172,17 @@ Also needed:
 
 `BoardWidget` already handles arbitrary boxes correctly and needs nothing.
 
+**Shipped**, then extended for a connected Samsung Galaxy Tab S6 Lite: a
+second breakpoint (`heroLayout`) gives the tablet its own hero-card
+scoreboard, full-screen turn result, and dedicated checkout panel; setup,
+statistics, and diagnostics got a capped, centered content width instead of
+stretching edge to edge; the app locks to landscape past that breakpoint; and
+the keypad now hides itself once a real board is connected, recoverable
+through a Manual/Bluetooth-mode corner toggle. See "Layout" and "The keypad
+and a connected board" in [ARCHITECTURE.md](ARCHITECTURE.md) for the current
+state — this section is the history of how the first breakpoint got there,
+not a description of what ships today.
+
 ## Verification
 
 ```

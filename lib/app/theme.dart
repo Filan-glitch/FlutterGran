@@ -91,18 +91,82 @@ abstract final class Width {
 /// leave the score marooned at the top of a very wide screen.
 const double wideLayout = 600;
 
+/// Shortest side at which a device gets the hero treatment: per-player score
+/// cards instead of a thin column, the turn result as a full-screen takeover,
+/// checkout as its own panel rather than a strip - and the top [typeScaleFor]
+/// tier.
+///
+/// 780 rather than a rounder 800 or 900: a Samsung Galaxy Tab S6 Lite, a real
+/// 10.4" tablet and the device this was built against, measures 800dp on its
+/// shortest side at the display size Android ships it at (`adb shell wm size`
+/// / `wm density`: 1200x2000 physical @ 240dpi). The threshold has to clear
+/// that with room to spare, not sit above it, or the tablet this app is for
+/// gets the phone treatment.
+const double heroLayout = 780;
+
 /// How much larger type should be on a viewport of [size].
 ///
 /// The sizes in [Type] are chosen for a phone at arm's length. A tablet is not
 /// a big phone: it is further away, on a table or a stand, so the same 62px
 /// score that reads as a headline in the hand reads as ordinary across a room.
 /// Keyed to the shortest side, because that is what says how big the device is
-/// rather than which way up it is being held.
+/// rather than which way up it is being held. The top tier lines up with
+/// [heroLayout]: the device that earns the hero layout earns the hero type
+/// scale with it.
 double typeScaleFor(Size size) {
   final short = size.shortestSide;
-  if (short >= 900) return 1.5;
+  if (short >= heroLayout) return 1.5;
   if (short >= 700) return 1.25;
   return 1;
+}
+
+/// How wide a form-shaped screen's content is allowed to get.
+///
+/// Setup, statistics, and diagnostics are all one column of controls sized
+/// for a phone in the hand. Stretched across a tablet's full width that column
+/// does not become more readable, just sparser - a text field wide enough for
+/// a sentence, a row of numbers with the space of a paragraph between them.
+/// 640 keeps a column a hand can still take in at a glance; the rest of the
+/// width becomes margin, which is what a form on a big screen is supposed to
+/// do with the room it does not need.
+const double formContentWidth = 640;
+
+/// Wraps a form-shaped screen's body so it caps at [formContentWidth] and
+/// centers what is left over, without doing anything at all below that width
+/// - a phone screen is already narrower than the cap, so this is invisible on
+/// every device the app shipped for before a tablet.
+class CenteredContent extends StatelessWidget {
+  const CenteredContent({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    // A measured `Padding` rather than `Align`/`Center`/`Row`: `Scaffold`
+    // dry-layouts `bottomNavigationBar` to reserve its height, and
+    // `RenderPositionedBox` (what `Align`/`Center` build on) reports a bogus
+    // zero-height result under that probe, which zeroes the body along with
+    // it - a `Flex` sidesteps that but then cannot shrink itself below
+    // [formContentWidth] on a screen narrower than it, and overflows. Reading
+    // the real available width and turning it directly into inset padding
+    // avoids both: no positioning render object in the way of the probe, and
+    // a width that is never asked to exceed what is actually there.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final available = constraints.maxWidth;
+        final bounded = constraints.hasBoundedWidth;
+        final width = bounded && available < formContentWidth
+            ? available
+            : formContentWidth;
+        final inset = bounded ? (available - width) / 2 : 0.0;
+
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: inset),
+          child: SizedBox(width: width, child: child),
+        );
+      },
+    );
+  }
 }
 
 /// Type roles, named for their job rather than their size.

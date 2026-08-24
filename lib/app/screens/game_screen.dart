@@ -109,10 +109,37 @@ class GameScreen extends ConsumerWidget {
         ? ' · ${match.config.formatLabel}'
         : '';
 
+    // Shortest side, not the local width a LayoutBuilder would give: this is
+    // "how big is the device", the same question typeScaleFor answers, and
+    // the two are meant to move together - the device that earns bigger type
+    // earns the hero layout with it.
+    final hero = MediaQuery.sizeOf(context).shortestSide >= heroLayout;
+
+    final connectionState = ref.watch(boardConnectionProvider).value;
+    final boardConnected = connectionState?.isConnected ?? false;
+    final manualOverride = ref.watch(keypadOverrideProvider);
+
+    // The keypad is the fallback path: it disappears the moment a real board
+    // can be trusted to score for itself, and comes back the moment someone
+    // says otherwise, board present or not.
+    final keypadVisible = !boardConnected || manualOverride;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('${leg.config.startScore} · DOUBLE OUT$format'),
         actions: [
+          if (boardConnected)
+            IconButton(
+              key: const Key('keypad-override-toggle'),
+              onPressed: () =>
+                  ref.read(keypadOverrideProvider.notifier).toggle(),
+              icon: Icon(
+                manualOverride ? Icons.videogame_asset : Icons.dialpad,
+              ),
+              tooltip: manualOverride
+                  ? 'Hide manual entry'
+                  : 'Enter a score by hand',
+            ),
           IconButton(
             onPressed: leg.darts.isEmpty ? null : controller.undo,
             icon: const Icon(Icons.undo),
@@ -127,6 +154,7 @@ class GameScreen extends ConsumerWidget {
         // card is what makes it read as the end of a game instead of a
         // different screen.
         child: Stack(
+          key: const Key('game-body'),
           children: [
             LayoutBuilder(
               builder: (context, constraints) {
@@ -152,32 +180,38 @@ class GameScreen extends ConsumerWidget {
                 } else {
                   play = Column(
                     children: [
-                      _CheckoutStrip(routes: routes),
+                      hero
+                          ? _CheckoutPanel(routes: routes)
+                          : _CheckoutStrip(routes: routes),
                       Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(
-                            Gap.md,
-                            Gap.sm,
-                            Gap.md,
-                            Gap.md,
-                          ),
-                          child: DartKeypad(
-                            onDart: (segment) =>
-                                controller.addDart(ThrownDart(segment)),
-                            onMiss: () =>
-                                controller.addDart(const ThrownDart.miss()),
-                            highlight: routes.isEmpty
-                                ? const {}
-                                : routes.first.darts.toSet(),
-                          ),
-                        ),
+                        child: keypadVisible
+                            ? Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  Gap.md,
+                                  Gap.sm,
+                                  Gap.md,
+                                  Gap.md,
+                                ),
+                                child: DartKeypad(
+                                  onDart: (segment) => controller.addDart(
+                                    ThrownDart(segment),
+                                  ),
+                                  onMiss: () => controller.addDart(
+                                    const ThrownDart.miss(),
+                                  ),
+                                  highlight: routes.isEmpty
+                                      ? const {}
+                                      : routes.first.darts.toSet(),
+                                ),
+                              )
+                            : const _BoardIsScoring(),
                       ),
                     ],
                   );
                 }
 
                 final board = [
-                  _Scoreboard(leg: leg, names: names, match: match),
+                  _Scoreboard(leg: leg, names: names, match: match, hero: hero),
                   const Divider(),
                   _TurnLedger(session: session, names: names),
                 ];
@@ -210,6 +244,25 @@ class GameScreen extends ConsumerWidget {
                 );
               },
             ),
+            // On the tablet a turn result is the whole screen, not a panel
+            // sharing it: the split layout underneath still builds
+            // `_TurnConfirm` into its own play slot, which this simply
+            // covers - the score everyone was just watching goes away for a
+            // moment, on purpose, for the number that came off the board.
+            if (hero && session.awaitingTurnConfirm)
+              Positioned.fill(
+                child: ColoredBox(
+                  key: const Key('turn-result-overlay'),
+                  color: Palette.ground,
+                  child: _TurnConfirm(
+                    turn: session.pendingTurn!,
+                    leg: leg,
+                    names: names,
+                    onConfirm: controller.confirmTurn,
+                    onUndo: controller.undo,
+                  ),
+                ),
+              ),
             if (match != null && match.isFinished)
               Positioned.fill(
                 child: _MatchWon(match: match, names: names),
@@ -256,6 +309,7 @@ class _Scoreboard extends StatelessWidget {
     required this.leg,
     required this.names,
     required this.match,
+    required this.hero,
   });
 
   final LegState leg;
@@ -263,6 +317,9 @@ class _Scoreboard extends StatelessWidget {
 
   /// The match behind the leg, or null when there is not one worth showing.
   final MatchState? match;
+
+  /// Whether the device earns the per-player card treatment. See [heroLayout].
+  final bool hero;
 
   @override
   Widget build(BuildContext context) {
@@ -273,6 +330,38 @@ class _Scoreboard extends StatelessWidget {
     final legsWon = match != null && match!.config.isMultiLeg
         ? match!.legsWon
         : null;
+
+    if (hero) {
+      return Padding(
+        key: const Key('hero-scoreboard'),
+        padding: const EdgeInsets.symmetric(
+          horizontal: Gap.md,
+          vertical: Gap.md,
+        ),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (var seat = 0; seat < players.length; seat++) ...[
+                if (seat > 0) const SizedBox(width: Gap.md),
+                Expanded(
+                  child: _HeroPlayerCard(
+                    name: nameFor(names, players[seat]),
+                    remaining: leg.remaining[players[seat]]!,
+                    average: leg.averageFor(players[seat]),
+                    live:
+                        players[seat] == leg.currentPlayerId &&
+                        !leg.isFinished,
+                    won: leg.winnerId == players[seat],
+                    legsWon: legsWon?[players[seat]],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      );
+    }
 
     return Padding(
       padding: const EdgeInsets.only(top: Gap.sm, bottom: Gap.lg),
@@ -295,6 +384,89 @@ class _Scoreboard extends StatelessWidget {
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// A player's score as its own card, for a device far enough away to read as
+/// a piece of furniture rather than a phone: real borders instead of a
+/// hairline, room for the average and leg tally to sit beside the name rather
+/// than stacked under the score.
+///
+/// Carries the same fields and the same "only the thrower is lit" rule as
+/// [_PlayerColumn] - this is that idea with more room to say it in, not a
+/// different one.
+class _HeroPlayerCard extends StatelessWidget {
+  const _HeroPlayerCard({
+    required this.name,
+    required this.remaining,
+    required this.average,
+    required this.live,
+    required this.won,
+    required this.legsWon,
+  });
+
+  final String name;
+  final int remaining;
+  final double? average;
+  final bool live;
+  final bool won;
+  final int? legsWon;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = won ? Palette.trebleBed : Palette.live;
+    final lit = live || won;
+
+    return Container(
+      padding: const EdgeInsets.all(Gap.lg),
+      decoration: BoxDecoration(
+        color: lit ? Palette.raised : Palette.sunk,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: lit ? accent : Palette.edge, width: 2),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  name.toUpperCase(),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Type.title.copyWith(
+                    color: lit ? Palette.chalk : Palette.chalkDim,
+                  ),
+                ),
+              ),
+              if (legsWon != null)
+                Text(
+                  'LEGS $legsWon',
+                  style: Type.eyebrow.copyWith(
+                    color: legsWon! > 0 ? accent : Palette.chalkDim,
+                  ),
+                ),
+            ],
+          ),
+          const Spacer(),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              '$remaining',
+              style: Type.score.copyWith(
+                color: lit ? Palette.chalk : Palette.chalkDim,
+              ),
+            ),
+          ),
+          const SizedBox(height: Gap.xs),
+          Text(
+            average == null ? 'AVG —' : 'AVG ${average!.toStringAsFixed(1)}',
+            style: Type.label.copyWith(color: Palette.chalkDim),
+          ),
+        ],
       ),
     );
   }
@@ -502,6 +674,91 @@ class _CheckoutStrip extends StatelessWidget {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// What to throw, when there is something on - the tablet's own dedicated
+/// panel rather than a strip sharing a line with everything else.
+///
+/// This is exactly the figure the whole hero pass is for: the thing a player
+/// three metres from the screen, darts in hand, needs to read without walking
+/// closer. The best route gets real size; the alternates get their own lines
+/// underneath it rather than trailing off the edge of the screen.
+class _CheckoutPanel extends StatelessWidget {
+  const _CheckoutPanel({required this.routes});
+
+  final List<CheckoutRoute> routes;
+
+  @override
+  Widget build(BuildContext context) {
+    if (routes.isEmpty) {
+      return const SizedBox(height: Gap.md);
+    }
+
+    final alternates = routes.skip(1);
+
+    return Container(
+      key: const Key('checkout-panel'),
+      margin: const EdgeInsets.fromLTRB(Gap.md, Gap.md, Gap.md, 0),
+      padding: const EdgeInsets.all(Gap.lg),
+      decoration: BoxDecoration(
+        color: Palette.raised,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Palette.live, width: 2),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('CHECKOUT', style: Type.eyebrow.copyWith(color: Palette.live)),
+          const SizedBox(height: Gap.sm),
+          Text(
+            routes.first.toString(),
+            style: Type.notation.copyWith(color: Palette.live, fontSize: 34),
+          ),
+          for (final route in alternates)
+            Padding(
+              padding: const EdgeInsets.only(top: Gap.xs),
+              child: Text(
+                route.toString(),
+                style: Type.label.copyWith(color: Palette.chalkDim),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Stands in for the keypad while a real board is trusted to score for
+/// itself. Says where the keys went, so the toggle in the corner is
+/// discoverable rather than a control nobody knew to look for.
+class _BoardIsScoring extends StatelessWidget {
+  const _BoardIsScoring();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(Gap.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.bluetooth, color: Palette.chalkDim, size: 28),
+            const SizedBox(height: Gap.md),
+            Text(
+              'BLUETOOTH IS SCORING',
+              style: Type.eyebrow.copyWith(color: Palette.chalkDim),
+            ),
+            const SizedBox(height: Gap.sm),
+            Text(
+              'Use the corner button to key in a score by hand.',
+              textAlign: TextAlign.center,
+              style: Type.label.copyWith(color: Palette.chalkDim),
+            ),
+          ],
+        ),
       ),
     );
   }

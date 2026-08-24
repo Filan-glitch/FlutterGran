@@ -69,9 +69,9 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
         );
     if (!mounted) return;
 
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (context) => const GameScreen()),
-    );
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (context) => const GameScreen()));
   }
 
   /// Picks a stored leg back up exactly where it was left.
@@ -95,9 +95,9 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
     ref.read(currentGameIdProvider.notifier).set(resumable.gameId);
     ref.read(gameProvider.notifier).resume(config, darts);
 
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (context) => const GameScreen()),
-    );
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (context) => const GameScreen()));
   }
 
   @override
@@ -139,161 +139,173 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
         ],
       ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.sm, Gap.lg, Gap.lg),
-          children: [
-            if (resumable != null) ...[
-              _ResumeBanner(
-                resumable: resumable,
-                names: ref.watch(playerNamesProvider),
-                onResume: () => _resume(resumable),
-              ),
-              const SizedBox(height: Gap.xl),
-            ],
-            // The start score set as a scoreboard number rather than a form
-            // field: it is the number everyone is about to count down from.
-            const _Eyebrow('Start score'),
-            const SizedBox(height: Gap.md),
-            Row(
-              children: [
-                for (final score in GameConfig.offeredStartScores) ...[
-                  if (score != GameConfig.offeredStartScores.first)
-                    const SizedBox(width: Gap.sm),
-                  Expanded(
-                    child: _ScoreChoice(
-                      score: score,
-                      selected: score == _startScore,
-                      onTap: () => setState(() => _startScore = score),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-            const SizedBox(height: Gap.lg),
-            // Directly under the start score and styled identically, because
-            // the two together are the format: what you count down from, and
-            // how many times.
-            //
-            // Above two players, more than half of the legs is a target nobody
-            // need reach - three players can take one each - so the same choice
-            // is named for the target it really sets. The stored format does
-            // not change with the wording.
-            _Eyebrow(_headToHead ? 'Best of' : 'First to'),
-            const SizedBox(height: Gap.md),
-            Row(
-              children: [
-                for (final legs in offeredLegsToPlay) ...[
-                  if (legs != offeredLegsToPlay.first)
-                    const SizedBox(width: Gap.sm),
-                  Expanded(
-                    child: _ScoreChoice(
-                      score: _headToHead ? legs : legsToWinFor(legs),
-                      selected: legs == _legsToPlay,
-                      onTap: () => setState(() => _legsToPlay = legs),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-            const SizedBox(height: Gap.xl),
-            Row(
-              children: [
-                const _Eyebrow('Players'),
-                const Spacer(),
-                Text(
-                  _seats.isEmpty
-                      ? 'tap to add, in throwing order'
-                      : '${_seats.length} of ${GameConfig.maxPlayers}',
-                  style: Type.label.copyWith(color: Palette.chalkDim),
+        child: CenteredContent(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.sm, Gap.lg, Gap.lg),
+            children: [
+              if (resumable != null) ...[
+                _ResumeBanner(
+                  resumable: resumable,
+                  names: ref.watch(playerNamesProvider),
+                  onResume: () => _resume(resumable),
                 ),
+                const SizedBox(height: Gap.xl),
               ],
-            ),
-            const SizedBox(height: Gap.md),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _newPlayer,
-                    style: Type.body.copyWith(color: Palette.chalk),
-                    cursorColor: Palette.live,
-                    decoration: const InputDecoration(labelText: 'Add a player'),
-                    textInputAction: TextInputAction.done,
-                    onSubmitted: (_) => _addPlayer(),
-                  ),
-                ),
-                const SizedBox(width: Gap.sm),
-                SizedBox(
-                  height: 46,
-                  width: 46,
-                  child: FilledButton(
-                    onPressed: _addPlayer,
-                    style: FilledButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4),
+              // The start score set as a scoreboard number rather than a form
+              // field: it is the number everyone is about to count down from.
+              const _Eyebrow('Start score'),
+              const SizedBox(height: Gap.md),
+              Row(
+                children: [
+                  for (final score in GameConfig.offeredStartScores) ...[
+                    if (score != GameConfig.offeredStartScores.first)
+                      const SizedBox(width: Gap.sm),
+                    Expanded(
+                      child: _ScoreChoice(
+                        score: score,
+                        selected: score == _startScore,
+                        onTap: () => setState(() => _startScore = score),
                       ),
                     ),
-                    child: const Icon(Icons.add, size: 22),
+                  ],
+                ],
+              ),
+              const SizedBox(height: Gap.lg),
+              // Directly under the start score and styled identically, because
+              // the two together are the format: what you count down from, and
+              // how many times.
+              //
+              // Above two players, more than half of the legs is a target nobody
+              // need reach - three players can take one each - so the same choice
+              // is named for the target it really sets. The stored format does
+              // not change with the wording.
+              _Eyebrow(_headToHead ? 'Best of' : 'First to'),
+              const SizedBox(height: Gap.md),
+              Row(
+                children: [
+                  for (final legs in offeredLegsToPlay) ...[
+                    if (legs != offeredLegsToPlay.first)
+                      const SizedBox(width: Gap.sm),
+                    Expanded(
+                      child: _ScoreChoice(
+                        score: _headToHead ? legs : legsToWinFor(legs),
+                        selected: legs == _legsToPlay,
+                        onTap: () => setState(() => _legsToPlay = legs),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: Gap.xl),
+              Row(
+                children: [
+                  const _Eyebrow('Players'),
+                  const SizedBox(width: Gap.md),
+                  Expanded(
+                    child: Text(
+                      _seats.isEmpty
+                          ? 'tap to add, in throwing order'
+                          : '${_seats.length} of ${GameConfig.maxPlayers}',
+                      textAlign: TextAlign.right,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Type.label.copyWith(color: Palette.chalkDim),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: Gap.md),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _newPlayer,
+                      style: Type.body.copyWith(color: Palette.chalk),
+                      cursorColor: Palette.live,
+                      decoration: const InputDecoration(
+                        labelText: 'Add a player',
+                      ),
+                      textInputAction: TextInputAction.done,
+                      onSubmitted: (_) => _addPlayer(),
+                    ),
+                  ),
+                  const SizedBox(width: Gap.sm),
+                  SizedBox(
+                    height: 46,
+                    width: 46,
+                    child: FilledButton(
+                      onPressed: _addPlayer,
+                      style: FilledButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                      child: const Icon(Icons.add, size: 22),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: Gap.md),
+              switch (players) {
+                AsyncError(:final error) => Text(
+                  'Could not load players: $error',
+                  style: Type.body.copyWith(color: Palette.doubleBed),
+                ),
+                AsyncData(:final value) when value.isEmpty => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: Gap.xl),
+                  child: Text(
+                    'No players yet. Add the first one above.',
+                    style: Type.body.copyWith(color: Palette.chalkDim),
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: Gap.md),
-            switch (players) {
-              AsyncError(:final error) => Text(
-                'Could not load players: $error',
-                style: Type.body.copyWith(color: Palette.doubleBed),
-              ),
-              AsyncData(:final value) when value.isEmpty => Padding(
-                padding: const EdgeInsets.symmetric(vertical: Gap.xl),
-                child: Text(
-                  'No players yet. Add the first one above.',
-                  style: Type.body.copyWith(color: Palette.chalkDim),
+                AsyncData(:final value) => Column(
+                  children: [for (final player in value) _tile(player)],
                 ),
+                // Deliberately blank rather than a spinner: this is a local
+                // query that resolves in a frame, and a flash of spinner is
+                // worse than nothing.
+                _ => const SizedBox.shrink(),
+              },
+              const SizedBox(height: Gap.xl),
+              const _Eyebrow('Sound'),
+              const SizedBox(height: Gap.sm),
+              _SoundToggle(
+                label: 'Cues and commentary',
+                detail:
+                    'A click per dart, a buzz on a bust, a fanfare for a 180',
+                value: ref.watch(soundEnabledProvider),
+                onChanged: ref.read(soundEnabledProvider.notifier).set,
               ),
-              AsyncData(:final value) => Column(
-                children: [for (final player in value) _tile(player)],
+              _SoundToggle(
+                label: 'Spoken totals',
+                detail: 'Each turn read out loud',
+                value: ref.watch(speechEnabledProvider),
+                // With the master off there is nothing for this one to control,
+                // so it greys out rather than pretending. Its own setting is
+                // untouched underneath: turning sound back on returns the
+                // commentary to however the player last left it.
+                enabled: ref.watch(soundEnabledProvider),
+                onChanged: ref.read(speechEnabledProvider.notifier).set,
               ),
-              // Deliberately blank rather than a spinner: this is a local
-              // query that resolves in a frame, and a flash of spinner is
-              // worse than nothing.
-              _ => const SizedBox.shrink(),
-            },
-            const SizedBox(height: Gap.xl),
-            const _Eyebrow('Sound'),
-            const SizedBox(height: Gap.sm),
-            _SoundToggle(
-              label: 'Cues and commentary',
-              detail: 'A click per dart, a buzz on a bust, a fanfare for a 180',
-              value: ref.watch(soundEnabledProvider),
-              onChanged: ref.read(soundEnabledProvider.notifier).set,
-            ),
-            _SoundToggle(
-              label: 'Spoken totals',
-              detail: 'Each turn read out loud',
-              value: ref.watch(speechEnabledProvider),
-              // With the master off there is nothing for this one to control,
-              // so it greys out rather than pretending. Its own setting is
-              // untouched underneath: turning sound back on returns the
-              // commentary to however the player last left it.
-              enabled: ref.watch(soundEnabledProvider),
-              onChanged: ref.read(speechEnabledProvider.notifier).set,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.fromLTRB(Gap.lg, 0, Gap.lg, Gap.lg),
-        child: SizedBox(
-          width: double.infinity,
-          child: FilledButton(
-            onPressed: _seats.isEmpty ? null : _start,
-            child: Text(
-              _seats.isEmpty
-                  ? 'PICK AT LEAST ONE PLAYER'
-                  : _legsToPlay == 1
-                  ? 'START LEG'
-                  : 'START BEST OF $_legsToPlay',
+        child: CenteredContent(
+          child: SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: _seats.isEmpty ? null : _start,
+              child: Text(
+                _seats.isEmpty
+                    ? 'PICK AT LEAST ONE PLAYER'
+                    : _legsToPlay == 1
+                    ? 'START LEG'
+                    : 'START BEST OF $_legsToPlay',
+              ),
             ),
           ),
         ),
@@ -312,9 +324,7 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
         color: selected ? Palette.raised : Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(4),
-          side: BorderSide(
-            color: selected ? Palette.live : Palette.edge,
-          ),
+          side: BorderSide(color: selected ? Palette.live : Palette.edge),
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -562,7 +572,10 @@ class _ResumeBanner extends StatelessWidget {
                     ),
                   ],
                   const Spacer(),
-                  Text('RESUME', style: Type.eyebrow.copyWith(color: Palette.live)),
+                  Text(
+                    'RESUME',
+                    style: Type.eyebrow.copyWith(color: Palette.live),
+                  ),
                   const SizedBox(width: Gap.xs),
                   const Icon(Icons.play_arrow, color: Palette.live, size: 20),
                 ],

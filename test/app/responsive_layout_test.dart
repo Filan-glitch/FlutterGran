@@ -19,6 +19,14 @@ const phonePortrait = Size(411, 923); // Pixel 9a
 const phoneLandscape = Size(923, 411); // the same phone, turned
 const tablet = Size(834, 1194); // a 10-inch tablet, upright
 
+/// The Samsung Galaxy Tab S6 Lite (SM-P610) connected during development,
+/// landscape - measured with `adb shell wm size`/`wm density` (1200x2000
+/// physical, 240dpi default density: 1200/1.5 x 2000/1.5 logical, then
+/// swapped for landscape) rather than guessed. This is the shape the hero
+/// treatment has to reliably trigger for, at the display-size setting most
+/// people never touch.
+const tabS6Lite = Size(1333, 800);
+
 /// Silent, so nothing goes looking for an audio plugin.
 class _MutePlayer implements SoundPlayer {
   @override
@@ -69,7 +77,11 @@ void main() {
 
   /// Puts a leg on screen in a viewport of exactly [size], the way the device
   /// would - the app's own scaling included, since that is part of the layout.
-  Future<void> openAt(WidgetTester tester, Size size) async {
+  Future<void> openAt(
+    WidgetTester tester,
+    Size size, {
+    int startScore = 501,
+  }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -78,7 +90,9 @@ void main() {
     final ada = await repository.addPlayer('Ada');
     await container
         .read(matchProvider.notifier)
-        .start(MatchConfig(startScore: 501, playerIds: [finn.id, ada.id]));
+        .start(
+          MatchConfig(startScore: startScore, playerIds: [finn.id, ada.id]),
+        );
 
     await tester.pumpWidget(
       UncontrolledProviderScope(
@@ -172,8 +186,15 @@ void main() {
       expect(typeScaleFor(tablet), greaterThan(1));
       expect(
         typeScaleFor(const Size(1024, 1366)),
-        greaterThan(typeScaleFor(tablet)),
+        greaterThanOrEqualTo(typeScaleFor(tablet)),
       );
+    });
+
+    test('the connected tablet, at its default display size, gets the '
+        'biggest tier', () {
+      // 800dp shortest side - real hardware, not a round number chosen to
+      // make the threshold easy. The tier boundary has to sit at or below it.
+      expect(typeScaleFor(tabS6Lite), 1.5);
     });
 
     testWidgets('the score is drawn bigger on a tablet', (tester) async {
@@ -201,6 +222,106 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(find.text('180'), findsWidgets);
       expect(find.text('NEXT PLAYER'), findsOneWidget);
+    });
+  });
+
+  group('the hero treatment', () {
+    testWidgets('replaces the thin scoreboard row on the connected tablet', (
+      tester,
+    ) async {
+      await openAt(tester, tabS6Lite);
+      expect(find.byKey(const Key('hero-scoreboard')), findsOneWidget);
+    });
+
+    testWidgets('leaves the compact scoreboard alone on a phone', (
+      tester,
+    ) async {
+      await openAt(tester, phoneLandscape);
+      expect(find.byKey(const Key('hero-scoreboard')), findsNothing);
+    });
+
+    testWidgets('takes over the whole screen for a turn result', (
+      tester,
+    ) async {
+      await openAt(tester, tabS6Lite);
+
+      final controller = container.read(gameProvider.notifier);
+      for (var i = 0; i < 3; i++) {
+        controller.addDart(t(20));
+      }
+      await frames(tester);
+
+      // Covers exactly the body Scaffold gives it - the app bar stays put
+      // above it, everything below disappears under the result.
+      final overlay = where(
+        tester,
+        find.byKey(const Key('turn-result-overlay')),
+      );
+      final body = where(tester, find.byKey(const Key('game-body')));
+      expect(overlay.size, body.size);
+      expect(find.text('180'), findsWidgets);
+    });
+
+    testWidgets('leaves the result inline on a phone', (tester) async {
+      await openAt(tester, phoneLandscape);
+
+      final controller = container.read(gameProvider.notifier);
+      for (var i = 0; i < 3; i++) {
+        controller.addDart(t(20));
+      }
+      await frames(tester);
+
+      expect(find.byKey(const Key('turn-result-overlay')), findsNothing);
+      expect(find.text('180'), findsWidgets);
+    });
+
+    testWidgets('gives the checkout its own panel on the connected tablet', (
+      tester,
+    ) async {
+      await openAt(tester, tabS6Lite, startScore: 40);
+      expect(find.byKey(const Key('checkout-panel')), findsOneWidget);
+    });
+
+    testWidgets('keeps the checkout a strip on a phone', (tester) async {
+      await openAt(tester, phoneLandscape, startScore: 40);
+      expect(find.byKey(const Key('checkout-panel')), findsNothing);
+      expect(find.text('CHECKOUT'), findsOneWidget);
+    });
+  });
+
+  group('the keypad gives way to a connected board', () {
+    testWidgets('stays put with no board connected', (tester) async {
+      await openAt(tester, tabS6Lite);
+
+      expect(find.byType(DartKeypad), findsOneWidget);
+      expect(find.byKey(const Key('keypad-override-toggle')), findsNothing);
+    });
+
+    testWidgets('hides once a real board connects', (tester) async {
+      await openAt(tester, tabS6Lite);
+
+      await board.connect();
+      await frames(tester);
+
+      expect(find.byType(DartKeypad), findsNothing);
+      expect(find.byKey(const Key('keypad-override-toggle')), findsOneWidget);
+    });
+
+    testWidgets('the corner toggle brings it back, and hides it again', (
+      tester,
+    ) async {
+      await openAt(tester, tabS6Lite);
+      await board.connect();
+      await frames(tester);
+      expect(find.byType(DartKeypad), findsNothing);
+
+      await tester.tap(find.byKey(const Key('keypad-override-toggle')));
+      await frames(tester);
+      expect(find.byType(DartKeypad), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('keypad-override-toggle')));
+      await frames(tester);
+      expect(find.byType(DartKeypad), findsNothing);
     });
   });
 }
