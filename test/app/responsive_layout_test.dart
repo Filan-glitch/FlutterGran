@@ -81,6 +81,7 @@ void main() {
     WidgetTester tester,
     Size size, {
     int startScore = 501,
+    int legsToPlay = 1,
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -91,7 +92,11 @@ void main() {
     await container
         .read(matchProvider.notifier)
         .start(
-          MatchConfig(startScore: startScore, playerIds: [finn.id, ada.id]),
+          MatchConfig(
+            startScore: startScore,
+            playerIds: [finn.id, ada.id],
+            legsToPlay: legsToPlay,
+          ),
         );
 
     await tester.pumpWidget(
@@ -286,6 +291,68 @@ void main() {
       await openAt(tester, phoneLandscape, startScore: 40);
       expect(find.byKey(const Key('checkout-panel')), findsNothing);
       expect(find.text('CHECKOUT'), findsOneWidget);
+    });
+  });
+
+  group('the hero treatment does not fight itself', () {
+    testWidgets('does not also build the turn-result panel it is covering', (
+      tester,
+    ) async {
+      await openAt(tester, tabS6Lite);
+
+      final controller = container.read(gameProvider.notifier);
+      for (var i = 0; i < 3; i++) {
+        controller.addDart(t(20));
+      }
+      await frames(tester);
+
+      // One WRONG button, not two: the play-slot copy underneath the
+      // full-screen overlay should not be built at all, not merely hidden
+      // behind it.
+      expect(find.text('WRONG'), findsOneWidget);
+    });
+
+    testWidgets('gives way to the match-won card rather than bleeding '
+        'through it', (tester) async {
+      await openAt(tester, tabS6Lite, startScore: 2);
+
+      // A double 1 both checks out the leg and, at the default best-of-one,
+      // wins the match in the same dart - awaitingTurnConfirm and
+      // match.isFinished become true together, before FINISH is tapped.
+      container
+          .read(gameProvider.notifier)
+          .addDart(ThrownDart(const Segment(1, Ring.doubleRing)));
+      await frames(tester);
+
+      expect(find.text('MATCH WON'), findsOneWidget);
+      // The opaque turn-result overlay would otherwise sit between the
+      // scoreboard and MatchWon's 95%-opaque card, showing through as the
+      // wrong thing under it.
+      expect(find.byKey(const Key('turn-result-overlay')), findsNothing);
+    });
+  });
+
+  group('the hero scoreboard reserves live green for live state', () {
+    testWidgets('a legs tally on a card that is not throwing stays chalk', (
+      tester,
+    ) async {
+      await openAt(tester, tabS6Lite, startScore: 2, legsToPlay: 3);
+
+      // Finn (seat 0) leads leg 1 off and checks it out immediately.
+      container
+          .read(gameProvider.notifier)
+          .addDart(ThrownDart(const Segment(1, Ring.doubleRing)));
+      await frames(tester);
+      container.read(gameProvider.notifier).confirmTurn();
+      await frames(tester);
+      await container.read(matchProvider.notifier).startNextLeg();
+      await frames(tester);
+
+      // Leg 2 starts with Ada (seat 1) throwing first, so Finn's card is
+      // neither live nor the winner of the leg on screen - but still shows
+      // LEGS 1 from the match tally.
+      final legsText = tester.widget<Text>(find.text('LEGS 1'));
+      expect(legsText.style?.color, Palette.chalk);
     });
   });
 

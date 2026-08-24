@@ -162,7 +162,13 @@ class GameScreen extends ConsumerWidget {
                 // turn being confirmed, or the leg that has just ended. It is
                 // the same widget either way round - only where it sits moves.
                 final Widget play;
-                if (session.awaitingTurnConfirm) {
+                if (hero && session.awaitingTurnConfirm) {
+                  // The full-screen overlay below covers this slot entirely
+                  // (or, if the match just ended too, `_MatchWon` does) - so
+                  // there is nothing here worth spending a `_TurnConfirm`'s
+                  // layout and paint on every frame it is invisible.
+                  play = const SizedBox.shrink();
+                } else if (session.awaitingTurnConfirm) {
                   play = _TurnConfirm(
                     turn: session.pendingTurn!,
                     leg: leg,
@@ -245,11 +251,14 @@ class GameScreen extends ConsumerWidget {
               },
             ),
             // On the tablet a turn result is the whole screen, not a panel
-            // sharing it: the split layout underneath still builds
-            // `_TurnConfirm` into its own play slot, which this simply
-            // covers - the score everyone was just watching goes away for a
-            // moment, on purpose, for the number that came off the board.
-            if (hero && session.awaitingTurnConfirm)
+            // sharing it - the score everyone was just watching goes away
+            // for a moment, on purpose, for the number that came off the
+            // board. Skipped when the match just ended too: `_MatchWon`
+            // below takes over instead, and its own 95%-opaque card is
+            // meant to show the scoreboard through it, not this.
+            if (hero &&
+                session.awaitingTurnConfirm &&
+                !(match != null && match.isFinished))
               Positioned.fill(
                 child: ColoredBox(
                   key: const Key('turn-result-overlay'),
@@ -444,8 +453,12 @@ class _HeroPlayerCard extends StatelessWidget {
               if (legsWon != null)
                 Text(
                   'LEGS $legsWon',
+                  // Chalk, not `accent`: this is a match tally, not this
+                  // leg's live state, and `Palette.live` is spent only on
+                  // state, per its own doc - the same rule `_PlayerColumn`
+                  // follows for the identical figure.
                   style: Type.eyebrow.copyWith(
-                    color: legsWon! > 0 ? accent : Palette.chalkDim,
+                    color: legsWon! > 0 ? Palette.chalk : Palette.chalkDim,
                   ),
                 ),
             ],

@@ -179,6 +179,23 @@ void main() {
     await closeApp(tester);
   });
 
+  testWidgets('the start button lines up with the form above it on a wide '
+      'screen', (tester) async {
+    tester.view.physicalSize = const Size(1333, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await launch(tester, database);
+
+    final button = tester.getRect(find.byKey(const Key('start-leg-button')));
+    final scoreRow = tester.getRect(find.byKey(const Key('start-score-row')));
+
+    expect(button.left, scoreRow.left);
+    expect(button.right, scoreRow.right);
+
+    await closeApp(tester);
+  });
+
   group('orientation follows device size', () {
     late List<MethodCall> platformCalls;
 

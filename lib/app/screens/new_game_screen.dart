@@ -156,6 +156,7 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
               const _Eyebrow('Start score'),
               const SizedBox(height: Gap.md),
               Row(
+                key: const Key('start-score-row'),
                 children: [
                   for (final score in GameConfig.offeredStartScores) ...[
                     if (score != GameConfig.offeredStartScores.first)
@@ -292,12 +293,14 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(Gap.lg, 0, Gap.lg, Gap.lg),
-        child: CenteredContent(
+      bottomNavigationBar: CenteredContent(
+        child: Padding(
+          key: const Key('start-button-padding'),
+          padding: const EdgeInsets.fromLTRB(Gap.lg, 0, Gap.lg, Gap.lg),
           child: SizedBox(
             width: double.infinity,
             child: FilledButton(
+              key: const Key('start-leg-button'),
               onPressed: _seats.isEmpty ? null : _start,
               child: Text(
                 _seats.isEmpty
