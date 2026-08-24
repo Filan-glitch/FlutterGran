@@ -100,84 +100,87 @@ class _DiagnosticsScreenState extends ConsumerState<DiagnosticsScreen> {
         ],
       ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            SegmentedButton<BoardMode>(
-              segments: [
-                for (final option in BoardMode.values)
-                  ButtonSegment(
-                    value: option,
-                    label: Text(option.label.toUpperCase()),
-                  ),
-              ],
-              selected: {mode},
-              onSelectionChanged: (selection) async {
-                await ref.read(boardSourceProvider).disconnect();
-                ref.read(boardModeProvider.notifier).set(selection.first);
-                // The source is rebuilt by the mode change; resubscribe to it.
-                await _subscription?.cancel();
-                _listen();
-              },
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                _ConnectionPill(state: connection ?? source.currentState),
-                const Spacer(),
-                FilledButton(
-                  onPressed: source.connect,
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: Gap.lg,
-                      vertical: Gap.md,
+        child: CenteredContent(
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              SegmentedButton<BoardMode>(
+                segments: [
+                  for (final option in BoardMode.values)
+                    ButtonSegment(
+                      value: option,
+                      label: Text(option.label.toUpperCase()),
                     ),
-                  ),
-                  child: const Text('CONNECT'),
-                ),
-                const SizedBox(width: Gap.sm),
-                OutlinedButton(
-                  onPressed: source.disconnect,
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: Gap.lg,
-                      vertical: Gap.md,
+                ],
+                selected: {mode},
+                onSelectionChanged: (selection) async {
+                  await ref.read(boardSourceProvider).disconnect();
+                  ref.read(boardModeProvider.notifier).set(selection.first);
+                  // The source is rebuilt by the mode change; resubscribe to it.
+                  await _subscription?.cancel();
+                  _listen();
+                },
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  _ConnectionPill(state: connection ?? source.currentState),
+                  const Spacer(),
+                  FilledButton(
+                    onPressed: source.connect,
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: Gap.lg,
+                        vertical: Gap.md,
+                      ),
                     ),
+                    child: const Text('CONNECT'),
                   ),
-                  child: const Text('DISCONNECT'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            _CoverageSummary(coverage: coverage),
-            const SizedBox(height: 20),
-            Text(
-              'FRAMES',
-              style: Type.eyebrow.copyWith(color: Palette.chalkDim),
-            ),
-            const SizedBox(height: Gap.xs),
-            Text(
-              'Throw at a segment, then confirm the label or correct it.',
-              style: Type.label.copyWith(color: Palette.chalkDim),
-            ),
-            const SizedBox(height: 8),
-            if (_history.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 24),
-                child: Text('Nothing received yet.'),
-              )
-            else
-              for (final frame in _history)
-                _FrameRow(
-                  frame: frame,
-                  confirmed: frame.event is DartHit &&
-                      coverage.contains((frame.event as DartHit).segment),
-                  onConfirm: frame.event is DartHit
-                      ? () => _record(frame, (frame.event as DartHit).segment)
-                      : null,
-                  onCorrect: () => _correct(frame),
-                ),
-          ],
+                  const SizedBox(width: Gap.sm),
+                  OutlinedButton(
+                    onPressed: source.disconnect,
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: Gap.lg,
+                        vertical: Gap.md,
+                      ),
+                    ),
+                    child: const Text('DISCONNECT'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              _CoverageSummary(coverage: coverage),
+              const SizedBox(height: 20),
+              Text(
+                'FRAMES',
+                style: Type.eyebrow.copyWith(color: Palette.chalkDim),
+              ),
+              const SizedBox(height: Gap.xs),
+              Text(
+                'Throw at a segment, then confirm the label or correct it.',
+                style: Type.label.copyWith(color: Palette.chalkDim),
+              ),
+              const SizedBox(height: 8),
+              if (_history.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24),
+                  child: Text('Nothing received yet.'),
+                )
+              else
+                for (final frame in _history)
+                  _FrameRow(
+                    frame: frame,
+                    confirmed:
+                        frame.event is DartHit &&
+                        coverage.contains((frame.event as DartHit).segment),
+                    onConfirm: frame.event is DartHit
+                        ? () => _record(frame, (frame.event as DartHit).segment)
+                        : null,
+                    onCorrect: () => _correct(frame),
+                  ),
+            ],
+          ),
         ),
       ),
     );
@@ -236,10 +239,7 @@ class _CoverageSummary extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'COVERAGE',
-          style: Type.eyebrow.copyWith(color: Palette.chalkDim),
-        ),
+        Text('COVERAGE', style: Type.eyebrow.copyWith(color: Palette.chalkDim)),
         const SizedBox(height: Gap.sm),
         Row(
           crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -338,10 +338,7 @@ class _FrameRow extends StatelessWidget {
       contentPadding: EdgeInsets.zero,
       leading: SizedBox(
         width: 64,
-        child: Text(
-          frame.body,
-          style: Type.data.copyWith(color: Palette.live),
-        ),
+        child: Text(frame.body, style: Type.data.copyWith(color: Palette.live)),
       ),
       title: Text(label, style: Type.notation.copyWith(color: colour)),
       trailing: Row(

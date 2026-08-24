@@ -219,6 +219,41 @@ void main() {
     });
   });
 
+  group('the manual keypad override', () {
+    setUp(() => controller().restart());
+
+    test('board darts are ignored while it is open', () async {
+      container.read(keypadOverrideProvider.notifier).set(true);
+
+      board.hit(const Segment(20, Ring.triple));
+      await settle();
+
+      expect(session().leg.darts, isEmpty);
+    });
+
+    test('the board button still confirms while it is open', () async {
+      board.emitBatch(['3.4', '3.5', '3.6']);
+      await settle();
+      expect(session().awaitingTurnConfirm, isTrue);
+
+      container.read(keypadOverrideProvider.notifier).set(true);
+      board.pressButton();
+      await settle();
+
+      expect(session().awaitingTurnConfirm, isFalse);
+    });
+
+    test('board darts score again once it closes', () async {
+      container.read(keypadOverrideProvider.notifier).set(true);
+      container.read(keypadOverrideProvider.notifier).set(false);
+
+      board.hit(const Segment(20, Ring.triple));
+      await settle();
+
+      expect(session().leg.remaining[1], 441);
+    });
+  });
+
   group('resuming a stored leg', () {
     test('restores the scores and whose turn it is', () {
       final config = GameConfig(startScore: 501, playerIds: const [1, 2]);

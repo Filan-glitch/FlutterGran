@@ -127,6 +127,27 @@ final checkoutTableProvider = Provider<CheckoutTable>(
   (ref) => CheckoutTable(),
 );
 
+/// Whether the keypad is being shown by hand over a connected board.
+///
+/// Separate from [BoardMode]/[boardSourceProvider]: those decide which board
+/// the app is reading from, a setup-time choice buried in diagnostics. This is
+/// a mid-game visibility switch a player reaches for from the corner of the
+/// game screen - "let me key one in" - and it means nothing until there is a
+/// real board connected for the keypad to be hidden behind in the first place.
+class KeypadOverrideController extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void toggle() => state = !state;
+
+  void set(bool value) => state = value;
+}
+
+final keypadOverrideProvider =
+    NotifierProvider<KeypadOverrideController, bool>(
+      KeypadOverrideController.new,
+    );
+
 class GameConfigController extends Notifier<GameConfig> {
   @override
   GameConfig build() =>

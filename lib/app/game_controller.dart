@@ -43,6 +43,12 @@ class GameController extends Notifier<GameSession> {
   /// walked away from.
   bool _live = false;
 
+  /// Whether a player has pulled the keypad up over a connected board to key
+  /// scores in by hand. While it is open, board frames stop scoring - a tap
+  /// on the keypad and the board's own report of the same physical dart would
+  /// otherwise both land, doubling it.
+  bool _manualOverrideOpen = false;
+
   @override
   GameSession build() {
     final config = ref.watch(gameConfigProvider);
@@ -50,6 +56,14 @@ class GameController extends Notifier<GameSession> {
     ref.listen(boardEventsProvider, (previous, next) {
       final event = next.value;
       if (event != null) handleBoardEvent(event);
+    });
+
+    // Read rather than watched: the override can flip mid-leg without
+    // rebuilding this leg out from under the player, the way watching
+    // `gameConfigProvider` deliberately does for an actual config change.
+    _manualOverrideOpen = ref.read(keypadOverrideProvider);
+    ref.listen(keypadOverrideProvider, (previous, next) {
+      _manualOverrideOpen = next;
     });
 
     return GameSession(leg: initialLegState(config), acknowledgedTurns: 0);
@@ -62,12 +76,16 @@ class GameController extends Notifier<GameSession> {
 
     switch (event) {
       case DartHit(:final segment):
+        if (_manualOverrideOpen) return;
         addDart(ThrownDart(segment));
       case BoardMiss():
+        if (_manualOverrideOpen) return;
         addDart(const ThrownDart.miss());
       case ButtonPress():
         // The board's only confirmed input, bound to the one action the game
         // can live without if the 132's touch sensor turns out to be silent.
+        // Never gated on the override: confirming is not scoring, and is the
+        // one board input that stays useful with the keypad pulled up too.
         confirmTurn();
       case UnknownFrame():
         // Surfaced by the diagnostics screen, never scored.

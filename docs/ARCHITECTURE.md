@@ -155,21 +155,58 @@ friends — so the pair reads as one event instead of two sounds fighting.
 
 ### Layout
 
-One breakpoint, `wideLayout = 600` (`lib/app/theme.dart`):
+Two breakpoints, both `lib/app/theme.dart`, both keyed to the device's
+shortest side rather than a `LayoutBuilder`'s local width — the same question
+`typeScaleFor` answers, and the two are meant to move together:
 
-- **below** — the column: scoreboard, ledger, then keypad
-- **above** — scoreboard and ledger on the left, whatever is asking for a
-  decision on the right
+- `wideLayout = 600` — below it the game screen stacks scoreboard, ledger,
+  then keypad in a column; above it, scoreboard and ledger go left, whatever
+  is asking for a decision goes right. The right-hand side is the same widget
+  in both arrangements; only where it sits moves. Nothing shrinks to fit,
+  because the size of the score is what makes it readable from the oche.
+- `heroLayout = 780` — measured against a Samsung Galaxy Tab S6 Lite
+  (800dp shortest side at its shipped display size; see the doc comment on
+  `heroLayout` for the `adb shell wm size`/`wm density` numbers), a real
+  tablet's threshold rather than a round guess. At or above it: the
+  scoreboard becomes per-player hero cards (`_HeroPlayerCard`) instead of a
+  thin row, a turn's result becomes a full-screen takeover
+  (`Positioned.fill` in the same `Stack` `_MatchWon` already used) instead of
+  sharing the play slot, and checkout gets its own panel (`_CheckoutPanel`)
+  instead of a strip. `_Scaled` in `main.dart` also locks the app to
+  landscape at this threshold — a scoreboard on a stand is mounted once, not
+  rotated screen to screen.
 
-The right-hand side is the same widget in both arrangements; only where it sits
-moves. Nothing shrinks to fit, because the size of the score is what makes it
-readable from the oche.
+`typeScaleFor(size)` grows type on large viewports, keyed to the shortest
+side and applied once around the whole app in `main.dart` on top of the
+platform's own text setting; its top tier lines up with `heroLayout`. The
+panels built around `Spacer`s are wrapped in `_FitOrScroll`, which gives them
+the height when there is height and a scroll when there is not.
 
-`typeScaleFor(size)` grows type on large viewports, keyed to the shortest side
-and applied once around the whole app in `main.dart` on top of the platform's
-own text setting. The panels built around `Spacer`s are wrapped in
-`_FitOrScroll`, which gives them the height when there is height and a scroll
-when there is not.
+Setup, statistics, and diagnostics are all one column of controls sized for a
+phone. `CenteredContent` (`lib/app/theme.dart`) caps that column at
+`formContentWidth` (640) and centers it, so a tablet's extra width becomes
+margin rather than a stretched, sparse form — invisible on any screen
+narrower than the cap.
+
+### The keypad and a connected board
+
+`DartKeypad` is the manual-entry path — a player taps in what landed, and it
+calls `addDart` directly regardless of what is feeding the board. Once a real
+board is actually connected (`boardConnectionProvider`'s
+`BoardConnectionState.connected`, not the dev-only `BoardMode` enum — see
+below), the keypad hides itself: the board is trusted to score for itself,
+and a corner toggle on `game_screen` (labelled Manual/Bluetooth mode) brings
+the keypad back for a hand-entered correction. While that override is open,
+`GameController` suppresses board-driven `DartHit`/`BoardMiss` events
+(`keypadOverrideProvider`, checked in `handleBoardEvent`) so the same dart
+cannot score twice, once from the tap and once from the board's own frame.
+`ButtonPress` (`BTN@`) is never suppressed — confirming a turn is not
+scoring, and stays useful with the keypad pulled up.
+
+This is unrelated to `BoardMode`/`FakeBoardSource`: that pair picks which
+`BoardSource` implementation feeds the app (a scripted byte emitter for
+testing without hardware, or `BleBoardSource`) and lives only in the
+diagnostics screen — a developer's switch, never a player's.
 
 ## Where to start reading
 

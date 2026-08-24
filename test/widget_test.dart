@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/app/providers.dart';
@@ -58,6 +59,18 @@ void main() {
     // 501 is the default, and a leg cannot start without a player.
     expect(find.text('501'), findsOneWidget);
     expect(find.text('PICK AT LEAST ONE PLAYER'), findsOneWidget);
+
+    await closeApp(tester);
+  });
+
+  testWidgets('the empty roster prompt fits a phone width', (tester) async {
+    tester.view.physicalSize = const Size(411, 923);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await launch(tester, database);
+
+    expect(tester.takeException(), isNull);
 
     await closeApp(tester);
   });
@@ -164,5 +177,84 @@ void main() {
     expect(find.text('LEG IN PROGRESS'), findsNothing);
 
     await closeApp(tester);
+  });
+
+  testWidgets('the start button lines up with the form above it on a wide '
+      'screen', (tester) async {
+    tester.view.physicalSize = const Size(1333, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await launch(tester, database);
+
+    final button = tester.getRect(find.byKey(const Key('start-leg-button')));
+    final scoreRow = tester.getRect(find.byKey(const Key('start-score-row')));
+
+    expect(button.left, scoreRow.left);
+    expect(button.right, scoreRow.right);
+
+    await closeApp(tester);
+  });
+
+  group('orientation follows device size', () {
+    late List<MethodCall> platformCalls;
+
+    setUp(() {
+      platformCalls = [];
+      TestDefaultBinaryMessengerBinding
+          .instance
+          .defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+            platformCalls.add(call);
+            return null;
+          });
+    });
+
+    tearDown(() {
+      TestDefaultBinaryMessengerBinding
+          .instance
+          .defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null);
+    });
+
+    /// The last orientation list this session asked the platform for, or
+    /// null if it never has.
+    List<Object?>? lastRequestedOrientations() {
+      for (final call in platformCalls.reversed) {
+        if (call.method == 'SystemChrome.setPreferredOrientations') {
+          return call.arguments as List<Object?>;
+        }
+      }
+      return null;
+    }
+
+    testWidgets('locks to landscape on the connected tablet', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(1333, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      await launch(tester, database);
+
+      expect(
+        lastRequestedOrientations(),
+        unorderedEquals(['DeviceOrientation.landscapeLeft', 'DeviceOrientation.landscapeRight']),
+      );
+
+      await closeApp(tester);
+    });
+
+    testWidgets('leaves a phone free to rotate', (tester) async {
+      tester.view.physicalSize = const Size(411, 923);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      await launch(tester, database);
+
+      expect(lastRequestedOrientations(), isEmpty);
+
+      await closeApp(tester);
+    });
   });
 }

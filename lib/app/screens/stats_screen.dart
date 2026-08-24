@@ -79,80 +79,86 @@ class _Body extends ConsumerWidget {
       );
     }
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.sm, Gap.lg, Gap.xxl),
-      children: [
-        // The three-dart average is the number a darts player quotes when
-        // asked how they play, so it is the headline and everything else is
-        // supporting evidence.
-        _Headline(
-          value: stats.average == null
-              ? '—'
-              : stats.average!.toStringAsFixed(2),
-          label: 'Three-dart average',
-          detail: '${stats.dartsThrown} darts over ${stats.legsPlayed} '
-              '${stats.legsPlayed == 1 ? 'leg' : 'legs'}',
-        ),
-        const SizedBox(height: Gap.xl),
-        _Section(
-          title: 'Scoring',
-          rows: [
-            _Row('First 9 average', _decimal(stats.firstNineAverage)),
-            _Row('Best turn', '${stats.bestTurn}'),
-            _Row('180s', '${stats.turnsOf180}'),
-            _Row('140+', '${stats.turnsOf140Plus}'),
-            _Row('100+', '${stats.turnsOf100Plus}'),
-            _Row('60+', '${stats.turnsOf60Plus}'),
-          ],
-        ),
-        _Section(
-          title: 'Finishing',
-          rows: [
-            _Row('Checkout', _percent(stats.checkoutRate)),
-            _Row(
-              'Darts at double',
-              '${stats.doublesHit}/${stats.dartsAtDouble}',
-            ),
-            _Row('Best checkout', _optional(stats.bestCheckout)),
-            _Row('Best leg', _optional(stats.fewestDartsToWin, suffix: ' darts')),
-          ],
-        ),
-        _Section(
-          title: 'Legs',
-          rows: [
-            _Row('Won', '${stats.legsWon} of ${stats.legsPlayed}'),
-            _Row('Win rate', _percent(stats.winRate)),
-          ],
-        ),
-        // Its own section, under the legs rather than mixed into them: a leg
-        // and a match are different things to have won, and the figures above
-        // have always meant legs.
-        if (stats.matchesPlayed > 0)
+    return CenteredContent(
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.sm, Gap.lg, Gap.xxl),
+        children: [
+          // The three-dart average is the number a darts player quotes when
+          // asked how they play, so it is the headline and everything else is
+          // supporting evidence.
+          _Headline(
+            value: stats.average == null
+                ? '—'
+                : stats.average!.toStringAsFixed(2),
+            label: 'Three-dart average',
+            detail:
+                '${stats.dartsThrown} darts over ${stats.legsPlayed} '
+                '${stats.legsPlayed == 1 ? 'leg' : 'legs'}',
+          ),
+          const SizedBox(height: Gap.xl),
           _Section(
-            title: 'Matches',
+            title: 'Scoring',
             rows: [
-              _Row('Won', '${stats.matchesWon} of ${stats.matchesPlayed}'),
-              _Row('Win rate', _percent(stats.matchWinRate)),
+              _Row('First 9 average', _decimal(stats.firstNineAverage)),
+              _Row('Best turn', '${stats.bestTurn}'),
+              _Row('180s', '${stats.turnsOf180}'),
+              _Row('140+', '${stats.turnsOf140Plus}'),
+              _Row('100+', '${stats.turnsOf100Plus}'),
+              _Row('60+', '${stats.turnsOf60Plus}'),
             ],
           ),
-        const SizedBox(height: Gap.lg),
-        Text(
-          'WHERE THE DARTS LAND',
-          style: Type.eyebrow.copyWith(color: Palette.chalkDim),
-        ),
-        const SizedBox(height: Gap.xs),
-        Text(
-          counts.isEmpty
-              ? 'No darts recorded yet.'
-              : 'Shaded against the busiest segment.',
-          style: Type.label.copyWith(color: Palette.chalkDim),
-        ),
-        const SizedBox(height: Gap.md),
-        AspectRatio(
-          aspectRatio: 1,
-          child: BoardWidget(heat: _normalise(counts), showNumbers: false),
-        ),
-      ],
+          _Section(
+            title: 'Finishing',
+            rows: [
+              _Row('Checkout', _percent(stats.checkoutRate)),
+              _Row(
+                'Darts at double',
+                '${stats.doublesHit}/${stats.dartsAtDouble}',
+              ),
+              _Row('Best checkout', _optional(stats.bestCheckout)),
+              _Row(
+                'Best leg',
+                _optional(stats.fewestDartsToWin, suffix: ' darts'),
+              ),
+            ],
+          ),
+          _Section(
+            title: 'Legs',
+            rows: [
+              _Row('Won', '${stats.legsWon} of ${stats.legsPlayed}'),
+              _Row('Win rate', _percent(stats.winRate)),
+            ],
+          ),
+          // Its own section, under the legs rather than mixed into them: a leg
+          // and a match are different things to have won, and the figures above
+          // have always meant legs.
+          if (stats.matchesPlayed > 0)
+            _Section(
+              title: 'Matches',
+              rows: [
+                _Row('Won', '${stats.matchesWon} of ${stats.matchesPlayed}'),
+                _Row('Win rate', _percent(stats.matchWinRate)),
+              ],
+            ),
+          const SizedBox(height: Gap.lg),
+          Text(
+            'WHERE THE DARTS LAND',
+            style: Type.eyebrow.copyWith(color: Palette.chalkDim),
+          ),
+          const SizedBox(height: Gap.xs),
+          Text(
+            counts.isEmpty
+                ? 'No darts recorded yet.'
+                : 'Shaded against the busiest segment.',
+            style: Type.label.copyWith(color: Palette.chalkDim),
+          ),
+          const SizedBox(height: Gap.md),
+          AspectRatio(
+            aspectRatio: 1,
+            child: BoardWidget(heat: _normalise(counts), showNumbers: false),
+          ),
+        ],
+      ),
     );
   }
 
