@@ -184,6 +184,21 @@ abstract final class Type {
     ],
   );
 
+  /// The number that just came off the board, alone on the whole tablet
+  /// screen for a moment - the one place in the app with nothing else to
+  /// share the room with, so it takes far more of it than [score] does.
+  static const TextStyle scoreHero = TextStyle(
+    fontFamily: 'UbuntuSans',
+    fontSize: 150,
+    height: 0.95,
+    letterSpacing: -4,
+    fontFeatures: _figures,
+    fontVariations: [
+      FontVariation('wdth', Width.condensed),
+      FontVariation('wght', 800),
+    ],
+  );
+
   /// A score in a supporting position: a stat tile, a turn total.
   static const TextStyle scoreSmall = TextStyle(
     fontFamily: 'UbuntuSans',

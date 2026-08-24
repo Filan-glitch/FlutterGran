@@ -158,6 +158,42 @@ class GameScreen extends ConsumerWidget {
           children: [
             LayoutBuilder(
               builder: (context, constraints) {
+                final board = [
+                  _Scoreboard(leg: leg, names: names, match: match, hero: hero),
+                  const Divider(),
+                  _TurnLedger(session: session, names: names),
+                ];
+
+                // Nothing to key in, and nothing coming from a keypad that
+                // isn't there: a board doing its own scoring has no use for
+                // the half of the screen the keypad would otherwise reserve.
+                // Give that space to the players instead of an idle
+                // placeholder standing in for a control nobody can use.
+                final boardScoringAlone =
+                    !keypadVisible &&
+                    !session.awaitingTurnConfirm &&
+                    !leg.isFinished;
+                if (boardScoringAlone) {
+                  return Column(
+                    children: [
+                      hero
+                          ? _CheckoutPanel(routes: routes)
+                          : _CheckoutStrip(routes: routes),
+                      Expanded(
+                        child: _Scoreboard(
+                          leg: leg,
+                          names: names,
+                          match: match,
+                          hero: hero,
+                          expand: true,
+                        ),
+                      ),
+                      const Divider(),
+                      _TurnLedger(session: session, names: names),
+                    ],
+                  );
+                }
+
                 // Whatever is asking for a decision right now: the keypad, the
                 // turn being confirmed, or the leg that has just ended. It is
                 // the same widget either way round - only where it sits moves.
@@ -190,37 +226,27 @@ class GameScreen extends ConsumerWidget {
                           ? _CheckoutPanel(routes: routes)
                           : _CheckoutStrip(routes: routes),
                       Expanded(
-                        child: keypadVisible
-                            ? Padding(
-                                padding: const EdgeInsets.fromLTRB(
-                                  Gap.md,
-                                  Gap.sm,
-                                  Gap.md,
-                                  Gap.md,
-                                ),
-                                child: DartKeypad(
-                                  onDart: (segment) => controller.addDart(
-                                    ThrownDart(segment),
-                                  ),
-                                  onMiss: () => controller.addDart(
-                                    const ThrownDart.miss(),
-                                  ),
-                                  highlight: routes.isEmpty
-                                      ? const {}
-                                      : routes.first.darts.toSet(),
-                                ),
-                              )
-                            : const _BoardIsScoring(),
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(
+                            Gap.md,
+                            Gap.sm,
+                            Gap.md,
+                            Gap.md,
+                          ),
+                          child: DartKeypad(
+                            onDart: (segment) =>
+                                controller.addDart(ThrownDart(segment)),
+                            onMiss: () =>
+                                controller.addDart(const ThrownDart.miss()),
+                            highlight: routes.isEmpty
+                                ? const {}
+                                : routes.first.darts.toSet(),
+                          ),
+                        ),
                       ),
                     ],
                   );
                 }
-
-                final board = [
-                  _Scoreboard(leg: leg, names: names, match: match, hero: hero),
-                  const Divider(),
-                  _TurnLedger(session: session, names: names),
-                ];
 
                 // Side by side once there is width for it. Stacked, the score
                 // and the keypad are both squeezed into a height neither has;
@@ -319,6 +345,7 @@ class _Scoreboard extends StatelessWidget {
     required this.names,
     required this.match,
     required this.hero,
+    this.expand = false,
   });
 
   final LegState leg;
@@ -329,6 +356,13 @@ class _Scoreboard extends StatelessWidget {
 
   /// Whether the device earns the per-player card treatment. See [heroLayout].
   final bool hero;
+
+  /// Whether this is the only thing sharing the screen with the checkout
+  /// panel - a real board scoring for itself, nothing keyed in by hand to
+  /// stack a keypad's height against. Every player gets a card as tall as
+  /// the height that would otherwise sit empty under it, instead of one
+  /// sized to its own content and stranded above blank space.
+  final bool expand;
 
   @override
   Widget build(BuildContext context) {
@@ -341,59 +375,61 @@ class _Scoreboard extends StatelessWidget {
         : null;
 
     if (hero) {
+      final row = Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (var seat = 0; seat < players.length; seat++) ...[
+            if (seat > 0) const SizedBox(width: Gap.md),
+            Expanded(
+              child: _HeroPlayerCard(
+                name: nameFor(names, players[seat]),
+                remaining: leg.remaining[players[seat]]!,
+                average: leg.averageFor(players[seat]),
+                live: players[seat] == leg.currentPlayerId && !leg.isFinished,
+                won: leg.winnerId == players[seat],
+                legsWon: legsWon?[players[seat]],
+              ),
+            ),
+          ],
+        ],
+      );
+
       return Padding(
         key: const Key('hero-scoreboard'),
         padding: const EdgeInsets.symmetric(
           horizontal: Gap.md,
           vertical: Gap.md,
         ),
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (var seat = 0; seat < players.length; seat++) ...[
-                if (seat > 0) const SizedBox(width: Gap.md),
-                Expanded(
-                  child: _HeroPlayerCard(
-                    name: nameFor(names, players[seat]),
-                    remaining: leg.remaining[players[seat]]!,
-                    average: leg.averageFor(players[seat]),
-                    live:
-                        players[seat] == leg.currentPlayerId &&
-                        !leg.isFinished,
-                    won: leg.winnerId == players[seat],
-                    legsWon: legsWon?[players[seat]],
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
+        // `IntrinsicHeight` sizes the row to what the cards need on their
+        // own, which is exactly wrong when there is height on offer and
+        // nothing else asking for it: without it, a card in a `Row` this
+        // tall stretches to fill whatever its `Expanded` parent gives it.
+        child: expand ? row : IntrinsicHeight(child: row),
       );
     }
 
+    final row = Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (var seat = 0; seat < players.length; seat++) ...[
+          if (seat > 0) const VerticalDivider(width: 1),
+          Expanded(
+            child: _PlayerColumn(
+              name: nameFor(names, players[seat]),
+              remaining: leg.remaining[players[seat]]!,
+              average: leg.averageFor(players[seat]),
+              live: players[seat] == leg.currentPlayerId && !leg.isFinished,
+              won: leg.winnerId == players[seat],
+              legsWon: legsWon?[players[seat]],
+            ),
+          ),
+        ],
+      ],
+    );
+
     return Padding(
       padding: const EdgeInsets.only(top: Gap.sm, bottom: Gap.lg),
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            for (var seat = 0; seat < players.length; seat++) ...[
-              if (seat > 0) const VerticalDivider(width: 1),
-              Expanded(
-                child: _PlayerColumn(
-                  name: nameFor(names, players[seat]),
-                  remaining: leg.remaining[players[seat]]!,
-                  average: leg.averageFor(players[seat]),
-                  live: players[seat] == leg.currentPlayerId && !leg.isFinished,
-                  won: leg.winnerId == players[seat],
-                  legsWon: legsWon?[players[seat]],
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
+      child: expand ? row : IntrinsicHeight(child: row),
     );
   }
 }
@@ -463,14 +499,25 @@ class _HeroPlayerCard extends StatelessWidget {
                 ),
             ],
           ),
-          const Spacer(),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              '$remaining',
-              style: Type.score.copyWith(
-                color: lit ? Palette.chalk : Palette.chalkDim,
+          // `Expanded` + `SizedBox.expand` rather than `Spacer` + a
+          // size-to-content number: given real height (the card stretched to
+          // fill an otherwise-empty screen), this is what lets the digits
+          // grow to fill it instead of sitting at their normal size with
+          // blank space beneath them. `FittedBox` only fills a box it is
+          // given *tight* constraints for - `Expanded` alone only makes the
+          // height tight, so `expand` forces the width tight too, or the box
+          // (and the number in it) stays exactly its own natural size.
+          Expanded(
+            child: SizedBox.expand(
+              child: FittedBox(
+                fit: BoxFit.contain,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  '$remaining',
+                  style: Type.score.copyWith(
+                    color: lit ? Palette.chalk : Palette.chalkDim,
+                  ),
+                ),
               ),
             ),
           ),
@@ -527,12 +574,16 @@ class _PlayerColumn extends StatelessWidget {
           style: Type.eyebrow.copyWith(color: lit ? accent : Palette.chalkDim),
         ),
         const SizedBox(height: Gap.sm),
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(
-            '$remaining',
-            style: Type.score.copyWith(
-              color: lit ? Palette.chalk : Palette.chalkDim,
+        Expanded(
+          child: SizedBox.expand(
+            child: FittedBox(
+              fit: BoxFit.contain,
+              child: Text(
+                '$remaining',
+                style: Type.score.copyWith(
+                  color: lit ? Palette.chalk : Palette.chalkDim,
+                ),
+              ),
             ),
           ),
         ),
@@ -744,39 +795,6 @@ class _CheckoutPanel extends StatelessWidget {
   }
 }
 
-/// Stands in for the keypad while a real board is trusted to score for
-/// itself. Says where the keys went, so the toggle in the corner is
-/// discoverable rather than a control nobody knew to look for.
-class _BoardIsScoring extends StatelessWidget {
-  const _BoardIsScoring();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(Gap.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.bluetooth, color: Palette.chalkDim, size: 28),
-            const SizedBox(height: Gap.md),
-            Text(
-              'BLUETOOTH IS SCORING',
-              style: Type.eyebrow.copyWith(color: Palette.chalkDim),
-            ),
-            const SizedBox(height: Gap.sm),
-            Text(
-              'Use the corner button to key in a score by hand.',
-              textAlign: TextAlign.center,
-              style: Type.label.copyWith(color: Palette.chalkDim),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 /// Held after every turn, in place of the keypad rather than over it.
 ///
 /// Taking the keys away is the point: it makes a stray tap impossible while
@@ -798,6 +816,12 @@ class _TurnConfirm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // This is always either the phone's inline panel or the tablet's
+    // full-screen takeover, never both from the same call site - the two
+    // never overlap, so the device is enough to tell which one this is.
+    final hero = MediaQuery.sizeOf(context).shortestSide >= heroLayout;
+    final dartsThrown = turn.darts.map((dart) => dart.label).join('  ·  ');
+
     return _FitOrScroll(
       child: Padding(
         padding: const EdgeInsets.all(Gap.xl),
@@ -806,19 +830,33 @@ class _TurnConfirm extends StatelessWidget {
             const Spacer(),
             Text(
               nameFor(names, turn.playerId).toUpperCase(),
-              style: Type.eyebrow.copyWith(color: Palette.chalkDim),
+              style: hero
+                  ? Type.title.copyWith(
+                      color: Palette.chalkDim,
+                      letterSpacing: 2,
+                    )
+                  : Type.eyebrow.copyWith(color: Palette.chalkDim),
             ),
+            if (hero && dartsThrown.isNotEmpty) ...[
+              const SizedBox(height: Gap.sm),
+              Text(
+                dartsThrown,
+                style: Type.title.copyWith(color: Palette.chalkDim),
+              ),
+            ],
             const SizedBox(height: Gap.md),
             Text(
               turn.busted ? 'BUST' : '${turn.scored}',
-              style: Type.score.copyWith(
+              style: (hero ? Type.scoreHero : Type.score).copyWith(
                 color: turn.busted ? Palette.doubleBed : Palette.chalk,
               ),
             ),
             const SizedBox(height: Gap.sm),
             Text(
               '${turn.scoreBefore} → ${turn.scoreAfter}',
-              style: Type.label.copyWith(color: Palette.chalkDim),
+              style: (hero ? Type.scoreSmall : Type.label).copyWith(
+                color: Palette.chalkDim,
+              ),
             ),
             const Spacer(),
             Row(
