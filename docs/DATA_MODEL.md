@@ -1,6 +1,6 @@
 # Data model
 
-Drift over SQLite, currently at **schema version 3**.
+Drift over SQLite, currently at **schema version 4**.
 Definitions: `lib/data/db/database.dart`. Queries: `lib/data/db/game_repository.dart`.
 
 ## The one idea
@@ -20,8 +20,6 @@ month later cannot disagree.
 Players ──┬──< GameSeats >── Games ──> Matches
           │                    │
           └──< DartEvents >────┘
-
-SegmentCalibrations   (standalone; about the board, not the game)
 ```
 
 ### `Players`
@@ -102,19 +100,6 @@ Two deliberate choices:
 - **`value` is denormalised** *only* so that rule-free aggregates — the accuracy
   heatmap — stay a single query. Nothing that applies rules reads it.
 
-### `SegmentCalibrations` — what a frame code means on this board
-
-| Column | Notes |
-|---|---|
-| `body` | frame body with `@` stripped — primary key |
-| `number`, `ring` | what it was confirmed to mean |
-| `corrected` | true when it disagrees with the shipped table |
-| `verifiedAt` | |
-
-Rows with `corrected = true` become the codec's override layer; the rest are
-confirmations, which are what the coverage checklist counts. See
-[BOARD_PROTOCOL.md](BOARD_PROTOCOL.md#calibration).
-
 ## Migrations
 
 `AppDatabase.migration`, in the same file:
@@ -123,6 +108,15 @@ confirmations, which are what the coverage checklist counts. See
 |---|---|
 | **v2** | creates `SegmentCalibrations` |
 | **v3** | creates `Matches`, then **adds** `Games.matchId` and `Games.legNumber` |
+| **v4** | **drops** `SegmentCalibrations` |
+
+`SegmentCalibrations` recorded what a frame code was confirmed to mean on the
+board it was verified against, with a `corrected` flag for rows that disagreed
+with the shipped table — those became the codec's override layer, and the rest
+were what the diagnostics screen's coverage checklist counted. Hardware day
+(2026-09-04) found zero corrections against a real 132, so the table, the
+override layer, and the screen around them are all gone; see
+[BOARD_PROTOCOL.md](BOARD_PROTOCOL.md#the-segment-table-is-settled).
 
 The v3 migration **does not backfill**. A leg thrown before matches existed
 belongs to no match, and inventing one for it would invent a result nobody

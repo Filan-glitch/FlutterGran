@@ -1,8 +1,5 @@
-import 'dart:io';
-
 import 'package:fluttergran/data/board/board_source.dart';
 import 'package:fluttergran/data/board/fake_board_source.dart';
-import 'package:fluttergran/data/board/frame_recorder.dart';
 import 'package:fluttergran/domain/board_event.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:test/test.dart';
@@ -108,60 +105,6 @@ void main() {
       // Without the reset the body would be the bogus '2.3.4'.
       expect(events.single, isA<DartHit>());
       expect((events.single as DartHit).segment.value, 60);
-    });
-  });
-
-  group('recording', () {
-    test('captures raw bytes and replays to the same events', () async {
-      final directory = await Directory.systemTemp.createTemp('fluttergran');
-      addTearDown(() => directory.delete(recursive: true));
-
-      final recorder = FrameRecorder(File('${directory.path}/capture.tsv'));
-      await recorder.start();
-
-      final recorded = FakeBoardSource();
-      final recordingReader = BoardReader(
-        source: recorded,
-        recorder: recorder,
-      );
-      final live = <BoardEvent>[];
-      recordingReader.events.listen(live.add);
-
-      recorded.emitBatch(['3.4', '3.4', 'OUT']);
-      recorded.emitSplit('8.0');
-      await settle();
-      await recorder.stop();
-
-      final chunks = await FrameRecorder.load(recorder.file);
-      expect(chunks, isNotEmpty);
-
-      await recordingReader.dispose();
-      await recorded.dispose();
-
-      // Replaying the capture through a fresh reader reproduces the session.
-      await board.replay(chunks, speed: 1000);
-      await settle();
-
-      expect(
-        events.map((e) => e.runtimeType),
-        live.map((e) => e.runtimeType),
-      );
-    });
-
-    test('a malformed capture line is skipped, not fatal', () async {
-      final directory = await Directory.systemTemp.createTemp('fluttergran');
-      addTearDown(() => directory.delete(recursive: true));
-
-      final file = File('${directory.path}/capture.tsv');
-      await file.writeAsString(
-        '0\t332e3440\t3.4@\n'
-        'not-a-number\tzz\tjunk\n'
-        '10\t8.0@\n', // truncated line, no hex column pair
-      );
-
-      final chunks = await FrameRecorder.load(file);
-      expect(chunks, hasLength(1));
-      expect(chunks.single.ascii, '3.4@');
     });
   });
 }
