@@ -2,7 +2,6 @@ import 'dart:async';
 
 import '../../domain/segment.dart';
 import 'board_source.dart';
-import 'frame_recorder.dart';
 import 'granboard_segment_map.dart';
 
 /// Frame body for a segment, on a standard board.
@@ -108,25 +107,4 @@ class FakeBoardSource implements BoardSource {
   /// is thrown at immediately after connecting.
   void emitGreetingGluedTo(String body) =>
       emitRaw('$greeting$body@'.codeUnits);
-
-  /// Replays a capture, preserving the gaps between notifications.
-  ///
-  /// [speed] above 1 replays faster; timing only matters for exercising the
-  /// dedupe window.
-  Future<void> replay(
-    List<RecordedChunk> chunks, {
-    double speed = 1.0,
-  }) async {
-    var elapsed = Duration.zero;
-    for (final chunk in chunks) {
-      final gap = chunk.offset - elapsed;
-      if (gap > Duration.zero) {
-        await Future<void>.delayed(
-          Duration(microseconds: (gap.inMicroseconds / speed).round()),
-        );
-      }
-      elapsed = chunk.offset;
-      emitRaw(chunk.bytes);
-    }
-  }
 }

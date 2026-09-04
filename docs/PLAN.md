@@ -79,8 +79,8 @@ Sanity check that validates the table: the grid is 12 columns × 7 rows = 84 slo
 | Stats | Scoring core, checkout stats, first-9 average, per-segment heatmap |
 | Persistence | `drift` over SQLite |
 | State | `riverpod`; **game engine is pure Dart with zero Flutter imports** |
-| Fake board | Emits raw byte frames through the real parser; frame recorder for replay |
-| Calibration | Live diagnostic screen, tap-to-correct, 82-cell coverage checklist, override file |
+| Fake board | Emits raw byte frames through the real parser (test-only; no frame recorder — see below) |
+| Calibration | *Removed 2026-09-04.* Hardware day found the shipped table needed no corrections, so the diagnostic screen, coverage checklist, and codec override layer it existed for are gone. The board tab is now one connection icon |
 | Board writes | **None.** Read-only. All audio is app-side |
 
 ### Why `flutter_blue_plus` needs a note
@@ -108,23 +108,27 @@ lib/
   data/
     board/
       frame_assembler.dart       buffer, greeting strip, @-split, dedupe
-      segment_codec.dart         frame body -> BoardEvent, base table + override layer
+      segment_codec.dart         frame body -> BoardEvent, base table (no override layer - see below)
       board_source.dart          abstract Stream<List<int>> rawFrames + connection state
       ble_board_source.dart      flutter_blue_plus impl: scan by service, notify, backoff reconnect
-      fake_board_source.dart     scripted raw frames incl. split/glued/duplicate cases
-      frame_recorder.dart        appends every raw chunk to a file
+      fake_board_source.dart     scripted raw frames incl. split/glued/duplicate cases (test-only)
     db/
       database.dart              drift: Players, Games, Legs, DartEvents
       stats_dao.dart             aggregate queries
   app/
-    providers.dart               riverpod; boardSourceProvider overridden by the fake
-    screens/                     game, turn_summary, roster, game_setup, stats, diagnostics
-    widgets/board_widget.dart    82 tappable regions — serves entry pad, heatmap, calibration
+    providers.dart               riverpod; boardSourceProvider always builds BleBoardSource, tests override it
+    screens/                     game, turn_summary, roster, game_setup, stats
+    widgets/board_widget.dart    82 tappable regions — serves entry pad and heatmap
+    widgets/board_connection_button.dart   one icon: tap to connect/disconnect, coloured by state
 assets/
-  segment_map.json               base table (3s-derived)
+  segment_map.json               base table (3s-derived, verified against a real 132 on hardware day)
 ```
 
-**The board widget is one component doing three jobs** — manual entry pad, heatmap render, and calibration target picker. It was already on the critical path; the heatmap is close to free once it exists.
+**Removed 2026-09-04**, once hardware day answered what they existed to answer: the
+diagnostics screen, `segment_codec.dart`'s override layer, the `SegmentCalibrations`
+table, and `frame_recorder.dart` (never wired to a file, never used). The board widget
+now does two jobs, not three — manual entry pad and heatmap render — and the setup
+screen's board tab is `BoardConnectionButton`: one icon, tap to connect or disconnect.
 
 **Checkout preference cost function:** fewest darts first, then prefer finishing on D20/D16, then prefer leaving an even number, then prefer higher-percentage triples. Correctness is pinned by asserting the canonical pro checkout table for every 3-dart finish 2–170, and asserting *no* route exists for the bogey numbers 169, 168, 166, 165, 163, 162, 159.
 
@@ -193,10 +197,16 @@ dart test test/domain            # engine + checkout, no Flutter binding needed
     confirmed as `GRANBOARD`. The connect path itself was broken going in —
     see the `BleBoardSource._findBoard` fix note below — and needed fixing
     before any of this could be tested at all.
-  - **Not done:** the fixture recording. `FrameRecorder` exists
-    (`lib/data/board/frame_recorder.dart`) but nothing wires it to a `File` or
-    a diagnostics-screen control yet, so no replay fixture was captured this
-    session.
+  - **Fixture recording:** never wired up (`FrameRecorder` sat unused since it
+    was written), so no replay fixture was ever captured. Moot now: with the
+    table, `BTN@`, and `OUT@` all confirmed and nothing left to verify,
+    `frame_recorder.dart` was deleted on 2026-09-04 rather than wired up.
+  - **UI, 2026-09-04:** the diagnostics screen, coverage checklist, and codec
+    override layer that this milestone needed are removed along with it -
+    see the "Removed 2026-09-04" note under Architecture. The setup screen's
+    board tab is now `BoardConnectionButton`: one icon, tap to connect or
+    disconnect, coloured by state (white unclicked, blue connecting, green
+    connected, red disconnected).
 
 ---
 

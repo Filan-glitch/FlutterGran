@@ -5,10 +5,9 @@ importantly — which parts of this are **verified** and which are **inference**
 
 > **Read this first.** Everything below about the 132's sensor matrix is
 > derived from the **GRANBOARD 3s**. Six independent implementations agree on
-> the 3s exactly. **No public source has ever verified the 132.** Until the
-> calibration screen has confirmed it against real hardware, treat the segment
-> table as a provisional default, not as fact. This is why the app ships a
-> calibration screen at all.
+> the 3s exactly. Hardware day (2026-09-04) verified it against a real
+> **132**: all 82 scoring segments decoded correctly, with nothing to
+> correct. Treat the table below as confirmed, not provisional.
 
 ## What kind of device it is
 
@@ -102,46 +101,23 @@ neither.
 | Frames are ASCII, terminated by `@` | Confirmed across implementations |
 | Payload is `column.row`, not a score | Confirmed |
 | The 3s segment table | Confirmed for the **3s** |
-| The 3s table applies to the **132** | **Assumed.** The open question this app was built to answer |
+| The 3s table applies to the **132** | **Confirmed 2026-09-04.** 82/82 segments verified live, zero corrections |
 | `GB<n>;<ddd>` greeting on connect | Confirmed |
 | Frames split, glued and duplicated | Confirmed on real hardware |
-| `BTN@` on the 132 | Unknown |
-| `OUT@` on the 132 | Unknown; the 3s reportedly never sends it |
-| The full advertised BLE name | Unknown; only the prefix `GRAN` is confirmed |
+| `BTN@` on the 132 | **Confirmed 2026-09-04.** Fires. |
+| `OUT@` on the 132 | **Confirmed 2026-09-04.** Fires, unlike the 3s. |
+| The full advertised BLE name | **Confirmed 2026-09-04.** `GRANBOARD` |
 
-## Correcting the table on your board
+## Hardware day (2026-09-04) — done
 
-The app never guesses. An unrecognised body becomes `UnknownFrame` carrying the
-body **verbatim**, because on an unverified board that log line is the only
-evidence of what the hardware actually does.
-
-To fix a board whose matrix differs: **Board diagnostics** → source **Bluetooth**
-→ connect → throw at every segment. Each frame shows its raw body and what the
-table thinks it means, with **Right** to confirm and **Wrong** to correct.
-
-Corrections are written to `SegmentCalibrations` and pushed into the **live
-decoder** immediately — the codec is mutated in place rather than rebuilt,
-because rebuilding would tear down the connection while somebody is standing at
-the oche. The next dart scores correctly with no reconnect.
-
-The coverage bar reaches **82** when every scoring area has been verified.
-
-Lookup order is always **overrides first, then the shipped table**, so a
-correction takes effect on the very next dart and survives restarts.
-
-## Hardware day
-
-The list of things only a connected 132 can settle:
-
-- Does the 132's matrix match the 3s table, or does calibration fill with
-  corrections?
-- Does the touch sensor emit `BTN@`?
-- Does `OUT@` ever fire?
-- What is the full advertised name?
-
-`lib/data/board/frame_recorder.dart` captures the raw byte stream **before any
-parsing**, so a session with real hardware can be replayed later as a fixture
-and the answers turned into tests.
+Every question above that needed a real 132 to answer has been answered. The
+app never guesses on a bad frame - an unrecognised body still becomes
+`UnknownFrame` carrying the body **verbatim** - but the calibration screen that
+existed to confirm or correct the table live (raw body, decoded meaning,
+right/wrong, an 82-cell coverage checklist, a codec override layer) is gone
+now that there is nothing left for it to find. See `BOARD_PROTOCOL.md` for
+the full results and the connect-path bug that had to be fixed before any of
+this could be tested.
 
 ## See also
 
