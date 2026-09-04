@@ -188,15 +188,31 @@ dart test test/domain            # engine + checkout, no Flutter binding needed
 - **M6** — play three legs, then confirm all-time stats match hand-computed values from the event log.
 - **M7** — on device: airplane-mode toggle mid-game must reconnect and resume without corrupting the leg.
 - **M8 (hardware day)** — connect, open diagnostics, throw at every one of the 82 segments and confirm the coverage checklist fills with zero corrections (or record the corrections). Verify the touch sensor emits `BTN@`. Verify whether `OUT@` ever fires. Save a recorded frame file as a permanent replay fixture.
+  - **Done 2026-09-04:** connected to a real 132, 82/82 verified with zero
+    corrections, `BTN@` and `OUT@` both confirmed firing, advertised name
+    confirmed as `GRANBOARD`. The connect path itself was broken going in —
+    see the `BleBoardSource._findBoard` fix note below — and needed fixing
+    before any of this could be tested at all.
+  - **Not done:** the fixture recording. `FrameRecorder` exists
+    (`lib/data/board/frame_recorder.dart`) but nothing wires it to a `File` or
+    a diagnostics-screen control yet, so no replay fixture was captured this
+    session.
 
 ---
 
 ## Open questions to resolve on hardware day
 
-1. Does the 132's segment matrix match the 3s table? (calibration screen answers this)
-2. Does the touch sensor emit `BTN@`? If not, turn-summary dismissal is tap-only — already the designed fallback, so nothing breaks.
-3. Does `OUT@` ever fire? granbridge reports the 3s effectively never sends it despite the vendor spec listing an out sensor; a writable "out sensitivity" setting (0–15) exists and may ship at zero.
-4. What is the full advertised device name? Only the prefix `GRAN` is confirmed.
-5. What do the `GB<n>;<ddd>` greeting fields mean? Model + firmware is inference only.
+1. ~~Does the 132's segment matrix match the 3s table?~~ **Resolved:** yes. All
+   82 segments verified against a real 132 with zero corrections — the
+   shipped table is correct as-is.
+2. ~~Does the touch sensor emit `BTN@`?~~ **Resolved:** yes, confirmed live
+   during calibration.
+3. ~~Does `OUT@` ever fire?~~ **Resolved:** yes, confirmed live — unlike the
+   3s, which granbridge reports effectively never sends it.
+4. ~~What is the full advertised device name?~~ **Resolved:** `GRANBOARD`
+   (confirmed via an unfiltered `bluetoothctl` scan against the connected
+   board).
+5. What do the `GB<n>;<ddd>` greeting fields mean? Model + firmware is
+   inference only. Still open.
 
 Deferred beyond MVP, in rough priority order: legs and sets, double-in / straight-out variants, LED integration (lighting the checkout double on the board is the strongest feature this hardware allows), setup-shot advice above 170, editing arbitrary past darts, and configurable double preference.

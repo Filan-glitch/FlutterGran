@@ -108,17 +108,22 @@ The coverage bar reaches **82** when every scoring area has been verified
 
 ## Hardware day
 
-Questions that can only be answered with a 132 connected:
+Questions that can only be answered with a 132 connected — all resolved
+2026-09-04 against a real board:
 
-- Does the 132's matrix match the 3s table, or does calibration fill up with
-  corrections?
-- Does the touch sensor emit `BTN@`? Nothing needed for play depends on it —
-  the button is a convenience for confirming a turn.
-- Does `OUT@` ever fire? The 3s reportedly never sends it.
-- What is the full advertised name? Only the prefix `GRAN` is confirmed.
+- ~~Does the 132's matrix match the 3s table, or does calibration fill up with
+  corrections?~~ **Matches.** 82/82 segments verified with zero corrections.
+- ~~Does the touch sensor emit `BTN@`?~~ **Yes**, confirmed live.
+- ~~Does `OUT@` ever fire?~~ **Yes**, confirmed live (the 3s reportedly never
+  sends it, so this is a real difference between the two boards).
+- ~~What is the full advertised name?~~ **`GRANBOARD`**, confirmed via an
+  unfiltered `bluetoothctl` scan against the connected board.
 
 `lib/data/board/frame_recorder.dart` exists for exactly this: it captures raw
 frames so a session with real hardware can be replayed later as a fixture.
+Nothing wires it to a `File` or a diagnostics-screen control yet, though, so no
+fixture was captured this session — that wiring is still needed before the
+next hardware session can leave one behind.
 
 ## Playing without a board
 
@@ -136,5 +141,16 @@ without matching the documented UUID. A dropped connection schedules a
 reconnect with backoff (`reconnectDelay`, tested in
 `test/app/reconnect_delay_test.dart`) for as long as a connection is still
 wanted.
+
+**Found and fixed on hardware day:** `_findBoard()` awaited
+`FlutterBluePlus.startScan(timeout: scanTimeout)` to learn whether the board
+had been found, but that call's Future resolves as soon as the platform scan
+*starts* - the plugin's `timeout` is a fire-and-forget internal timer, not
+something the caller can await. Every connect attempt was therefore declaring
+the board absent and tearing the scan down within milliseconds of starting it,
+before any advertisement could arrive - the board never had a chance to be
+found. The fix races the completer that the scan-results listener fills in
+against `scanTimeout` directly, instead of trusting `startScan`'s return to
+mean anything about elapsed time.
 
 **The MVP is read-only. Nothing writes to the board.** All audio is app-side.
