@@ -303,6 +303,16 @@ class $MatchesTable extends Matches with TableInfo<$MatchesTable, Match> {
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  @override
+  late final GeneratedColumnWithTypeConverter<GameMode, String> gameMode =
+      GeneratedColumn<String>(
+        'game_mode',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('x01'),
+      ).withConverter<GameMode>($MatchesTable.$convertergameMode);
   static const VerificationMeta _startedAtMeta = const VerificationMeta(
     'startedAt',
   );
@@ -346,6 +356,7 @@ class $MatchesTable extends Matches with TableInfo<$MatchesTable, Match> {
     startScore,
     doubleOut,
     legsToPlay,
+    gameMode,
     startedAt,
     finishedAt,
     winnerPlayerId,
@@ -436,6 +447,12 @@ class $MatchesTable extends Matches with TableInfo<$MatchesTable, Match> {
         DriftSqlType.int,
         data['${effectivePrefix}legs_to_play'],
       )!,
+      gameMode: $MatchesTable.$convertergameMode.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}game_mode'],
+        )!,
+      ),
       startedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}started_at'],
@@ -455,6 +472,9 @@ class $MatchesTable extends Matches with TableInfo<$MatchesTable, Match> {
   $MatchesTable createAlias(String alias) {
     return $MatchesTable(attachedDatabase, alias);
   }
+
+  static JsonTypeConverter2<GameMode, String, String> $convertergameMode =
+      const EnumNameConverter<GameMode>(GameMode.values);
 }
 
 class Match extends DataClass implements Insertable<Match> {
@@ -465,6 +485,11 @@ class Match extends DataClass implements Insertable<Match> {
   /// Best of this many legs. 1 is a single leg, which is what every game
   /// recorded before matches existed is.
   final int legsToPlay;
+
+  /// Stored by name, like [DartEvents.ring] - see the note there. Every match
+  /// recorded before this column existed was x01, which is also the default
+  /// for a fresh insert until a second mode has a setup screen to choose from.
+  final GameMode gameMode;
   final DateTime startedAt;
   final DateTime? finishedAt;
   final int? winnerPlayerId;
@@ -473,6 +498,7 @@ class Match extends DataClass implements Insertable<Match> {
     required this.startScore,
     required this.doubleOut,
     required this.legsToPlay,
+    required this.gameMode,
     required this.startedAt,
     this.finishedAt,
     this.winnerPlayerId,
@@ -484,6 +510,11 @@ class Match extends DataClass implements Insertable<Match> {
     map['start_score'] = Variable<int>(startScore);
     map['double_out'] = Variable<bool>(doubleOut);
     map['legs_to_play'] = Variable<int>(legsToPlay);
+    {
+      map['game_mode'] = Variable<String>(
+        $MatchesTable.$convertergameMode.toSql(gameMode),
+      );
+    }
     map['started_at'] = Variable<DateTime>(startedAt);
     if (!nullToAbsent || finishedAt != null) {
       map['finished_at'] = Variable<DateTime>(finishedAt);
@@ -500,6 +531,7 @@ class Match extends DataClass implements Insertable<Match> {
       startScore: Value(startScore),
       doubleOut: Value(doubleOut),
       legsToPlay: Value(legsToPlay),
+      gameMode: Value(gameMode),
       startedAt: Value(startedAt),
       finishedAt: finishedAt == null && nullToAbsent
           ? const Value.absent()
@@ -520,6 +552,9 @@ class Match extends DataClass implements Insertable<Match> {
       startScore: serializer.fromJson<int>(json['startScore']),
       doubleOut: serializer.fromJson<bool>(json['doubleOut']),
       legsToPlay: serializer.fromJson<int>(json['legsToPlay']),
+      gameMode: $MatchesTable.$convertergameMode.fromJson(
+        serializer.fromJson<String>(json['gameMode']),
+      ),
       startedAt: serializer.fromJson<DateTime>(json['startedAt']),
       finishedAt: serializer.fromJson<DateTime?>(json['finishedAt']),
       winnerPlayerId: serializer.fromJson<int?>(json['winnerPlayerId']),
@@ -533,6 +568,9 @@ class Match extends DataClass implements Insertable<Match> {
       'startScore': serializer.toJson<int>(startScore),
       'doubleOut': serializer.toJson<bool>(doubleOut),
       'legsToPlay': serializer.toJson<int>(legsToPlay),
+      'gameMode': serializer.toJson<String>(
+        $MatchesTable.$convertergameMode.toJson(gameMode),
+      ),
       'startedAt': serializer.toJson<DateTime>(startedAt),
       'finishedAt': serializer.toJson<DateTime?>(finishedAt),
       'winnerPlayerId': serializer.toJson<int?>(winnerPlayerId),
@@ -544,6 +582,7 @@ class Match extends DataClass implements Insertable<Match> {
     int? startScore,
     bool? doubleOut,
     int? legsToPlay,
+    GameMode? gameMode,
     DateTime? startedAt,
     Value<DateTime?> finishedAt = const Value.absent(),
     Value<int?> winnerPlayerId = const Value.absent(),
@@ -552,6 +591,7 @@ class Match extends DataClass implements Insertable<Match> {
     startScore: startScore ?? this.startScore,
     doubleOut: doubleOut ?? this.doubleOut,
     legsToPlay: legsToPlay ?? this.legsToPlay,
+    gameMode: gameMode ?? this.gameMode,
     startedAt: startedAt ?? this.startedAt,
     finishedAt: finishedAt.present ? finishedAt.value : this.finishedAt,
     winnerPlayerId: winnerPlayerId.present
@@ -568,6 +608,7 @@ class Match extends DataClass implements Insertable<Match> {
       legsToPlay: data.legsToPlay.present
           ? data.legsToPlay.value
           : this.legsToPlay,
+      gameMode: data.gameMode.present ? data.gameMode.value : this.gameMode,
       startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
       finishedAt: data.finishedAt.present
           ? data.finishedAt.value
@@ -585,6 +626,7 @@ class Match extends DataClass implements Insertable<Match> {
           ..write('startScore: $startScore, ')
           ..write('doubleOut: $doubleOut, ')
           ..write('legsToPlay: $legsToPlay, ')
+          ..write('gameMode: $gameMode, ')
           ..write('startedAt: $startedAt, ')
           ..write('finishedAt: $finishedAt, ')
           ..write('winnerPlayerId: $winnerPlayerId')
@@ -598,6 +640,7 @@ class Match extends DataClass implements Insertable<Match> {
     startScore,
     doubleOut,
     legsToPlay,
+    gameMode,
     startedAt,
     finishedAt,
     winnerPlayerId,
@@ -610,6 +653,7 @@ class Match extends DataClass implements Insertable<Match> {
           other.startScore == this.startScore &&
           other.doubleOut == this.doubleOut &&
           other.legsToPlay == this.legsToPlay &&
+          other.gameMode == this.gameMode &&
           other.startedAt == this.startedAt &&
           other.finishedAt == this.finishedAt &&
           other.winnerPlayerId == this.winnerPlayerId);
@@ -620,6 +664,7 @@ class MatchesCompanion extends UpdateCompanion<Match> {
   final Value<int> startScore;
   final Value<bool> doubleOut;
   final Value<int> legsToPlay;
+  final Value<GameMode> gameMode;
   final Value<DateTime> startedAt;
   final Value<DateTime?> finishedAt;
   final Value<int?> winnerPlayerId;
@@ -628,6 +673,7 @@ class MatchesCompanion extends UpdateCompanion<Match> {
     this.startScore = const Value.absent(),
     this.doubleOut = const Value.absent(),
     this.legsToPlay = const Value.absent(),
+    this.gameMode = const Value.absent(),
     this.startedAt = const Value.absent(),
     this.finishedAt = const Value.absent(),
     this.winnerPlayerId = const Value.absent(),
@@ -637,6 +683,7 @@ class MatchesCompanion extends UpdateCompanion<Match> {
     required int startScore,
     this.doubleOut = const Value.absent(),
     required int legsToPlay,
+    this.gameMode = const Value.absent(),
     this.startedAt = const Value.absent(),
     this.finishedAt = const Value.absent(),
     this.winnerPlayerId = const Value.absent(),
@@ -647,6 +694,7 @@ class MatchesCompanion extends UpdateCompanion<Match> {
     Expression<int>? startScore,
     Expression<bool>? doubleOut,
     Expression<int>? legsToPlay,
+    Expression<String>? gameMode,
     Expression<DateTime>? startedAt,
     Expression<DateTime>? finishedAt,
     Expression<int>? winnerPlayerId,
@@ -656,6 +704,7 @@ class MatchesCompanion extends UpdateCompanion<Match> {
       if (startScore != null) 'start_score': startScore,
       if (doubleOut != null) 'double_out': doubleOut,
       if (legsToPlay != null) 'legs_to_play': legsToPlay,
+      if (gameMode != null) 'game_mode': gameMode,
       if (startedAt != null) 'started_at': startedAt,
       if (finishedAt != null) 'finished_at': finishedAt,
       if (winnerPlayerId != null) 'winner_player_id': winnerPlayerId,
@@ -667,6 +716,7 @@ class MatchesCompanion extends UpdateCompanion<Match> {
     Value<int>? startScore,
     Value<bool>? doubleOut,
     Value<int>? legsToPlay,
+    Value<GameMode>? gameMode,
     Value<DateTime>? startedAt,
     Value<DateTime?>? finishedAt,
     Value<int?>? winnerPlayerId,
@@ -676,6 +726,7 @@ class MatchesCompanion extends UpdateCompanion<Match> {
       startScore: startScore ?? this.startScore,
       doubleOut: doubleOut ?? this.doubleOut,
       legsToPlay: legsToPlay ?? this.legsToPlay,
+      gameMode: gameMode ?? this.gameMode,
       startedAt: startedAt ?? this.startedAt,
       finishedAt: finishedAt ?? this.finishedAt,
       winnerPlayerId: winnerPlayerId ?? this.winnerPlayerId,
@@ -697,6 +748,11 @@ class MatchesCompanion extends UpdateCompanion<Match> {
     if (legsToPlay.present) {
       map['legs_to_play'] = Variable<int>(legsToPlay.value);
     }
+    if (gameMode.present) {
+      map['game_mode'] = Variable<String>(
+        $MatchesTable.$convertergameMode.toSql(gameMode.value),
+      );
+    }
     if (startedAt.present) {
       map['started_at'] = Variable<DateTime>(startedAt.value);
     }
@@ -716,6 +772,7 @@ class MatchesCompanion extends UpdateCompanion<Match> {
           ..write('startScore: $startScore, ')
           ..write('doubleOut: $doubleOut, ')
           ..write('legsToPlay: $legsToPlay, ')
+          ..write('gameMode: $gameMode, ')
           ..write('startedAt: $startedAt, ')
           ..write('finishedAt: $finishedAt, ')
           ..write('winnerPlayerId: $winnerPlayerId')
@@ -793,6 +850,16 @@ class $GamesTable extends Games with TableInfo<$GamesTable, Game> {
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  @override
+  late final GeneratedColumnWithTypeConverter<GameMode, String> gameMode =
+      GeneratedColumn<String>(
+        'game_mode',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('x01'),
+      ).withConverter<GameMode>($GamesTable.$convertergameMode);
   static const VerificationMeta _startedAtMeta = const VerificationMeta(
     'startedAt',
   );
@@ -837,6 +904,7 @@ class $GamesTable extends Games with TableInfo<$GamesTable, Game> {
     doubleOut,
     matchId,
     legNumber,
+    gameMode,
     startedAt,
     finishedAt,
     winnerPlayerId,
@@ -932,6 +1000,12 @@ class $GamesTable extends Games with TableInfo<$GamesTable, Game> {
         DriftSqlType.int,
         data['${effectivePrefix}leg_number'],
       ),
+      gameMode: $GamesTable.$convertergameMode.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}game_mode'],
+        )!,
+      ),
       startedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}started_at'],
@@ -951,6 +1025,9 @@ class $GamesTable extends Games with TableInfo<$GamesTable, Game> {
   $GamesTable createAlias(String alias) {
     return $GamesTable(attachedDatabase, alias);
   }
+
+  static JsonTypeConverter2<GameMode, String, String> $convertergameMode =
+      const EnumNameConverter<GameMode>(GameMode.values);
 }
 
 class Game extends DataClass implements Insertable<Game> {
@@ -965,6 +1042,11 @@ class Game extends DataClass implements Insertable<Game> {
   /// the leg number when the leg is replayed, so the alternation rule and this
   /// column have to stay in step.
   final int? legNumber;
+
+  /// Stored by name, like [DartEvents.ring]. See the note on
+  /// [Matches.gameMode] - every leg recorded before this column existed was
+  /// x01, which is also the default for a fresh insert today.
+  final GameMode gameMode;
   final DateTime startedAt;
   final DateTime? finishedAt;
   final int? winnerPlayerId;
@@ -974,6 +1056,7 @@ class Game extends DataClass implements Insertable<Game> {
     required this.doubleOut,
     this.matchId,
     this.legNumber,
+    required this.gameMode,
     required this.startedAt,
     this.finishedAt,
     this.winnerPlayerId,
@@ -989,6 +1072,11 @@ class Game extends DataClass implements Insertable<Game> {
     }
     if (!nullToAbsent || legNumber != null) {
       map['leg_number'] = Variable<int>(legNumber);
+    }
+    {
+      map['game_mode'] = Variable<String>(
+        $GamesTable.$convertergameMode.toSql(gameMode),
+      );
     }
     map['started_at'] = Variable<DateTime>(startedAt);
     if (!nullToAbsent || finishedAt != null) {
@@ -1011,6 +1099,7 @@ class Game extends DataClass implements Insertable<Game> {
       legNumber: legNumber == null && nullToAbsent
           ? const Value.absent()
           : Value(legNumber),
+      gameMode: Value(gameMode),
       startedAt: Value(startedAt),
       finishedAt: finishedAt == null && nullToAbsent
           ? const Value.absent()
@@ -1032,6 +1121,9 @@ class Game extends DataClass implements Insertable<Game> {
       doubleOut: serializer.fromJson<bool>(json['doubleOut']),
       matchId: serializer.fromJson<int?>(json['matchId']),
       legNumber: serializer.fromJson<int?>(json['legNumber']),
+      gameMode: $GamesTable.$convertergameMode.fromJson(
+        serializer.fromJson<String>(json['gameMode']),
+      ),
       startedAt: serializer.fromJson<DateTime>(json['startedAt']),
       finishedAt: serializer.fromJson<DateTime?>(json['finishedAt']),
       winnerPlayerId: serializer.fromJson<int?>(json['winnerPlayerId']),
@@ -1046,6 +1138,9 @@ class Game extends DataClass implements Insertable<Game> {
       'doubleOut': serializer.toJson<bool>(doubleOut),
       'matchId': serializer.toJson<int?>(matchId),
       'legNumber': serializer.toJson<int?>(legNumber),
+      'gameMode': serializer.toJson<String>(
+        $GamesTable.$convertergameMode.toJson(gameMode),
+      ),
       'startedAt': serializer.toJson<DateTime>(startedAt),
       'finishedAt': serializer.toJson<DateTime?>(finishedAt),
       'winnerPlayerId': serializer.toJson<int?>(winnerPlayerId),
@@ -1058,6 +1153,7 @@ class Game extends DataClass implements Insertable<Game> {
     bool? doubleOut,
     Value<int?> matchId = const Value.absent(),
     Value<int?> legNumber = const Value.absent(),
+    GameMode? gameMode,
     DateTime? startedAt,
     Value<DateTime?> finishedAt = const Value.absent(),
     Value<int?> winnerPlayerId = const Value.absent(),
@@ -1067,6 +1163,7 @@ class Game extends DataClass implements Insertable<Game> {
     doubleOut: doubleOut ?? this.doubleOut,
     matchId: matchId.present ? matchId.value : this.matchId,
     legNumber: legNumber.present ? legNumber.value : this.legNumber,
+    gameMode: gameMode ?? this.gameMode,
     startedAt: startedAt ?? this.startedAt,
     finishedAt: finishedAt.present ? finishedAt.value : this.finishedAt,
     winnerPlayerId: winnerPlayerId.present
@@ -1082,6 +1179,7 @@ class Game extends DataClass implements Insertable<Game> {
       doubleOut: data.doubleOut.present ? data.doubleOut.value : this.doubleOut,
       matchId: data.matchId.present ? data.matchId.value : this.matchId,
       legNumber: data.legNumber.present ? data.legNumber.value : this.legNumber,
+      gameMode: data.gameMode.present ? data.gameMode.value : this.gameMode,
       startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
       finishedAt: data.finishedAt.present
           ? data.finishedAt.value
@@ -1100,6 +1198,7 @@ class Game extends DataClass implements Insertable<Game> {
           ..write('doubleOut: $doubleOut, ')
           ..write('matchId: $matchId, ')
           ..write('legNumber: $legNumber, ')
+          ..write('gameMode: $gameMode, ')
           ..write('startedAt: $startedAt, ')
           ..write('finishedAt: $finishedAt, ')
           ..write('winnerPlayerId: $winnerPlayerId')
@@ -1114,6 +1213,7 @@ class Game extends DataClass implements Insertable<Game> {
     doubleOut,
     matchId,
     legNumber,
+    gameMode,
     startedAt,
     finishedAt,
     winnerPlayerId,
@@ -1127,6 +1227,7 @@ class Game extends DataClass implements Insertable<Game> {
           other.doubleOut == this.doubleOut &&
           other.matchId == this.matchId &&
           other.legNumber == this.legNumber &&
+          other.gameMode == this.gameMode &&
           other.startedAt == this.startedAt &&
           other.finishedAt == this.finishedAt &&
           other.winnerPlayerId == this.winnerPlayerId);
@@ -1138,6 +1239,7 @@ class GamesCompanion extends UpdateCompanion<Game> {
   final Value<bool> doubleOut;
   final Value<int?> matchId;
   final Value<int?> legNumber;
+  final Value<GameMode> gameMode;
   final Value<DateTime> startedAt;
   final Value<DateTime?> finishedAt;
   final Value<int?> winnerPlayerId;
@@ -1147,6 +1249,7 @@ class GamesCompanion extends UpdateCompanion<Game> {
     this.doubleOut = const Value.absent(),
     this.matchId = const Value.absent(),
     this.legNumber = const Value.absent(),
+    this.gameMode = const Value.absent(),
     this.startedAt = const Value.absent(),
     this.finishedAt = const Value.absent(),
     this.winnerPlayerId = const Value.absent(),
@@ -1157,6 +1260,7 @@ class GamesCompanion extends UpdateCompanion<Game> {
     this.doubleOut = const Value.absent(),
     this.matchId = const Value.absent(),
     this.legNumber = const Value.absent(),
+    this.gameMode = const Value.absent(),
     this.startedAt = const Value.absent(),
     this.finishedAt = const Value.absent(),
     this.winnerPlayerId = const Value.absent(),
@@ -1167,6 +1271,7 @@ class GamesCompanion extends UpdateCompanion<Game> {
     Expression<bool>? doubleOut,
     Expression<int>? matchId,
     Expression<int>? legNumber,
+    Expression<String>? gameMode,
     Expression<DateTime>? startedAt,
     Expression<DateTime>? finishedAt,
     Expression<int>? winnerPlayerId,
@@ -1177,6 +1282,7 @@ class GamesCompanion extends UpdateCompanion<Game> {
       if (doubleOut != null) 'double_out': doubleOut,
       if (matchId != null) 'match_id': matchId,
       if (legNumber != null) 'leg_number': legNumber,
+      if (gameMode != null) 'game_mode': gameMode,
       if (startedAt != null) 'started_at': startedAt,
       if (finishedAt != null) 'finished_at': finishedAt,
       if (winnerPlayerId != null) 'winner_player_id': winnerPlayerId,
@@ -1189,6 +1295,7 @@ class GamesCompanion extends UpdateCompanion<Game> {
     Value<bool>? doubleOut,
     Value<int?>? matchId,
     Value<int?>? legNumber,
+    Value<GameMode>? gameMode,
     Value<DateTime>? startedAt,
     Value<DateTime?>? finishedAt,
     Value<int?>? winnerPlayerId,
@@ -1199,6 +1306,7 @@ class GamesCompanion extends UpdateCompanion<Game> {
       doubleOut: doubleOut ?? this.doubleOut,
       matchId: matchId ?? this.matchId,
       legNumber: legNumber ?? this.legNumber,
+      gameMode: gameMode ?? this.gameMode,
       startedAt: startedAt ?? this.startedAt,
       finishedAt: finishedAt ?? this.finishedAt,
       winnerPlayerId: winnerPlayerId ?? this.winnerPlayerId,
@@ -1223,6 +1331,11 @@ class GamesCompanion extends UpdateCompanion<Game> {
     if (legNumber.present) {
       map['leg_number'] = Variable<int>(legNumber.value);
     }
+    if (gameMode.present) {
+      map['game_mode'] = Variable<String>(
+        $GamesTable.$convertergameMode.toSql(gameMode.value),
+      );
+    }
     if (startedAt.present) {
       map['started_at'] = Variable<DateTime>(startedAt.value);
     }
@@ -1243,6 +1356,7 @@ class GamesCompanion extends UpdateCompanion<Game> {
           ..write('doubleOut: $doubleOut, ')
           ..write('matchId: $matchId, ')
           ..write('legNumber: $legNumber, ')
+          ..write('gameMode: $gameMode, ')
           ..write('startedAt: $startedAt, ')
           ..write('finishedAt: $finishedAt, ')
           ..write('winnerPlayerId: $winnerPlayerId')
@@ -2605,6 +2719,7 @@ typedef $$MatchesTableCreateCompanionBuilder =
       required int startScore,
       Value<bool> doubleOut,
       required int legsToPlay,
+      Value<GameMode> gameMode,
       Value<DateTime> startedAt,
       Value<DateTime?> finishedAt,
       Value<int?> winnerPlayerId,
@@ -2615,6 +2730,7 @@ typedef $$MatchesTableUpdateCompanionBuilder =
       Value<int> startScore,
       Value<bool> doubleOut,
       Value<int> legsToPlay,
+      Value<GameMode> gameMode,
       Value<DateTime> startedAt,
       Value<DateTime?> finishedAt,
       Value<int?> winnerPlayerId,
@@ -2689,6 +2805,12 @@ class $$MatchesTableFilterComposer
     column: $table.legsToPlay,
     builder: (column) => ColumnFilters(column),
   );
+
+  ColumnWithTypeConverterFilters<GameMode, GameMode, String> get gameMode =>
+      $composableBuilder(
+        column: $table.gameMode,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
 
   ColumnFilters<DateTime> get startedAt => $composableBuilder(
     column: $table.startedAt,
@@ -2778,6 +2900,11 @@ class $$MatchesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get gameMode => $composableBuilder(
+    column: $table.gameMode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get startedAt => $composableBuilder(
     column: $table.startedAt,
     builder: (column) => ColumnOrderings(column),
@@ -2836,6 +2963,9 @@ class $$MatchesTableAnnotationComposer
     column: $table.legsToPlay,
     builder: (column) => column,
   );
+
+  GeneratedColumnWithTypeConverter<GameMode, String> get gameMode =>
+      $composableBuilder(column: $table.gameMode, builder: (column) => column);
 
   GeneratedColumn<DateTime> get startedAt =>
       $composableBuilder(column: $table.startedAt, builder: (column) => column);
@@ -2926,6 +3056,7 @@ class $$MatchesTableTableManager
                 Value<int> startScore = const Value.absent(),
                 Value<bool> doubleOut = const Value.absent(),
                 Value<int> legsToPlay = const Value.absent(),
+                Value<GameMode> gameMode = const Value.absent(),
                 Value<DateTime> startedAt = const Value.absent(),
                 Value<DateTime?> finishedAt = const Value.absent(),
                 Value<int?> winnerPlayerId = const Value.absent(),
@@ -2934,6 +3065,7 @@ class $$MatchesTableTableManager
                 startScore: startScore,
                 doubleOut: doubleOut,
                 legsToPlay: legsToPlay,
+                gameMode: gameMode,
                 startedAt: startedAt,
                 finishedAt: finishedAt,
                 winnerPlayerId: winnerPlayerId,
@@ -2944,6 +3076,7 @@ class $$MatchesTableTableManager
                 required int startScore,
                 Value<bool> doubleOut = const Value.absent(),
                 required int legsToPlay,
+                Value<GameMode> gameMode = const Value.absent(),
                 Value<DateTime> startedAt = const Value.absent(),
                 Value<DateTime?> finishedAt = const Value.absent(),
                 Value<int?> winnerPlayerId = const Value.absent(),
@@ -2952,6 +3085,7 @@ class $$MatchesTableTableManager
                 startScore: startScore,
                 doubleOut: doubleOut,
                 legsToPlay: legsToPlay,
+                gameMode: gameMode,
                 startedAt: startedAt,
                 finishedAt: finishedAt,
                 winnerPlayerId: winnerPlayerId,
@@ -3043,6 +3177,7 @@ typedef $$GamesTableCreateCompanionBuilder =
       Value<bool> doubleOut,
       Value<int?> matchId,
       Value<int?> legNumber,
+      Value<GameMode> gameMode,
       Value<DateTime> startedAt,
       Value<DateTime?> finishedAt,
       Value<int?> winnerPlayerId,
@@ -3054,6 +3189,7 @@ typedef $$GamesTableUpdateCompanionBuilder =
       Value<bool> doubleOut,
       Value<int?> matchId,
       Value<int?> legNumber,
+      Value<GameMode> gameMode,
       Value<DateTime> startedAt,
       Value<DateTime?> finishedAt,
       Value<int?> winnerPlayerId,
@@ -3161,6 +3297,12 @@ class $$GamesTableFilterComposer extends Composer<_$AppDatabase, $GamesTable> {
     column: $table.legNumber,
     builder: (column) => ColumnFilters(column),
   );
+
+  ColumnWithTypeConverterFilters<GameMode, GameMode, String> get gameMode =>
+      $composableBuilder(
+        column: $table.gameMode,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
 
   ColumnFilters<DateTime> get startedAt => $composableBuilder(
     column: $table.startedAt,
@@ -3298,6 +3440,11 @@ class $$GamesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get gameMode => $composableBuilder(
+    column: $table.gameMode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get startedAt => $composableBuilder(
     column: $table.startedAt,
     builder: (column) => ColumnOrderings(column),
@@ -3377,6 +3524,9 @@ class $$GamesTableAnnotationComposer
 
   GeneratedColumn<int> get legNumber =>
       $composableBuilder(column: $table.legNumber, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<GameMode, String> get gameMode =>
+      $composableBuilder(column: $table.gameMode, builder: (column) => column);
 
   GeneratedColumn<DateTime> get startedAt =>
       $composableBuilder(column: $table.startedAt, builder: (column) => column);
@@ -3521,6 +3671,7 @@ class $$GamesTableTableManager
                 Value<bool> doubleOut = const Value.absent(),
                 Value<int?> matchId = const Value.absent(),
                 Value<int?> legNumber = const Value.absent(),
+                Value<GameMode> gameMode = const Value.absent(),
                 Value<DateTime> startedAt = const Value.absent(),
                 Value<DateTime?> finishedAt = const Value.absent(),
                 Value<int?> winnerPlayerId = const Value.absent(),
@@ -3530,6 +3681,7 @@ class $$GamesTableTableManager
                 doubleOut: doubleOut,
                 matchId: matchId,
                 legNumber: legNumber,
+                gameMode: gameMode,
                 startedAt: startedAt,
                 finishedAt: finishedAt,
                 winnerPlayerId: winnerPlayerId,
@@ -3541,6 +3693,7 @@ class $$GamesTableTableManager
                 Value<bool> doubleOut = const Value.absent(),
                 Value<int?> matchId = const Value.absent(),
                 Value<int?> legNumber = const Value.absent(),
+                Value<GameMode> gameMode = const Value.absent(),
                 Value<DateTime> startedAt = const Value.absent(),
                 Value<DateTime?> finishedAt = const Value.absent(),
                 Value<int?> winnerPlayerId = const Value.absent(),
@@ -3550,6 +3703,7 @@ class $$GamesTableTableManager
                 doubleOut: doubleOut,
                 matchId: matchId,
                 legNumber: legNumber,
+                gameMode: gameMode,
                 startedAt: startedAt,
                 finishedAt: finishedAt,
                 winnerPlayerId: winnerPlayerId,

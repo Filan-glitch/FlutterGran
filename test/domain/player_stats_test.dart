@@ -1,3 +1,4 @@
+import 'package:fluttergran/domain/game_mode.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/stats/player_stats.dart';
 import 'package:fluttergran/domain/x01/game_config.dart';
@@ -20,8 +21,8 @@ LegState leg(int start, List<ThrownDart> darts, {int players = 1}) => foldLeg(
   darts,
 );
 
-PlayerStats statsFor(List<LegState> legs, {int playerId = 1}) =>
-    computePlayerStats(playerId, legs);
+X01Stats statsFor(List<LegState> legs, {int playerId = 1}) =>
+    computeX01Stats(playerId, legs);
 
 void main() {
   group('isOneDartFinish', () {
@@ -53,7 +54,7 @@ void main() {
     });
 
     test('a player who was not in the leg is skipped entirely', () {
-      final stats = computePlayerStats(9, [leg(501, [t(20)])]);
+      final stats = computeX01Stats(9, [leg(501, [t(20)])]);
       expect(stats.legsPlayed, 0);
       expect(stats.dartsThrown, 0);
     });
@@ -160,7 +161,7 @@ void main() {
     });
 
     test('not counted at all when the leg is not double out', () {
-      final stats = computePlayerStats(1, [
+      final stats = computeX01Stats(1, [
         foldLeg(
           GameConfig(startScore: 40, playerIds: const [1], doubleOut: false),
           [s(20), s(20)],
@@ -201,13 +202,13 @@ void main() {
         [s(1), s(1), s(1), d(20)],
       );
 
-      final loser = computePlayerStats(1, [lost]);
+      final loser = computeX01Stats(1, [lost]);
       expect(loser.legsPlayed, 1);
       expect(loser.legsWon, 0);
       expect(loser.winRate, 0.0);
       expect(loser.bestCheckout, isNull);
 
-      final winner = computePlayerStats(2, [lost]);
+      final winner = computeX01Stats(2, [lost]);
       expect(winner.legsWon, 1);
       expect(winner.bestCheckout, 40);
     });
@@ -235,7 +236,7 @@ void main() {
     });
 
     test('a best of three won two one is one match and three legs', () {
-      final stats = computePlayerStats(
+      final stats = computeX01Stats(
         1,
         [
           leg(40, [d(20)], players: 2),
@@ -254,7 +255,7 @@ void main() {
     });
 
     test('losing a match counts as played, not won', () {
-      final stats = computePlayerStats(
+      final stats = computeX01Stats(
         1,
         const [],
         matches: [
@@ -268,20 +269,38 @@ void main() {
     });
 
     test('a match still running counts as played', () {
-      final stats = computePlayerStats(1, const [], matches: [match(const [1])]);
+      final stats = computeX01Stats(1, const [], matches: [match(const [1])]);
 
       expect(stats.matchesPlayed, 1);
       expect(stats.matchesWon, 0);
     });
 
     test('a match somebody else played is skipped', () {
-      final stats = computePlayerStats(
+      final stats = computeX01Stats(
         9,
         const [],
         matches: [match(const [1, 1])],
       );
 
       expect(stats.matchesPlayed, 0);
+    });
+  });
+
+  group('computePlayerStats, the mode dispatcher', () {
+    test('keys x01 legs under GameMode.x01', () {
+      final stats = computePlayerStats(
+        1,
+        x01Legs: [leg(501, [t(20), t(20), t(20)])],
+      );
+
+      expect(stats.keys, [GameMode.x01]);
+      expect((stats[GameMode.x01]! as X01Stats).dartsThrown, 3);
+    });
+
+    test('a player with nothing thrown still gets an empty x01 entry', () {
+      final stats = computePlayerStats(1);
+
+      expect((stats[GameMode.x01]! as X01Stats).legsPlayed, 0);
     });
   });
 

@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+import '../../domain/game_mode.dart';
 import '../../domain/segment.dart';
 import '../../domain/x01/game_config.dart';
 import '../../domain/x01/leg_reducer.dart';
@@ -18,6 +19,9 @@ class GameRepository {
 
   final AppDatabase db;
 
+  /// The stored form of [GameMode.x01], for filtering `gameMode` columns.
+  static final String _x01 = GameMode.x01.name;
+
   // Players
 
   Stream<List<Player>> watchPlayers() =>
@@ -33,8 +37,34 @@ class GameRepository {
       .into(db.players)
       .insertReturning(PlayersCompanion.insert(name: name.trim()));
 
-  Future<void> removePlayer(int playerId) =>
-      (db.delete(db.players)..where((p) => p.id.equals(playerId))).go();
+  Future<void> renamePlayer(int playerId, String newName) =>
+      (db.update(db.players)..where((p) => p.id.equals(playerId))).write(
+        PlayersCompanion(name: Value(newName.trim())),
+      );
+
+  /// Deletes a player and every dart/seat row of theirs, freely - the roster
+  /// is not a place that should ever refuse a player who wants gone.
+  ///
+  /// Deliberately cascaded in application code rather than via a foreign-key
+  /// `ON DELETE CASCADE`: FK enforcement is off for this database (SQLite
+  /// defaults it off, and nothing here turns it on), and turning it on to get
+  /// a real cascade would also start enforcing `Games.winnerPlayerId` and
+  /// `Matches.winnerPlayerId` - neither of which cascades - so deleting
+  /// anyone who ever *won* a leg would start throwing instead.
+  ///
+  /// Known consequence: a leg shared with another player keeps a hole where
+  /// this player's seat and darts were - that leg's history is no longer a
+  /// complete replay. Accepted; most deletions are guests who are done
+  /// playing.
+  Future<void> removePlayer(int playerId) => db.transaction(() async {
+    await (db.delete(db.dartEvents)
+          ..where((d) => d.playerId.equals(playerId)))
+        .go();
+    await (db.delete(db.gameSeats)
+          ..where((s) => s.playerId.equals(playerId)))
+        .go();
+    await (db.delete(db.players)..where((p) => p.id.equals(playerId))).go();
+  });
 
   // Games
 
@@ -46,6 +76,7 @@ class GameRepository {
     GameConfig config, {
     int? matchId,
     int? legNumber,
+    GameMode gameMode = GameMode.x01,
   }) async {
     return db.transaction(() async {
       final gameId = await db
@@ -56,6 +87,7 @@ class GameRepository {
               doubleOut: Value(config.doubleOut),
               matchId: Value(matchId),
               legNumber: Value(legNumber),
+              gameMode: Value(gameMode),
             ),
           );
 
@@ -117,7 +149,10 @@ class GameRepository {
   ///
   /// The two go together on purpose: a match with no leg under it has no
   /// seating, and so nothing could be read back off it.
-  Future<({int matchId, int gameId})> startMatch(MatchConfig config) async {
+  Future<({int matchId, int gameId})> startMatch(
+    MatchConfig config, {
+    GameMode gameMode = GameMode.x01,
+  }) async {
     return db.transaction(() async {
       final matchId = await db
           .into(db.matches)
@@ -126,9 +161,15 @@ class GameRepository {
               startScore: config.startScore,
               doubleOut: Value(config.doubleOut),
               legsToPlay: config.legsToPlay,
+              gameMode: Value(gameMode),
             ),
           );
-      final gameId = await startNextLeg(matchId: matchId, config: config, legNumber: 0);
+      final gameId = await startNextLeg(
+        matchId: matchId,
+        config: config,
+        legNumber: 0,
+        gameMode: gameMode,
+      );
       return (matchId: matchId, gameId: gameId);
     });
   }
@@ -138,10 +179,12 @@ class GameRepository {
     required int matchId,
     required MatchConfig config,
     required int legNumber,
+    GameMode gameMode = GameMode.x01,
   }) => startGame(
     config.legConfig(legNumber),
     matchId: matchId,
     legNumber: legNumber,
+    gameMode: gameMode,
   );
 
   Future<void> finishMatch(int matchId, int winnerPlayerId) =>
@@ -200,7 +243,7 @@ class GameRepository {
     int? beforeLegNumber,
   }) async {
     final query = db.select(db.games)
-      ..where((g) => g.matchId.equals(matchId))
+      ..where((g) => g.matchId.equals(matchId) & g.gameMode.equals(_x01))
       ..orderBy([(g) => OrderingTerm(expression: g.legNumber)]);
     if (beforeLegNumber != null) {
       query.where((g) => g.legNumber.isSmallerThanValue(beforeLegNumber));
@@ -335,16 +378,23 @@ class GameRepository {
   ///
   /// Emits again whenever a game changes, so statistics refresh themselves
   /// after a leg finishes.
+  ///
+  /// Only x01 legs are folded here - [foldLeg] is the x01 engine, and a row
+  /// stored under a future mode would not mean what it assumes. A second
+  /// mode gets its own `watchAllLegsFor`-shaped method alongside this one,
+  /// not a rewrite of it.
   Stream<List<LegState>> watchAllLegs() =>
-      db.select(db.games).watch().asyncMap((games) async {
-        final legs = <LegState>[];
-        for (final game in games) {
-          final config = await loadConfig(game.id);
-          if (config == null) continue;
-          legs.add(foldLeg(config, await loadLog(game.id)));
-        }
-        return legs;
-      });
+      (db.select(db.games)..where((g) => g.gameMode.equals(_x01)))
+          .watch()
+          .asyncMap((games) async {
+            final legs = <LegState>[];
+            for (final game in games) {
+              final config = await loadConfig(game.id);
+              if (config == null) continue;
+              legs.add(foldLeg(config, await loadLog(game.id)));
+            }
+            return legs;
+          });
 
   /// How many darts a player has landed in each segment.
   ///

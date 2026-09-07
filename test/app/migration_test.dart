@@ -5,6 +5,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/data/db/database.dart';
 import 'package:fluttergran/data/db/game_repository.dart';
+import 'package:fluttergran/domain/game_mode.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/leg_reducer.dart';
 import 'package:fluttergran/domain/x01/match_state.dart';
@@ -56,6 +57,54 @@ class _SchemaV2 extends AppDatabase {
       await m.createTable(gameSeats);
       await m.createTable(dartEvents);
       await m.database.customStatement(_segmentCalibrationsAtV2);
+    },
+  );
+}
+
+/// `games` and `matches` exactly as schema 4 wrote them: no `game_mode`.
+///
+/// Spelled out rather than built from the current table definitions, for the
+/// same reason as [_gamesAtV2] - the point is starting from a shape the code
+/// no longer knows how to produce. Every other table is unchanged since v4,
+/// so `players`/`gameSeats`/`dartEvents` still come from the current classes.
+const String _gamesAtV4 = '''
+CREATE TABLE IF NOT EXISTS games (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  start_score INTEGER NOT NULL,
+  double_out INTEGER NOT NULL DEFAULT 1 CHECK ("double_out" IN (0, 1)),
+  match_id INTEGER NULL REFERENCES matches (id),
+  leg_number INTEGER NULL,
+  started_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+  finished_at INTEGER NULL,
+  winner_player_id INTEGER NULL REFERENCES players (id)
+)''';
+
+const String _matchesAtV4 = '''
+CREATE TABLE IF NOT EXISTS matches (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  start_score INTEGER NOT NULL,
+  double_out INTEGER NOT NULL DEFAULT 1 CHECK ("double_out" IN (0, 1)),
+  legs_to_play INTEGER NOT NULL,
+  started_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+  finished_at INTEGER NULL,
+  winner_player_id INTEGER NULL REFERENCES players (id)
+)''';
+
+/// An [AppDatabase] frozen at schema 4, the version just before `game_mode`.
+class _SchemaV4 extends AppDatabase {
+  _SchemaV4(super.executor);
+
+  @override
+  int get schemaVersion => 4;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (m) async {
+      await m.createTable(players);
+      await m.database.customStatement(_matchesAtV4);
+      await m.database.customStatement(_gamesAtV4);
+      await m.createTable(gameSeats);
+      await m.createTable(dartEvents);
     },
   );
 }
@@ -132,6 +181,54 @@ void main() {
               gameId: gameId,
               ordinal: i,
               // Turns rotate every three darts, as they did then.
+              playerId: seats[(i ~/ 3) % seats.length],
+              number: Value(darts[i].segment?.number),
+              ring: Value(darts[i].segment?.ring),
+              value: darts[i].value,
+            ),
+          );
+    }
+
+    await db.close();
+    return gameId;
+  }
+
+  /// Writes one leg the way schema 4 stored legs - everything except
+  /// `game_mode`, which schema 4 did not have a column for yet.
+  Future<int> seedV4({required List<ThrownDart> darts, int startScore = 501}) async {
+    final db = _SchemaV4(NativeDatabase(file));
+
+    final finn = await db
+        .into(db.players)
+        .insertReturning(PlayersCompanion.insert(name: 'Finn'));
+    final sam = await db
+        .into(db.players)
+        .insertReturning(PlayersCompanion.insert(name: 'Sam'));
+    final seats = [finn.id, sam.id];
+
+    final gameId = await db
+        .into(db.games)
+        .insert(GamesCompanion.insert(startScore: startScore));
+
+    for (var seat = 0; seat < seats.length; seat++) {
+      await db
+          .into(db.gameSeats)
+          .insert(
+            GameSeatsCompanion.insert(
+              gameId: gameId,
+              playerId: seats[seat],
+              seat: seat,
+            ),
+          );
+    }
+
+    for (var i = 0; i < darts.length; i++) {
+      await db
+          .into(db.dartEvents)
+          .insert(
+            DartEventsCompanion.insert(
+              gameId: gameId,
+              ordinal: i,
               playerId: seats[(i ~/ 3) % seats.length],
               number: Value(darts[i].segment?.number),
               ring: Value(darts[i].segment?.ring),
@@ -274,6 +371,24 @@ void main() {
     // And every stored leg is still readable, old and new alike.
     final legs = await repository.watchAllLegs().first;
     expect(legs, hasLength(2));
+
+    await db.close();
+  });
+
+  test('a version 4 leg gains a game mode, backfilled to x01', () async {
+    final gameId = await seedV4(darts: [t(20), t(20), t(20)]);
+
+    final db = migrated();
+    final repository = GameRepository(db);
+
+    final game = await repository.loadGame(gameId);
+    expect(game!.gameMode, GameMode.x01);
+
+    // And it still folds correctly - the new column changes nothing about
+    // what was actually thrown.
+    final config = await repository.loadConfig(gameId);
+    final leg = foldLeg(config!, await repository.loadLog(gameId));
+    expect(leg.remaining[config.playerIds[0]], 501 - 180);
 
     await db.close();
   });

@@ -54,7 +54,7 @@ void main() {
     );
 
     final legs = await repository.watchAllLegs().first;
-    final stats = computePlayerStats(finn.id, legs);
+    final stats = computeX01Stats(finn.id, legs);
 
     expect(stats.legsPlayed, 1);
     expect(stats.dartsThrown, 3);
@@ -74,7 +74,7 @@ void main() {
     );
 
     final legs = await repository.watchAllLegs().first;
-    final stats = computePlayerStats(finn.id, legs);
+    final stats = computeX01Stats(finn.id, legs);
 
     expect(stats.legsWon, 1);
     expect(stats.bestCheckout, 40);
@@ -116,7 +116,7 @@ void main() {
     await recordLeg([finn.id], [t(20), t(20), t(20)]);
 
     final legs = await repository.watchAllLegs().first;
-    final stats = computePlayerStats(finn.id, legs);
+    final stats = computeX01Stats(finn.id, legs);
 
     expect(stats.legsPlayed, 2);
     expect(stats.dartsThrown, 6);
@@ -127,7 +127,7 @@ void main() {
     final newcomer = await repository.addPlayer('Newcomer');
 
     final legs = await repository.watchAllLegs().first;
-    final stats = computePlayerStats(newcomer.id, legs);
+    final stats = computeX01Stats(newcomer.id, legs);
 
     expect(stats.legsPlayed, 0);
     expect(stats.average, isNull);

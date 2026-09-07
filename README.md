@@ -8,7 +8,7 @@
 [![Dart SDK](https://img.shields.io/badge/Dart-%5E3.12-0175C2?logo=dart&logoColor=white)](https://dart.dev)
 [![Platform](https://img.shields.io/badge/platform-Android%20%7C%20iOS-3D9C64)](#)
 [![Tests](https://img.shields.io/badge/tests-304%20passing-3D9C64)](#testing)
-[![Schema](https://img.shields.io/badge/schema-v4-8A9A8E)](docs/DATA_MODEL.md)
+[![Schema](https://img.shields.io/badge/schema-v5-8A9A8E)](docs/DATA_MODEL.md)
 
 x01 for up to four players, best of 1/3/5/7, live checkout suggestions, spoken
 commentary rendered at build time, and per-player statistics across every dart

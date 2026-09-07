@@ -92,6 +92,45 @@ void main() {
 
       expect(await repository.allPlayers(), isEmpty);
     });
+
+    test('renaming a player changes only their name', () async {
+      final player = await repository.addPlayer('Finn');
+      await repository.renamePlayer(player.id, 'Finlay');
+
+      expect((await repository.allPlayers()).single.name, 'Finlay');
+      expect((await repository.allPlayers()).single.id, player.id);
+    });
+
+    test(
+      'deleting a player with thrown history removes it too, freely',
+      () async {
+        final finn = await repository.addPlayer('Finn');
+        final sam = await repository.addPlayer('Sam');
+        final config = GameConfig(
+          startScore: 501,
+          playerIds: [finn.id, sam.id],
+        );
+        final gameId = await repository.startGame(config);
+        await repository.appendDart(
+          gameId: gameId,
+          ordinal: 0,
+          playerId: finn.id,
+          dart: const ThrownDart.miss(),
+        );
+
+        // Freedom for the player, not a refusal - deletion succeeds even
+        // though Finn has thrown history.
+        await repository.removePlayer(finn.id);
+
+        expect(await repository.allPlayers(), [
+          isA<Player>().having((p) => p.name, 'name', 'Sam'),
+        ]);
+        // Their darts and seat go with them; the leg itself is left with a
+        // hole rather than being deleted out from under Sam.
+        final log = await repository.loadLog(gameId);
+        expect(log, isEmpty);
+      },
+    );
   });
 
   group('the dart log', () {

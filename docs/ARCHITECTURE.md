@@ -85,6 +85,37 @@ runs on until somebody does. `MatchConfig.formatLabel` says `BEST OF 5` for a
 pair and `FIRST TO 3` for a field, so the screen never claims a rule the engine
 is not playing.
 
+### Game modes
+
+`GameMode` (`lib/domain/game_mode.dart`) is the seam a second mode plugs
+into. Today it has one member, `x01`, and `gameModeRegistry` has one
+`GameModeDescriptor` describing it - the select-mode screen renders one
+tile per registry entry, so a future mode is an added entry with
+`isAvailable: false` until it has an engine, not a new screen.
+
+This is deliberately a thin seam, not a rewrite of the x01 engine into a
+generic one: `GameConfig`, `LegState`, and `foldLeg` all stay x01-specific,
+because x01 is still the only mode with rules to generalise from.
+Guessing at a `GameEngine` interface's shape before a second mode exists
+to test it against would be guessing, not designing. What the seam
+actually threads through today is storage and statistics:
+
+- `Games.gameMode` / `Matches.gameMode` (schema v5) record which mode a
+  leg or match was played under, stored by name like `DartEvents.ring`.
+  Every row ever written is `x01` - it is the only mode that has ever had
+  an engine - and `GameRepository.watchAllLegs`/`loadMatchLegs` filter to
+  it explicitly, so a future mode's rows would not be silently folded
+  through the x01 reducer they do not mean.
+- `ModeStats` (`lib/domain/stats/mode_stats.dart`) is a sealed base type
+  with `X01Stats` as its only variant (`part`/`part of` the same library,
+  so the `sealed` exhaustiveness check actually holds). `computePlayerStats`
+  returns `Map<GameMode, ModeStats>` - one entry per mode a player has a
+  record in - built by composing per-mode calculators
+  (`computeX01Stats` today) rather than one function that tries to know
+  about every mode at once. The statistics screen sections itself the
+  same way: one block per entry in the map, nothing rendered for a mode
+  with nothing in it.
+
 ### Checkouts
 
 `findCheckouts(score, dartsLeft, {limit})`
@@ -126,6 +157,40 @@ gameRepositoryProvider ──▶ allLegsProvider ──┐
   the current one; the leg being played is read from `gameProvider`, which is
   what keeps the tally honest through an undo.
 - **`matchStateProvider`** folds the two together on demand.
+
+### Screens
+
+Plain `Navigator.push`/`MaterialPageRoute` throughout - no named routes, no
+router package. Six-odd screens with a linear tree does not earn one.
+
+```
+SplashScreen                                  (MaterialApp's home)
+  --pushReplacement--> MainMenuScreen
+       [RESUME <leg>]  (shown only while a leg is in progress)
+       PLAY       --> SelectGameModeScreen
+                          --> X01SetupScreen   (the only enabled tile today)
+                                 --> GameScreen
+       STATISTICS --> StatsScreen
+       ROSTER     --> RosterScreen
+       SETTINGS   --> SettingsScreen
+```
+
+`SplashScreen` waits on `max(700ms, resumableLegProvider's first value)`
+before replacing itself - not for show, but so `MainMenuScreen` never
+renders a frame with no Resume card before the database has actually
+answered whether there is one. It is removed from the back stack by the
+`pushReplacement`, so the back button from the main menu exits the app,
+correctly.
+
+The roster is deliberately its own screen, reachable only from the main
+menu, with no mode of its own - the same board is played by different
+people under different modes, so player management has no business being
+owned by any one mode's setup screen. `X01SetupScreen` still lets you
+*select* players from the roster inline (add-in-place is still there too,
+for now - see `x01_setup_screen.dart`), but renaming and freely deleting
+a player (their darts and seat cascade with them - see
+`GameRepository.removePlayer`) live only in `RosterScreen`, behind a
+hold-to-delete-plus-undo gesture rather than a single destructive tap.
 
 ### Audio
 
@@ -217,3 +282,5 @@ directly. There is no runtime switch between them any more.
 | how a dart gets from the board to the screen | `lib/data/board/frame_assembler.dart`, then `segment_codec.dart`, then `lib/app/game_controller.dart` |
 | what is stored | [DATA_MODEL.md](DATA_MODEL.md) |
 | why a sound plays | `lib/app/audio/sound_controller.dart` |
+| how the screens connect | "Screens" above, or start at `lib/main.dart` |
+| how a second game mode would plug in | "Game modes" above, then `lib/domain/game_mode.dart` |
