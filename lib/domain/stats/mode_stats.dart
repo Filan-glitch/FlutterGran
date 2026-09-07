@@ -1,5 +1,7 @@
+import '../atc/atc_stop.dart';
 import '../x01/leg_state.dart';
 
+part 'atc_stats.dart';
 part 'x01_stats.dart';
 
 /// A player's record in one game mode.

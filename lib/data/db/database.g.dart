@@ -806,9 +806,9 @@ class $GamesTable extends Games with TableInfo<$GamesTable, Game> {
   late final GeneratedColumn<int> startScore = GeneratedColumn<int>(
     'start_score',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.int,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _doubleOutMeta = const VerificationMeta(
     'doubleOut',
@@ -817,7 +817,7 @@ class $GamesTable extends Games with TableInfo<$GamesTable, Game> {
   late final GeneratedColumn<bool> doubleOut = GeneratedColumn<bool>(
     'double_out',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.bool,
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
@@ -929,8 +929,6 @@ class $GamesTable extends Games with TableInfo<$GamesTable, Game> {
         _startScoreMeta,
         startScore.isAcceptableOrUnknown(data['start_score']!, _startScoreMeta),
       );
-    } else if (isInserting) {
-      context.missing(_startScoreMeta);
     }
     if (data.containsKey('double_out')) {
       context.handle(
@@ -987,11 +985,11 @@ class $GamesTable extends Games with TableInfo<$GamesTable, Game> {
       startScore: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}start_score'],
-      )!,
+      ),
       doubleOut: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}double_out'],
-      )!,
+      ),
       matchId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}match_id'],
@@ -1032,8 +1030,14 @@ class $GamesTable extends Games with TableInfo<$GamesTable, Game> {
 
 class Game extends DataClass implements Insertable<Game> {
   final int id;
-  final int startScore;
-  final bool doubleOut;
+
+  /// Null for a leg played under a mode with no such thing - Around the
+  /// Clock, today. x01 always writes a real value here.
+  final int? startScore;
+
+  /// Null for the same reason as [startScore]: a mode with no double-out
+  /// rule leaves this empty rather than writing a value that means nothing.
+  final bool? doubleOut;
   final int? matchId;
 
   /// Position in the match, from zero. Null for a leg outside a match.
@@ -1052,8 +1056,8 @@ class Game extends DataClass implements Insertable<Game> {
   final int? winnerPlayerId;
   const Game({
     required this.id,
-    required this.startScore,
-    required this.doubleOut,
+    this.startScore,
+    this.doubleOut,
     this.matchId,
     this.legNumber,
     required this.gameMode,
@@ -1065,8 +1069,12 @@ class Game extends DataClass implements Insertable<Game> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
-    map['start_score'] = Variable<int>(startScore);
-    map['double_out'] = Variable<bool>(doubleOut);
+    if (!nullToAbsent || startScore != null) {
+      map['start_score'] = Variable<int>(startScore);
+    }
+    if (!nullToAbsent || doubleOut != null) {
+      map['double_out'] = Variable<bool>(doubleOut);
+    }
     if (!nullToAbsent || matchId != null) {
       map['match_id'] = Variable<int>(matchId);
     }
@@ -1091,8 +1099,12 @@ class Game extends DataClass implements Insertable<Game> {
   GamesCompanion toCompanion(bool nullToAbsent) {
     return GamesCompanion(
       id: Value(id),
-      startScore: Value(startScore),
-      doubleOut: Value(doubleOut),
+      startScore: startScore == null && nullToAbsent
+          ? const Value.absent()
+          : Value(startScore),
+      doubleOut: doubleOut == null && nullToAbsent
+          ? const Value.absent()
+          : Value(doubleOut),
       matchId: matchId == null && nullToAbsent
           ? const Value.absent()
           : Value(matchId),
@@ -1117,8 +1129,8 @@ class Game extends DataClass implements Insertable<Game> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Game(
       id: serializer.fromJson<int>(json['id']),
-      startScore: serializer.fromJson<int>(json['startScore']),
-      doubleOut: serializer.fromJson<bool>(json['doubleOut']),
+      startScore: serializer.fromJson<int?>(json['startScore']),
+      doubleOut: serializer.fromJson<bool?>(json['doubleOut']),
       matchId: serializer.fromJson<int?>(json['matchId']),
       legNumber: serializer.fromJson<int?>(json['legNumber']),
       gameMode: $GamesTable.$convertergameMode.fromJson(
@@ -1134,8 +1146,8 @@ class Game extends DataClass implements Insertable<Game> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'startScore': serializer.toJson<int>(startScore),
-      'doubleOut': serializer.toJson<bool>(doubleOut),
+      'startScore': serializer.toJson<int?>(startScore),
+      'doubleOut': serializer.toJson<bool?>(doubleOut),
       'matchId': serializer.toJson<int?>(matchId),
       'legNumber': serializer.toJson<int?>(legNumber),
       'gameMode': serializer.toJson<String>(
@@ -1149,8 +1161,8 @@ class Game extends DataClass implements Insertable<Game> {
 
   Game copyWith({
     int? id,
-    int? startScore,
-    bool? doubleOut,
+    Value<int?> startScore = const Value.absent(),
+    Value<bool?> doubleOut = const Value.absent(),
     Value<int?> matchId = const Value.absent(),
     Value<int?> legNumber = const Value.absent(),
     GameMode? gameMode,
@@ -1159,8 +1171,8 @@ class Game extends DataClass implements Insertable<Game> {
     Value<int?> winnerPlayerId = const Value.absent(),
   }) => Game(
     id: id ?? this.id,
-    startScore: startScore ?? this.startScore,
-    doubleOut: doubleOut ?? this.doubleOut,
+    startScore: startScore.present ? startScore.value : this.startScore,
+    doubleOut: doubleOut.present ? doubleOut.value : this.doubleOut,
     matchId: matchId.present ? matchId.value : this.matchId,
     legNumber: legNumber.present ? legNumber.value : this.legNumber,
     gameMode: gameMode ?? this.gameMode,
@@ -1235,8 +1247,8 @@ class Game extends DataClass implements Insertable<Game> {
 
 class GamesCompanion extends UpdateCompanion<Game> {
   final Value<int> id;
-  final Value<int> startScore;
-  final Value<bool> doubleOut;
+  final Value<int?> startScore;
+  final Value<bool?> doubleOut;
   final Value<int?> matchId;
   final Value<int?> legNumber;
   final Value<GameMode> gameMode;
@@ -1256,7 +1268,7 @@ class GamesCompanion extends UpdateCompanion<Game> {
   });
   GamesCompanion.insert({
     this.id = const Value.absent(),
-    required int startScore,
+    this.startScore = const Value.absent(),
     this.doubleOut = const Value.absent(),
     this.matchId = const Value.absent(),
     this.legNumber = const Value.absent(),
@@ -1264,7 +1276,7 @@ class GamesCompanion extends UpdateCompanion<Game> {
     this.startedAt = const Value.absent(),
     this.finishedAt = const Value.absent(),
     this.winnerPlayerId = const Value.absent(),
-  }) : startScore = Value(startScore);
+  });
   static Insertable<Game> custom({
     Expression<int>? id,
     Expression<int>? startScore,
@@ -1291,8 +1303,8 @@ class GamesCompanion extends UpdateCompanion<Game> {
 
   GamesCompanion copyWith({
     Value<int>? id,
-    Value<int>? startScore,
-    Value<bool>? doubleOut,
+    Value<int?>? startScore,
+    Value<bool?>? doubleOut,
     Value<int?>? matchId,
     Value<int?>? legNumber,
     Value<GameMode>? gameMode,
@@ -2142,6 +2154,206 @@ class DartEventsCompanion extends UpdateCompanion<DartEvent> {
   }
 }
 
+class $AtcGamesTable extends AtcGames with TableInfo<$AtcGamesTable, AtcGame> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AtcGamesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _gameIdMeta = const VerificationMeta('gameId');
+  @override
+  late final GeneratedColumn<int> gameId = GeneratedColumn<int>(
+    'game_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES games (id) ON DELETE CASCADE',
+    ),
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<AtcVariant, String> variant =
+      GeneratedColumn<String>(
+        'variant',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<AtcVariant>($AtcGamesTable.$convertervariant);
+  @override
+  List<GeneratedColumn> get $columns => [gameId, variant];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'atc_games';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AtcGame> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('game_id')) {
+      context.handle(
+        _gameIdMeta,
+        gameId.isAcceptableOrUnknown(data['game_id']!, _gameIdMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {gameId};
+  @override
+  AtcGame map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AtcGame(
+      gameId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}game_id'],
+      )!,
+      variant: $AtcGamesTable.$convertervariant.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}variant'],
+        )!,
+      ),
+    );
+  }
+
+  @override
+  $AtcGamesTable createAlias(String alias) {
+    return $AtcGamesTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<AtcVariant, String, String> $convertervariant =
+      const EnumNameConverter<AtcVariant>(AtcVariant.values);
+}
+
+class AtcGame extends DataClass implements Insertable<AtcGame> {
+  final int gameId;
+  final AtcVariant variant;
+  const AtcGame({required this.gameId, required this.variant});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['game_id'] = Variable<int>(gameId);
+    {
+      map['variant'] = Variable<String>(
+        $AtcGamesTable.$convertervariant.toSql(variant),
+      );
+    }
+    return map;
+  }
+
+  AtcGamesCompanion toCompanion(bool nullToAbsent) {
+    return AtcGamesCompanion(gameId: Value(gameId), variant: Value(variant));
+  }
+
+  factory AtcGame.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AtcGame(
+      gameId: serializer.fromJson<int>(json['gameId']),
+      variant: $AtcGamesTable.$convertervariant.fromJson(
+        serializer.fromJson<String>(json['variant']),
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'gameId': serializer.toJson<int>(gameId),
+      'variant': serializer.toJson<String>(
+        $AtcGamesTable.$convertervariant.toJson(variant),
+      ),
+    };
+  }
+
+  AtcGame copyWith({int? gameId, AtcVariant? variant}) =>
+      AtcGame(gameId: gameId ?? this.gameId, variant: variant ?? this.variant);
+  AtcGame copyWithCompanion(AtcGamesCompanion data) {
+    return AtcGame(
+      gameId: data.gameId.present ? data.gameId.value : this.gameId,
+      variant: data.variant.present ? data.variant.value : this.variant,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AtcGame(')
+          ..write('gameId: $gameId, ')
+          ..write('variant: $variant')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(gameId, variant);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AtcGame &&
+          other.gameId == this.gameId &&
+          other.variant == this.variant);
+}
+
+class AtcGamesCompanion extends UpdateCompanion<AtcGame> {
+  final Value<int> gameId;
+  final Value<AtcVariant> variant;
+  const AtcGamesCompanion({
+    this.gameId = const Value.absent(),
+    this.variant = const Value.absent(),
+  });
+  AtcGamesCompanion.insert({
+    this.gameId = const Value.absent(),
+    required AtcVariant variant,
+  }) : variant = Value(variant);
+  static Insertable<AtcGame> custom({
+    Expression<int>? gameId,
+    Expression<String>? variant,
+  }) {
+    return RawValuesInsertable({
+      if (gameId != null) 'game_id': gameId,
+      if (variant != null) 'variant': variant,
+    });
+  }
+
+  AtcGamesCompanion copyWith({Value<int>? gameId, Value<AtcVariant>? variant}) {
+    return AtcGamesCompanion(
+      gameId: gameId ?? this.gameId,
+      variant: variant ?? this.variant,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (gameId.present) {
+      map['game_id'] = Variable<int>(gameId.value);
+    }
+    if (variant.present) {
+      map['variant'] = Variable<String>(
+        $AtcGamesTable.$convertervariant.toSql(variant.value),
+      );
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AtcGamesCompanion(')
+          ..write('gameId: $gameId, ')
+          ..write('variant: $variant')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2150,6 +2362,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $GamesTable games = $GamesTable(this);
   late final $GameSeatsTable gameSeats = $GameSeatsTable(this);
   late final $DartEventsTable dartEvents = $DartEventsTable(this);
+  late final $AtcGamesTable atcGames = $AtcGamesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2160,6 +2373,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     games,
     gameSeats,
     dartEvents,
+    atcGames,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -2176,6 +2390,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('dart_events', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'games',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('atc_games', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -3173,8 +3394,8 @@ typedef $$MatchesTableProcessedTableManager =
 typedef $$GamesTableCreateCompanionBuilder =
     GamesCompanion Function({
       Value<int> id,
-      required int startScore,
-      Value<bool> doubleOut,
+      Value<int?> startScore,
+      Value<bool?> doubleOut,
       Value<int?> matchId,
       Value<int?> legNumber,
       Value<GameMode> gameMode,
@@ -3185,8 +3406,8 @@ typedef $$GamesTableCreateCompanionBuilder =
 typedef $$GamesTableUpdateCompanionBuilder =
     GamesCompanion Function({
       Value<int> id,
-      Value<int> startScore,
-      Value<bool> doubleOut,
+      Value<int?> startScore,
+      Value<bool?> doubleOut,
       Value<int?> matchId,
       Value<int?> legNumber,
       Value<GameMode> gameMode,
@@ -3264,6 +3485,25 @@ final class $$GamesTableReferences
     ).filter((f) => f.gameId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_dartEventsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$AtcGamesTable, List<AtcGame>> _atcGamesRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.atcGames,
+    aliasName: 'games__id__atc_games__game_id',
+  );
+
+  $$AtcGamesTableProcessedTableManager get atcGamesRefs {
+    final manager = $$AtcGamesTableTableManager(
+      $_db,
+      $_db.atcGames,
+    ).filter((f) => f.gameId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_atcGamesRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -3401,6 +3641,31 @@ class $$GamesTableFilterComposer extends Composer<_$AppDatabase, $GamesTable> {
           }) => $$DartEventsTableFilterComposer(
             $db: $db,
             $table: $db.dartEvents,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> atcGamesRefs(
+    Expression<bool> Function($$AtcGamesTableFilterComposer f) f,
+  ) {
+    final $$AtcGamesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.atcGames,
+      getReferencedColumn: (t) => t.gameId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AtcGamesTableFilterComposer(
+            $db: $db,
+            $table: $db.atcGames,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -3631,6 +3896,31 @@ class $$GamesTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> atcGamesRefs<T extends Object>(
+    Expression<T> Function($$AtcGamesTableAnnotationComposer a) f,
+  ) {
+    final $$AtcGamesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.atcGames,
+      getReferencedColumn: (t) => t.gameId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AtcGamesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.atcGames,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$GamesTableTableManager
@@ -3651,6 +3941,7 @@ class $$GamesTableTableManager
             bool winnerPlayerId,
             bool gameSeatsRefs,
             bool dartEventsRefs,
+            bool atcGamesRefs,
           })
         > {
   $$GamesTableTableManager(_$AppDatabase db, $GamesTable table)
@@ -3667,8 +3958,8 @@ class $$GamesTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                Value<int> startScore = const Value.absent(),
-                Value<bool> doubleOut = const Value.absent(),
+                Value<int?> startScore = const Value.absent(),
+                Value<bool?> doubleOut = const Value.absent(),
                 Value<int?> matchId = const Value.absent(),
                 Value<int?> legNumber = const Value.absent(),
                 Value<GameMode> gameMode = const Value.absent(),
@@ -3689,8 +3980,8 @@ class $$GamesTableTableManager
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                required int startScore,
-                Value<bool> doubleOut = const Value.absent(),
+                Value<int?> startScore = const Value.absent(),
+                Value<bool?> doubleOut = const Value.absent(),
                 Value<int?> matchId = const Value.absent(),
                 Value<int?> legNumber = const Value.absent(),
                 Value<GameMode> gameMode = const Value.absent(),
@@ -3720,12 +4011,14 @@ class $$GamesTableTableManager
                 winnerPlayerId = false,
                 gameSeatsRefs = false,
                 dartEventsRefs = false,
+                atcGamesRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (gameSeatsRefs) db.gameSeats,
                     if (dartEventsRefs) db.dartEvents,
+                    if (atcGamesRefs) db.atcGames,
                   ],
                   addJoins:
                       <
@@ -3808,6 +4101,23 @@ class $$GamesTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (atcGamesRefs)
+                        await $_getPrefetchedData<Game, $GamesTable, AtcGame>(
+                          currentTable: table,
+                          referencedTable: $$GamesTableReferences
+                              ._atcGamesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$GamesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).atcGamesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.gameId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -3833,6 +4143,7 @@ typedef $$GamesTableProcessedTableManager =
         bool winnerPlayerId,
         bool gameSeatsRefs,
         bool dartEventsRefs,
+        bool atcGamesRefs,
       })
     >;
 typedef $$GameSeatsTableCreateCompanionBuilder =
@@ -4655,6 +4966,252 @@ typedef $$DartEventsTableProcessedTableManager =
       DartEvent,
       PrefetchHooks Function({bool gameId, bool playerId})
     >;
+typedef $$AtcGamesTableCreateCompanionBuilder =
+    AtcGamesCompanion Function({
+      Value<int> gameId,
+      required AtcVariant variant,
+    });
+typedef $$AtcGamesTableUpdateCompanionBuilder =
+    AtcGamesCompanion Function({Value<int> gameId, Value<AtcVariant> variant});
+
+final class $$AtcGamesTableReferences
+    extends BaseReferences<_$AppDatabase, $AtcGamesTable, AtcGame> {
+  $$AtcGamesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $GamesTable _gameIdTable(_$AppDatabase db) =>
+      db.games.createAlias('atc_games__game_id__games__id');
+
+  $$GamesTableProcessedTableManager get gameId {
+    final $_column = $_itemColumn<int>('game_id')!;
+
+    final manager = $$GamesTableTableManager(
+      $_db,
+      $_db.games,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_gameIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$AtcGamesTableFilterComposer
+    extends Composer<_$AppDatabase, $AtcGamesTable> {
+  $$AtcGamesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnWithTypeConverterFilters<AtcVariant, AtcVariant, String> get variant =>
+      $composableBuilder(
+        column: $table.variant,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  $$GamesTableFilterComposer get gameId {
+    final $$GamesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.gameId,
+      referencedTable: $db.games,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$GamesTableFilterComposer(
+            $db: $db,
+            $table: $db.games,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AtcGamesTableOrderingComposer
+    extends Composer<_$AppDatabase, $AtcGamesTable> {
+  $$AtcGamesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get variant => $composableBuilder(
+    column: $table.variant,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$GamesTableOrderingComposer get gameId {
+    final $$GamesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.gameId,
+      referencedTable: $db.games,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$GamesTableOrderingComposer(
+            $db: $db,
+            $table: $db.games,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AtcGamesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AtcGamesTable> {
+  $$AtcGamesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumnWithTypeConverter<AtcVariant, String> get variant =>
+      $composableBuilder(column: $table.variant, builder: (column) => column);
+
+  $$GamesTableAnnotationComposer get gameId {
+    final $$GamesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.gameId,
+      referencedTable: $db.games,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$GamesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.games,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AtcGamesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $AtcGamesTable,
+          AtcGame,
+          $$AtcGamesTableFilterComposer,
+          $$AtcGamesTableOrderingComposer,
+          $$AtcGamesTableAnnotationComposer,
+          $$AtcGamesTableCreateCompanionBuilder,
+          $$AtcGamesTableUpdateCompanionBuilder,
+          (AtcGame, $$AtcGamesTableReferences),
+          AtcGame,
+          PrefetchHooks Function({bool gameId})
+        > {
+  $$AtcGamesTableTableManager(_$AppDatabase db, $AtcGamesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AtcGamesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AtcGamesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AtcGamesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> gameId = const Value.absent(),
+                Value<AtcVariant> variant = const Value.absent(),
+              }) => AtcGamesCompanion(gameId: gameId, variant: variant),
+          createCompanionCallback:
+              ({
+                Value<int> gameId = const Value.absent(),
+                required AtcVariant variant,
+              }) => AtcGamesCompanion.insert(gameId: gameId, variant: variant),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$AtcGamesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({gameId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (gameId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.gameId,
+                                referencedTable: $$AtcGamesTableReferences
+                                    ._gameIdTable(db),
+                                referencedColumn: $$AtcGamesTableReferences
+                                    ._gameIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$AtcGamesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $AtcGamesTable,
+      AtcGame,
+      $$AtcGamesTableFilterComposer,
+      $$AtcGamesTableOrderingComposer,
+      $$AtcGamesTableAnnotationComposer,
+      $$AtcGamesTableCreateCompanionBuilder,
+      $$AtcGamesTableUpdateCompanionBuilder,
+      (AtcGame, $$AtcGamesTableReferences),
+      AtcGame,
+      PrefetchHooks Function({bool gameId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4669,4 +5226,6 @@ class $AppDatabaseManager {
       $$GameSeatsTableTableManager(_db, _db.gameSeats);
   $$DartEventsTableTableManager get dartEvents =>
       $$DartEventsTableTableManager(_db, _db.dartEvents);
+  $$AtcGamesTableTableManager get atcGames =>
+      $$AtcGamesTableTableManager(_db, _db.atcGames);
 }

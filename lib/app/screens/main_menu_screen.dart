@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../domain/atc/atc_variant.dart';
 import '../providers.dart';
 import '../theme.dart';
+import 'atc_game_screen.dart';
 import 'game_screen.dart';
 import 'roster_screen.dart';
 import 'select_game_mode_screen.dart';
@@ -17,33 +19,52 @@ import 'stats_screen.dart';
 class MainMenuScreen extends ConsumerWidget {
   const MainMenuScreen({super.key});
 
-  /// Loads a stored leg back up and hands off to [GameScreen].
+  /// Loads a stored leg back up and hands off to the right game screen.
   ///
   /// The same sequence the setup screen used to run before resuming moved
-  /// here: the config has to land before the log, because
-  /// `GameController.build` watches [gameConfigProvider] and rebuilds to an
+  /// here: each mode's config has to land before its log, because its
+  /// controller's `build` watches the config provider and rebuilds to an
   /// empty leg whenever it changes.
   Future<void> _resume(
     BuildContext context,
     WidgetRef ref,
     ResumableLeg resumable,
   ) async {
-    final repository = ref.read(gameRepositoryProvider);
-    final config = await repository.loadConfig(resumable.gameId);
-    if (config == null || !context.mounted) return;
-    final darts = await repository.loadLog(resumable.gameId);
-    if (!context.mounted) return;
+    switch (resumable) {
+      case ResumableX01Leg(:final gameId):
+        final repository = ref.read(gameRepositoryProvider);
+        final config = await repository.loadConfig(gameId);
+        if (config == null || !context.mounted) return;
+        final darts = await repository.loadLog(gameId);
+        if (!context.mounted) return;
 
-    await ref.read(matchProvider.notifier).resumeFrom(resumable.gameId);
-    if (!context.mounted) return;
+        await ref.read(matchProvider.notifier).resumeFrom(gameId);
+        if (!context.mounted) return;
 
-    ref.read(gameConfigProvider.notifier).update(config);
-    ref.read(currentGameIdProvider.notifier).set(resumable.gameId);
-    ref.read(gameProvider.notifier).resume(config, darts);
+        ref.read(gameConfigProvider.notifier).update(config);
+        ref.read(currentGameIdProvider.notifier).set(gameId);
+        ref.read(gameProvider.notifier).resume(config, darts);
 
-    await Navigator.of(
-      context,
-    ).push(MaterialPageRoute<void>(builder: (context) => const GameScreen()));
+        await Navigator.of(context).push(
+          MaterialPageRoute<void>(builder: (context) => const GameScreen()),
+        );
+      case ResumableAtcLeg(:final gameId):
+        final repository = ref.read(gameRepositoryProvider);
+        final config = await repository.loadAtcConfig(gameId);
+        if (config == null || !context.mounted) return;
+        final darts = await repository.loadLog(gameId);
+        if (!context.mounted) return;
+
+        ref.read(atcConfigProvider.notifier).update(config);
+        ref.read(currentGameIdProvider.notifier).set(gameId);
+        ref.read(atcGameProvider.notifier).resume(config, darts);
+
+        await Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (context) => const AtcGameScreen(),
+          ),
+        );
+    }
   }
 
   @override
@@ -199,6 +220,10 @@ class _MenuRow extends StatelessWidget {
 /// button, so the leg can be
 /// recognised before committing to it - there is no point resuming the
 /// wrong one.
+///
+/// The outer card - border, header, tap target - is shared by every mode;
+/// only the format eyebrow and the per-player figures switch on which kind
+/// of [resumable] this is.
 class _ResumeBanner extends StatelessWidget {
   const _ResumeBanner({
     required this.resumable,
@@ -212,7 +237,30 @@ class _ResumeBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final leg = resumable.leg;
+    final resumable = this.resumable;
+    final (format, playerIds, currentPlayerId, figures) = switch (resumable) {
+      ResumableX01Leg(:final leg) => (
+        '${leg.config.startScore}',
+        leg.config.playerIds,
+        leg.currentPlayerId,
+        <int, String>{
+          for (final id in leg.config.playerIds) id: '${leg.remaining[id]}',
+        },
+      ),
+      ResumableAtcLeg(:final leg) => (
+        switch (leg.config.variant) {
+          AtcVariant.anyPart => 'ANY PART',
+          AtcVariant.masters => 'MASTERS',
+          AtcVariant.doublesOnly => 'DOUBLES ONLY',
+        },
+        leg.config.playerIds,
+        leg.currentPlayerId,
+        <int, String>{
+          for (final id in leg.config.playerIds)
+            id: leg.currentStopFor(id).label,
+        },
+      ),
+    };
 
     return Material(
       color: Palette.raised,
@@ -237,7 +285,7 @@ class _ResumeBanner extends StatelessWidget {
                   ),
                   const Spacer(),
                   Text(
-                    '${leg.config.startScore}',
+                    format,
                     style: Type.eyebrow.copyWith(color: Palette.chalkDim),
                   ),
                 ],
@@ -246,8 +294,8 @@ class _ResumeBanner extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  for (final playerId in leg.config.playerIds) ...[
-                    if (playerId != leg.config.playerIds.first)
+                  for (final playerId in playerIds) ...[
+                    if (playerId != playerIds.first)
                       const SizedBox(width: Gap.lg),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -255,16 +303,16 @@ class _ResumeBanner extends StatelessWidget {
                         Text(
                           nameFor(names, playerId).toUpperCase(),
                           style: Type.eyebrow.copyWith(
-                            color: playerId == leg.currentPlayerId
+                            color: playerId == currentPlayerId
                                 ? Palette.live
                                 : Palette.chalkDim,
                           ),
                         ),
                         const SizedBox(height: Gap.xs),
                         Text(
-                          '${leg.remaining[playerId]}',
+                          figures[playerId]!,
                           style: Type.scoreSmall.copyWith(
-                            color: playerId == leg.currentPlayerId
+                            color: playerId == currentPlayerId
                                 ? Palette.chalk
                                 : Palette.chalkDim,
                           ),

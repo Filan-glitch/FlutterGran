@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/app/providers.dart';
+import 'package:fluttergran/app/screens/atc_setup_screen.dart';
 import 'package:fluttergran/app/screens/select_game_mode_screen.dart';
 import 'package:fluttergran/app/screens/x01_setup_screen.dart';
 import 'package:fluttergran/app/theme.dart';
@@ -60,7 +61,6 @@ void main() {
   testWidgets('the x01 tile navigates to X01 Setup', (tester) async {
     await pumpScreen(tester);
 
-    // The one tile the real registry ships today.
     expect(find.text('X01'), findsOneWidget);
     expect(find.text('301 · 501 · 701'), findsOneWidget);
 
@@ -68,6 +68,19 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(X01SetupScreen), findsOneWidget);
+  });
+
+  testWidgets('the Around the Clock tile navigates to its setup screen', (
+    tester,
+  ) async {
+    await pumpScreen(tester);
+
+    expect(find.text('AROUND THE CLOCK'), findsOneWidget);
+
+    await tester.tap(find.text('AROUND THE CLOCK'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AtcSetupScreen), findsOneWidget);
   });
 
   testWidgets('the trailing tile names no specific unbuilt mode', (

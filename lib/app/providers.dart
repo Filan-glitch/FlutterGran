@@ -9,6 +9,10 @@ import '../data/board/board_source.dart';
 import '../data/board/segment_codec.dart';
 import '../data/db/database.dart';
 import '../data/db/game_repository.dart';
+import '../domain/atc/atc_config.dart';
+import '../domain/atc/atc_leg_state.dart';
+import '../domain/atc/atc_reducer.dart';
+import '../domain/atc/atc_variant.dart';
 import '../domain/board_event.dart';
 import '../domain/checkout/checkout_table.dart';
 import '../domain/game_mode.dart';
@@ -18,6 +22,7 @@ import '../domain/x01/game_config.dart';
 import '../domain/x01/leg_reducer.dart';
 import '../domain/x01/leg_state.dart';
 import '../domain/x01/match_state.dart';
+import 'atc_controller.dart';
 import 'audio/sound_controller.dart';
 import 'audio/sound_player.dart';
 import 'game_controller.dart';
@@ -110,6 +115,22 @@ final gameProvider = NotifierProvider<GameController, GameSession>(
   GameController.new,
 );
 
+class AtcConfigController extends Notifier<AtcConfig> {
+  @override
+  AtcConfig build() =>
+      AtcConfig(playerIds: const [1, 2], variant: AtcVariant.anyPart);
+
+  void update(AtcConfig config) => state = config;
+}
+
+final atcConfigProvider = NotifierProvider<AtcConfigController, AtcConfig>(
+  AtcConfigController.new,
+);
+
+final atcGameProvider = NotifierProvider<AtcController, AtcSession>(
+  AtcController.new,
+);
+
 final matchProvider = NotifierProvider<MatchController, MatchSession?>(
   MatchController.new,
 );
@@ -177,10 +198,14 @@ final allMatchesProvider = StreamProvider<List<MatchState>>(
   (ref) => ref.watch(gameRepositoryProvider).watchAllMatches(),
 );
 
+/// Every stored Around the Clock leg, replayed.
+final allAtcLegsProvider = StreamProvider<List<AtcLegState>>(
+  (ref) => ref.watch(gameRepositoryProvider).watchAllAtcLegs(),
+);
+
 /// A player's all-time record, one entry per mode they have played.
 ///
-/// Every stored leg is x01 today, so this is always `{GameMode.x01: ...}` -
-/// see [computePlayerStats] for why the grouping happens here rather than
+/// See [computePlayerStats] for why the grouping happens here rather than
 /// inside the domain function.
 final playerStatsProvider =
     Provider.family<Map<GameMode, ModeStats>, int>((ref, playerId) {
@@ -188,32 +213,54 @@ final playerStatsProvider =
         playerId,
         x01Legs: ref.watch(allLegsProvider).value ?? const [],
         x01Matches: ref.watch(allMatchesProvider).value ?? const [],
+        atcLegs: ref.watch(allAtcLegsProvider).value ?? const [],
       );
     });
 
 /// Where a player's darts have landed, for the accuracy heatmap.
+///
+/// Every dart ever thrown counts here regardless of mode - the underlying
+/// query has no `gameMode` filter of its own - so this depends on both leg
+/// streams purely to know when to refresh, not to change what it reads.
 final segmentCountsProvider = FutureProvider.family<Map<Segment, int>, int>(
   (ref, playerId) {
-    // Depend on the legs stream so the map refreshes as games are played.
     ref.watch(allLegsProvider);
+    ref.watch(allAtcLegsProvider);
     return ref.watch(gameRepositoryProvider).segmentCounts(playerId);
   },
 );
 
 /// A leg that was left unfinished, ready to be picked back up.
-class ResumableLeg {
-  const ResumableLeg({required this.gameId, required this.leg});
+///
+/// Sealed, the same pattern [ModeStats] uses: every call site that reads
+/// [leg] has to switch on the concrete type, which is what makes a third
+/// mode's leg impossible to fall through unhandled the way an x01-only
+/// resume path once would have.
+sealed class ResumableLeg {
+  const ResumableLeg({required this.gameId});
 
   final int gameId;
+}
+
+class ResumableX01Leg extends ResumableLeg {
+  const ResumableX01Leg({required super.gameId, required this.leg});
 
   /// Replayed from the stored dart log, so the banner can show real scores.
   final LegState leg;
 }
 
-/// The leg the setup screen offers to resume, or null when there is none.
+class ResumableAtcLeg extends ResumableLeg {
+  const ResumableAtcLeg({required super.gameId, required this.leg});
+
+  final AtcLegState leg;
+}
+
+/// The leg the main menu offers to resume, or null when there is none.
 ///
 /// Watches the games table rather than loading once: finishing or abandoning a
 /// leg has to make the offer appear or disappear without a manual refresh.
+/// [GameRepository.watchResumableGameId] itself has no `gameMode` filter, so
+/// the row's own mode decides which config/fold this reads it back through.
 final resumableLegProvider = StreamProvider<ResumableLeg?>((ref) async* {
   final repository = ref.watch(gameRepositoryProvider);
 
@@ -223,16 +270,34 @@ final resumableLegProvider = StreamProvider<ResumableLeg?>((ref) async* {
       continue;
     }
 
-    final config = await repository.loadConfig(gameId);
-    if (config == null) {
+    final game = await repository.loadGame(gameId);
+    if (game == null) {
       yield null;
       continue;
     }
 
-    yield ResumableLeg(
-      gameId: gameId,
-      leg: foldLeg(config, await repository.loadLog(gameId)),
-    );
+    switch (game.gameMode) {
+      case GameMode.x01:
+        final config = await repository.loadConfig(gameId);
+        if (config == null) {
+          yield null;
+          continue;
+        }
+        yield ResumableX01Leg(
+          gameId: gameId,
+          leg: foldLeg(config, await repository.loadLog(gameId)),
+        );
+      case GameMode.aroundTheClock:
+        final config = await repository.loadAtcConfig(gameId);
+        if (config == null) {
+          yield null;
+          continue;
+        }
+        yield ResumableAtcLeg(
+          gameId: gameId,
+          leg: foldAroundTheClock(config, await repository.loadLog(gameId)),
+        );
+    }
   }
 });
 

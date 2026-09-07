@@ -293,13 +293,13 @@ void main() {
         x01Legs: [leg(501, [t(20), t(20), t(20)])],
       );
 
-      expect(stats.keys, [GameMode.x01]);
       expect((stats[GameMode.x01]! as X01Stats).dartsThrown, 3);
     });
 
-    test('a player with nothing thrown still gets an empty x01 entry', () {
+    test('a player with nothing thrown still gets an empty entry per mode', () {
       final stats = computePlayerStats(1);
 
+      expect(stats.keys, containsAll([GameMode.x01, GameMode.aroundTheClock]));
       expect((stats[GameMode.x01]! as X01Stats).legsPlayed, 0);
     });
   });
