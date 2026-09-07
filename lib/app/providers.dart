@@ -6,7 +6,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/board/ble_board_source.dart';
 import '../data/board/board_source.dart';
-import '../data/board/fake_board_source.dart';
 import '../data/board/segment_codec.dart';
 import '../data/db/database.dart';
 import '../data/db/game_repository.dart';
@@ -23,48 +22,18 @@ import 'audio/sound_player.dart';
 import 'game_controller.dart';
 import 'match_controller.dart';
 
-/// Which board the app is reading.
-enum BoardMode {
-  /// Scripted bytes, for playing and testing without hardware.
-  fake,
-
-  /// A real GranBoard over Bluetooth.
-  bluetooth;
-
-  String get label => this == BoardMode.fake ? 'Simulated' : 'Bluetooth';
-}
-
-class BoardModeController extends Notifier<BoardMode> {
-  @override
-  BoardMode build() => BoardMode.fake;
-
-  void set(BoardMode mode) => state = mode;
-}
-
-final boardModeProvider = NotifierProvider<BoardModeController, BoardMode>(
-  BoardModeController.new,
-);
-
 /// The board the app is reading.
 ///
-/// Switching this one provider is the whole mechanism for swapping the fake for
-/// real Bluetooth, which is why nothing above it ever learns which it is
-/// talking to. Tests override it directly.
+/// Always a real GranBoard over Bluetooth - there is no in-app switch for it
+/// any more. Hardware day (2026-09-04) confirmed the real connection works
+/// end to end, so scripted bytes are a test-only concern from here on; tests
+/// override this provider directly with a `FakeBoardSource`.
 final boardSourceProvider = Provider<BoardSource>((ref) {
-  final source = switch (ref.watch(boardModeProvider)) {
-    BoardMode.fake => FakeBoardSource(),
-    BoardMode.bluetooth => BleBoardSource(),
-  };
+  final source = BleBoardSource();
   ref.onDispose(source.dispose);
   return source;
 });
 
-/// A single long-lived codec.
-///
-/// Kept out of [boardReaderProvider] so calibration corrections can be applied
-/// to it in place. Rebuilding it would tear down the board connection every
-/// time a segment was corrected - exactly while someone is standing at the
-/// board throwing darts at it.
 final segmentCodecProvider = Provider<SegmentCodec>((ref) => SegmentCodec());
 
 final boardReaderProvider = Provider<BoardReader>((ref) {
@@ -76,31 +45,6 @@ final boardReaderProvider = Provider<BoardReader>((ref) {
   return reader;
 });
 
-/// Codes verified against this particular board.
-final calibrationsProvider = StreamProvider<List<SegmentCalibration>>(
-  (ref) => ref.watch(gameRepositoryProvider).watchCalibrations(),
-);
-
-/// Segments whose code has been confirmed, for the coverage checklist.
-final calibrationCoverageProvider = Provider<Set<Segment>>((ref) {
-  final rows = ref.watch(calibrationsProvider).value ?? const [];
-  return {for (final row in rows) Segment(row.number, row.ring)};
-});
-
-/// Keeps the decoder in step with what calibration has learned.
-///
-/// Corrections are pushed into the live codec rather than rebuilt around it, so
-/// the next dart decodes correctly without reconnecting.
-final calibrationSyncProvider = Provider<void>((ref) {
-  final codec = ref.watch(segmentCodecProvider);
-  final rows = ref.watch(calibrationsProvider).value ?? const [];
-
-  codec.clearAllOverrides();
-  for (final row in rows.where((row) => row.corrected)) {
-    codec.setOverride(row.body, Segment(row.number, row.ring));
-  }
-});
-
 final boardEventsProvider = StreamProvider<BoardEvent>(
   (ref) => ref.watch(boardReaderProvider).events,
 );
@@ -109,31 +53,17 @@ final boardConnectionProvider = StreamProvider<BoardConnectionState>(
   (ref) => ref.watch(boardReaderProvider).connectionState,
 );
 
-/// Frames the board sent that the segment table does not recognise.
-///
-/// Kept for the diagnostics screen: on an unverified board these are the only
-/// evidence of what the hardware actually does.
-final unknownFramesProvider = StreamProvider<List<String>>((ref) async* {
-  final seen = <String>[];
-  await for (final event in ref.watch(boardReaderProvider).events) {
-    if (event is UnknownFrame) {
-      seen.add(event.body);
-      yield List<String>.unmodifiable(seen);
-    }
-  }
-});
-
 final checkoutTableProvider = Provider<CheckoutTable>(
   (ref) => CheckoutTable(),
 );
 
 /// Whether the keypad is being shown by hand over a connected board.
 ///
-/// Separate from [BoardMode]/[boardSourceProvider]: those decide which board
-/// the app is reading from, a setup-time choice buried in diagnostics. This is
-/// a mid-game visibility switch a player reaches for from the corner of the
-/// game screen - "let me key one in" - and it means nothing until there is a
-/// real board connected for the keypad to be hidden behind in the first place.
+/// Separate from [boardSourceProvider]: that decides which board the app is
+/// reading from. This is a mid-game visibility switch a player reaches for
+/// from the corner of the game screen - "let me key one in" - and it means
+/// nothing until there is a real board connected for the keypad to be hidden
+/// behind in the first place.
 class KeypadOverrideController extends Notifier<bool> {
   @override
   bool build() => false;

@@ -371,41 +371,6 @@ class GameRepository {
     };
   }
 
-  // Calibration
-
-  /// Every frame code that has been verified against real hardware.
-  Stream<List<SegmentCalibration>> watchCalibrations() =>
-      db.select(db.segmentCalibrations).watch();
-
-  Future<List<SegmentCalibration>> allCalibrations() =>
-      db.select(db.segmentCalibrations).get();
-
-  /// Records what [body] really means on this board.
-  ///
-  /// [corrected] marks a code whose meaning differs from the shipped table,
-  /// which is what turns this row into a decoding override.
-  Future<void> recordCalibration({
-    required String body,
-    required Segment segment,
-    required bool corrected,
-  }) => db
-      .into(db.segmentCalibrations)
-      .insertOnConflictUpdate(
-        SegmentCalibrationsCompanion.insert(
-          body: body,
-          number: segment.number,
-          ring: segment.ring,
-          corrected: Value(corrected),
-        ),
-      );
-
-  Future<void> clearCalibration(String body) =>
-      (db.delete(db.segmentCalibrations)..where((c) => c.body.equals(body)))
-          .go();
-
-  Future<void> clearAllCalibrations() =>
-      db.delete(db.segmentCalibrations).go();
-
   /// Rebuilds the configuration a game was played under.
   ///
   /// Null for a game that cannot be replayed at all: one that is not there, and

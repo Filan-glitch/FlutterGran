@@ -113,45 +113,18 @@ class DartEvents extends Table {
   ];
 }
 
-/// What a frame code has been confirmed to mean on this particular board.
-///
-/// A row is written whenever a code is verified during calibration. Rows where
-/// [corrected] is true disagree with the shipped table and become the codec's
-/// override layer; the rest are confirmations, which are what the coverage
-/// checklist counts.
-class SegmentCalibrations extends Table {
-  /// Frame body, `@` stripped.
-  TextColumn get body => text()();
-
-  IntColumn get number => integer()();
-  TextColumn get ring => textEnum<Ring>()();
-
-  /// Whether this differs from the shipped GranBoard table.
-  BoolColumn get corrected =>
-      boolean().withDefault(const Constant(false))();
-
-  DateTimeColumn get verifiedAt =>
-      dateTime().withDefault(currentDateAndTime)();
-
-  @override
-  Set<Column<Object>> get primaryKey => {body};
-}
-
-@DriftDatabase(
-  tables: [Players, Matches, Games, GameSeats, DartEvents, SegmentCalibrations],
-)
+@DriftDatabase(tables: [Players, Matches, Games, GameSeats, DartEvents])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
     : super(executor ?? driftDatabase(name: 'fluttergran'));
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) => m.createAll(),
     onUpgrade: (m, from, to) async {
-      if (from < 2) await m.createTable(segmentCalibrations);
       if (from < 3) {
         await m.createTable(matches);
         // Added rather than backfilled: a leg thrown before matches existed
@@ -159,6 +132,15 @@ class AppDatabase extends _$AppDatabase {
         // nobody played for.
         await m.addColumn(games, games.matchId);
         await m.addColumn(games, games.legNumber);
+      }
+      if (from < 4 && from >= 2) {
+        // Calibration was a hardware-bring-up feature: verify the shipped
+        // GranBoard 3s table against a real 132 and record any corrections.
+        // Hardware day (2026-09-04) found zero - the table is correct as
+        // shipped - so the table, its overrides, and the whole screen around
+        // them are gone. A database that never reached schema 2 never had
+        // this table to drop.
+        await m.deleteTable('segment_calibrations');
       }
     },
   );

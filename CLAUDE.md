@@ -37,26 +37,25 @@ preceded on connect by a `GB<n>;<ddd>` greeting with no terminator. The parser m
 buffer, strip the greeting, split on `@`, and dedupe before lookup. Unknown frames must
 log the **raw body**, never the failed lookup result.
 
-The segment table currently shipped is derived from the **GRANBOARD 3s**. No public
-source has ever verified the 132. Treat the table as provisional data until the
-calibration screen confirms it against real hardware.
+The segment table shipped is derived from the **GRANBOARD 3s**. Hardware day
+(2026-09-04) verified it against a real 132: all 82 scoring segments decoded
+correctly, with nothing to correct. The table is settled, not provisional.
 
-## Hardware day
+## Hardware day (done)
 
-Open **Board diagnostics** from the setup screen, switch the source to Bluetooth,
-and connect. Throw at every segment: each frame shows its raw body and what the
-table thinks it means, with `Right` to confirm and `Wrong` to correct. Corrections
-are written to `SegmentCalibrations` and pushed into the live decoder immediately,
-so the next dart scores correctly without reconnecting. The coverage bar reaches
-82 when every scoring area has been verified.
+Connecting, framing, and decoding were all verified end to end against a real
+132 on 2026-09-04. Findings: the 3s segment table matches the 132 exactly
+(zero corrections needed), the touch sensor does emit `BTN@`, `OUT@` does fire
+(unlike the 3s, which reportedly never sends it), and the full advertised name
+is `GRANBOARD`. Details and the connect-path bug that had to be fixed first
+are in `docs/BOARD_PROTOCOL.md`.
 
-Things to settle while the board is connected:
-
-- Does the 132's matrix match the 3s table, or does calibration fill up with
-  corrections?
-- Does the touch sensor emit `BTN@`? Nothing needed for play depends on it.
-- Does `OUT@` ever fire? The 3s reportedly never sends it.
-- What is the full advertised name? Only the prefix `GRAN` is confirmed.
+The calibration screen this needed (diagnostics, tap-to-correct, the coverage
+checklist, the `SegmentCalibrations` table and the codec's override layer)
+existed only to answer those questions and has been removed now that they're
+answered. What's left in the UI is a single connection icon
+(`BoardConnectionButton`): tap to connect, tap again to disconnect, coloured
+by state.
 
 ## Dependency constraints (learned the hard way)
 

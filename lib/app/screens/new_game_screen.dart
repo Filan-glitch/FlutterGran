@@ -6,7 +6,7 @@ import '../../domain/x01/game_config.dart';
 import '../../domain/x01/match_state.dart';
 import '../providers.dart';
 import '../theme.dart';
-import 'diagnostics_screen.dart';
+import '../widgets/board_connection_button.dart';
 import 'game_screen.dart';
 import 'stats_screen.dart';
 
@@ -117,15 +117,7 @@ class _NewGameScreenState extends ConsumerState<NewGameScreen> {
       appBar: AppBar(
         title: const Text('CHALK'),
         actions: [
-          IconButton(
-            tooltip: 'Board diagnostics',
-            icon: const Icon(Icons.bluetooth),
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (context) => const DiagnosticsScreen(),
-              ),
-            ),
-          ),
+          const BoardConnectionButton(),
           IconButton(
             tooltip: 'Statistics',
             icon: const Icon(Icons.insights),

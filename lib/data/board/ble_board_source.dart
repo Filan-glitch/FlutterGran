@@ -173,18 +173,22 @@ class BleBoardSource implements BoardSource {
     });
 
     try {
+      // `startScan`'s Future resolves as soon as the platform call to *start*
+      // scanning returns, not after `timeout` elapses - the timeout is a
+      // fire-and-forget `Timer(timeout, stopScan)` on the plugin's side. So
+      // this cannot be awaited to learn whether anything was found; only
+      // `found.future` can answer that, bounded by our own timeout below.
       await FlutterBluePlus.startScan(
         withServices: [GranBoardGatt.service],
-        timeout: scanTimeout,
         // The board advertises its service UUID, so filtering by service means
         // Android never needs a location permission for this scan.
         androidUsesFineLocation: false,
       );
 
-      // startScan returns when the timeout elapses; if nothing matched by then
-      // the completer is still open.
-      if (!found.isCompleted) found.complete(null);
-      return await found.future;
+      return await found.future.timeout(
+        scanTimeout,
+        onTimeout: () => null,
+      );
     } finally {
       await subscription.cancel();
       await FlutterBluePlus.stopScan();

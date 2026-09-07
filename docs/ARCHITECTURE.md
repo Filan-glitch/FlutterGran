@@ -182,8 +182,8 @@ platform's own text setting; its top tier lines up with `heroLayout`. The
 panels built around `Spacer`s are wrapped in `_FitOrScroll`, which gives them
 the height when there is height and a scroll when there is not.
 
-Setup, statistics, and diagnostics are all one column of controls sized for a
-phone. `CenteredContent` (`lib/app/theme.dart`) caps that column at
+Setup and statistics are both one column of controls sized for a phone.
+`CenteredContent` (`lib/app/theme.dart`) caps that column at
 `formContentWidth` (640) and centers it, so a tablet's extra width becomes
 margin rather than a stretched, sparse form — invisible on any screen
 narrower than the cap.
@@ -193,20 +193,20 @@ narrower than the cap.
 `DartKeypad` is the manual-entry path — a player taps in what landed, and it
 calls `addDart` directly regardless of what is feeding the board. Once a real
 board is actually connected (`boardConnectionProvider`'s
-`BoardConnectionState.connected`, not the dev-only `BoardMode` enum — see
-below), the keypad hides itself: the board is trusted to score for itself,
-and a corner toggle on `game_screen` (labelled Manual/Bluetooth mode) brings
-the keypad back for a hand-entered correction. While that override is open,
-`GameController` suppresses board-driven `DartHit`/`BoardMiss` events
-(`keypadOverrideProvider`, checked in `handleBoardEvent`) so the same dart
-cannot score twice, once from the tap and once from the board's own frame.
-`ButtonPress` (`BTN@`) is never suppressed — confirming a turn is not
-scoring, and stays useful with the keypad pulled up.
+`BoardConnectionState.connected`), the keypad hides itself: the board is
+trusted to score for itself, and a corner toggle on `game_screen` (labelled
+Manual/Bluetooth mode) brings the keypad back for a hand-entered correction.
+While that override is open, `GameController` suppresses board-driven
+`DartHit`/`BoardMiss` events (`keypadOverrideProvider`, checked in
+`handleBoardEvent`) so the same dart cannot score twice, once from the tap and
+once from the board's own frame. `ButtonPress` (`BTN@`) is never suppressed —
+confirming a turn is not scoring, and stays useful with the keypad pulled up.
 
-This is unrelated to `BoardMode`/`FakeBoardSource`: that pair picks which
-`BoardSource` implementation feeds the app (a scripted byte emitter for
-testing without hardware, or `BleBoardSource`) and lives only in the
-diagnostics screen — a developer's switch, never a player's.
+This is unrelated to `boardSourceProvider`/`FakeBoardSource`: that picks which
+`BoardSource` implementation feeds the app, and in-app is always
+`BleBoardSource` now that hardware day has confirmed it works — only tests
+still reach for the scripted `FakeBoardSource`, by overriding the provider
+directly. There is no runtime switch between them any more.
 
 ## Where to start reading
 

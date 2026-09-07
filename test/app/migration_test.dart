@@ -25,6 +25,21 @@ CREATE TABLE IF NOT EXISTS games (
   winner_player_id INTEGER NULL REFERENCES players (id)
 )''';
 
+/// `segment_calibrations` exactly as it existed from schema 2 through 3,
+/// spelled out rather than built from a table class - the class itself is
+/// gone from the current schema (hardware day, 2026-09-04, found the shipped
+/// table needed no corrections), but a database written by that build of the
+/// app still has the table on disk, and the migration to 4 has to find it
+/// there to drop it.
+const String _segmentCalibrationsAtV2 = '''
+CREATE TABLE IF NOT EXISTS segment_calibrations (
+  body TEXT NOT NULL PRIMARY KEY,
+  number INTEGER NOT NULL,
+  ring TEXT NOT NULL,
+  corrected INTEGER NOT NULL DEFAULT 0 CHECK ("corrected" IN (0, 1)),
+  verified_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+)''';
+
 /// An [AppDatabase] frozen at schema 2, used to lay a database down the way an
 /// older build of the app would have left it on someone's phone.
 class _SchemaV2 extends AppDatabase {
@@ -40,7 +55,7 @@ class _SchemaV2 extends AppDatabase {
       await m.database.customStatement(_gamesAtV2);
       await m.createTable(gameSeats);
       await m.createTable(dartEvents);
-      await m.createTable(segmentCalibrations);
+      await m.database.customStatement(_segmentCalibrationsAtV2);
     },
   );
 }
@@ -132,7 +147,7 @@ void main() {
   /// Opens the same file with the current schema, running the migration.
   AppDatabase migrated() => AppDatabase(NativeDatabase(file));
 
-  test('a version 2 database opens at version 3', () async {
+  test('a version 2 database opens at the current version', () async {
     await seedV2(darts: [t(20)]);
 
     final db = migrated();
@@ -142,7 +157,24 @@ void main() {
     final version = await db
         .customSelect('PRAGMA user_version')
         .getSingle();
-    expect(version.read<int>('user_version'), 3);
+    expect(version.read<int>('user_version'), db.schemaVersion);
+
+    await db.close();
+  });
+
+  test('an old segment_calibrations table is dropped, not carried forward', () async {
+    await seedV2(darts: [t(20)]);
+
+    final db = migrated();
+    await db.select(db.matches).get();
+
+    final tables = await db
+        .customSelect(
+          "SELECT name FROM sqlite_master WHERE type = 'table' "
+          "AND name = 'segment_calibrations'",
+        )
+        .get();
+    expect(tables, isEmpty);
 
     await db.close();
   });

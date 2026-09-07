@@ -74,59 +74,47 @@ Rules the assembler follows:
 | anything else | `UnknownFrame(body)` |
 
 An unrecognised body becomes `UnknownFrame` carrying the body **verbatim** —
-never a silently dropped hit and never a guess. On an unverified board that log
-line is the only way to find out what the hardware actually sends.
+never a silently dropped hit and never a guess.
 
-Lookup order is **overrides first, then the shipped table**, which is what makes
-calibration take effect on the very next dart.
-
-## The segment table is provisional
+## The segment table is settled
 
 The table in `lib/data/board/granboard_segment_map.dart` is derived from the
-**GRANBOARD 3s**. No public source has ever verified it for the **132**. Treat
-it as provisional data until the calibration screen confirms it against real
-hardware.
+**GRANBOARD 3s**. Hardware day (2026-09-04) verified it against a real **132**:
+all 82 scoring segments decoded correctly, with nothing to correct. It is no
+longer provisional.
 
-This is why the codec has an override layer at all, and why unknown frames log
-their raw body rather than a lookup failure.
+## Hardware day (2026-09-04) — resolved
 
-## Calibration
-
-Open **Board diagnostics** from the setup screen, switch the source to
-Bluetooth, and connect. Throw at every segment: each frame shows its raw body
-and what the table thinks it means, with **Right** to confirm and **Wrong** to
-correct.
-
-Corrections are written to the `SegmentCalibrations` table and pushed into the
-**live decoder** immediately — the codec is mutated in place rather than
-rebuilt, because rebuilding it would tear down the board connection while
-somebody is standing at the board throwing darts at it. The next dart scores
-correctly without reconnecting.
-
-The coverage bar reaches **82** when every scoring area has been verified
-(20 numbers × 4 rings, plus the two bulls).
-
-## Hardware day
-
-Questions that can only be answered with a 132 connected:
+Every question that could only be answered with a 132 connected:
 
 - Does the 132's matrix match the 3s table, or does calibration fill up with
-  corrections?
-- Does the touch sensor emit `BTN@`? Nothing needed for play depends on it —
-  the button is a convenience for confirming a turn.
-- Does `OUT@` ever fire? The 3s reportedly never sends it.
-- What is the full advertised name? Only the prefix `GRAN` is confirmed.
+  corrections? **Matches.** 82/82 segments verified with zero corrections.
+- Does the touch sensor emit `BTN@`? **Yes**, confirmed live.
+- Does `OUT@` ever fire? **Yes**, confirmed live (the 3s reportedly never
+  sends it, so this is a real difference between the two boards).
+- What is the full advertised name? **`GRANBOARD`**, confirmed via an
+  unfiltered `bluetoothctl` scan against the connected board.
 
-`lib/data/board/frame_recorder.dart` exists for exactly this: it captures raw
-frames so a session with real hardware can be replayed later as a fixture.
+The calibration screen that answered these questions — a live diagnostics
+view with a tap-to-correct dialog, an 82-cell coverage checklist, an override
+layer in `SegmentCodec`, and a `SegmentCalibrations` table — existed only to
+answer them, and has been removed now that they're answered. So has
+`lib/data/board/frame_recorder.dart`: it existed to capture a hardware-day
+session as a replay fixture, was never wired to a file or a screen control,
+and never captured one. What is left in the UI is a single connection icon
+(`BoardConnectionButton`, in the app bar) that connects or disconnects on tap
+and is coloured by state - white unclicked, blue while connecting, green
+connected, red disconnected. Nothing about the protocol below needs verifying
+again unless the board itself changes.
 
 ## Playing without a board
 
 `FakeBoardSource` emits the same raw byte chunks real hardware does, through the
 same code path — including split frames, glued frames, duplicates and the
-greeting. It is the default source, so the whole app can be developed and
-demonstrated with no hardware present, and every protocol quirk above is
-reproducible in a test.
+greeting. `boardSourceProvider` always builds a real `BleBoardSource` now that
+hardware day has confirmed it works; tests override the provider directly with
+`FakeBoardSource`, so every protocol quirk above stays reproducible without
+hardware attached.
 
 ## Connection lifecycle
 
@@ -136,5 +124,16 @@ without matching the documented UUID. A dropped connection schedules a
 reconnect with backoff (`reconnectDelay`, tested in
 `test/app/reconnect_delay_test.dart`) for as long as a connection is still
 wanted.
+
+**Found and fixed on hardware day:** `_findBoard()` awaited
+`FlutterBluePlus.startScan(timeout: scanTimeout)` to learn whether the board
+had been found, but that call's Future resolves as soon as the platform scan
+*starts* - the plugin's `timeout` is a fire-and-forget internal timer, not
+something the caller can await. Every connect attempt was therefore declaring
+the board absent and tearing the scan down within milliseconds of starting it,
+before any advertisement could arrive - the board never had a chance to be
+found. The fix races the completer that the scan-results listener fills in
+against `scanTimeout` directly, instead of trusting `startScan`'s return to
+mean anything about elapsed time.
 
 **The MVP is read-only. Nothing writes to the board.** All audio is app-side.

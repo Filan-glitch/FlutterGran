@@ -20,9 +20,10 @@ what lets the fake and real Bluetooth go through *exactly* the same parsing
 path, and it means `BleBoardSource` is the only class that has to be verified
 against hardware.
 
-Swapping the two is one provider override (`boardSourceProvider`), which is the
-entire mechanism behind the Simulated / Bluetooth switch on the diagnostics
-screen.
+Swapping the two is one provider override (`boardSourceProvider`) - the
+in-app default is always `BleBoardSource` now that hardware day has confirmed
+it works; tests override the provider with `FakeBoardSource` directly, and
+there is no runtime switch between the two any more.
 
 ## GATT
 
@@ -172,16 +173,12 @@ connection goes from connected to not-connected, **the frame assembler is
 reset**, so a half-received frame from before the drop is never glued to the
 first frame after it.
 
-The reader also emits `ObservedFrame(body, event)` alongside decoded events —
-the raw body travels beside the domain type, not inside it, because scoring has
-no use for it but calibration and diagnostics need to know which code produced
-which segment.
-
 ## Playing without a board
 
-`FakeBoardSource` is the default. It emits the same raw byte chunks real
-hardware does, through the same code path, and can reproduce every protocol
-quirk on demand:
+`FakeBoardSource` emits the same raw byte chunks real hardware does, through
+the same code path, and can reproduce every protocol quirk on demand. It is no
+longer the in-app default - `boardSourceProvider` always builds a real
+`BleBoardSource` - but tests still override the provider with it directly:
 
 | Method | Reproduces |
 |---|---|
@@ -195,12 +192,15 @@ quirk on demand:
 That is why the whole app — including every parser edge case — is developed and
 tested with no hardware present.
 
-## Diagnostics
+## Connecting from the app
 
-**Board diagnostics**, from the setup screen: switch between Simulated and
-Bluetooth, connect, watch the live connection state, see each frame with its
-raw body and its decoded meaning, confirm or correct it, and record the raw
-stream to a fixture.
+The setup screen's `BoardConnectionButton` is the whole interface: one icon,
+tap to connect or disconnect, coloured by state (white unclicked, blue
+connecting, green connected, red disconnected). The live diagnostics screen
+this replaced - switch source, watch each frame's raw body and decoded
+meaning, confirm or correct it - existed to verify the protocol against real
+hardware; hardware day (2026-09-04) finished that verification, so the screen
+is gone. See `BOARD_PROTOCOL.md` for what it found.
 
 If a real board will not appear, in order of likelihood:
 
