@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 
+import '../../domain/game_mode.dart';
 import '../../domain/segment.dart';
 
 part 'database.g.dart';
@@ -31,6 +32,12 @@ class Matches extends Table {
   /// recorded before matches existed is.
   IntColumn get legsToPlay => integer()();
 
+  /// Stored by name, like [DartEvents.ring] - see the note there. Every match
+  /// recorded before this column existed was x01, which is also the default
+  /// for a fresh insert until a second mode has a setup screen to choose from.
+  TextColumn get gameMode =>
+      textEnum<GameMode>().withDefault(const Constant('x01'))();
+
   DateTimeColumn get startedAt =>
       dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get finishedAt => dateTime().nullable()();
@@ -59,6 +66,12 @@ class Games extends Table {
   /// the leg number when the leg is replayed, so the alternation rule and this
   /// column have to stay in step.
   IntColumn get legNumber => integer().nullable()();
+
+  /// Stored by name, like [DartEvents.ring]. See the note on
+  /// [Matches.gameMode] - every leg recorded before this column existed was
+  /// x01, which is also the default for a fresh insert today.
+  TextColumn get gameMode =>
+      textEnum<GameMode>().withDefault(const Constant('x01'))();
 
   DateTimeColumn get startedAt =>
       dateTime().withDefault(currentDateAndTime)();
@@ -119,7 +132,7 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'fluttergran'));
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -141,6 +154,20 @@ class AppDatabase extends _$AppDatabase {
         // them are gone. A database that never reached schema 2 never had
         // this table to drop.
         await m.deleteTable('segment_calibrations');
+      }
+      if (from < 5) {
+        // Backfilled to 'x01' by the column default, which is correct: every
+        // leg and match ever recorded was x01, since it is the only mode
+        // that has ever had an engine.
+        await m.addColumn(games, games.gameMode);
+        if (from >= 3) {
+          // A database already at v3 or v4 has a `matches` table missing
+          // this column. One migrating from below v3 gets `matches`
+          // created fresh, just above, from the current table definition -
+          // which already includes it - so adding it again here would be a
+          // duplicate column.
+          await m.addColumn(matches, matches.gameMode);
+        }
       }
     },
   );

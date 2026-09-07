@@ -979,7 +979,7 @@ class _LegWon extends StatelessWidget {
 
 /// The end of the match, over the board it was won on.
 ///
-/// Every figure here comes from [computePlayerStats] over this match's legs, so
+/// Every figure here comes from [computeX01Stats] over this match's legs, so
 /// a number shown at the end of a match is arrived at the same way as the same
 /// number on the statistics screen - there is one implementation of what a
 /// first-nine average is, and this is not a second one.
@@ -1053,7 +1053,7 @@ class _MatchWon extends ConsumerWidget {
                           name: nameFor(names, players[seat]),
                           stats: legs == null
                               ? null
-                              : computePlayerStats(players[seat], legs),
+                              : computeX01Stats(players[seat], legs),
                           won: players[seat] == winner,
                         ),
                       ),
@@ -1112,7 +1112,7 @@ class _MatchFigures extends StatelessWidget {
   /// Null while the match's legs are still being read, and if they cannot be.
   /// The rows keep their places and show nothing, so the card neither jumps nor
   /// claims a total it has not got.
-  final PlayerStats? stats;
+  final X01Stats? stats;
 
   final bool won;
 

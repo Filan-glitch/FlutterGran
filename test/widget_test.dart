@@ -9,10 +9,10 @@ import 'package:fluttergran/app/providers.dart';
 import 'package:fluttergran/data/db/database.dart';
 import 'package:fluttergran/main.dart';
 
-/// Pumps a few frames to let the roster query land.
+/// Pumps a few frames to let a route transition or a roster query land.
 ///
 /// Not `pumpAndSettle`: a focused text field blinks its cursor forever, so
-/// there is no settled state to wait for.
+/// there is no settled state to wait for once a form is on screen.
 Future<void> pumpFrames(WidgetTester tester) async {
   // Long enough to cover a route transition, which is around 300ms.
   for (var i = 0; i < 25; i++) {
@@ -20,6 +20,12 @@ Future<void> pumpFrames(WidgetTester tester) async {
   }
 }
 
+/// Launches the app and clears the splash screen, landing on the main menu.
+///
+/// Not `pumpAndSettle`: it stops as soon as one pump fails to schedule a new
+/// frame, which the splash screen's bare 700ms `Timer` never does on its own
+/// while it is idling. An explicit pump past that floor, with margin for the
+/// route transition to the main menu, is what actually drives it forward.
 Future<void> launch(WidgetTester tester, AppDatabase database) async {
   await tester.pumpWidget(
     ProviderScope(
@@ -27,6 +33,26 @@ Future<void> launch(WidgetTester tester, AppDatabase database) async {
       child: const FlutterGranApp(),
     ),
   );
+  await tester.pump(const Duration(milliseconds: 700));
+  await tester.pump(const Duration(milliseconds: 500));
+}
+
+/// From the main menu, walks Play -> Select Game Mode -> X01 Setup.
+Future<void> openX01Setup(WidgetTester tester) async {
+  await tester.tap(find.byKey(const Key('menu-play-button')));
+  await pumpFrames(tester);
+
+  await tester.tap(find.text('X01'));
+  await pumpFrames(tester);
+}
+
+/// Pops the current route via its own [ModalRoute], the same way the
+/// leave-a-leg confirmation below already does - `Navigator.pop` needs no
+/// widget to tap, which matters once a screen (like the main menu) has no
+/// back button of its own to find.
+Future<void> popRoute(WidgetTester tester, Finder onScreen) async {
+  final route = ModalRoute.of(tester.element(onScreen))!;
+  unawaited(route.navigator!.maybePop());
   await pumpFrames(tester);
 }
 
@@ -47,10 +73,23 @@ void main() {
   setUp(() => database = AppDatabase(NativeDatabase.memory()));
   tearDown(() => database.close());
 
-  testWidgets('the app opens on setup, with an empty roster', (tester) async {
+  testWidgets('the app opens on the main menu, and play reaches an empty '
+      'roster', (tester) async {
     await launch(tester, database);
 
     expect(find.text('CHALK'), findsOneWidget);
+    expect(find.byKey(const Key('menu-play-button')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('menu-play-button')));
+    await pumpFrames(tester);
+
+    expect(find.text('SELECT GAME MODE'), findsOneWidget);
+    expect(find.text('X01'), findsOneWidget);
+
+    await tester.tap(find.text('X01'));
+    await pumpFrames(tester);
+
+    expect(find.text('X01 SETUP'), findsOneWidget);
     expect(
       find.text('No players yet. Add the first one above.'),
       findsOneWidget,
@@ -69,6 +108,7 @@ void main() {
     addTearDown(tester.view.reset);
 
     await launch(tester, database);
+    await openX01Setup(tester);
 
     expect(tester.takeException(), isNull);
 
@@ -79,6 +119,7 @@ void main() {
     tester,
   ) async {
     await launch(tester, database);
+    await openX01Setup(tester);
 
     await tester.enterText(find.byType(TextField), 'Finn');
     await tester.testTextInput.receiveAction(TextInputAction.done);
@@ -95,6 +136,7 @@ void main() {
     tester,
   ) async {
     await launch(tester, database);
+    await openX01Setup(tester);
 
     await tester.enterText(find.byType(TextField), 'Finn');
     await tester.testTextInput.receiveAction(TextInputAction.done);
@@ -110,8 +152,10 @@ void main() {
     await closeApp(tester);
   });
 
-  testWidgets('leaving a leg keeps it, and it can be resumed', (tester) async {
+  testWidgets('leaving a leg keeps it, and it can be resumed from the main '
+      'menu', (tester) async {
     await launch(tester, database);
+    await openX01Setup(tester);
 
     await tester.enterText(find.byType(TextField), 'Finn');
     await tester.testTextInput.receiveAction(TextInputAction.done);
@@ -127,9 +171,7 @@ void main() {
     expect(find.text('441'), findsOneWidget);
 
     // Back raises the confirmation rather than leaving.
-    final route = ModalRoute.of(tester.element(find.text('441')))!;
-    unawaited(route.navigator!.maybePop());
-    await pumpFrames(tester);
+    await popRoute(tester, find.text('441'));
     expect(find.text('Leave this leg?'), findsOneWidget);
 
     // Staying returns to the leg untouched.
@@ -138,11 +180,19 @@ void main() {
     expect(find.text('Leave this leg?'), findsNothing);
     expect(find.text('441'), findsOneWidget);
 
-    // Leaving returns to setup, where the leg is offered back.
-    unawaited(route.navigator!.maybePop());
-    await pumpFrames(tester);
+    // Leaving returns to X01 setup - the resume offer moved to the main
+    // menu, so it is not shown here any more.
+    await popRoute(tester, find.text('441'));
     await tester.tap(find.text('LEAVE'));
     await pumpFrames(tester);
+
+    expect(find.text('X01 SETUP'), findsOneWidget);
+    expect(find.text('LEG IN PROGRESS'), findsNothing);
+
+    // Walking all the way back to the main menu is where the leg is offered.
+    await popRoute(tester, find.text('X01 SETUP'));
+    expect(find.text('SELECT GAME MODE'), findsOneWidget);
+    await popRoute(tester, find.text('SELECT GAME MODE'));
 
     expect(find.text('CHALK'), findsOneWidget);
     expect(find.text('LEG IN PROGRESS'), findsOneWidget);
@@ -160,6 +210,7 @@ void main() {
 
   testWidgets('a leg with no darts leaves without asking', (tester) async {
     await launch(tester, database);
+    await openX01Setup(tester);
 
     await tester.enterText(find.byType(TextField), 'Finn');
     await tester.testTextInput.receiveAction(TextInputAction.done);
@@ -167,14 +218,12 @@ void main() {
     await tester.tap(find.text('START LEG'));
     await pumpFrames(tester);
 
-    final route = ModalRoute.of(tester.element(find.text('501 · DOUBLE OUT')))!;
-    unawaited(route.navigator!.maybePop());
-    await pumpFrames(tester);
+    await popRoute(tester, find.text('501 · DOUBLE OUT'));
 
-    // Nothing thrown, nothing to protect.
+    // Nothing thrown, nothing to protect - straight back to setup, with
+    // nothing left to resume.
     expect(find.text('Leave this leg?'), findsNothing);
-    expect(find.text('CHALK'), findsOneWidget);
-    expect(find.text('LEG IN PROGRESS'), findsNothing);
+    expect(find.text('X01 SETUP'), findsOneWidget);
 
     await closeApp(tester);
   });
@@ -186,6 +235,7 @@ void main() {
     addTearDown(tester.view.reset);
 
     await launch(tester, database);
+    await openX01Setup(tester);
 
     final button = tester.getRect(find.byKey(const Key('start-leg-button')));
     final scoreRow = tester.getRect(find.byKey(const Key('start-score-row')));

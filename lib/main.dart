@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'app/screens/new_game_screen.dart';
+import 'app/screens/splash_screen.dart';
 import 'app/theme.dart';
 
 void main() {
@@ -26,7 +26,7 @@ class FlutterGranApp extends StatelessWidget {
       // rather than a screen anybody sees.
       builder: (context, child) =>
           _Scaled(child: child ?? const SizedBox.shrink()),
-      home: const NewGameScreen(),
+      home: const SplashScreen(),
     );
   }
 }

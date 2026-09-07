@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/db/database.dart';
+import '../../domain/game_mode.dart';
 import '../../domain/segment.dart';
+import '../../domain/stats/mode_stats.dart';
 import '../providers.dart';
 import '../theme.dart';
 import '../widgets/board_widget.dart';
@@ -67,12 +69,17 @@ class _Body extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final stats = ref.watch(playerStatsProvider(playerId));
+    final statsByMode = ref.watch(playerStatsProvider(playerId));
+    // Every stored leg is x01 today, so this is the only entry the map ever
+    // has - but it's read as an absent key rather than assumed, which is the
+    // honest contract of a map keyed by mode and what keeps this code
+    // unchanged when a mode legitimately has zero data for this player.
+    final x01 = statsByMode[GameMode.x01] as X01Stats?;
     final counts =
         ref.watch(segmentCountsProvider(playerId)).value ??
         const <Segment, int>{};
 
-    if (stats.legsPlayed == 0) {
+    if (x01 == null || x01.legsPlayed == 0) {
       return _Empty(
         headline: 'No legs yet',
         detail: 'Play a leg and every dart in it lands here.',
@@ -83,61 +90,65 @@ class _Body extends ConsumerWidget {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.sm, Gap.lg, Gap.xxl),
         children: [
+          // A mode label above its section, so a second mode's section reads
+          // as a distinct record rather than more rows appended to this one.
+          const _Eyebrow('X01'),
+          const SizedBox(height: Gap.sm),
           // The three-dart average is the number a darts player quotes when
           // asked how they play, so it is the headline and everything else is
           // supporting evidence.
           _Headline(
-            value: stats.average == null
+            value: x01.average == null
                 ? '—'
-                : stats.average!.toStringAsFixed(2),
+                : x01.average!.toStringAsFixed(2),
             label: 'Three-dart average',
             detail:
-                '${stats.dartsThrown} darts over ${stats.legsPlayed} '
-                '${stats.legsPlayed == 1 ? 'leg' : 'legs'}',
+                '${x01.dartsThrown} darts over ${x01.legsPlayed} '
+                '${x01.legsPlayed == 1 ? 'leg' : 'legs'}',
           ),
           const SizedBox(height: Gap.xl),
           _Section(
             title: 'Scoring',
             rows: [
-              _Row('First 9 average', _decimal(stats.firstNineAverage)),
-              _Row('Best turn', '${stats.bestTurn}'),
-              _Row('180s', '${stats.turnsOf180}'),
-              _Row('140+', '${stats.turnsOf140Plus}'),
-              _Row('100+', '${stats.turnsOf100Plus}'),
-              _Row('60+', '${stats.turnsOf60Plus}'),
+              _Row('First 9 average', _decimal(x01.firstNineAverage)),
+              _Row('Best turn', '${x01.bestTurn}'),
+              _Row('180s', '${x01.turnsOf180}'),
+              _Row('140+', '${x01.turnsOf140Plus}'),
+              _Row('100+', '${x01.turnsOf100Plus}'),
+              _Row('60+', '${x01.turnsOf60Plus}'),
             ],
           ),
           _Section(
             title: 'Finishing',
             rows: [
-              _Row('Checkout', _percent(stats.checkoutRate)),
+              _Row('Checkout', _percent(x01.checkoutRate)),
               _Row(
                 'Darts at double',
-                '${stats.doublesHit}/${stats.dartsAtDouble}',
+                '${x01.doublesHit}/${x01.dartsAtDouble}',
               ),
-              _Row('Best checkout', _optional(stats.bestCheckout)),
+              _Row('Best checkout', _optional(x01.bestCheckout)),
               _Row(
                 'Best leg',
-                _optional(stats.fewestDartsToWin, suffix: ' darts'),
+                _optional(x01.fewestDartsToWin, suffix: ' darts'),
               ),
             ],
           ),
           _Section(
             title: 'Legs',
             rows: [
-              _Row('Won', '${stats.legsWon} of ${stats.legsPlayed}'),
-              _Row('Win rate', _percent(stats.winRate)),
+              _Row('Won', '${x01.legsWon} of ${x01.legsPlayed}'),
+              _Row('Win rate', _percent(x01.winRate)),
             ],
           ),
           // Its own section, under the legs rather than mixed into them: a leg
           // and a match are different things to have won, and the figures above
           // have always meant legs.
-          if (stats.matchesPlayed > 0)
+          if (x01.matchesPlayed > 0)
             _Section(
               title: 'Matches',
               rows: [
-                _Row('Won', '${stats.matchesWon} of ${stats.matchesPlayed}'),
-                _Row('Win rate', _percent(stats.matchWinRate)),
+                _Row('Won', '${x01.matchesWon} of ${x01.matchesPlayed}'),
+                _Row('Win rate', _percent(x01.matchWinRate)),
               ],
             ),
           const SizedBox(height: Gap.lg),
@@ -181,6 +192,21 @@ class _Body extends ConsumerWidget {
 
   static String _optional(int? value, {String suffix = ''}) =>
       value == null ? '—' : '$value$suffix';
+}
+
+/// A small tracked-caps label marking which mode's section follows, matching
+/// the idiom used for field labels on the setup screen
+/// (`x01_setup_screen.dart`'s `_Eyebrow`).
+class _Eyebrow extends StatelessWidget {
+  const _Eyebrow(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Text(
+    text.toUpperCase(),
+    style: Type.eyebrow.copyWith(color: Palette.chalkDim),
+  );
 }
 
 class _Headline extends StatelessWidget {

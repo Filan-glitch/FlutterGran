@@ -1,6 +1,6 @@
 # Data model
 
-Drift over SQLite, currently at **schema version 4**.
+Drift over SQLite, currently at **schema version 5**.
 Definitions: `lib/data/db/database.dart`. Queries: `lib/data/db/game_repository.dart`.
 
 ## The one idea
@@ -31,6 +31,15 @@ Players ──┬──< GameSeats >── Games ──> Matches
 | `createdAt` | |
 
 A player persists across games so their history means something.
+Renaming (`GameRepository.renamePlayer`) touches only `name`. Deletion is
+the one deliberate exception to "every dart ever thrown is stored":
+`GameRepository.removePlayer` cascades a player's `DartEvents` and
+`GameSeats` rows with them (in application code, not a foreign key - see
+the doc comment there for why). The roster is not a place that should
+ever refuse a player who wants gone, so a leg they shared with someone
+else can be left with a hole - that other player's darts stay, replayed
+one seat short - rather than the deletion being blocked or the whole leg
+going with it.
 
 ### `Matches` — a run of legs
 
@@ -39,6 +48,7 @@ A player persists across games so their history means something.
 | `id` | autoincrement |
 | `startScore`, `doubleOut` | the format, agreed before anyone threw |
 | `legsToPlay` | best of this many. `1` is a single leg |
+| `gameMode` | stored by name, like `DartEvents.ring`. Every match ever played is `x01` - see [ARCHITECTURE.md](ARCHITECTURE.md#game-modes) |
 | `startedAt`, `finishedAt` | `finishedAt` null while running |
 | `winnerPlayerId` | null until decided; **cleared again if the deciding checkout is undone** |
 
@@ -55,6 +65,7 @@ to `Matche`.
 | `startScore`, `doubleOut` | |
 | `matchId` | **nullable**, references `Matches` |
 | `legNumber` | **nullable**, position in the match from zero |
+| `gameMode` | stored by name, like `DartEvents.ring`. Every leg ever played is `x01` |
 | `startedAt`, `finishedAt`, `winnerPlayerId` | |
 
 A "game" in the database is a **leg**. `matchId` and `legNumber` are nullable
@@ -109,6 +120,7 @@ Two deliberate choices:
 | **v2** | creates `SegmentCalibrations` |
 | **v3** | creates `Matches`, then **adds** `Games.matchId` and `Games.legNumber` |
 | **v4** | **drops** `SegmentCalibrations` |
+| **v5** | **adds** `Games.gameMode` and `Matches.gameMode`, backfilled to `x01` by the column default - true of every row ever written |
 
 `SegmentCalibrations` recorded what a frame code was confirmed to mean on the
 board it was verified against, with a `corrected` flag for rows that disagreed

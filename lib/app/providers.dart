@@ -11,6 +11,7 @@ import '../data/db/database.dart';
 import '../data/db/game_repository.dart';
 import '../domain/board_event.dart';
 import '../domain/checkout/checkout_table.dart';
+import '../domain/game_mode.dart';
 import '../domain/segment.dart';
 import '../domain/stats/player_stats.dart';
 import '../domain/x01/game_config.dart';
@@ -176,16 +177,19 @@ final allMatchesProvider = StreamProvider<List<MatchState>>(
   (ref) => ref.watch(gameRepositoryProvider).watchAllMatches(),
 );
 
-/// A player's all-time record.
-final playerStatsProvider = Provider.family<PlayerStats, int>((ref, playerId) {
-  final legs = ref.watch(allLegsProvider).value;
-  if (legs == null) return PlayerStats.empty;
-  return computePlayerStats(
-    playerId,
-    legs,
-    matches: ref.watch(allMatchesProvider).value ?? const [],
-  );
-});
+/// A player's all-time record, one entry per mode they have played.
+///
+/// Every stored leg is x01 today, so this is always `{GameMode.x01: ...}` -
+/// see [computePlayerStats] for why the grouping happens here rather than
+/// inside the domain function.
+final playerStatsProvider =
+    Provider.family<Map<GameMode, ModeStats>, int>((ref, playerId) {
+      return computePlayerStats(
+        playerId,
+        x01Legs: ref.watch(allLegsProvider).value ?? const [],
+        x01Matches: ref.watch(allMatchesProvider).value ?? const [],
+      );
+    });
 
 /// Where a player's darts have landed, for the accuracy heatmap.
 final segmentCountsProvider = FutureProvider.family<Map<Segment, int>, int>(

@@ -1,5 +1,9 @@
+import '../game_mode.dart';
 import '../x01/leg_state.dart';
 import '../x01/match_state.dart';
+import 'mode_stats.dart';
+
+export 'mode_stats.dart';
 
 /// Whether a score can be finished with a single dart at a double.
 ///
@@ -8,109 +12,25 @@ import '../x01/match_state.dart';
 bool isOneDartFinish(int score) =>
     score == 50 || (score.isEven && score >= 2 && score <= 40);
 
-/// Everything the stats screens show for one player.
-class PlayerStats {
-  const PlayerStats({
-    required this.legsPlayed,
-    required this.legsWon,
-    required this.matchesPlayed,
-    required this.matchesWon,
-    required this.dartsThrown,
-    required this.pointsScored,
-    required this.bestTurn,
-    required this.turnsOf180,
-    required this.turnsOf140Plus,
-    required this.turnsOf100Plus,
-    required this.turnsOf60Plus,
-    required this.dartsAtDouble,
-    required this.doublesHit,
-    required this.bestCheckout,
-    required this.fewestDartsToWin,
-    required this.firstNinePoints,
-    required this.firstNineDarts,
-  });
-
-  static const PlayerStats empty = PlayerStats(
-    legsPlayed: 0,
-    legsWon: 0,
-    matchesPlayed: 0,
-    matchesWon: 0,
-    dartsThrown: 0,
-    pointsScored: 0,
-    bestTurn: 0,
-    turnsOf180: 0,
-    turnsOf140Plus: 0,
-    turnsOf100Plus: 0,
-    turnsOf60Plus: 0,
-    dartsAtDouble: 0,
-    doublesHit: 0,
-    bestCheckout: null,
-    fewestDartsToWin: null,
-    firstNinePoints: 0,
-    firstNineDarts: 0,
-  );
-
-  final int legsPlayed;
-  final int legsWon;
-
-  /// Matches entered, whether or not they are decided yet.
-  ///
-  /// Deliberately a separate count from [legsPlayed] rather than a
-  /// reinterpretation of it: a best of five is one match and up to five legs,
-  /// and both numbers are worth knowing.
-  final int matchesPlayed;
-
-  final int matchesWon;
-
-  final int dartsThrown;
-
-  /// Points that survived - a busted turn contributes nothing.
-  final int pointsScored;
-
-  final int bestTurn;
-  final int turnsOf180;
-  final int turnsOf140Plus;
-  final int turnsOf100Plus;
-  final int turnsOf60Plus;
-
-  /// Darts thrown while on a finish.
-  final int dartsAtDouble;
-
-  /// Of those, the ones that won the leg.
-  final int doublesHit;
-
-  /// Highest score ever checked out from.
-  final int? bestCheckout;
-
-  /// Fewest darts taken to win a leg.
-  final int? fewestDartsToWin;
-
-  final int firstNinePoints;
-  final int firstNineDarts;
-
-  /// Three-dart average, or null before anything has been thrown.
-  double? get average =>
-      dartsThrown == 0 ? null : pointsScored / dartsThrown * dartsPerTurn;
-
-  /// Average over the opening three turns of each leg, which separates scoring
-  /// power from finishing ability.
-  double? get firstNineAverage => firstNineDarts == 0
-      ? null
-      : firstNinePoints / firstNineDarts * dartsPerTurn;
-
-  /// Share of darts at a double that actually won the leg, 0 to 1.
-  double? get checkoutRate =>
-      dartsAtDouble == 0 ? null : doublesHit / dartsAtDouble;
-
-  /// Share of legs won, 0 to 1. Legs, not matches - this is what it has always
-  /// meant and what the rest of the app reads it as.
-  double? get winRate => legsPlayed == 0 ? null : legsWon / legsPlayed;
-
-  double? get matchWinRate =>
-      matchesPlayed == 0 ? null : matchesWon / matchesPlayed;
+/// A player's whole record, one entry per mode they have ever played.
+///
+/// [x01Legs]/[x01Matches] are legs and matches the caller already knows are
+/// x01 - `LegState` itself carries no mode field, because it is the x01
+/// engine's own state and nothing else uses it. Grouping by mode happens one
+/// level up, where the rows are loaded from a `gameMode` column; this
+/// function only composes the per-mode calculators. A second mode adds a
+/// second parameter pair and a second entry here, not a rewrite of this one.
+Map<GameMode, ModeStats> computePlayerStats(
+  int playerId, {
+  Iterable<LegState> x01Legs = const [],
+  Iterable<MatchState> x01Matches = const [],
+}) {
+  return {
+    GameMode.x01: computeX01Stats(playerId, x01Legs, matches: x01Matches),
+  };
 }
 
-/// Aggregates a player's record across any number of replayed legs.
+/// Aggregates a player's x01 record across any number of replayed legs.
 ///
 /// Takes folded [LegState]s rather than raw rows, so every number here agrees
 /// with what was shown during play by construction.
@@ -118,7 +38,7 @@ class PlayerStats {
 /// [matches] is separate because a match is not derivable from a pile of legs:
 /// legs carry no record of which match they belonged to. Callers that only care
 /// about the throwing figures can leave it off.
-PlayerStats computePlayerStats(
+X01Stats computeX01Stats(
   int playerId,
   Iterable<LegState> legs, {
   Iterable<MatchState> matches = const [],
@@ -200,7 +120,7 @@ PlayerStats computePlayerStats(
     if (match.winnerId == playerId) matchesWon++;
   }
 
-  return PlayerStats(
+  return X01Stats(
     legsPlayed: legsPlayed,
     legsWon: legsWon,
     matchesPlayed: matchesPlayed,
