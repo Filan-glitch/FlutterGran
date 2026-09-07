@@ -1,10 +1,14 @@
 # fluttergran
 
 Flutter companion app for a **GranBoard 132** Bluetooth electronic dartboard.
-MVP: x01 (301/501/701, straight-in, double-out, single leg) for up to 4 players,
-live checkout suggestions, and per-player statistics across every dart ever thrown.
+x01 (301/501/701, straight-in, double-out) for up to 4 players, best of 1/3/5/7
+legs, live checkout suggestions, spoken commentary and sound cues, and
+per-player statistics across every dart ever thrown.
 
-Full design and milestones: `docs/PLAN.md`.
+MVP finished 2026-09-07 — real hardware connects and scores correctly, and the
+five post-MVP features (multi-leg matches, sound, app icon, end screen,
+responsive/tablet layout) have all shipped. Now polishing. Architecture and
+protocol reference: `docs/`.
 
 ## Commands
 
