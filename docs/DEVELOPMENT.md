@@ -15,7 +15,7 @@ No board is needed — the app starts on the simulated source.
 
 ```bash
 flutter analyze                                            # must be clean
-flutter test                                               # everything, 292 tests
+flutter test                                               # everything, 304 tests
 dart test test/domain test/data                            # engine, checkout, protocol
 dart run build_runner build --delete-conflicting-outputs   # after any table change
 dart format lib test                                       # note the caveat below

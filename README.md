@@ -7,8 +7,8 @@
 [![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
 [![Dart SDK](https://img.shields.io/badge/Dart-%5E3.12-0175C2?logo=dart&logoColor=white)](https://dart.dev)
 [![Platform](https://img.shields.io/badge/platform-Android%20%7C%20iOS-3D9C64)](#)
-[![Tests](https://img.shields.io/badge/tests-292%20passing-3D9C64)](#testing)
-[![Schema](https://img.shields.io/badge/schema-v3-8A9A8E)](docs/DATA_MODEL.md)
+[![Tests](https://img.shields.io/badge/tests-304%20passing-3D9C64)](#testing)
+[![Schema](https://img.shields.io/badge/schema-v4-8A9A8E)](docs/DATA_MODEL.md)
 
 x01 for up to four players, best of 1/3/5/7, live checkout suggestions, spoken
 commentary rendered at build time, and per-player statistics across every dart
@@ -95,10 +95,8 @@ Full detail: **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
 | [HARDWARE.md](docs/HARDWARE.md) | What the GranBoard 132 is, its sensor matrix, the segment table, and what is verified versus assumed |
 | [CONNECTIVITY.md](docs/CONNECTIVITY.md) | GATT service, scanning and Android's throttle, reconnect backoff, permissions, playing without a board |
 | [BOARD_PROTOCOL.md](docs/BOARD_PROTOCOL.md) | Frame format, the greeting, dedupe, calibration, hardware day |
-| [DATA_MODEL.md](docs/DATA_MODEL.md) | Every table, schema v1 → v3, and what the migrations do and deliberately do not do |
+| [DATA_MODEL.md](docs/DATA_MODEL.md) | Every table, schema v1 → v4, and what the migrations do and deliberately do not do |
 | [DEVELOPMENT.md](docs/DEVELOPMENT.md) | Commands, codegen, the asset generators, dependency constraints, test layout |
-| [PLAN.md](docs/PLAN.md) | The original design and milestones |
-| [ROADMAP.md](docs/ROADMAP.md) | The five features that took it from working scorer to something you would choose to use |
 
 ## Testing
 
