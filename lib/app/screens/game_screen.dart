@@ -73,7 +73,7 @@ class GameScreen extends ConsumerWidget {
       builder: (context) => AlertDialog(
         title: const Text('Leave this leg?'),
         content: Text(
-          'Your darts are saved. Resume from the setup screen whenever '
+          'Your darts are saved. Resume from the main menu whenever '
           'you like.',
           style: Type.body.copyWith(color: Palette.chalkDim),
         ),
