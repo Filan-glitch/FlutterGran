@@ -1,5 +1,8 @@
 import 'package:drift/drift.dart';
 
+import '../../domain/atc/atc_config.dart';
+import '../../domain/atc/atc_leg_state.dart';
+import '../../domain/atc/atc_reducer.dart';
 import '../../domain/game_mode.dart';
 import '../../domain/segment.dart';
 import '../../domain/x01/game_config.dart';
@@ -21,6 +24,10 @@ class GameRepository {
 
   /// The stored form of [GameMode.x01], for filtering `gameMode` columns.
   static final String _x01 = GameMode.x01.name;
+
+  /// The stored form of [GameMode.aroundTheClock], for filtering `gameMode`
+  /// columns.
+  static final String _aroundTheClock = GameMode.aroundTheClock.name;
 
   // Players
 
@@ -83,7 +90,7 @@ class GameRepository {
           .into(db.games)
           .insert(
             GamesCompanion.insert(
-              startScore: config.startScore,
+              startScore: Value(config.startScore),
               doubleOut: Value(config.doubleOut),
               matchId: Value(matchId),
               legNumber: Value(legNumber),
@@ -91,19 +98,26 @@ class GameRepository {
             ),
           );
 
-      for (var seat = 0; seat < config.playerIds.length; seat++) {
-        await db
-            .into(db.gameSeats)
-            .insert(
-              GameSeatsCompanion.insert(
-                gameId: gameId,
-                playerId: config.playerIds[seat],
-                seat: seat,
-              ),
-            );
-      }
+      await _seatPlayers(gameId, config.playerIds);
       return gameId;
     });
+  }
+
+  /// Seats a game's players in throwing order. Pure plumbing shared by every
+  /// mode's `start*Game` - unlike the fold or the queries built around it,
+  /// there is no rule here for a second mode to disagree with.
+  Future<void> _seatPlayers(int gameId, List<int> playerIds) async {
+    for (var seat = 0; seat < playerIds.length; seat++) {
+      await db
+          .into(db.gameSeats)
+          .insert(
+            GameSeatsCompanion.insert(
+              gameId: gameId,
+              playerId: playerIds[seat],
+              seat: seat,
+            ),
+          );
+    }
   }
 
   Future<void> finishGame(int gameId, int winnerPlayerId) =>
@@ -436,9 +450,11 @@ class GameRepository {
     if (seats.isEmpty) return null;
 
     return GameConfig(
-      startScore: game.startScore,
+      // Only ever called for an x01 row, which always populates both -
+      // Around the Clock leaves them null (see the columns' own docs).
+      startScore: game.startScore!,
       playerIds: seats,
-      doubleOut: game.doubleOut,
+      doubleOut: game.doubleOut!,
       // Who threw first is not stored: it follows from the leg's position in
       // its match, and a leg outside a match always opens on the first seat.
       startingSeat: game.legNumber == null
@@ -460,4 +476,80 @@ class GameRepository {
             .get();
     return [for (final row in rows) row.playerId];
   }
+
+  // Around the Clock
+
+  /// Creates an Around the Clock leg and seats its players.
+  ///
+  /// No `matchId`/`legNumber` - this mode has no match wrapping yet, so
+  /// every leg stands on its own, the same as every x01 leg recorded before
+  /// matches existed.
+  Future<int> startAtcGame(AtcConfig config) {
+    return db.transaction(() async {
+      final gameId = await db
+          .into(db.games)
+          .insert(
+            GamesCompanion.insert(
+              // Absent, not zero: this mode has no start score to lie about.
+              startScore: const Value.absent(),
+              // `doubleOut` has a column default of `true` - omitting it
+              // would silently write that default rather than leaving it
+              // null, so it has to be set explicitly.
+              doubleOut: const Value(null),
+              gameMode: const Value(GameMode.aroundTheClock),
+            ),
+          );
+
+      await db
+          .into(db.atcGames)
+          .insert(
+            AtcGamesCompanion.insert(
+              gameId: Value(gameId),
+              variant: config.variant,
+            ),
+          );
+
+      await _seatPlayers(gameId, config.playerIds);
+      return gameId;
+    });
+  }
+
+  /// The `AtcGames` row for a game, or null if there is not one.
+  Future<AtcGame?> loadAtcGame(int gameId) =>
+      (db.select(db.atcGames)..where((g) => g.gameId.equals(gameId)))
+          .getSingleOrNull();
+
+  /// Rebuilds the configuration an Around the Clock leg was played under.
+  ///
+  /// Null under the same "half-written row" contract [loadConfig] documents:
+  /// missing variant row, or no seats, both mean there is nothing honest to
+  /// replay.
+  Future<AtcConfig?> loadAtcConfig(int gameId) async {
+    final atcGame = await loadAtcGame(gameId);
+    if (atcGame == null) return null;
+
+    final seats = await _seatsOf(gameId);
+    if (seats.isEmpty) return null;
+
+    return AtcConfig(playerIds: seats, variant: atcGame.variant);
+  }
+
+  /// Every stored Around the Clock leg, replayed. Refreshes itself when a
+  /// game changes.
+  ///
+  /// A sibling to [watchAllLegs], not a parameterisation of it - the two
+  /// fold through different engines and there is no rule shared between them
+  /// worth entangling.
+  Stream<List<AtcLegState>> watchAllAtcLegs() =>
+      (db.select(db.games)..where((g) => g.gameMode.equals(_aroundTheClock)))
+          .watch()
+          .asyncMap((games) async {
+            final legs = <AtcLegState>[];
+            for (final game in games) {
+              final config = await loadAtcConfig(game.id);
+              if (config == null) continue;
+              legs.add(foldAroundTheClock(config, await loadLog(game.id)));
+            }
+            return legs;
+          });
 }

@@ -1,3 +1,5 @@
+import '../atc/atc_leg_state.dart';
+import '../atc/atc_stop.dart';
 import '../game_mode.dart';
 import '../x01/leg_state.dart';
 import '../x01/match_state.dart';
@@ -14,19 +16,21 @@ bool isOneDartFinish(int score) =>
 
 /// A player's whole record, one entry per mode they have ever played.
 ///
-/// [x01Legs]/[x01Matches] are legs and matches the caller already knows are
-/// x01 - `LegState` itself carries no mode field, because it is the x01
-/// engine's own state and nothing else uses it. Grouping by mode happens one
-/// level up, where the rows are loaded from a `gameMode` column; this
-/// function only composes the per-mode calculators. A second mode adds a
-/// second parameter pair and a second entry here, not a rewrite of this one.
+/// [x01Legs]/[x01Matches]/[atcLegs] are legs and matches the caller already
+/// knows belong to that mode - `LegState`/`AtcLegState` carry no mode field
+/// of their own, because each is one engine's own state. Grouping by mode
+/// happens one level up, where the rows are loaded from a `gameMode` column;
+/// this function only composes the per-mode calculators. A third mode adds a
+/// third parameter (pair) and a third entry here, not a rewrite of this one.
 Map<GameMode, ModeStats> computePlayerStats(
   int playerId, {
   Iterable<LegState> x01Legs = const [],
   Iterable<MatchState> x01Matches = const [],
+  Iterable<AtcLegState> atcLegs = const [],
 }) {
   return {
     GameMode.x01: computeX01Stats(playerId, x01Legs, matches: x01Matches),
+    GameMode.aroundTheClock: computeAtcStats(playerId, atcLegs),
   };
 }
 
@@ -138,5 +142,70 @@ X01Stats computeX01Stats(
     fewestDartsToWin: fewestDartsToWin,
     firstNinePoints: firstNinePoints,
     firstNineDarts: firstNineDarts,
+  );
+}
+
+/// Aggregates a player's Around the Clock record across any number of
+/// replayed legs.
+///
+/// Takes folded [AtcLegState]s rather than raw rows, for the same reason
+/// [computeX01Stats] does: every number here agrees with what was shown
+/// during play by construction.
+AtcStats computeAtcStats(int playerId, Iterable<AtcLegState> legs) {
+  var legsPlayed = 0;
+  var legsWon = 0;
+  var dartsThrown = 0;
+  var qualifyingDarts = 0;
+  int? fewestDartsToWin;
+  final perStop = <AtcStop, ({int attempts, int hits})>{};
+
+  for (final leg in legs) {
+    if (!leg.config.playerIds.contains(playerId)) continue;
+    legsPlayed++;
+
+    for (final turn in leg.turns) {
+      if (turn.playerId != playerId) continue;
+
+      // Walk the turn dart by dart, re-deriving which stop was standing
+      // before each one - the same idiom `computeX01Stats` uses to re-derive
+      // "on a finish" for `dartsAtDouble`.
+      var standing = turn.stopBefore;
+      for (final dart in turn.darts) {
+        dartsThrown++;
+        if (standing >= AtcStop.track.length) continue;
+
+        final target = AtcStop.track[standing];
+        final segment = dart.segment;
+        final cleared = segment != null && target.clears(segment, leg.config.variant);
+
+        final current = perStop[target] ?? (attempts: 0, hits: 0);
+        perStop[target] = (
+          attempts: current.attempts + 1,
+          hits: current.hits + (cleared ? 1 : 0),
+        );
+
+        if (cleared) {
+          qualifyingDarts++;
+          standing++;
+        }
+      }
+    }
+
+    if (leg.winnerId == playerId) {
+      legsWon++;
+      final darts = leg.dartsThrownBy(playerId);
+      if (fewestDartsToWin == null || darts < fewestDartsToWin) {
+        fewestDartsToWin = darts;
+      }
+    }
+  }
+
+  return AtcStats(
+    legsPlayed: legsPlayed,
+    legsWon: legsWon,
+    dartsThrown: dartsThrown,
+    qualifyingDarts: qualifyingDarts,
+    fewestDartsToWin: fewestDartsToWin,
+    perStop: Map.unmodifiable(perStop),
   );
 }

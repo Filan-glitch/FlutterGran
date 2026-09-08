@@ -240,7 +240,7 @@ void main() {
       // handed a leg with no players in it.
       final orphan = await database
           .into(database.games)
-          .insert(GamesCompanion.insert(startScore: 501));
+          .insert(GamesCompanion.insert(startScore: const Value(501)));
 
       expect(await repository.loadConfig(orphan), isNull);
     });

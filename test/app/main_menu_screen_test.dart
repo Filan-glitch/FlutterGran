@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/app/providers.dart';
+import 'package:fluttergran/app/screens/atc_game_screen.dart';
 import 'package:fluttergran/app/screens/main_menu_screen.dart';
 import 'package:fluttergran/app/screens/roster_screen.dart';
 import 'package:fluttergran/app/screens/select_game_mode_screen.dart';
@@ -12,6 +13,9 @@ import 'package:fluttergran/app/theme.dart';
 import 'package:fluttergran/data/board/fake_board_source.dart';
 import 'package:fluttergran/data/db/database.dart';
 import 'package:fluttergran/data/db/game_repository.dart';
+import 'package:fluttergran/domain/atc/atc_config.dart';
+import 'package:fluttergran/domain/atc/atc_variant.dart';
+import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/game_config.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
 
@@ -128,6 +132,50 @@ void main() {
 
     expect(container.read(currentGameIdProvider), gameId);
     expect(find.byType(MainMenuScreen), findsNothing);
+  });
+
+  group('an Around the Clock leg', () {
+    testWidgets('shows the resume card with the variant and current stop', (
+      tester,
+    ) async {
+      final finn = await repository.addPlayer('Finn');
+      final gameId = await repository.startAtcGame(
+        AtcConfig(playerIds: [finn.id], variant: AtcVariant.masters),
+      );
+      await repository.appendDart(
+        gameId: gameId,
+        ordinal: 0,
+        playerId: finn.id,
+        dart: ThrownDart(Segment(1, Ring.doubleRing)),
+      );
+
+      await pump(tester);
+
+      expect(find.byKey(const Key('menu-resume-banner')), findsOneWidget);
+      expect(find.text('MASTERS'), findsOneWidget);
+      expect(find.text('FINN'), findsOneWidget);
+      expect(find.text('2'), findsOneWidget);
+    });
+
+    testWidgets('resume loads it into AtcGameScreen', (tester) async {
+      final finn = await repository.addPlayer('Finn');
+      final gameId = await repository.startAtcGame(
+        AtcConfig(playerIds: [finn.id], variant: AtcVariant.anyPart),
+      );
+      await repository.appendDart(
+        gameId: gameId,
+        ordinal: 0,
+        playerId: finn.id,
+        dart: ThrownDart(Segment(1, Ring.outerSingle)),
+      );
+
+      await pump(tester);
+      await tester.tap(find.byKey(const Key('menu-resume-banner')));
+      await frames(tester);
+
+      expect(container.read(currentGameIdProvider), gameId);
+      expect(find.byType(AtcGameScreen), findsOneWidget);
+    });
   });
 
   testWidgets('PLAY navigates to the mode picker', (tester) async {

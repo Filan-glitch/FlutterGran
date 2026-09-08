@@ -2,19 +2,31 @@ import 'package:flutter/material.dart';
 
 import '../../domain/game_mode.dart';
 import '../theme.dart';
+import 'atc_setup_screen.dart';
 import 'x01_setup_screen.dart';
 
 /// A tile's icon, keyed by mode. Presentation only - the domain registry in
 /// `game_mode.dart` knows nothing about icons, the same way it knows nothing
 /// else about Flutter.
-const Map<GameMode, IconData> _icons = {GameMode.x01: Icons.adjust};
+const Map<GameMode, IconData> _icons = {
+  GameMode.x01: Icons.adjust,
+  GameMode.aroundTheClock: Icons.timelapse,
+};
+
+/// Which setup screen a mode's tile opens. Presentation-layer routing, the
+/// same reason [_icons] lives here rather than on [GameModeDescriptor]:
+/// the domain registry says nothing about screens.
+Widget _setupScreenFor(GameMode mode) => switch (mode) {
+  GameMode.x01 => const X01SetupScreen(),
+  GameMode.aroundTheClock => const AtcSetupScreen(),
+};
 
 /// Lets a player choose which game to set up next.
 ///
-/// Renders one tile per [gameModeRegistry] entry - today that is X01 alone -
-/// plus a trailing tile that just signals more modes are coming, without
-/// naming one: nothing past X01 is built yet, so naming a specific mode here
-/// would be a promise this pass has no business making.
+/// Renders one tile per [gameModeRegistry] entry - X01 and Around the Clock
+/// today - plus a trailing tile that just signals more modes are coming,
+/// without naming one: whatever comes next isn't built yet, so naming a
+/// specific mode here would be a promise this pass has no business making.
 ///
 /// [modes] defaults to the real registry and exists as a constructor
 /// parameter only so a test can inject a disabled entry: production never
@@ -100,7 +112,7 @@ class _ModeTile extends StatelessWidget {
         onTap: enabled
             ? () => Navigator.of(context).push(
                 MaterialPageRoute<void>(
-                  builder: (context) => const X01SetupScreen(),
+                  builder: (context) => _setupScreenFor(mode.id),
                 ),
               )
             : null,

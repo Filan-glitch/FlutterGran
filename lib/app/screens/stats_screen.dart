@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/db/database.dart';
+import '../../domain/atc/atc_stop.dart';
 import '../../domain/game_mode.dart';
 import '../../domain/segment.dart';
 import '../../domain/stats/mode_stats.dart';
@@ -70,16 +71,19 @@ class _Body extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final statsByMode = ref.watch(playerStatsProvider(playerId));
-    // Every stored leg is x01 today, so this is the only entry the map ever
-    // has - but it's read as an absent key rather than assumed, which is the
-    // honest contract of a map keyed by mode and what keeps this code
-    // unchanged when a mode legitimately has zero data for this player.
+    // Read as absent keys rather than assumed present, which is the honest
+    // contract of a map keyed by mode - what keeps this code unchanged when
+    // a mode legitimately has zero data for this player.
     final x01 = statsByMode[GameMode.x01] as X01Stats?;
+    final atc = statsByMode[GameMode.aroundTheClock] as AtcStats?;
     final counts =
         ref.watch(segmentCountsProvider(playerId)).value ??
         const <Segment, int>{};
 
-    if (x01 == null || x01.legsPlayed == 0) {
+    final hasX01 = x01 != null && x01.legsPlayed > 0;
+    final hasAtc = atc != null && atc.legsPlayed > 0;
+
+    if (!hasX01 && !hasAtc) {
       return _Empty(
         headline: 'No legs yet',
         detail: 'Play a leg and every dart in it lands here.',
@@ -90,67 +94,102 @@ class _Body extends ConsumerWidget {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.sm, Gap.lg, Gap.xxl),
         children: [
-          // A mode label above its section, so a second mode's section reads
-          // as a distinct record rather than more rows appended to this one.
-          const _Eyebrow('X01'),
-          const SizedBox(height: Gap.sm),
-          // The three-dart average is the number a darts player quotes when
-          // asked how they play, so it is the headline and everything else is
-          // supporting evidence.
-          _Headline(
-            value: x01.average == null
-                ? '—'
-                : x01.average!.toStringAsFixed(2),
-            label: 'Three-dart average',
-            detail:
-                '${x01.dartsThrown} darts over ${x01.legsPlayed} '
-                '${x01.legsPlayed == 1 ? 'leg' : 'legs'}',
-          ),
-          const SizedBox(height: Gap.xl),
-          _Section(
-            title: 'Scoring',
-            rows: [
-              _Row('First 9 average', _decimal(x01.firstNineAverage)),
-              _Row('Best turn', '${x01.bestTurn}'),
-              _Row('180s', '${x01.turnsOf180}'),
-              _Row('140+', '${x01.turnsOf140Plus}'),
-              _Row('100+', '${x01.turnsOf100Plus}'),
-              _Row('60+', '${x01.turnsOf60Plus}'),
-            ],
-          ),
-          _Section(
-            title: 'Finishing',
-            rows: [
-              _Row('Checkout', _percent(x01.checkoutRate)),
-              _Row(
-                'Darts at double',
-                '${x01.doublesHit}/${x01.dartsAtDouble}',
-              ),
-              _Row('Best checkout', _optional(x01.bestCheckout)),
-              _Row(
-                'Best leg',
-                _optional(x01.fewestDartsToWin, suffix: ' darts'),
-              ),
-            ],
-          ),
-          _Section(
-            title: 'Legs',
-            rows: [
-              _Row('Won', '${x01.legsWon} of ${x01.legsPlayed}'),
-              _Row('Win rate', _percent(x01.winRate)),
-            ],
-          ),
-          // Its own section, under the legs rather than mixed into them: a leg
-          // and a match are different things to have won, and the figures above
-          // have always meant legs.
-          if (x01.matchesPlayed > 0)
+          if (hasX01) ...[
+            // A mode label above its section, so a second mode's section reads
+            // as a distinct record rather than more rows appended to this one.
+            const _Eyebrow('X01'),
+            const SizedBox(height: Gap.sm),
+            // The three-dart average is the number a darts player quotes when
+            // asked how they play, so it is the headline and everything else
+            // is supporting evidence.
+            _Headline(
+              value: x01.average == null
+                  ? '—'
+                  : x01.average!.toStringAsFixed(2),
+              label: 'Three-dart average',
+              detail:
+                  '${x01.dartsThrown} darts over ${x01.legsPlayed} '
+                  '${x01.legsPlayed == 1 ? 'leg' : 'legs'}',
+            ),
+            const SizedBox(height: Gap.xl),
             _Section(
-              title: 'Matches',
+              title: 'Scoring',
               rows: [
-                _Row('Won', '${x01.matchesWon} of ${x01.matchesPlayed}'),
-                _Row('Win rate', _percent(x01.matchWinRate)),
+                _Row('First 9 average', _decimal(x01.firstNineAverage)),
+                _Row('Best turn', '${x01.bestTurn}'),
+                _Row('180s', '${x01.turnsOf180}'),
+                _Row('140+', '${x01.turnsOf140Plus}'),
+                _Row('100+', '${x01.turnsOf100Plus}'),
+                _Row('60+', '${x01.turnsOf60Plus}'),
               ],
             ),
+            _Section(
+              title: 'Finishing',
+              rows: [
+                _Row('Checkout', _percent(x01.checkoutRate)),
+                _Row(
+                  'Darts at double',
+                  '${x01.doublesHit}/${x01.dartsAtDouble}',
+                ),
+                _Row('Best checkout', _optional(x01.bestCheckout)),
+                _Row(
+                  'Best leg',
+                  _optional(x01.fewestDartsToWin, suffix: ' darts'),
+                ),
+              ],
+            ),
+            _Section(
+              title: 'Legs',
+              rows: [
+                _Row('Won', '${x01.legsWon} of ${x01.legsPlayed}'),
+                _Row('Win rate', _percent(x01.winRate)),
+              ],
+            ),
+            // Its own section, under the legs rather than mixed into them: a
+            // leg and a match are different things to have won, and the
+            // figures above have always meant legs.
+            if (x01.matchesPlayed > 0)
+              _Section(
+                title: 'Matches',
+                rows: [
+                  _Row('Won', '${x01.matchesWon} of ${x01.matchesPlayed}'),
+                  _Row('Win rate', _percent(x01.matchWinRate)),
+                ],
+              ),
+          ],
+          if (hasAtc) ...[
+            if (hasX01) const SizedBox(height: Gap.xl),
+            const _Eyebrow('AROUND THE CLOCK'),
+            const SizedBox(height: Gap.sm),
+            _Headline(
+              value: _percent(atc.hitRate),
+              label: 'Hit rate',
+              detail: '${atc.qualifyingDarts} of ${atc.dartsThrown} darts',
+            ),
+            const SizedBox(height: Gap.xl),
+            _Section(
+              title: 'Legs',
+              rows: [
+                _Row('Won', '${atc.legsWon} of ${atc.legsPlayed}'),
+                _Row('Win rate', _percent(atc.winRate)),
+                _Row(
+                  'Best leg',
+                  _optional(atc.fewestDartsToWin, suffix: ' darts'),
+                ),
+              ],
+            ),
+            if (_weakestStops(atc.perStop) case final weak when weak.isNotEmpty)
+              _Section(
+                title: 'Weak spots',
+                rows: [
+                  for (final entry in weak)
+                    _Row(
+                      entry.key.label,
+                      '${entry.value.hits}/${entry.value.attempts}',
+                    ),
+                ],
+              ),
+          ],
           const SizedBox(height: Gap.lg),
           Text(
             'WHERE THE DARTS LAND',
@@ -182,6 +221,21 @@ class _Body extends ConsumerWidget {
     return {
       for (final entry in counts.entries) entry.key: entry.value / busiest,
     };
+  }
+
+  /// The stops with the worst hit rate, capped to a handful and only
+  /// counting ones actually attempted - a stop nobody has reached yet has
+  /// nothing to say about how well it is thrown at.
+  List<MapEntry<AtcStop, ({int attempts, int hits})>> _weakestStops(
+    Map<AtcStop, ({int attempts, int hits})> perStop,
+  ) {
+    final attempted = perStop.entries.where((e) => e.value.attempts > 0).toList()
+      ..sort(
+        (a, b) => (a.value.hits / a.value.attempts).compareTo(
+          b.value.hits / b.value.attempts,
+        ),
+      );
+    return attempted.take(5).toList();
   }
 
   static String _decimal(double? value) =>

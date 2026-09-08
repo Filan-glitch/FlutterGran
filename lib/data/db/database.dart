@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 
+import '../../domain/atc/atc_variant.dart';
 import '../../domain/game_mode.dart';
 import '../../domain/segment.dart';
 
@@ -53,9 +54,15 @@ class Matches extends Table {
 /// depending on a match being there.
 class Games extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get startScore => integer()();
+
+  /// Null for a leg played under a mode with no such thing - Around the
+  /// Clock, today. x01 always writes a real value here.
+  IntColumn get startScore => integer().nullable()();
+
+  /// Null for the same reason as [startScore]: a mode with no double-out
+  /// rule leaves this empty rather than writing a value that means nothing.
   BoolColumn get doubleOut =>
-      boolean().withDefault(const Constant(true))();
+      boolean().nullable().withDefault(const Constant(true))();
 
   IntColumn get matchId =>
       integer().nullable().references(Matches, #id)();
@@ -126,13 +133,30 @@ class DartEvents extends Table {
   ];
 }
 
-@DriftDatabase(tables: [Players, Matches, Games, GameSeats, DartEvents])
+/// Around the Clock's own per-leg config: which variant it was played under.
+///
+/// A sibling to [Games] rather than columns on it, the same way [Matches]
+/// stands beside [Games] for x01's own rules - x01's `startScore`/
+/// `doubleOut` mean nothing here, and this mode's `variant` means nothing
+/// there.
+class AtcGames extends Table {
+  IntColumn get gameId =>
+      integer().references(Games, #id, onDelete: KeyAction.cascade)();
+  TextColumn get variant => textEnum<AtcVariant>()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {gameId};
+}
+
+@DriftDatabase(
+  tables: [Players, Matches, Games, GameSeats, DartEvents, AtcGames],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
     : super(executor ?? driftDatabase(name: 'fluttergran'));
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -168,6 +192,16 @@ class AppDatabase extends _$AppDatabase {
           // duplicate column.
           await m.addColumn(matches, matches.gameMode);
         }
+      }
+      if (from < 6) {
+        // Widens startScore/doubleOut to nullable - Around the Clock has
+        // neither - via a full recreate-and-copy: SQLite cannot loosen a
+        // NOT NULL constraint in place. drift's TableMigration builds the
+        // new table from `games`' current (now-nullable) definition, so
+        // every pre-existing row is copied across unchanged; only rows
+        // written from here on can actually hold nulls in these columns.
+        await m.alterTable(TableMigration(games));
+        await m.createTable(atcGames);
       }
     },
   );
