@@ -23,10 +23,10 @@ Widget _setupScreenFor(GameMode mode) => switch (mode) {
 
 /// Lets a player choose which game to set up next.
 ///
-/// Renders one tile per [gameModeRegistry] entry - today that is X01 alone -
-/// plus a trailing tile that just signals more modes are coming, without
-/// naming one: nothing past X01 is built yet, so naming a specific mode here
-/// would be a promise this pass has no business making.
+/// Renders one tile per [gameModeRegistry] entry - X01 and Around the Clock
+/// today - plus a trailing tile that just signals more modes are coming,
+/// without naming one: whatever comes next isn't built yet, so naming a
+/// specific mode here would be a promise this pass has no business making.
 ///
 /// [modes] defaults to the real registry and exists as a constructor
 /// parameter only so a test can inject a disabled entry: production never
