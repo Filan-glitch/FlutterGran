@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../domain/atc/atc_variant.dart';
 import '../providers.dart';
 import '../theme.dart';
 import 'atc_game_screen.dart';
+import 'atc_setup_screen.dart';
 import 'game_screen.dart';
 import 'roster_screen.dart';
 import 'select_game_mode_screen.dart';
@@ -248,11 +248,7 @@ class _ResumeBanner extends StatelessWidget {
         },
       ),
       ResumableAtcLeg(:final leg) => (
-        switch (leg.config.variant) {
-          AtcVariant.anyPart => 'ANY PART',
-          AtcVariant.masters => 'MASTERS',
-          AtcVariant.doublesOnly => 'DOUBLES ONLY',
-        },
+        atcVariantLabel(leg.config.variant),
         leg.config.playerIds,
         leg.currentPlayerId,
         <int, String>{
