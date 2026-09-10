@@ -56,6 +56,207 @@ abstract final class Palette {
   static const Color live = Color(0xFF7BE8AA);
 }
 
+/// Motion tokens. Every animation in the app pulls its duration and curve
+/// from here, the same way every color comes from [Palette] and every gap
+/// from [Gap] - a shared rhythm instead of a `Duration(milliseconds: 173)`
+/// invented fresh at each call site.
+abstract final class Motion {
+  /// A key press, a color flip - felt rather than watched.
+  static const Duration fast = Duration(milliseconds: 120);
+
+  /// A card lighting up, a crossfade - the default for most state changes.
+  static const Duration base = Duration(milliseconds: 200);
+
+  /// A leg or match ending. Rare enough on screen to earn the extra time.
+  static const Duration slow = Duration(milliseconds: 320);
+
+  /// One cycle of a looping pulse - a checkout suggestion, a board still
+  /// connecting. Slow enough to read as "still true" rather than a blink.
+  static const Duration pulse = Duration(milliseconds: 900);
+
+  /// Arriving: something new settling onto the screen.
+  static const Curve enter = Curves.easeOutCubic;
+
+  /// Leaving: quicker than [enter], so a dismissal never feels like it is
+  /// keeping the player waiting.
+  static const Curve exit = Curves.easeInCubic;
+
+  /// The one or two moments that are actually worth a flourish - a leg won,
+  /// a match won. A small overshoot, not a bounce.
+  static const Curve pop = Curves.easeOutBack;
+
+  /// Delay between one list item's entrance and the next's.
+  static const Duration stagger = Duration(milliseconds: 40);
+
+  /// Whether the platform is asking for reduced motion. Read straight off the
+  /// platform dispatcher rather than `MediaQuery`, so it is available in
+  /// `initState` - before a widget has anything to inherit a `MediaQuery`
+  /// from - as well as in `build`.
+  static bool get reduced => WidgetsBinding
+      .instance
+      .platformDispatcher
+      .accessibilityFeatures
+      .disableAnimations;
+
+  /// [duration], or zero when [reduced] - the state change still happens,
+  /// it just stops announcing itself.
+  static Duration scale(Duration duration) =>
+      reduced ? Duration.zero : duration;
+}
+
+/// Loops its child's opacity between [min] and fully opaque, for state that
+/// stays lit rather than announces once: a checkout suggestion, a board
+/// still connecting, a leg left in progress.
+///
+/// Decoration only - the state this sits on is always shown some other way
+/// too (a border, a color, a label), so [Motion.reduced] can drop straight to
+/// a plain, unanimated child without losing any information.
+class Pulse extends StatefulWidget {
+  const Pulse({super.key, required this.child, this.min = 0.55});
+
+  final Widget child;
+  final double min;
+
+  @override
+  State<Pulse> createState() => _PulseState();
+}
+
+class _PulseState extends State<Pulse> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: Motion.pulse,
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    if (!Motion.reduced) _controller.repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (Motion.reduced) return widget.child;
+    return FadeTransition(
+      opacity: Tween(
+        begin: widget.min,
+        end: 1.0,
+      ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut)),
+      child: widget.child,
+    );
+  }
+}
+
+/// Fades and rises into place a beat after the last one, so a list of things
+/// arrives as a sequence rather than all at once - a small, one-shot cousin
+/// of [Pulse].
+///
+/// [index] positions it in that sequence; the actual gap between entries is
+/// [Motion.stagger].
+class StaggeredEntry extends StatefulWidget {
+  const StaggeredEntry({super.key, required this.index, required this.child});
+
+  final int index;
+  final Widget child;
+
+  @override
+  State<StaggeredEntry> createState() => _StaggeredEntryState();
+}
+
+class _StaggeredEntryState extends State<StaggeredEntry> {
+  bool _shown = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final delay = Motion.scale(Motion.stagger * widget.index);
+    if (delay == Duration.zero) {
+      _shown = true;
+    } else {
+      Future.delayed(delay, () {
+        if (mounted) setState(() => _shown = true);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final duration = Motion.scale(Motion.base);
+    return AnimatedSlide(
+      offset: _shown ? Offset.zero : const Offset(0, 0.06),
+      duration: duration,
+      curve: Motion.enter,
+      child: AnimatedOpacity(
+        opacity: _shown ? 1 : 0,
+        duration: duration,
+        curve: Motion.enter,
+        child: widget.child,
+      ),
+    );
+  }
+}
+
+/// Plays a fade-and-scale entrance once, the moment it is first built - the
+/// idiom used for a turn result, a leg won, a match won: something that
+/// appears fully formed rather than growing into place gradually.
+class EntrancePop extends StatelessWidget {
+  const EntrancePop({super.key, required this.child, this.minScale = 0.94});
+
+  final Widget child;
+
+  /// Starting scale; it settles to 1.0.
+  final double minScale;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: Motion.scale(Motion.slow),
+      curve: Motion.pop,
+      builder: (context, t, child) => Opacity(
+        opacity: t.clamp(0, 1),
+        child: Transform.scale(
+          scale: minScale + (1 - minScale) * t,
+          child: child,
+        ),
+      ),
+      child: child,
+    );
+  }
+}
+
+/// Counts between its old and new value whenever [value] changes, rather
+/// than swapping the digits outright - a remaining score ticking down reads
+/// as an event happening, not a jump cut to a new number.
+///
+/// `begin: value, end: value` on every build looks redundant, but is the
+/// whole trick: [TweenAnimationBuilder] only re-animates when the tween's
+/// *end* differs from the one it already has in flight, always starting
+/// from wherever it currently is rather than [begin] - so the first frame
+/// renders [value] outright (nothing to animate from yet) and every frame
+/// after animates from the previous figure shown, not from [begin].
+class AnimatedFigure extends StatelessWidget {
+  const AnimatedFigure({super.key, required this.value, required this.style});
+
+  final int value;
+  final TextStyle style;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<int>(
+      tween: IntTween(begin: value, end: value),
+      duration: Motion.scale(Motion.base),
+      curve: Motion.enter,
+      builder: (context, animated, _) => Text('$animated', style: style),
+    );
+  }
+}
+
 /// Spacing scale. Every gap in the app is one of these.
 abstract final class Gap {
   static const double xs = 4;

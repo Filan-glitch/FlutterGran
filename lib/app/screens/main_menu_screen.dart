@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../domain/game_mode.dart';
 import '../providers.dart';
 import '../theme.dart';
 import 'atc_game_screen.dart';
@@ -62,9 +63,7 @@ class MainMenuScreen extends ConsumerWidget {
         ref.read(atcGameProvider.notifier).resume(config, darts);
 
         await Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (context) => const AtcGameScreen(),
-          ),
+          MaterialPageRoute<void>(builder: (context) => const AtcGameScreen()),
         );
       case ResumableBullingLeg(:final gameId):
         final repository = ref.read(gameRepositoryProvider);
@@ -115,53 +114,68 @@ class MainMenuScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: Gap.xxl),
                 if (resumable != null) ...[
-                  _ResumeBanner(
-                    resumable: resumable,
-                    names: ref.watch(playerNamesProvider),
-                    onResume: () => _resume(context, ref, resumable),
+                  StaggeredEntry(
+                    index: 0,
+                    child: _ResumeBanner(
+                      resumable: resumable,
+                      names: ref.watch(playerNamesProvider),
+                      onResume: () => _resume(context, ref, resumable),
+                    ),
                   ),
                   const SizedBox(height: Gap.xl),
                 ],
-                SizedBox(
-                  height: 56,
-                  child: FilledButton(
-                    key: const Key('menu-play-button'),
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (context) => const SelectGameModeScreen(),
+                StaggeredEntry(
+                  index: 1,
+                  child: SizedBox(
+                    height: 56,
+                    child: FilledButton(
+                      key: const Key('menu-play-button'),
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (context) => const SelectGameModeScreen(),
+                        ),
                       ),
+                      child: const Text('PLAY'),
                     ),
-                    child: const Text('PLAY'),
                   ),
                 ),
                 const SizedBox(height: Gap.xl),
-                _MenuRow(
-                  key: const Key('menu-statistics-row'),
-                  icon: Icons.insights,
-                  label: 'Statistics',
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (context) => const StatsScreen(),
+                StaggeredEntry(
+                  index: 2,
+                  child: _MenuRow(
+                    key: const Key('menu-statistics-row'),
+                    icon: Icons.insights,
+                    label: 'Statistics',
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (context) => const StatsScreen(),
+                      ),
                     ),
                   ),
                 ),
-                _MenuRow(
-                  key: const Key('menu-roster-row'),
-                  icon: Icons.people_outline,
-                  label: 'Roster',
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (context) => const RosterScreen(),
+                StaggeredEntry(
+                  index: 3,
+                  child: _MenuRow(
+                    key: const Key('menu-roster-row'),
+                    icon: Icons.people_outline,
+                    label: 'Roster',
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (context) => const RosterScreen(),
+                      ),
                     ),
                   ),
                 ),
-                _MenuRow(
-                  key: const Key('menu-settings-row'),
-                  icon: Icons.settings_outlined,
-                  label: 'Settings',
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (context) => const SettingsScreen(),
+                StaggeredEntry(
+                  index: 4,
+                  child: _MenuRow(
+                    key: const Key('menu-settings-row'),
+                    icon: Icons.settings_outlined,
+                    label: 'Settings',
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (context) => const SettingsScreen(),
+                      ),
                     ),
                   ),
                 ),
@@ -243,6 +257,14 @@ class _MenuRow extends StatelessWidget {
 /// only the format eyebrow and the per-player figures switch on which kind
 /// of [resumable] this is.
 class _ResumeBanner extends StatelessWidget {
+  /// [mode]'s name as shown on the mode-select tile - `X01`, `AROUND THE
+  /// CLOCK`, `BULLING` - read straight from [gameModeRegistry] rather than
+  /// duplicated here, so a leg being resumed always names its game the same
+  /// way picking that game does.
+  static String _modeName(GameMode mode) => gameModeRegistry
+      .firstWhere((descriptor) => descriptor.id == mode)
+      .displayName;
+
   const _ResumeBanner({
     required this.resumable,
     required this.names,
@@ -258,7 +280,7 @@ class _ResumeBanner extends StatelessWidget {
     final resumable = this.resumable;
     final (format, playerIds, currentPlayerId, figures) = switch (resumable) {
       ResumableX01Leg(:final leg) => (
-        '${leg.config.startScore}',
+        '${_modeName(GameMode.x01)} · ${leg.config.startScore}',
         leg.config.playerIds,
         leg.currentPlayerId,
         <int, String>{
@@ -266,7 +288,8 @@ class _ResumeBanner extends StatelessWidget {
         },
       ),
       ResumableAtcLeg(:final leg) => (
-        atcVariantLabel(leg.config.variant),
+        '${_modeName(GameMode.aroundTheClock)} · '
+            '${atcVariantLabel(leg.config.variant)}',
         leg.config.playerIds,
         leg.currentPlayerId,
         <int, String>{
@@ -275,7 +298,9 @@ class _ResumeBanner extends StatelessWidget {
         },
       ),
       ResumableBullingLeg(:final leg) => (
-        '${bullseyeValueLabel(leg.config.bullseyeValue)} · ${leg.config.target}',
+        '${_modeName(GameMode.bulling)} · '
+            '${bullseyeValueLabel(leg.config.bullseyeValue)} · '
+            '${leg.config.target}',
         leg.config.playerIds,
         leg.currentPlayerId,
         <int, String>{
@@ -301,14 +326,21 @@ class _ResumeBanner extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Text(
-                    'LEG IN PROGRESS',
-                    style: Type.eyebrow.copyWith(color: Palette.live),
+                  Pulse(
+                    min: 0.75,
+                    child: Text(
+                      'LEG IN PROGRESS',
+                      style: Type.eyebrow.copyWith(color: Palette.live),
+                    ),
                   ),
-                  const Spacer(),
-                  Text(
-                    format,
-                    style: Type.eyebrow.copyWith(color: Palette.chalkDim),
+                  Expanded(
+                    child: Text(
+                      format,
+                      textAlign: TextAlign.right,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Type.eyebrow.copyWith(color: Palette.chalkDim),
+                    ),
                   ),
                 ],
               ),

@@ -149,7 +149,7 @@ class _DartKeypadState extends State<DartKeypad> {
   }
 }
 
-class _Key extends StatelessWidget {
+class _Key extends StatefulWidget {
   const _Key({
     required this.label,
     required this.ring,
@@ -167,23 +167,44 @@ class _Key extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
+  State<_Key> createState() => _KeyState();
+}
+
+class _KeyState extends State<_Key> {
+  /// Held down right now. A shorter, sharper feedback than [InkWell]'s own
+  /// ripple gives on its own - the key visibly gives under the tap before it
+  /// has even been released.
+  bool _pressed = false;
+
+  void _setPressed(bool value) {
+    if (_pressed != value) setState(() => _pressed = value);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final (background, foreground) = switch (ring) {
+    final (background, foreground) = switch (widget.ring) {
       Ring.doubleRing || Ring.innerBull => (Palette.doubleBed, Palette.chalk),
       Ring.triple || Ring.outerBull => (Palette.trebleBed, Palette.chalk),
       null => (Palette.sunk, Palette.chalkDim),
       _ => (Palette.raised, Palette.chalk),
     };
 
-    return Semantics(
+    final border = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(4),
+      side: widget.highlighted
+          ? const BorderSide(color: Palette.live, width: 2.5)
+          : BorderSide(color: Palette.edge.withValues(alpha: 0.6)),
+    );
+
+    final key = Semantics(
       button: true,
       // Carries the checkout highlight to assistive tech, which otherwise has
       // no way to convey an outlined key.
-      selected: highlighted,
-      label: switch (ring) {
-        Ring.doubleRing => 'double $label',
-        Ring.triple => 'treble $label',
-        _ => label,
+      selected: widget.highlighted,
+      label: switch (widget.ring) {
+        Ring.doubleRing => 'double ${widget.label}',
+        Ring.triple => 'treble ${widget.label}',
+        _ => widget.label,
       },
       child: Material(
         color: background,
@@ -191,21 +212,33 @@ class _Key extends StatelessWidget {
         // Shape rather than borderRadius, and always set: Material asserts if
         // both are given, so a highlighted key would otherwise throw the moment
         // a checkout suggestion lit one up.
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(4),
-          side: highlighted
-              ? const BorderSide(color: Palette.live, width: 2.5)
-              : BorderSide(color: Palette.edge.withValues(alpha: 0.6)),
-        ),
+        shape: border,
         child: InkWell(
-          onTap: onTap,
+          onTap: widget.onTap,
+          onTapDown: (_) => _setPressed(true),
+          onTapCancel: () => _setPressed(false),
+          onTapUp: (_) => _setPressed(false),
           splashColor: Palette.chalk.withValues(alpha: 0.12),
           highlightColor: Palette.chalk.withValues(alpha: 0.06),
           child: Center(
-            child: Text(label, style: Type.key.copyWith(color: foreground)),
+            child: Text(
+              widget.label,
+              style: Type.key.copyWith(color: foreground),
+            ),
           ),
         ),
       ),
     );
+
+    // Transform only - the key's laid-out bounds never move, so a press never
+    // nudges the keys around it.
+    final scaled = AnimatedScale(
+      scale: _pressed ? 0.95 : 1,
+      duration: Motion.scale(Motion.fast),
+      curve: Motion.enter,
+      child: key,
+    );
+
+    return widget.highlighted ? Pulse(min: 0.75, child: scaled) : scaled;
   }
 }

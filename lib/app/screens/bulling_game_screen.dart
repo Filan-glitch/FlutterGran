@@ -163,9 +163,8 @@ class BullingGameScreen extends ConsumerWidget {
                           ? DartKeypad(
                               onDart: (segment) =>
                                   controller.addDart(ThrownDart(segment)),
-                              onMiss: () => controller.addDart(
-                                const ThrownDart.miss(),
-                              ),
+                              onMiss: () =>
+                                  controller.addDart(const ThrownDart.miss()),
                               highlight: highlight,
                             )
                           : const _BoardScoringAlone(),
@@ -220,8 +219,7 @@ class _Scoreboard extends StatelessWidget {
                   name: nameFor(names, players[seat]),
                   score: leg.scoreFor(players[seat]),
                   target: leg.config.target,
-                  live:
-                      players[seat] == leg.currentPlayerId && !leg.isFinished,
+                  live: players[seat] == leg.currentPlayerId && !leg.isFinished,
                   won: leg.winnerId == players[seat],
                 ),
               ),
@@ -255,25 +253,31 @@ class _PlayerColumn extends StatelessWidget {
 
     return Column(
       children: [
-        Container(
+        AnimatedContainer(
+          duration: Motion.scale(Motion.base),
+          curve: Motion.enter,
           height: 3,
           margin: const EdgeInsets.symmetric(horizontal: Gap.lg),
           color: lit ? accent : Colors.transparent,
         ),
         const SizedBox(height: Gap.md),
-        Text(
-          name.toUpperCase(),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+        AnimatedDefaultTextStyle(
+          duration: Motion.scale(Motion.base),
+          curve: Motion.enter,
           style: Type.eyebrow.copyWith(color: lit ? accent : Palette.chalkDim),
+          child: Text(
+            name.toUpperCase(),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
         const SizedBox(height: Gap.sm),
         Expanded(
           child: SizedBox.expand(
             child: FittedBox(
               fit: BoxFit.contain,
-              child: Text(
-                '$score',
+              child: AnimatedFigure(
+                value: score,
                 style: Type.score.copyWith(
                   color: lit ? Palette.chalk : Palette.chalkDim,
                 ),
@@ -282,10 +286,7 @@ class _PlayerColumn extends StatelessWidget {
           ),
         ),
         const SizedBox(height: Gap.xs),
-        Text(
-          'of $target',
-          style: Type.label.copyWith(color: Palette.chalkDim),
-        ),
+        Text('of $target', style: Type.label.copyWith(color: Palette.chalkDim)),
       ],
     );
   }
@@ -307,10 +308,7 @@ class _TurnLedger extends StatelessWidget {
     final scored = pending?.scored ?? 0;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: Gap.md,
-        vertical: Gap.md,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: Gap.md, vertical: Gap.md),
       child: Row(
         children: [
           for (var i = 0; i < dartsPerTurn; i++) ...[
@@ -388,59 +386,61 @@ class _TurnConfirm extends StatelessWidget {
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(Gap.xl),
-        child: Column(
-          children: [
-            const SizedBox(height: Gap.xl),
-            Text(
-              nameFor(names, turn.playerId).toUpperCase(),
-              style: Type.eyebrow.copyWith(color: Palette.chalkDim),
-            ),
-            const SizedBox(height: Gap.md),
-            Text(
-              turn.scored == 0
-                  ? 'NOTHING SCORED'
-                  : turn.scored == 1
-                  ? '1 POINT SCORED'
-                  : '${turn.scored} POINTS SCORED',
-              style: Type.score.copyWith(color: Palette.chalk),
-            ),
-            const SizedBox(height: Gap.sm),
-            Text(
-              'now on ${turn.scoreAfter}',
-              style: Type.label.copyWith(color: Palette.chalkDim),
-            ),
-            if (dartsThrown.isNotEmpty) ...[
+        child: EntrancePop(
+          child: Column(
+            children: [
+              const SizedBox(height: Gap.xl),
+              Text(
+                nameFor(names, turn.playerId).toUpperCase(),
+                style: Type.eyebrow.copyWith(color: Palette.chalkDim),
+              ),
               const SizedBox(height: Gap.md),
               Text(
-                dartsThrown,
+                turn.scored == 0
+                    ? 'NOTHING SCORED'
+                    : turn.scored == 1
+                    ? '1 POINT SCORED'
+                    : '${turn.scored} POINTS SCORED',
+                style: Type.score.copyWith(color: Palette.chalk),
+              ),
+              const SizedBox(height: Gap.sm),
+              Text(
+                'now on ${turn.scoreAfter}',
+                style: Type.label.copyWith(color: Palette.chalkDim),
+              ),
+              if (dartsThrown.isNotEmpty) ...[
+                const SizedBox(height: Gap.md),
+                Text(
+                  dartsThrown,
+                  style: Type.label.copyWith(color: Palette.chalkDim),
+                ),
+              ],
+              const SizedBox(height: Gap.xl),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: onUndo,
+                      child: const Text('WRONG'),
+                    ),
+                  ),
+                  const SizedBox(width: Gap.md),
+                  Expanded(
+                    flex: 2,
+                    child: FilledButton(
+                      onPressed: onConfirm,
+                      child: Text(leg.isFinished ? 'FINISH' : 'NEXT PLAYER'),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: Gap.md),
+              Text(
+                'or press the board button',
                 style: Type.label.copyWith(color: Palette.chalkDim),
               ),
             ],
-            const SizedBox(height: Gap.xl),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: onUndo,
-                    child: const Text('WRONG'),
-                  ),
-                ),
-                const SizedBox(width: Gap.md),
-                Expanded(
-                  flex: 2,
-                  child: FilledButton(
-                    onPressed: onConfirm,
-                    child: Text(leg.isFinished ? 'FINISH' : 'NEXT PLAYER'),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: Gap.md),
-            Text(
-              'or press the board button',
-              style: Type.label.copyWith(color: Palette.chalkDim),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -467,36 +467,38 @@ class _LegWon extends StatelessWidget {
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(Gap.xl, Gap.xl, Gap.xl, Gap.lg),
-        child: Column(
-          children: [
-            Text(
-              'LEG WON',
-              style: Type.eyebrow.copyWith(color: Palette.trebleBed),
-            ),
-            const SizedBox(height: Gap.md),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                nameFor(names, winner).toUpperCase(),
-                style: Type.score.copyWith(color: Palette.chalk),
+        child: EntrancePop(
+          child: Column(
+            children: [
+              Text(
+                'LEG WON',
+                style: Type.eyebrow.copyWith(color: Palette.trebleBed),
               ),
-            ),
-            const SizedBox(height: Gap.lg),
-            Text(
-              '${leg.scoreFor(winner)} points · '
-              '${leg.dartsThrownBy(winner)} darts',
-              style: Type.label.copyWith(color: Palette.chalkDim),
-            ),
-            const SizedBox(height: Gap.xl),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                key: const Key('bulling-play-again'),
-                onPressed: onPlayAgain,
-                child: const Text('PLAY AGAIN'),
+              const SizedBox(height: Gap.md),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  nameFor(names, winner).toUpperCase(),
+                  style: Type.score.copyWith(color: Palette.chalk),
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: Gap.lg),
+              Text(
+                '${leg.scoreFor(winner)} points · '
+                '${leg.dartsThrownBy(winner)} darts',
+                style: Type.label.copyWith(color: Palette.chalkDim),
+              ),
+              const SizedBox(height: Gap.xl),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  key: const Key('bulling-play-again'),
+                  onPressed: onPlayAgain,
+                  child: const Text('PLAY AGAIN'),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
