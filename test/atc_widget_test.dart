@@ -7,7 +7,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/app/providers.dart';
 import 'package:fluttergran/app/widgets/dart_keypad.dart';
 import 'package:fluttergran/data/db/database.dart';
+import 'package:fluttergran/domain/game_mode.dart';
 import 'package:fluttergran/main.dart';
+
+/// The mode name the main menu's resume banner prefixes its format eyebrow
+/// with - read from the registry rather than hardcoded.
+String _modeName(GameMode mode) => gameModeRegistry
+    .firstWhere((descriptor) => descriptor.id == mode)
+    .displayName;
 
 /// The keypad always shows every number 1-20 as a static key, and the
 /// scoreboard shows a player's current stop with the same digits - so a bare
@@ -160,7 +167,10 @@ void main() {
     await popRoute(tester, find.text('SELECT GAME MODE'));
 
     expect(find.text('LEG IN PROGRESS'), findsOneWidget);
-    expect(find.text('ANY PART'), findsOneWidget);
+    expect(
+      find.text('${_modeName(GameMode.aroundTheClock)} · ANY PART'),
+      findsOneWidget,
+    );
 
     await tester.tap(find.text('RESUME'));
     await pumpFrames(tester);

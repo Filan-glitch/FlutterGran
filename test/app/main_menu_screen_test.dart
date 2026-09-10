@@ -20,9 +20,17 @@ import 'package:fluttergran/domain/atc/atc_config.dart';
 import 'package:fluttergran/domain/atc/atc_variant.dart';
 import 'package:fluttergran/domain/bulling/bulling_config.dart';
 import 'package:fluttergran/domain/bulling/bulling_variant.dart';
+import 'package:fluttergran/domain/game_mode.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/game_config.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
+
+/// The mode name the resume banner prefixes its format eyebrow with -
+/// read from the registry rather than hardcoded, same reasoning as the
+/// banner itself.
+String _modeName(GameMode mode) => gameModeRegistry
+    .firstWhere((descriptor) => descriptor.id == mode)
+    .displayName;
 
 void main() {
   late AppDatabase database;
@@ -156,7 +164,10 @@ void main() {
       await pump(tester);
 
       expect(find.byKey(const Key('menu-resume-banner')), findsOneWidget);
-      expect(find.text('MASTERS'), findsOneWidget);
+      expect(
+        find.text('${_modeName(GameMode.aroundTheClock)} · MASTERS'),
+        findsOneWidget,
+      );
       expect(find.text('FINN'), findsOneWidget);
       expect(find.text('2'), findsOneWidget);
     });
@@ -205,7 +216,10 @@ void main() {
 
         expect(find.byKey(const Key('menu-resume-banner')), findsOneWidget);
         expect(
-          find.text('${bullseyeValueLabel(BullseyeValue.two)} · 21'),
+          find.text(
+            '${_modeName(GameMode.bulling)} · '
+            '${bullseyeValueLabel(BullseyeValue.two)} · 21',
+          ),
           findsOneWidget,
         );
         expect(find.text('FINN'), findsOneWidget);

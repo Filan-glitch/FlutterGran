@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/board/board_source.dart';
 import '../providers.dart';
+import '../theme.dart';
 
 /// One tap to connect the board, coloured by what it is doing.
 ///
@@ -37,7 +38,8 @@ class _BoardConnectionButtonState extends ConsumerState<BoardConnectionButton> {
 
   Future<void> _toggle() async {
     final source = ref.read(boardSourceProvider);
-    final state = ref.read(boardConnectionProvider).value ?? source.currentState;
+    final state =
+        ref.read(boardConnectionProvider).value ?? source.currentState;
 
     setState(() => _attempted = true);
     if (state.isConnected) {
@@ -60,17 +62,35 @@ class _BoardConnectionButtonState extends ConsumerState<BoardConnectionButton> {
       label = 'Connect board';
     } else {
       (color, label) = switch (state) {
-        BoardConnectionState.connected => (const Color(0xFF3D9C64), 'Board connected'),
-        BoardConnectionState.scanning ||
-        BoardConnectionState.connecting => (const Color(0xFF3B82F6), 'Connecting to board…'),
-        BoardConnectionState.disconnected => (const Color(0xFFBF3B30), 'Board disconnected'),
+        BoardConnectionState.connected => (
+          const Color(0xFF3D9C64),
+          'Board connected',
+        ),
+        BoardConnectionState.scanning || BoardConnectionState.connecting => (
+          const Color(0xFF3B82F6),
+          'Connecting to board…',
+        ),
+        BoardConnectionState.disconnected => (
+          const Color(0xFFBF3B30),
+          'Board disconnected',
+        ),
       };
     }
 
-    return IconButton(
-      tooltip: label,
-      icon: Icon(Icons.bluetooth, color: color),
-      onPressed: _toggle,
+    final connecting =
+        state == BoardConnectionState.scanning ||
+        state == BoardConnectionState.connecting;
+
+    // Crossfades the glyph's colour rather than swapping it outright, and
+    // pulses while the state in between - scanning, connecting - is still
+    // being decided, so waiting looks like something is happening rather
+    // than the icon having quietly changed its mind.
+    Widget icon = AnimatedSwitcher(
+      duration: Motion.scale(Motion.base),
+      child: Icon(Icons.bluetooth, key: ValueKey(color), color: color),
     );
+    if (connecting) icon = Pulse(child: icon);
+
+    return IconButton(tooltip: label, icon: icon, onPressed: _toggle);
   }
 }

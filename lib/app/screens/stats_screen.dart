@@ -119,7 +119,11 @@ class _Body extends ConsumerWidget {
               rows: [
                 _Row('First 9 average', _decimal(x01.firstNineAverage)),
                 _Row('Best turn', '${x01.bestTurn}'),
-                _Row('180s', '${x01.turnsOf180}'),
+                _Row(
+                  '180s',
+                  '${x01.turnsOf180}',
+                  milestone: x01.turnsOf180 > 0,
+                ),
                 _Row('140+', '${x01.turnsOf140Plus}'),
                 _Row('100+', '${x01.turnsOf100Plus}'),
                 _Row('60+', '${x01.turnsOf60Plus}'),
@@ -133,7 +137,11 @@ class _Body extends ConsumerWidget {
                   'Darts at double',
                   '${x01.doublesHit}/${x01.dartsAtDouble}',
                 ),
-                _Row('Best checkout', _optional(x01.bestCheckout)),
+                _Row(
+                  'Best checkout',
+                  _optional(x01.bestCheckout),
+                  milestone: x01.bestCheckout != null,
+                ),
                 _Row(
                   'Best leg',
                   _optional(x01.fewestDartsToWin, suffix: ' darts'),
@@ -261,12 +269,12 @@ class _Body extends ConsumerWidget {
   List<MapEntry<AtcStop, ({int attempts, int hits})>> _weakestStops(
     Map<AtcStop, ({int attempts, int hits})> perStop,
   ) {
-    final attempted = perStop.entries.where((e) => e.value.attempts > 0).toList()
-      ..sort(
-        (a, b) => (a.value.hits / a.value.attempts).compareTo(
-          b.value.hits / b.value.attempts,
-        ),
-      );
+    final attempted =
+        perStop.entries.where((e) => e.value.attempts > 0).toList()..sort(
+          (a, b) => (a.value.hits / a.value.attempts).compareTo(
+            b.value.hits / b.value.attempts,
+          ),
+        );
     return attempted.take(5).toList();
   }
 
@@ -308,22 +316,27 @@ class _Headline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label.toUpperCase(),
-          style: Type.eyebrow.copyWith(color: Palette.live),
-        ),
-        const SizedBox(height: Gap.sm),
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          alignment: Alignment.centerLeft,
-          child: Text(value, style: Type.score.copyWith(color: Palette.chalk)),
-        ),
-        const SizedBox(height: Gap.sm),
-        Text(detail, style: Type.label.copyWith(color: Palette.chalkDim)),
-      ],
+    return _FadeIn(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label.toUpperCase(),
+            style: Type.eyebrow.copyWith(color: Palette.live),
+          ),
+          const SizedBox(height: Gap.sm),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              value,
+              style: Type.score.copyWith(color: Palette.chalk),
+            ),
+          ),
+          const SizedBox(height: Gap.sm),
+          Text(detail, style: Type.label.copyWith(color: Palette.chalkDim)),
+        ],
+      ),
     );
   }
 }
@@ -340,27 +353,59 @@ class _Section extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: Gap.xl),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title.toUpperCase(),
-            style: Type.eyebrow.copyWith(color: Palette.chalkDim),
-          ),
-          const SizedBox(height: Gap.sm),
-          const Divider(),
-          for (final row in rows) row,
-        ],
+      child: _FadeIn(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title.toUpperCase(),
+              style: Type.eyebrow.copyWith(color: Palette.chalkDim),
+            ),
+            const SizedBox(height: Gap.sm),
+            const Divider(),
+            for (final row in rows) row,
+          ],
+        ),
       ),
     );
   }
 }
 
+/// A plain fade+rise on first build, for a record that otherwise appears
+/// fully formed the moment its player is selected.
+class _FadeIn extends StatelessWidget {
+  const _FadeIn({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: Motion.scale(Motion.base),
+      curve: Motion.enter,
+      builder: (context, t, child) => Opacity(
+        opacity: t,
+        child: Transform.translate(
+          offset: Offset(0, (1 - t) * 8),
+          child: child,
+        ),
+      ),
+      child: child,
+    );
+  }
+}
+
 class _Row extends StatelessWidget {
-  const _Row(this.label, this.value);
+  const _Row(this.label, this.value, {this.milestone = false});
 
   final String label;
   final String value;
+
+  /// Marks a figure worth a second look - a 180, a personal-best checkout -
+  /// rather than just another number in the record. Presentation only: it
+  /// reads no differently to `computeX01Stats`, just a touch louder here.
+  final bool milestone;
 
   @override
   Widget build(BuildContext context) {
@@ -377,7 +422,16 @@ class _Row extends StatelessWidget {
               style: Type.body.copyWith(color: Palette.chalkDim),
             ),
           ),
-          Text(value, style: Type.notation.copyWith(color: Palette.chalk)),
+          if (milestone) ...[
+            const Icon(Icons.bolt, size: 15, color: Palette.live),
+            const SizedBox(width: Gap.xs),
+          ],
+          Text(
+            value,
+            style: Type.notation.copyWith(
+              color: milestone ? Palette.live : Palette.chalk,
+            ),
+          ),
         ],
       ),
     );
