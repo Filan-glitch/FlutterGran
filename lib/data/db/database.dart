@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 
 import '../../domain/atc/atc_variant.dart';
+import '../../domain/bulling/bulling_variant.dart';
 import '../../domain/game_mode.dart';
 import '../../domain/segment.dart';
 
@@ -148,15 +149,32 @@ class AtcGames extends Table {
   Set<Column<Object>> get primaryKey => {gameId};
 }
 
+/// Bulling's own per-leg config: the bullseye value and the target score it
+/// was played to.
+///
+/// A sibling to [Games], the same way [AtcGames] stands beside it for
+/// Around the Clock's own rules — x01's `startScore`/`doubleOut` mean
+/// nothing here, and this mode's `bullseyeValue`/`target` mean nothing
+/// there.
+class BullingGames extends Table {
+  IntColumn get gameId =>
+      integer().references(Games, #id, onDelete: KeyAction.cascade)();
+  TextColumn get bullseyeValue => textEnum<BullseyeValue>()();
+  IntColumn get target => integer()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {gameId};
+}
+
 @DriftDatabase(
-  tables: [Players, Matches, Games, GameSeats, DartEvents, AtcGames],
+  tables: [Players, Matches, Games, GameSeats, DartEvents, AtcGames, BullingGames],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
     : super(executor ?? driftDatabase(name: 'fluttergran'));
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -202,6 +220,9 @@ class AppDatabase extends _$AppDatabase {
         // written from here on can actually hold nulls in these columns.
         await m.alterTable(TableMigration(games));
         await m.createTable(atcGames);
+      }
+      if (from < 7) {
+        await m.createTable(bullingGames);
       }
     },
   );

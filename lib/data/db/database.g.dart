@@ -2354,6 +2354,269 @@ class AtcGamesCompanion extends UpdateCompanion<AtcGame> {
   }
 }
 
+class $BullingGamesTable extends BullingGames
+    with TableInfo<$BullingGamesTable, BullingGame> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $BullingGamesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _gameIdMeta = const VerificationMeta('gameId');
+  @override
+  late final GeneratedColumn<int> gameId = GeneratedColumn<int>(
+    'game_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES games (id) ON DELETE CASCADE',
+    ),
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<BullseyeValue, String>
+  bullseyeValue = GeneratedColumn<String>(
+    'bullseye_value',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  ).withConverter<BullseyeValue>($BullingGamesTable.$converterbullseyeValue);
+  static const VerificationMeta _targetMeta = const VerificationMeta('target');
+  @override
+  late final GeneratedColumn<int> target = GeneratedColumn<int>(
+    'target',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [gameId, bullseyeValue, target];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'bulling_games';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<BullingGame> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('game_id')) {
+      context.handle(
+        _gameIdMeta,
+        gameId.isAcceptableOrUnknown(data['game_id']!, _gameIdMeta),
+      );
+    }
+    if (data.containsKey('target')) {
+      context.handle(
+        _targetMeta,
+        target.isAcceptableOrUnknown(data['target']!, _targetMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_targetMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {gameId};
+  @override
+  BullingGame map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return BullingGame(
+      gameId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}game_id'],
+      )!,
+      bullseyeValue: $BullingGamesTable.$converterbullseyeValue.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}bullseye_value'],
+        )!,
+      ),
+      target: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}target'],
+      )!,
+    );
+  }
+
+  @override
+  $BullingGamesTable createAlias(String alias) {
+    return $BullingGamesTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<BullseyeValue, String, String>
+  $converterbullseyeValue = const EnumNameConverter<BullseyeValue>(
+    BullseyeValue.values,
+  );
+}
+
+class BullingGame extends DataClass implements Insertable<BullingGame> {
+  final int gameId;
+  final BullseyeValue bullseyeValue;
+  final int target;
+  const BullingGame({
+    required this.gameId,
+    required this.bullseyeValue,
+    required this.target,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['game_id'] = Variable<int>(gameId);
+    {
+      map['bullseye_value'] = Variable<String>(
+        $BullingGamesTable.$converterbullseyeValue.toSql(bullseyeValue),
+      );
+    }
+    map['target'] = Variable<int>(target);
+    return map;
+  }
+
+  BullingGamesCompanion toCompanion(bool nullToAbsent) {
+    return BullingGamesCompanion(
+      gameId: Value(gameId),
+      bullseyeValue: Value(bullseyeValue),
+      target: Value(target),
+    );
+  }
+
+  factory BullingGame.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return BullingGame(
+      gameId: serializer.fromJson<int>(json['gameId']),
+      bullseyeValue: $BullingGamesTable.$converterbullseyeValue.fromJson(
+        serializer.fromJson<String>(json['bullseyeValue']),
+      ),
+      target: serializer.fromJson<int>(json['target']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'gameId': serializer.toJson<int>(gameId),
+      'bullseyeValue': serializer.toJson<String>(
+        $BullingGamesTable.$converterbullseyeValue.toJson(bullseyeValue),
+      ),
+      'target': serializer.toJson<int>(target),
+    };
+  }
+
+  BullingGame copyWith({
+    int? gameId,
+    BullseyeValue? bullseyeValue,
+    int? target,
+  }) => BullingGame(
+    gameId: gameId ?? this.gameId,
+    bullseyeValue: bullseyeValue ?? this.bullseyeValue,
+    target: target ?? this.target,
+  );
+  BullingGame copyWithCompanion(BullingGamesCompanion data) {
+    return BullingGame(
+      gameId: data.gameId.present ? data.gameId.value : this.gameId,
+      bullseyeValue: data.bullseyeValue.present
+          ? data.bullseyeValue.value
+          : this.bullseyeValue,
+      target: data.target.present ? data.target.value : this.target,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('BullingGame(')
+          ..write('gameId: $gameId, ')
+          ..write('bullseyeValue: $bullseyeValue, ')
+          ..write('target: $target')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(gameId, bullseyeValue, target);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is BullingGame &&
+          other.gameId == this.gameId &&
+          other.bullseyeValue == this.bullseyeValue &&
+          other.target == this.target);
+}
+
+class BullingGamesCompanion extends UpdateCompanion<BullingGame> {
+  final Value<int> gameId;
+  final Value<BullseyeValue> bullseyeValue;
+  final Value<int> target;
+  const BullingGamesCompanion({
+    this.gameId = const Value.absent(),
+    this.bullseyeValue = const Value.absent(),
+    this.target = const Value.absent(),
+  });
+  BullingGamesCompanion.insert({
+    this.gameId = const Value.absent(),
+    required BullseyeValue bullseyeValue,
+    required int target,
+  }) : bullseyeValue = Value(bullseyeValue),
+       target = Value(target);
+  static Insertable<BullingGame> custom({
+    Expression<int>? gameId,
+    Expression<String>? bullseyeValue,
+    Expression<int>? target,
+  }) {
+    return RawValuesInsertable({
+      if (gameId != null) 'game_id': gameId,
+      if (bullseyeValue != null) 'bullseye_value': bullseyeValue,
+      if (target != null) 'target': target,
+    });
+  }
+
+  BullingGamesCompanion copyWith({
+    Value<int>? gameId,
+    Value<BullseyeValue>? bullseyeValue,
+    Value<int>? target,
+  }) {
+    return BullingGamesCompanion(
+      gameId: gameId ?? this.gameId,
+      bullseyeValue: bullseyeValue ?? this.bullseyeValue,
+      target: target ?? this.target,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (gameId.present) {
+      map['game_id'] = Variable<int>(gameId.value);
+    }
+    if (bullseyeValue.present) {
+      map['bullseye_value'] = Variable<String>(
+        $BullingGamesTable.$converterbullseyeValue.toSql(bullseyeValue.value),
+      );
+    }
+    if (target.present) {
+      map['target'] = Variable<int>(target.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('BullingGamesCompanion(')
+          ..write('gameId: $gameId, ')
+          ..write('bullseyeValue: $bullseyeValue, ')
+          ..write('target: $target')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2363,6 +2626,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $GameSeatsTable gameSeats = $GameSeatsTable(this);
   late final $DartEventsTable dartEvents = $DartEventsTable(this);
   late final $AtcGamesTable atcGames = $AtcGamesTable(this);
+  late final $BullingGamesTable bullingGames = $BullingGamesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2374,6 +2638,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     gameSeats,
     dartEvents,
     atcGames,
+    bullingGames,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -2397,6 +2662,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('atc_games', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'games',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('bulling_games', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -3508,6 +3780,24 @@ final class $$GamesTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$BullingGamesTable, List<BullingGame>>
+  _bullingGamesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.bullingGames,
+    aliasName: 'games__id__bulling_games__game_id',
+  );
+
+  $$BullingGamesTableProcessedTableManager get bullingGamesRefs {
+    final manager = $$BullingGamesTableTableManager(
+      $_db,
+      $_db.bullingGames,
+    ).filter((f) => f.gameId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_bullingGamesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$GamesTableFilterComposer extends Composer<_$AppDatabase, $GamesTable> {
@@ -3666,6 +3956,31 @@ class $$GamesTableFilterComposer extends Composer<_$AppDatabase, $GamesTable> {
           }) => $$AtcGamesTableFilterComposer(
             $db: $db,
             $table: $db.atcGames,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> bullingGamesRefs(
+    Expression<bool> Function($$BullingGamesTableFilterComposer f) f,
+  ) {
+    final $$BullingGamesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.bullingGames,
+      getReferencedColumn: (t) => t.gameId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BullingGamesTableFilterComposer(
+            $db: $db,
+            $table: $db.bullingGames,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -3921,6 +4236,31 @@ class $$GamesTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> bullingGamesRefs<T extends Object>(
+    Expression<T> Function($$BullingGamesTableAnnotationComposer a) f,
+  ) {
+    final $$BullingGamesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.bullingGames,
+      getReferencedColumn: (t) => t.gameId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BullingGamesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.bullingGames,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$GamesTableTableManager
@@ -3942,6 +4282,7 @@ class $$GamesTableTableManager
             bool gameSeatsRefs,
             bool dartEventsRefs,
             bool atcGamesRefs,
+            bool bullingGamesRefs,
           })
         > {
   $$GamesTableTableManager(_$AppDatabase db, $GamesTable table)
@@ -4012,6 +4353,7 @@ class $$GamesTableTableManager
                 gameSeatsRefs = false,
                 dartEventsRefs = false,
                 atcGamesRefs = false,
+                bullingGamesRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -4019,6 +4361,7 @@ class $$GamesTableTableManager
                     if (gameSeatsRefs) db.gameSeats,
                     if (dartEventsRefs) db.dartEvents,
                     if (atcGamesRefs) db.atcGames,
+                    if (bullingGamesRefs) db.bullingGames,
                   ],
                   addJoins:
                       <
@@ -4118,6 +4461,27 @@ class $$GamesTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (bullingGamesRefs)
+                        await $_getPrefetchedData<
+                          Game,
+                          $GamesTable,
+                          BullingGame
+                        >(
+                          currentTable: table,
+                          referencedTable: $$GamesTableReferences
+                              ._bullingGamesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$GamesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).bullingGamesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.gameId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -4144,6 +4508,7 @@ typedef $$GamesTableProcessedTableManager =
         bool gameSeatsRefs,
         bool dartEventsRefs,
         bool atcGamesRefs,
+        bool bullingGamesRefs,
       })
     >;
 typedef $$GameSeatsTableCreateCompanionBuilder =
@@ -5212,6 +5577,283 @@ typedef $$AtcGamesTableProcessedTableManager =
       AtcGame,
       PrefetchHooks Function({bool gameId})
     >;
+typedef $$BullingGamesTableCreateCompanionBuilder =
+    BullingGamesCompanion Function({
+      Value<int> gameId,
+      required BullseyeValue bullseyeValue,
+      required int target,
+    });
+typedef $$BullingGamesTableUpdateCompanionBuilder =
+    BullingGamesCompanion Function({
+      Value<int> gameId,
+      Value<BullseyeValue> bullseyeValue,
+      Value<int> target,
+    });
+
+final class $$BullingGamesTableReferences
+    extends BaseReferences<_$AppDatabase, $BullingGamesTable, BullingGame> {
+  $$BullingGamesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $GamesTable _gameIdTable(_$AppDatabase db) =>
+      db.games.createAlias('bulling_games__game_id__games__id');
+
+  $$GamesTableProcessedTableManager get gameId {
+    final $_column = $_itemColumn<int>('game_id')!;
+
+    final manager = $$GamesTableTableManager(
+      $_db,
+      $_db.games,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_gameIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$BullingGamesTableFilterComposer
+    extends Composer<_$AppDatabase, $BullingGamesTable> {
+  $$BullingGamesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnWithTypeConverterFilters<BullseyeValue, BullseyeValue, String>
+  get bullseyeValue => $composableBuilder(
+    column: $table.bullseyeValue,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<int> get target => $composableBuilder(
+    column: $table.target,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$GamesTableFilterComposer get gameId {
+    final $$GamesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.gameId,
+      referencedTable: $db.games,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$GamesTableFilterComposer(
+            $db: $db,
+            $table: $db.games,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$BullingGamesTableOrderingComposer
+    extends Composer<_$AppDatabase, $BullingGamesTable> {
+  $$BullingGamesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get bullseyeValue => $composableBuilder(
+    column: $table.bullseyeValue,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get target => $composableBuilder(
+    column: $table.target,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$GamesTableOrderingComposer get gameId {
+    final $$GamesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.gameId,
+      referencedTable: $db.games,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$GamesTableOrderingComposer(
+            $db: $db,
+            $table: $db.games,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$BullingGamesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $BullingGamesTable> {
+  $$BullingGamesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumnWithTypeConverter<BullseyeValue, String> get bullseyeValue =>
+      $composableBuilder(
+        column: $table.bullseyeValue,
+        builder: (column) => column,
+      );
+
+  GeneratedColumn<int> get target =>
+      $composableBuilder(column: $table.target, builder: (column) => column);
+
+  $$GamesTableAnnotationComposer get gameId {
+    final $$GamesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.gameId,
+      referencedTable: $db.games,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$GamesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.games,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$BullingGamesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $BullingGamesTable,
+          BullingGame,
+          $$BullingGamesTableFilterComposer,
+          $$BullingGamesTableOrderingComposer,
+          $$BullingGamesTableAnnotationComposer,
+          $$BullingGamesTableCreateCompanionBuilder,
+          $$BullingGamesTableUpdateCompanionBuilder,
+          (BullingGame, $$BullingGamesTableReferences),
+          BullingGame,
+          PrefetchHooks Function({bool gameId})
+        > {
+  $$BullingGamesTableTableManager(_$AppDatabase db, $BullingGamesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$BullingGamesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$BullingGamesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$BullingGamesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> gameId = const Value.absent(),
+                Value<BullseyeValue> bullseyeValue = const Value.absent(),
+                Value<int> target = const Value.absent(),
+              }) => BullingGamesCompanion(
+                gameId: gameId,
+                bullseyeValue: bullseyeValue,
+                target: target,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> gameId = const Value.absent(),
+                required BullseyeValue bullseyeValue,
+                required int target,
+              }) => BullingGamesCompanion.insert(
+                gameId: gameId,
+                bullseyeValue: bullseyeValue,
+                target: target,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$BullingGamesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({gameId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (gameId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.gameId,
+                                referencedTable: $$BullingGamesTableReferences
+                                    ._gameIdTable(db),
+                                referencedColumn: $$BullingGamesTableReferences
+                                    ._gameIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$BullingGamesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $BullingGamesTable,
+      BullingGame,
+      $$BullingGamesTableFilterComposer,
+      $$BullingGamesTableOrderingComposer,
+      $$BullingGamesTableAnnotationComposer,
+      $$BullingGamesTableCreateCompanionBuilder,
+      $$BullingGamesTableUpdateCompanionBuilder,
+      (BullingGame, $$BullingGamesTableReferences),
+      BullingGame,
+      PrefetchHooks Function({bool gameId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -5228,4 +5870,6 @@ class $AppDatabaseManager {
       $$DartEventsTableTableManager(_db, _db.dartEvents);
   $$AtcGamesTableTableManager get atcGames =>
       $$AtcGamesTableTableManager(_db, _db.atcGames);
+  $$BullingGamesTableTableManager get bullingGames =>
+      $$BullingGamesTableTableManager(_db, _db.bullingGames);
 }
