@@ -3,6 +3,9 @@ import 'package:drift/drift.dart';
 import '../../domain/atc/atc_config.dart';
 import '../../domain/atc/atc_leg_state.dart';
 import '../../domain/atc/atc_reducer.dart';
+import '../../domain/bulling/bulling_config.dart';
+import '../../domain/bulling/bulling_leg_state.dart';
+import '../../domain/bulling/bulling_reducer.dart';
 import '../../domain/game_mode.dart';
 import '../../domain/segment.dart';
 import '../../domain/x01/game_config.dart';
@@ -28,6 +31,10 @@ class GameRepository {
   /// The stored form of [GameMode.aroundTheClock], for filtering `gameMode`
   /// columns.
   static final String _aroundTheClock = GameMode.aroundTheClock.name;
+
+  /// The stored form of [GameMode.bulling], for filtering `gameMode`
+  /// columns.
+  static final String _bulling = GameMode.bulling.name;
 
   // Players
 
@@ -549,6 +556,82 @@ class GameRepository {
               final config = await loadAtcConfig(game.id);
               if (config == null) continue;
               legs.add(foldAroundTheClock(config, await loadLog(game.id)));
+            }
+            return legs;
+          });
+
+  // Bulling
+
+  /// Creates a Bulling leg and seats its players.
+  ///
+  /// No `matchId`/`legNumber` — this mode has no match wrapping yet, so
+  /// every leg stands on its own, the same as Around the Clock.
+  Future<int> startBullingGame(BullingConfig config) {
+    return db.transaction(() async {
+      final gameId = await db
+          .into(db.games)
+          .insert(
+            GamesCompanion.insert(
+              startScore: const Value.absent(),
+              doubleOut: const Value(null),
+              gameMode: const Value(GameMode.bulling),
+            ),
+          );
+
+      await db
+          .into(db.bullingGames)
+          .insert(
+            BullingGamesCompanion.insert(
+              gameId: Value(gameId),
+              bullseyeValue: config.bullseyeValue,
+              target: config.target,
+            ),
+          );
+
+      await _seatPlayers(gameId, config.playerIds);
+      return gameId;
+    });
+  }
+
+  /// The `BullingGames` row for a game, or null if there is not one.
+  Future<BullingGame?> loadBullingGame(int gameId) =>
+      (db.select(db.bullingGames)..where((g) => g.gameId.equals(gameId)))
+          .getSingleOrNull();
+
+  /// Rebuilds the configuration a Bulling leg was played under.
+  ///
+  /// Null under the same "half-written row" contract [loadConfig]
+  /// documents: missing config row, or no seats, both mean there is
+  /// nothing honest to replay.
+  Future<BullingConfig?> loadBullingConfig(int gameId) async {
+    final bullingGame = await loadBullingGame(gameId);
+    if (bullingGame == null) return null;
+
+    final seats = await _seatsOf(gameId);
+    if (seats.isEmpty) return null;
+
+    return BullingConfig(
+      playerIds: seats,
+      bullseyeValue: bullingGame.bullseyeValue,
+      target: bullingGame.target,
+    );
+  }
+
+  /// Every stored Bulling leg, replayed. Refreshes itself when a game
+  /// changes.
+  ///
+  /// A sibling to [watchAllLegs]/[watchAllAtcLegs], not a parameterisation
+  /// of either — the three fold through different engines and there is no
+  /// rule shared between them worth entangling.
+  Stream<List<BullingLegState>> watchAllBullingLegs() =>
+      (db.select(db.games)..where((g) => g.gameMode.equals(_bulling)))
+          .watch()
+          .asyncMap((games) async {
+            final legs = <BullingLegState>[];
+            for (final game in games) {
+              final config = await loadBullingConfig(game.id);
+              if (config == null) continue;
+              legs.add(foldBulling(config, await loadLog(game.id)));
             }
             return legs;
           });

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../domain/game_mode.dart';
 import '../theme.dart';
 import 'atc_setup_screen.dart';
+import 'bulling_setup_screen.dart';
 import 'x01_setup_screen.dart';
 
 /// A tile's icon, keyed by mode. Presentation only - the domain registry in
@@ -11,6 +12,7 @@ import 'x01_setup_screen.dart';
 const Map<GameMode, IconData> _icons = {
   GameMode.x01: Icons.adjust,
   GameMode.aroundTheClock: Icons.timelapse,
+  GameMode.bulling: Icons.gps_fixed,
 };
 
 /// Which setup screen a mode's tile opens. Presentation-layer routing, the
@@ -19,6 +21,7 @@ const Map<GameMode, IconData> _icons = {
 Widget _setupScreenFor(GameMode mode) => switch (mode) {
   GameMode.x01 => const X01SetupScreen(),
   GameMode.aroundTheClock => const AtcSetupScreen(),
+  GameMode.bulling => const BullingSetupScreen(),
 };
 
 /// Lets a player choose which game to set up next.

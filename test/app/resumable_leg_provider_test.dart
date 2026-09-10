@@ -7,6 +7,8 @@ import 'package:fluttergran/data/db/database.dart';
 import 'package:fluttergran/data/db/game_repository.dart';
 import 'package:fluttergran/domain/atc/atc_config.dart';
 import 'package:fluttergran/domain/atc/atc_variant.dart';
+import 'package:fluttergran/domain/bulling/bulling_config.dart';
+import 'package:fluttergran/domain/bulling/bulling_variant.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/game_config.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
@@ -81,6 +83,28 @@ void main() {
     expect(resumable, isA<ResumableAtcLeg>());
     expect(resumable!.gameId, gameId);
     expect((resumable as ResumableAtcLeg).leg.stopIndex[finn.id], 1);
+  });
+
+  test('a Bulling leg round-trips as ResumableBullingLeg', () async {
+    final finn = await repository.addPlayer('Finn');
+    final gameId = await repository.startBullingGame(
+      BullingConfig(
+        playerIds: [finn.id],
+        bullseyeValue: BullseyeValue.two,
+        target: 21,
+      ),
+    );
+    await repository.appendDart(
+      gameId: gameId,
+      ordinal: 0,
+      playerId: finn.id,
+      dart: ThrownDart(Segment.outerBull),
+    );
+
+    final resumable = await readResumable();
+    expect(resumable, isA<ResumableBullingLeg>());
+    expect(resumable!.gameId, gameId);
+    expect((resumable as ResumableBullingLeg).leg.scoreFor(finn.id), 1);
   });
 
   test('nothing in progress resolves to null', () async {

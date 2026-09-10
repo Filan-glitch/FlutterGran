@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/app/providers.dart';
 import 'package:fluttergran/app/screens/atc_setup_screen.dart';
+import 'package:fluttergran/app/screens/bulling_setup_screen.dart';
 import 'package:fluttergran/app/screens/select_game_mode_screen.dart';
 import 'package:fluttergran/app/screens/x01_setup_screen.dart';
 import 'package:fluttergran/app/theme.dart';
@@ -81,6 +82,19 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(AtcSetupScreen), findsOneWidget);
+  });
+
+  testWidgets('the Bulling tile navigates to its setup screen', (
+    tester,
+  ) async {
+    await pumpScreen(tester);
+
+    expect(find.text('BULLING'), findsOneWidget);
+
+    await tester.tap(find.text('BULLING'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(BullingSetupScreen), findsOneWidget);
   });
 
   testWidgets('the trailing tile names no specific unbuilt mode', (

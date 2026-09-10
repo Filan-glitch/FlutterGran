@@ -158,6 +158,33 @@ class _SchemaV5 extends AppDatabase {
   );
 }
 
+/// An [AppDatabase] frozen at schema 6, the version just before Bulling's
+/// `bulling_games` table.
+///
+/// Every table's shape is already what the current classes produce -
+/// `games` gained its nullable `start_score`/`double_out` back at v6, and
+/// nothing about `players`/`matches`/`gameSeats`/`dartEvents`/`atcGames`
+/// has changed since - so this only has to leave `bullingGames` out of
+/// `onCreate`.
+class _SchemaV6 extends AppDatabase {
+  _SchemaV6(super.executor);
+
+  @override
+  int get schemaVersion => 6;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (m) async {
+      await m.createTable(players);
+      await m.createTable(this.matches);
+      await m.createTable(games);
+      await m.createTable(gameSeats);
+      await m.createTable(dartEvents);
+      await m.createTable(atcGames);
+    },
+  );
+}
+
 void main() {
   // Every test here opens the same file twice on purpose - once as the old
   // schema, once as the current one - never at the same time.
@@ -565,6 +592,110 @@ void main() {
     );
 
     expect(newId, greaterThan(oldId));
+
+    await db.close();
+  });
+
+  /// Writes one x01 leg the way schema 6 stored legs - everything the
+  /// current schema also writes, minus `bulling_games`, which did not
+  /// exist yet.
+  Future<int> seedV6({required List<ThrownDart> darts, int startScore = 501}) async {
+    final db = _SchemaV6(NativeDatabase(file));
+
+    final finn = await db
+        .into(db.players)
+        .insertReturning(PlayersCompanion.insert(name: 'Finn'));
+    final sam = await db
+        .into(db.players)
+        .insertReturning(PlayersCompanion.insert(name: 'Sam'));
+    final seats = [finn.id, sam.id];
+
+    final gameId = await db
+        .into(db.games)
+        .insert(GamesCompanion.insert(startScore: Value(startScore)));
+
+    for (var seat = 0; seat < seats.length; seat++) {
+      await db
+          .into(db.gameSeats)
+          .insert(
+            GameSeatsCompanion.insert(
+              gameId: gameId,
+              playerId: seats[seat],
+              seat: seat,
+            ),
+          );
+    }
+
+    for (var i = 0; i < darts.length; i++) {
+      await db
+          .into(db.dartEvents)
+          .insert(
+            DartEventsCompanion.insert(
+              gameId: gameId,
+              ordinal: i,
+              playerId: seats[(i ~/ 3) % seats.length],
+              number: Value(darts[i].segment?.number),
+              ring: Value(darts[i].segment?.ring),
+              value: darts[i].value,
+            ),
+          );
+    }
+
+    await db.close();
+    return gameId;
+  }
+
+  test('a version 6 database opens at the current version', () async {
+    await seedV6(darts: [t(20)]);
+
+    final db = migrated();
+    await db.select(db.matches).get();
+
+    final version = await db.customSelect('PRAGMA user_version').getSingle();
+    expect(version.read<int>('user_version'), db.schemaVersion);
+
+    await db.close();
+  });
+
+  test('a fresh install lands on the current version with bulling_games present', () async {
+    final db = migrated();
+    await db.select(db.matches).get();
+
+    final tables = await db
+        .customSelect(
+          "SELECT name FROM sqlite_master WHERE type = 'table' "
+          "AND name = 'bulling_games'",
+        )
+        .get();
+    expect(tables, isNotEmpty);
+
+    await db.close();
+  });
+
+  test('an old x01 leg from v6 still folds correctly after gaining bulling_games', () async {
+    final gameId = await seedV6(
+      darts: [t(20), t(20), t(20), t(1), t(1), t(1), t(19)],
+    );
+
+    final db = migrated();
+    final repository = GameRepository(db);
+
+    final config = await repository.loadConfig(gameId);
+    expect(config, isNotNull);
+    expect(config!.startScore, 501);
+
+    final leg = foldLeg(config, await repository.loadLog(gameId));
+    expect(leg.remaining[config.playerIds[0]], 501 - 180 - 57);
+    expect(leg.remaining[config.playerIds[1]], 501 - 9);
+
+    await db.close();
+  });
+
+  test('an old v6 leg still resumes after the migration', () async {
+    final gameId = await seedV6(darts: [t(20), t(20)]);
+
+    final db = migrated();
+    expect(await GameRepository(db).findResumableGameId(), gameId);
 
     await db.close();
   });

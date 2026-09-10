@@ -5,6 +5,8 @@ import '../providers.dart';
 import '../theme.dart';
 import 'atc_game_screen.dart';
 import 'atc_setup_screen.dart';
+import 'bulling_game_screen.dart';
+import 'bulling_setup_screen.dart' show bullseyeValueLabel;
 import 'game_screen.dart';
 import 'roster_screen.dart';
 import 'select_game_mode_screen.dart';
@@ -62,6 +64,22 @@ class MainMenuScreen extends ConsumerWidget {
         await Navigator.of(context).push(
           MaterialPageRoute<void>(
             builder: (context) => const AtcGameScreen(),
+          ),
+        );
+      case ResumableBullingLeg(:final gameId):
+        final repository = ref.read(gameRepositoryProvider);
+        final config = await repository.loadBullingConfig(gameId);
+        if (config == null || !context.mounted) return;
+        final darts = await repository.loadLog(gameId);
+        if (!context.mounted) return;
+
+        ref.read(bullingConfigProvider.notifier).update(config);
+        ref.read(currentGameIdProvider.notifier).set(gameId);
+        ref.read(bullingGameProvider.notifier).resume(config, darts);
+
+        await Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (context) => const BullingGameScreen(),
           ),
         );
     }
@@ -254,6 +272,14 @@ class _ResumeBanner extends StatelessWidget {
         <int, String>{
           for (final id in leg.config.playerIds)
             id: leg.currentStopFor(id).label,
+        },
+      ),
+      ResumableBullingLeg(:final leg) => (
+        '${bullseyeValueLabel(leg.config.bullseyeValue)} · ${leg.config.target}',
+        leg.config.playerIds,
+        leg.currentPlayerId,
+        <int, String>{
+          for (final id in leg.config.playerIds) id: '${leg.scoreFor(id)}',
         },
       ),
     };

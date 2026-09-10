@@ -76,14 +76,16 @@ class _Body extends ConsumerWidget {
     // a mode legitimately has zero data for this player.
     final x01 = statsByMode[GameMode.x01] as X01Stats?;
     final atc = statsByMode[GameMode.aroundTheClock] as AtcStats?;
+    final bulling = statsByMode[GameMode.bulling] as BullingStats?;
     final counts =
         ref.watch(segmentCountsProvider(playerId)).value ??
         const <Segment, int>{};
 
     final hasX01 = x01 != null && x01.legsPlayed > 0;
     final hasAtc = atc != null && atc.legsPlayed > 0;
+    final hasBulling = bulling != null && bulling.legsPlayed > 0;
 
-    if (!hasX01 && !hasAtc) {
+    if (!hasX01 && !hasAtc && !hasBulling) {
       return _Empty(
         headline: 'No legs yet',
         detail: 'Play a leg and every dart in it lands here.',
@@ -189,6 +191,36 @@ class _Body extends ConsumerWidget {
                     ),
                 ],
               ),
+          ],
+          if (hasBulling) ...[
+            if (hasX01 || hasAtc) const SizedBox(height: Gap.xl),
+            const _Eyebrow('BULLING'),
+            const SizedBox(height: Gap.sm),
+            _Headline(
+              value: _percent(bulling.hitRate),
+              label: 'Hit rate',
+              detail: '${bulling.scoringDarts} of ${bulling.dartsThrown} darts',
+            ),
+            const SizedBox(height: Gap.xl),
+            _Section(
+              title: 'Legs',
+              rows: [
+                _Row('Won', '${bulling.legsWon} of ${bulling.legsPlayed}'),
+                _Row('Win rate', _percent(bulling.winRate)),
+                _Row(
+                  'Best leg',
+                  _optional(bulling.fewestDartsToWin, suffix: ' darts'),
+                ),
+              ],
+            ),
+            _Section(
+              title: 'Scoring',
+              rows: [
+                _Row('Points scored', '${bulling.pointsScored}'),
+                _Row('Outer bull hits', '${bulling.outerBullHits}'),
+                _Row('Bullseye hits', '${bulling.innerBullHits}'),
+              ],
+            ),
           ],
           const SizedBox(height: Gap.lg),
           Text(

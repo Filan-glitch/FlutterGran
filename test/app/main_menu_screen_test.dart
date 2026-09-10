@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/app/providers.dart';
 import 'package:fluttergran/app/screens/atc_game_screen.dart';
+import 'package:fluttergran/app/screens/bulling_game_screen.dart';
+import 'package:fluttergran/app/screens/bulling_setup_screen.dart'
+    show bullseyeValueLabel;
 import 'package:fluttergran/app/screens/main_menu_screen.dart';
 import 'package:fluttergran/app/screens/roster_screen.dart';
 import 'package:fluttergran/app/screens/select_game_mode_screen.dart';
@@ -15,6 +18,8 @@ import 'package:fluttergran/data/db/database.dart';
 import 'package:fluttergran/data/db/game_repository.dart';
 import 'package:fluttergran/domain/atc/atc_config.dart';
 import 'package:fluttergran/domain/atc/atc_variant.dart';
+import 'package:fluttergran/domain/bulling/bulling_config.dart';
+import 'package:fluttergran/domain/bulling/bulling_variant.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/game_config.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
@@ -91,26 +96,25 @@ void main() {
     expect(find.text('FINN'), findsOneWidget);
   });
 
-  testWidgets(
-    'hides the resume card once that leg is the one already open',
-    (tester) async {
-      final finn = await repository.addPlayer('Finn');
-      final gameId = await repository.startGame(
-        GameConfig(startScore: 501, playerIds: [finn.id]),
-      );
-      await repository.appendDart(
-        gameId: gameId,
-        ordinal: 0,
-        playerId: finn.id,
-        dart: const ThrownDart.miss(),
-      );
-      container.read(currentGameIdProvider.notifier).set(gameId);
+  testWidgets('hides the resume card once that leg is the one already open', (
+    tester,
+  ) async {
+    final finn = await repository.addPlayer('Finn');
+    final gameId = await repository.startGame(
+      GameConfig(startScore: 501, playerIds: [finn.id]),
+    );
+    await repository.appendDart(
+      gameId: gameId,
+      ordinal: 0,
+      playerId: finn.id,
+      dart: const ThrownDart.miss(),
+    );
+    container.read(currentGameIdProvider.notifier).set(gameId);
 
-      await pump(tester);
+    await pump(tester);
 
-      expect(find.byKey(const Key('menu-resume-banner')), findsNothing);
-    },
-  );
+    expect(find.byKey(const Key('menu-resume-banner')), findsNothing);
+  });
 
   testWidgets('tapping resume loads the leg and opens the game screen', (
     tester,
@@ -175,6 +179,62 @@ void main() {
 
       expect(container.read(currentGameIdProvider), gameId);
       expect(find.byType(AtcGameScreen), findsOneWidget);
+    });
+  });
+
+  group('a Bulling leg', () {
+    testWidgets(
+      'shows the resume card with the bullseye value, target and score',
+      (tester) async {
+        final finn = await repository.addPlayer('Finn');
+        final gameId = await repository.startBullingGame(
+          BullingConfig(
+            playerIds: [finn.id],
+            bullseyeValue: BullseyeValue.two,
+            target: 21,
+          ),
+        );
+        await repository.appendDart(
+          gameId: gameId,
+          ordinal: 0,
+          playerId: finn.id,
+          dart: const ThrownDart(Segment.outerBull),
+        );
+
+        await pump(tester);
+
+        expect(find.byKey(const Key('menu-resume-banner')), findsOneWidget);
+        expect(
+          find.text('${bullseyeValueLabel(BullseyeValue.two)} · 21'),
+          findsOneWidget,
+        );
+        expect(find.text('FINN'), findsOneWidget);
+        expect(find.text('1'), findsOneWidget);
+      },
+    );
+
+    testWidgets('resume loads it into BullingGameScreen', (tester) async {
+      final finn = await repository.addPlayer('Finn');
+      final gameId = await repository.startBullingGame(
+        BullingConfig(
+          playerIds: [finn.id],
+          bullseyeValue: BullseyeValue.three,
+          target: 21,
+        ),
+      );
+      await repository.appendDart(
+        gameId: gameId,
+        ordinal: 0,
+        playerId: finn.id,
+        dart: const ThrownDart(Segment.outerBull),
+      );
+
+      await pump(tester);
+      await tester.tap(find.byKey(const Key('menu-resume-banner')));
+      await frames(tester);
+
+      expect(container.read(currentGameIdProvider), gameId);
+      expect(find.byType(BullingGameScreen), findsOneWidget);
     });
   });
 
