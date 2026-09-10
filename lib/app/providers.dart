@@ -288,6 +288,12 @@ class ResumableAtcLeg extends ResumableLeg {
   final AtcLegState leg;
 }
 
+class ResumableBullingLeg extends ResumableLeg {
+  const ResumableBullingLeg({required super.gameId, required this.leg});
+
+  final BullingLegState leg;
+}
+
 /// The leg the main menu offers to resume, or null when there is none.
 ///
 /// Watches the games table rather than loading once: finishing or abandoning a
@@ -329,6 +335,16 @@ final resumableLegProvider = StreamProvider<ResumableLeg?>((ref) async* {
         yield ResumableAtcLeg(
           gameId: gameId,
           leg: foldAroundTheClock(config, await repository.loadLog(gameId)),
+        );
+      case GameMode.bulling:
+        final config = await repository.loadBullingConfig(gameId);
+        if (config == null) {
+          yield null;
+          continue;
+        }
+        yield ResumableBullingLeg(
+          gameId: gameId,
+          leg: foldBulling(config, await repository.loadLog(gameId)),
         );
     }
   }
