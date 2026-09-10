@@ -1,6 +1,9 @@
 import '../atc/atc_leg_state.dart';
 import '../atc/atc_stop.dart';
+import '../bulling/bulling_leg_state.dart';
+import '../bulling/bulling_reducer.dart';
 import '../game_mode.dart';
+import '../segment.dart';
 import '../x01/leg_state.dart';
 import '../x01/match_state.dart';
 import 'mode_stats.dart';
@@ -27,10 +30,12 @@ Map<GameMode, ModeStats> computePlayerStats(
   Iterable<LegState> x01Legs = const [],
   Iterable<MatchState> x01Matches = const [],
   Iterable<AtcLegState> atcLegs = const [],
+  Iterable<BullingLegState> bullingLegs = const [],
 }) {
   return {
     GameMode.x01: computeX01Stats(playerId, x01Legs, matches: x01Matches),
     GameMode.aroundTheClock: computeAtcStats(playerId, atcLegs),
+    GameMode.bulling: computeBullingStats(playerId, bullingLegs),
   };
 }
 
@@ -176,7 +181,8 @@ AtcStats computeAtcStats(int playerId, Iterable<AtcLegState> legs) {
 
         final target = AtcStop.track[standing];
         final segment = dart.segment;
-        final cleared = segment != null && target.clears(segment, leg.config.variant);
+        final cleared =
+            segment != null && target.clears(segment, leg.config.variant);
 
         final current = perStop[target] ?? (attempts: 0, hits: 0);
         perStop[target] = (
@@ -207,5 +213,59 @@ AtcStats computeAtcStats(int playerId, Iterable<AtcLegState> legs) {
     qualifyingDarts: qualifyingDarts,
     fewestDartsToWin: fewestDartsToWin,
     perStop: Map.unmodifiable(perStop),
+  );
+}
+
+/// Aggregates a player's Bulling record across any number of replayed
+/// legs.
+///
+/// Takes folded [BullingLegState]s rather than raw rows, for the same
+/// reason [computeX01Stats] and [computeAtcStats] do: every number here
+/// agrees with what was shown during play by construction.
+BullingStats computeBullingStats(int playerId, Iterable<BullingLegState> legs) {
+  var legsPlayed = 0;
+  var legsWon = 0;
+  var dartsThrown = 0;
+  var scoringDarts = 0;
+  var pointsScored = 0;
+  var outerBullHits = 0;
+  var innerBullHits = 0;
+  int? fewestDartsToWin;
+
+  for (final leg in legs) {
+    if (!leg.config.playerIds.contains(playerId)) continue;
+    legsPlayed++;
+
+    for (final turn in leg.turns) {
+      if (turn.playerId != playerId) continue;
+
+      for (final dart in turn.darts) {
+        dartsThrown++;
+        final points = pointsFor(dart.segment, leg.config.bullseyeValue);
+        pointsScored += points;
+        if (dart.segment?.ring == Ring.outerBull) outerBullHits++;
+        if (dart.segment?.ring == Ring.innerBull) innerBullHits++;
+        if (points > 0) scoringDarts++;
+      }
+    }
+
+    if (leg.winnerId == playerId) {
+      legsWon++;
+      final darts = leg.dartsThrownBy(playerId);
+      if (fewestDartsToWin == null || darts < fewestDartsToWin) {
+        fewestDartsToWin = darts;
+      }
+    }
+  }
+
+  return BullingStats(
+    legsPlayed: legsPlayed,
+    legsWon: legsWon,
+    dartsThrown: dartsThrown,
+    scoringDarts: scoringDarts,
+    pointsScored: pointsScored,
+    outerBullHits: outerBullHits,
+    innerBullHits: innerBullHits,
+    fewestDartsToWin: fewestDartsToWin,
   );
 }
