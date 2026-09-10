@@ -12,6 +12,7 @@ import 'package:fluttergran/app/screens/roster_screen.dart';
 import 'package:fluttergran/app/screens/select_game_mode_screen.dart';
 import 'package:fluttergran/app/screens/settings_screen.dart';
 import 'package:fluttergran/app/screens/stats_screen.dart';
+import 'package:fluttergran/app/screens/training_setup_screen.dart';
 import 'package:fluttergran/app/theme.dart';
 import 'package:fluttergran/data/board/fake_board_source.dart';
 import 'package:fluttergran/data/db/database.dart';
@@ -259,6 +260,17 @@ void main() {
     await frames(tester);
 
     expect(find.byType(SelectGameModeScreen), findsOneWidget);
+  });
+
+  testWidgets('TRAINING navigates to the training setup screen', (
+    tester,
+  ) async {
+    await pump(tester);
+
+    await tester.tap(find.byKey(const Key('menu-training-row')));
+    await frames(tester);
+
+    expect(find.byType(TrainingSetupScreen), findsOneWidget);
   });
 
   testWidgets('STATISTICS navigates to the stats screen', (tester) async {

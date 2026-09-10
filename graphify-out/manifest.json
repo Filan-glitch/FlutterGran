@@ -70,18 +70,18 @@
     "semantic_hash": ""
   },
   "lib/app/providers.dart": {
-    "mtime": 1789036914.0418644,
-    "ast_hash": "abb0d8931bac89c6b783c460cf64c97c",
+    "mtime": 1789066986.517365,
+    "ast_hash": "cbe68776a318b77cf90562f0b7fc6cb2",
     "semantic_hash": ""
   },
   "lib/app/screens/game_screen.dart": {
-    "mtime": 1789037877.475674,
+    "mtime": 1789065327.8927116,
     "ast_hash": "58dab4b0066c75516b83132bf7ad3f14",
     "semantic_hash": ""
   },
   "lib/app/screens/main_menu_screen.dart": {
-    "mtime": 1789037963.6459854,
-    "ast_hash": "ffefeb42f29cf325120ea896c1f5dad4",
+    "mtime": 1789067230.886295,
+    "ast_hash": "cd4a260ff8051122bcf3dfe6908f4256",
     "semantic_hash": ""
   },
   "lib/app/screens/roster_screen.dart": {
@@ -105,7 +105,7 @@
     "semantic_hash": ""
   },
   "lib/app/screens/stats_screen.dart": {
-    "mtime": 1789038016.3543682,
+    "mtime": 1789065327.8927116,
     "ast_hash": "16dfbd5e533769210417cb1877887e8a",
     "semantic_hash": ""
   },
@@ -115,12 +115,12 @@
     "semantic_hash": ""
   },
   "lib/app/theme.dart": {
-    "mtime": 1789037731.6576366,
+    "mtime": 1789065327.8927116,
     "ast_hash": "2d6001ca3512cf9ce5c435bde58a7511",
     "semantic_hash": ""
   },
   "lib/app/widgets/board_connection_button.dart": {
-    "mtime": 1789037877.499672,
+    "mtime": 1789065327.8927116,
     "ast_hash": "40c169f602b32aa7ba90d3a4cbd79732",
     "semantic_hash": ""
   },
@@ -130,7 +130,7 @@
     "semantic_hash": ""
   },
   "lib/app/widgets/dart_keypad.dart": {
-    "mtime": 1789037690.5282924,
+    "mtime": 1789065327.8927116,
     "ast_hash": "34959826effef38294d1030c27bfc5da",
     "semantic_hash": ""
   },
@@ -280,8 +280,8 @@
     "semantic_hash": ""
   },
   "test/app/main_menu_screen_test.dart": {
-    "mtime": 1789036914.0438645,
-    "ast_hash": "d5040fd9ac667bdbbbda5f02fe744c07",
+    "mtime": 1789067251.503294,
+    "ast_hash": "9a20bbf55a3a03e9384b0d35046ebf74",
     "semantic_hash": ""
   },
   "test/app/migration_test.dart": {
@@ -1595,7 +1595,7 @@
     "semantic_hash": ""
   },
   "lib/app/screens/atc_game_screen.dart": {
-    "mtime": 1789037934.5891275,
+    "mtime": 1789065327.8917115,
     "ast_hash": "718280e9d6dc28cacd8376f3fe23ac3d",
     "semantic_hash": ""
   },
@@ -1650,8 +1650,8 @@
     "semantic_hash": ""
   },
   "test/atc_widget_test.dart": {
-    "mtime": 1788860814.296826,
-    "ast_hash": "f81a1919749b7b47677595bce08e2509",
+    "mtime": 1789065327.8927116,
+    "ast_hash": "3e8c5d1cac8797eec5ec23e5d63dd3c3",
     "semantic_hash": ""
   },
   "test/domain/atc/atc_config_test.dart": {
@@ -1685,7 +1685,7 @@
     "semantic_hash": ""
   },
   "lib/app/screens/bulling_game_screen.dart": {
-    "mtime": 1789037934.598127,
+    "mtime": 1789065327.8917115,
     "ast_hash": "0a2edd8e8c3f1e8c843d86e99b11f1d3",
     "semantic_hash": ""
   },
@@ -2347,6 +2347,56 @@
   ".claude/skills/ui-ux-pro-max/SKILL.md": {
     "mtime": 1789036958.0304432,
     "ast_hash": "59d136be468705c5353c6771bb820737",
+    "semantic_hash": ""
+  },
+  "lib/app/audio/training_sound.dart": {
+    "mtime": 1789067067.29465,
+    "ast_hash": "5b976ee2944c6bc968394441eaba12f9",
+    "semantic_hash": ""
+  },
+  "lib/app/screens/training_game_screen.dart": {
+    "mtime": 1789067183.2556925,
+    "ast_hash": "fab84eb322cdcc1b6b9dbd5e24e40594",
+    "semantic_hash": ""
+  },
+  "lib/app/screens/training_setup_screen.dart": {
+    "mtime": 1789067201.724003,
+    "ast_hash": "cc595b61ffc83801799fd774aae9b3b0",
+    "semantic_hash": ""
+  },
+  "lib/app/training_controller.dart": {
+    "mtime": 1789067000.2659745,
+    "ast_hash": "f3650de1c36aaa81c33eb52d97c7ae9d",
+    "semantic_hash": ""
+  },
+  "lib/domain/training/free_practice_state.dart": {
+    "mtime": 1789066930.5431468,
+    "ast_hash": "f23a62c04bcf26ef0cf782f25097e0a1",
+    "semantic_hash": ""
+  },
+  "lib/domain/training/training_drill.dart": {
+    "mtime": 1789066918.0022557,
+    "ast_hash": "e609dded8704b74420b719c48fc7ea52",
+    "semantic_hash": ""
+  },
+  "test/app/training_controller_test.dart": {
+    "mtime": 1789067048.2733903,
+    "ast_hash": "179709b6d5a6fde1f1aa5259092b44f7",
+    "semantic_hash": ""
+  },
+  "test/app/training_game_screen_test.dart": {
+    "mtime": 1789067489.2650015,
+    "ast_hash": "c6fab4fea217a45bf8d6a536386289e3",
+    "semantic_hash": ""
+  },
+  "test/app/training_setup_screen_test.dart": {
+    "mtime": 1789067317.308957,
+    "ast_hash": "f4db11209203c0327ec9d5f126831f88",
+    "semantic_hash": ""
+  },
+  "test/domain/training/free_practice_state_test.dart": {
+    "mtime": 1789066940.019683,
+    "ast_hash": "6ed7c91ae964f27207f4a656ac2f332b",
     "semantic_hash": ""
   }
 }
