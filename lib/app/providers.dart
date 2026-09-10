@@ -14,6 +14,10 @@ import '../domain/atc/atc_leg_state.dart';
 import '../domain/atc/atc_reducer.dart';
 import '../domain/atc/atc_variant.dart';
 import '../domain/board_event.dart';
+import '../domain/bulling/bulling_config.dart';
+import '../domain/bulling/bulling_leg_state.dart';
+import '../domain/bulling/bulling_reducer.dart';
+import '../domain/bulling/bulling_variant.dart';
 import '../domain/checkout/checkout_table.dart';
 import '../domain/game_mode.dart';
 import '../domain/segment.dart';
@@ -25,6 +29,7 @@ import '../domain/x01/match_state.dart';
 import 'atc_controller.dart';
 import 'audio/sound_controller.dart';
 import 'audio/sound_player.dart';
+import 'bulling_controller.dart';
 import 'game_controller.dart';
 import 'match_controller.dart';
 
@@ -131,6 +136,27 @@ final atcGameProvider = NotifierProvider<AtcController, AtcSession>(
   AtcController.new,
 );
 
+class BullingConfigController extends Notifier<BullingConfig> {
+  @override
+  BullingConfig build() => BullingConfig(
+    playerIds: const [1, 2],
+    bullseyeValue: BullseyeValue.two,
+    target: 21,
+  );
+
+  void update(BullingConfig config) => state = config;
+}
+
+final bullingConfigProvider =
+    NotifierProvider<BullingConfigController, BullingConfig>(
+      BullingConfigController.new,
+    );
+
+final bullingGameProvider =
+    NotifierProvider<BullingController, BullingSession>(
+      BullingController.new,
+    );
+
 final matchProvider = NotifierProvider<MatchController, MatchSession?>(
   MatchController.new,
 );
@@ -203,6 +229,11 @@ final allAtcLegsProvider = StreamProvider<List<AtcLegState>>(
   (ref) => ref.watch(gameRepositoryProvider).watchAllAtcLegs(),
 );
 
+/// Every stored Bulling leg, replayed.
+final allBullingLegsProvider = StreamProvider<List<BullingLegState>>(
+  (ref) => ref.watch(gameRepositoryProvider).watchAllBullingLegs(),
+);
+
 /// A player's all-time record, one entry per mode they have played.
 ///
 /// See [computePlayerStats] for why the grouping happens here rather than
@@ -214,6 +245,7 @@ final playerStatsProvider =
         x01Legs: ref.watch(allLegsProvider).value ?? const [],
         x01Matches: ref.watch(allMatchesProvider).value ?? const [],
         atcLegs: ref.watch(allAtcLegsProvider).value ?? const [],
+        bullingLegs: ref.watch(allBullingLegsProvider).value ?? const [],
       );
     });
 
@@ -226,6 +258,7 @@ final segmentCountsProvider = FutureProvider.family<Map<Segment, int>, int>(
   (ref, playerId) {
     ref.watch(allLegsProvider);
     ref.watch(allAtcLegsProvider);
+    ref.watch(allBullingLegsProvider);
     return ref.watch(gameRepositoryProvider).segmentCounts(playerId);
   },
 );
