@@ -1,7 +1,7 @@
 # fluttergran
 
 Flutter companion app for a **GranBoard 132** Bluetooth electronic dartboard.
-x01 (301/501/701, straight-in, double-out) for up to 4 players, best of 1/3/5/7
+x01 (301/501/701, single/double/master in and out) for up to 4 players, best of 1/3/5/7
 legs, live checkout suggestions, spoken commentary and sound cues, and
 per-player statistics across every dart ever thrown.
 
@@ -31,6 +31,22 @@ this mechanically; if it fails, the fix is to move the Flutter-dependent code ou
 
 Everything else: `lib/data/` (board protocol, drift database), `lib/app/` (Riverpod
 providers, screens, widgets).
+
+## X01 rules and schema
+
+In-rule and out-rule are independent `X01InRule`/`X01OutRule` enums (straight/double/
+master) on `GameConfig`/`MatchConfig` — there is no `doubleOut` bool any more. A
+same-named DB column survives only as a frozen, always-derived legacy mirror; nothing
+else reads it. Current drift schema version: **8**.
+
+**drift `TableMigration` gotcha:** it copies every column the *current* table class has,
+assuming the on-disk table already has them all. When a later schema version adds a
+column to that table, any earlier `TableMigration(table)` step must be updated to
+declare the new column via `newColumns: [table.newColumn]` — otherwise a multi-version
+upgrade (e.g. v2 straight to v8) crashes trying to copy a column that doesn't exist yet
+at that point in the chain. `test/app/migration_test.dart` freezes historical
+`games`/`matches` shapes with raw SQL for exactly this reason, once the current table
+classes outgrow them.
 
 ## Board protocol, in one paragraph
 
@@ -77,7 +93,7 @@ by state.
 This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
 
 Rules:
-- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
+- Before grepping or exploring for a symbol, file, or relationship, run `graphify query "<question>"` first when graphify-out/graph.json exists — cheaper and more scoped than raw search. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts.
 - If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
 - Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
-- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost). Commit the graphify-out diff as its own separate commit (e.g. `chore: update graphify knowledge graph`) — never squashed into the code change.
