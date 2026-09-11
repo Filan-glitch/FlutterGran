@@ -47,6 +47,8 @@ void main() {
       expect(game!.gameMode, GameMode.bulling);
       expect(game.startScore, isNull);
       expect(game.doubleOut, isNull);
+      expect(game.inRule, isNull);
+      expect(game.outRule, isNull);
 
       final loaded = await repository.loadBullingConfig(gameId);
       expect(loaded!.playerIds, config.playerIds);

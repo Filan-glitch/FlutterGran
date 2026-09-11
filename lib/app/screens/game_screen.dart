@@ -6,6 +6,7 @@ import '../../domain/stats/player_stats.dart';
 import '../../domain/x01/leg_state.dart';
 import '../../domain/x01/match_state.dart';
 import '../../domain/x01/thrown_dart.dart';
+import '../../domain/x01/x01_rules.dart';
 import '../audio/sound_controller.dart' show maximumTurn;
 import '../game_controller.dart';
 import '../providers.dart';
@@ -37,7 +38,7 @@ class GameScreen extends ConsumerWidget {
     final routes = leg.isFinished || session.awaitingTurnConfirm
         ? const <CheckoutRoute>[]
         : ref
-              .watch(checkoutTableProvider)
+              .watch(checkoutTableProvider(leg.config.outRule))
               .routesFor(leg.currentRemaining, leg.dartsLeftThisTurn);
 
     // A leg with darts in it is worth confirming before leaving; a fresh or
@@ -127,7 +128,11 @@ class GameScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('${leg.config.startScore} · DOUBLE OUT$format'),
+        title: Text(
+          '${leg.config.startScore} · '
+          '${leg.config.inRule.abbreviation}/${leg.config.outRule.abbreviation}'
+          '$format',
+        ),
         actions: [
           if (boardConnected)
             IconButton(

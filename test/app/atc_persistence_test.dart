@@ -45,6 +45,8 @@ void main() {
       expect(game!.gameMode, GameMode.aroundTheClock);
       expect(game.startScore, isNull);
       expect(game.doubleOut, isNull);
+      expect(game.inRule, isNull);
+      expect(game.outRule, isNull);
 
       final loaded = await repository.loadAtcConfig(gameId);
       expect(loaded!.playerIds, config.playerIds);

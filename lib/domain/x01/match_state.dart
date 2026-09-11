@@ -1,4 +1,5 @@
 import 'game_config.dart';
+import 'x01_rules.dart';
 
 /// Best-of formats offered in the UI. The engine accepts any positive count.
 const List<int> offeredLegsToPlay = [1, 3, 5, 7];
@@ -37,7 +38,8 @@ class MatchConfig {
   MatchConfig({
     required this.startScore,
     required this.playerIds,
-    this.doubleOut = true,
+    this.inRule = X01InRule.straight,
+    this.outRule = X01OutRule.double,
     this.legsToPlay = 1,
   }) : assert(legsToPlay > 0, 'a match is at least one leg'),
        assert(playerIds.isNotEmpty, 'a match needs players');
@@ -49,7 +51,11 @@ class MatchConfig {
   /// each leg moves.
   final List<int> playerIds;
 
-  final bool doubleOut;
+  /// What it takes to open a leg. Straight-in needs nothing.
+  final X01InRule inRule;
+
+  /// What it takes to finish a leg.
+  final X01OutRule outRule;
 
   /// Best of this many legs.
   final int legsToPlay;
@@ -78,7 +84,8 @@ class MatchConfig {
   GameConfig legConfig(int legNumber) => GameConfig(
     startScore: startScore,
     playerIds: playerIds,
-    doubleOut: doubleOut,
+    inRule: inRule,
+    outRule: outRule,
     startingSeat: startingSeatFor(legNumber),
   );
 }

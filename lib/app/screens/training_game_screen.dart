@@ -33,7 +33,7 @@ class TrainingGameScreen extends ConsumerWidget {
 
     final routes = switch (session) {
       CheckoutPracticeSession(:final leg) when !leg.isFinished => ref
-          .watch(checkoutTableProvider)
+          .watch(checkoutTableProvider(leg.config.outRule))
           .routesFor(leg.currentRemaining, leg.dartsLeftThisTurn),
       _ => const <CheckoutRoute>[],
     };

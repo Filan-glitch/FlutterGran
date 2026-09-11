@@ -1,5 +1,6 @@
 import 'game_config.dart';
 import 'thrown_dart.dart';
+import 'x01_rules.dart';
 
 /// Darts in a turn.
 const int dartsPerTurn = 3;
@@ -50,6 +51,7 @@ class LegState {
     required this.currentTurnDarts,
     required this.turns,
     required this.winnerId,
+    required this.openedPlayerIds,
   });
 
   final GameConfig config;
@@ -71,6 +73,16 @@ class LegState {
 
   /// Winner, or null while the leg is still running.
   final int? winnerId;
+
+  /// Players who have thrown a dart satisfying [GameConfig.inRule].
+  ///
+  /// Meaningless under straight-in, where [hasOpened] is always true - kept
+  /// as a plain set of whoever has actually opened under double/master-in.
+  final Set<int> openedPlayerIds;
+
+  /// Whether [playerId] may score darts yet. Always true under straight-in.
+  bool hasOpened(int playerId) =>
+      config.inRule == X01InRule.straight || openedPlayerIds.contains(playerId);
 
   int get currentPlayerId => config.playerIds[currentPlayerIndex];
 

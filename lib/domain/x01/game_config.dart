@@ -1,13 +1,16 @@
+import 'x01_rules.dart';
+
 /// The rules a leg is played under.
 ///
-/// Straight-in is fixed, so the variables are the starting score, who is
-/// playing, whether a double is required to finish, and which seat throws
-/// first.
+/// The variables are the starting score, who is playing, the in-rule and
+/// out-rule (each independently single/straight, double, or master - see
+/// [X01InRule]/[X01OutRule]), and which seat throws first.
 class GameConfig {
   GameConfig({
     required this.startScore,
     required this.playerIds,
-    this.doubleOut = true,
+    this.inRule = X01InRule.straight,
+    this.outRule = X01OutRule.double,
     this.startingSeat = 0,
   }) : assert(startScore > 1, 'start score must be above 1'),
        assert(
@@ -34,8 +37,11 @@ class GameConfig {
   /// Seats in throwing order. Order is fixed for the whole leg.
   final List<int> playerIds;
 
-  /// Whether the leg must be finished on a double.
-  final bool doubleOut;
+  /// What it takes to open the leg. Straight-in needs nothing.
+  final X01InRule inRule;
+
+  /// What it takes to finish the leg.
+  final X01OutRule outRule;
 
   /// Seat that throws the first dart of the leg.
   ///

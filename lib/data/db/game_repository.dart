@@ -13,6 +13,7 @@ import '../../domain/x01/leg_reducer.dart';
 import '../../domain/x01/leg_state.dart';
 import '../../domain/x01/match_state.dart';
 import '../../domain/x01/thrown_dart.dart';
+import '../../domain/x01/x01_rules.dart';
 import 'database.dart';
 
 /// Reads and writes games, players, and the dart log.
@@ -98,7 +99,9 @@ class GameRepository {
           .insert(
             GamesCompanion.insert(
               startScore: Value(config.startScore),
-              doubleOut: Value(config.doubleOut),
+              doubleOut: Value(config.outRule == X01OutRule.double),
+              inRule: Value(config.inRule),
+              outRule: Value(config.outRule),
               matchId: Value(matchId),
               legNumber: Value(legNumber),
               gameMode: Value(gameMode),
@@ -180,7 +183,9 @@ class GameRepository {
           .insert(
             MatchesCompanion.insert(
               startScore: config.startScore,
-              doubleOut: Value(config.doubleOut),
+              doubleOut: Value(config.outRule == X01OutRule.double),
+              inRule: Value(config.inRule),
+              outRule: Value(config.outRule),
               legsToPlay: config.legsToPlay,
               gameMode: Value(gameMode),
             ),
@@ -250,7 +255,8 @@ class GameRepository {
     return MatchConfig(
       startScore: match.startScore,
       playerIds: seats,
-      doubleOut: match.doubleOut,
+      inRule: match.inRule,
+      outRule: match.outRule,
       legsToPlay: match.legsToPlay,
     );
   }
@@ -457,11 +463,12 @@ class GameRepository {
     if (seats.isEmpty) return null;
 
     return GameConfig(
-      // Only ever called for an x01 row, which always populates both -
+      // Only ever called for an x01 row, which always populates these -
       // Around the Clock leaves them null (see the columns' own docs).
       startScore: game.startScore!,
       playerIds: seats,
-      doubleOut: game.doubleOut!,
+      inRule: game.inRule!,
+      outRule: game.outRule!,
       // Who threw first is not stored: it follows from the leg's position in
       // its match, and a leg outside a match always opens on the first seat.
       startingSeat: game.legNumber == null
@@ -499,10 +506,12 @@ class GameRepository {
             GamesCompanion.insert(
               // Absent, not zero: this mode has no start score to lie about.
               startScore: const Value.absent(),
-              // `doubleOut` has a column default of `true` - omitting it
-              // would silently write that default rather than leaving it
-              // null, so it has to be set explicitly.
+              // `doubleOut`/`inRule`/`outRule` all have column defaults -
+              // omitting them would silently write those defaults rather
+              // than leaving them null, so each has to be set explicitly.
               doubleOut: const Value(null),
+              inRule: const Value(null),
+              outRule: const Value(null),
               gameMode: const Value(GameMode.aroundTheClock),
             ),
           );
@@ -574,6 +583,8 @@ class GameRepository {
             GamesCompanion.insert(
               startScore: const Value.absent(),
               doubleOut: const Value(null),
+              inRule: const Value(null),
+              outRule: const Value(null),
               gameMode: const Value(GameMode.bulling),
             ),
           );

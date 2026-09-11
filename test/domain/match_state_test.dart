@@ -1,4 +1,5 @@
 import 'package:fluttergran/domain/x01/match_state.dart';
+import 'package:fluttergran/domain/x01/x01_rules.dart';
 import 'package:test/test.dart';
 
 MatchConfig config({int legsToPlay = 3, int players = 2}) => MatchConfig(
@@ -151,11 +152,24 @@ void main() {
       expect(next!.startingSeat, 1);
       expect(next.startScore, 501);
       expect(next.playerIds, [1, 2]);
-      expect(next.doubleOut, isTrue);
+      expect(next.inRule, X01InRule.straight);
+      expect(next.outRule, X01OutRule.double);
     });
 
     test('there is no next leg once the match is decided', () {
       expect(foldMatch(config(), const [1, 1]).nextLegConfig, isNull);
+    });
+
+    test('legConfig threads a non-default rule set through', () {
+      final rules = MatchConfig(
+        startScore: 501,
+        playerIds: const [1, 2],
+        inRule: X01InRule.master,
+        outRule: X01OutRule.straight,
+      );
+      final leg = rules.legConfig(0);
+      expect(leg.inRule, X01InRule.master);
+      expect(leg.outRule, X01OutRule.straight);
     });
   });
 }

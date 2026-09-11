@@ -5,6 +5,7 @@ import '../../domain/atc/atc_variant.dart';
 import '../../domain/bulling/bulling_variant.dart';
 import '../../domain/game_mode.dart';
 import '../../domain/segment.dart';
+import '../../domain/x01/x01_rules.dart';
 
 part 'database.g.dart';
 
@@ -27,8 +28,20 @@ class Players extends Table {
 class Matches extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get startScore => integer()();
+
+  /// Kept only as a frozen legacy mirror of [outRule] (`true` for
+  /// `X01OutRule.double`), written on every insert so it never drifts out of
+  /// step. Nothing but the schema-8 migration reads it back.
   BoolColumn get doubleOut =>
       boolean().withDefault(const Constant(true))();
+
+  /// What it takes to open a leg. Stored by name, like [DartEvents.ring].
+  TextColumn get inRule =>
+      textEnum<X01InRule>().withDefault(const Constant('straight'))();
+
+  /// What it takes to finish a leg.
+  TextColumn get outRule =>
+      textEnum<X01OutRule>().withDefault(const Constant('double'))();
 
   /// Best of this many legs. 1 is a single leg, which is what every game
   /// recorded before matches existed is.
@@ -62,8 +75,20 @@ class Games extends Table {
 
   /// Null for the same reason as [startScore]: a mode with no double-out
   /// rule leaves this empty rather than writing a value that means nothing.
+  /// Kept only as a frozen legacy mirror of [outRule] - see the note on
+  /// [Matches.doubleOut].
   BoolColumn get doubleOut =>
       boolean().nullable().withDefault(const Constant(true))();
+
+  /// What it takes to open a leg. Null for a mode with no in-rule.
+  TextColumn get inRule => textEnum<X01InRule>()
+      .nullable()
+      .withDefault(const Constant('straight'))();
+
+  /// What it takes to finish a leg. Null for a mode with no out-rule.
+  TextColumn get outRule => textEnum<X01OutRule>()
+      .nullable()
+      .withDefault(const Constant('double'))();
 
   IntColumn get matchId =>
       integer().nullable().references(Matches, #id)();
@@ -174,7 +199,7 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'fluttergran'));
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -218,11 +243,57 @@ class AppDatabase extends _$AppDatabase {
         // new table from `games`' current (now-nullable) definition, so
         // every pre-existing row is copied across unchanged; only rows
         // written from here on can actually hold nulls in these columns.
-        await m.alterTable(TableMigration(games));
+        //
+        // `inRule`/`outRule` are declared as [newColumns]: this step
+        // predates them, so the on-disk table being copied from does not
+        // have them yet either, and copying a column that is not there
+        // would fail. Declaring them here just gives the rebuilt table their
+        // column defaults instead - the schema-8 step below still runs its
+        // own backfill on top for the cases the flat default gets wrong.
+        await m.alterTable(
+          TableMigration(games, newColumns: [games.inRule, games.outRule]),
+        );
         await m.createTable(atcGames);
       }
       if (from < 7) {
         await m.createTable(bullingGames);
+      }
+      if (from < 8) {
+        // Every match/leg recorded before this column existed was played
+        // double-out - straight-in didn't exist as a concept, and neither
+        // did master. The flat column defaults ('straight', 'double')
+        // backfill every row correctly for the common case, the same way
+        // `gameMode`'s default did at schema 5. That default is wrong for
+        // two cases the flat backfill can't see: a row that was actually
+        // straight-out (`double_out = 0`), and a non-x01 leg (`double_out`
+        // null, meaning the in/out columns mean nothing there either) - both
+        // corrected explicitly below.
+        // A database migrating from below v3 gets `matches` created fresh at
+        // the `from < 3` step above, from the current table definition -
+        // which already includes these columns - so adding them again here
+        // would be a duplicate column, the same guard `gameMode` needed
+        // above. Likewise one migrating from below v6 already got `games`
+        // rebuilt wholesale by that step's `TableMigration`, current
+        // definition and all.
+        if (from >= 3) {
+          await m.addColumn(matches, matches.inRule);
+          await m.addColumn(matches, matches.outRule);
+        }
+        if (from >= 6) {
+          await m.addColumn(games, games.inRule);
+          await m.addColumn(games, games.outRule);
+        }
+
+        await m.database.customStatement(
+          "UPDATE matches SET out_rule = 'straight' WHERE double_out = 0",
+        );
+        await m.database.customStatement(
+          "UPDATE games SET out_rule = 'straight' WHERE double_out = 0",
+        );
+        await m.database.customStatement(
+          'UPDATE games SET in_rule = NULL, out_rule = NULL '
+          'WHERE double_out IS NULL',
+        );
       }
     },
   );
