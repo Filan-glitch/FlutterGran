@@ -30,6 +30,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  # Built-in Flutter SDK localization support - the AppLocalizations delegates
+  # that make lib/l10n/*.arb usable from MaterialApp. Part of the Flutter tool
+  # itself, not a build_runner/analyzer-based pub package, so it doesn't join
+  # the riverpod_generator/drift_dev analyzer conflict noted below for
+  # dev_dependencies.
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -68,6 +76,13 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   uses-material-design: true
+
+  # ARB files live in lib/l10n/ (see l10n.yaml); this triggers Flutter's
+  # built-in gen-l10n tool, which (re)writes AppLocalizations to
+  # lib/l10n/app_localizations*.dart ahead of every run/test/build - committed
+  # alongside the ARB files it comes from, the same convention already used
+  # for drift's lib/data/db/database.g.dart.
+  generate: true
 
   # Every line the app can speak, rendered once at build time by
   # tool/make_speech.py, plus the four synthesised cues from tool/make_cues.py.

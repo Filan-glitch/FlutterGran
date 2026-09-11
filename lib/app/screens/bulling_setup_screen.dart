@@ -5,6 +5,7 @@ import '../../data/db/database.dart';
 import '../../domain/bulling/bulling_config.dart';
 import '../../domain/bulling/bulling_variant.dart';
 import '../../domain/x01/game_config.dart';
+import '../../l10n/app_localizations.dart';
 import '../providers.dart';
 import '../theme.dart';
 import '../widgets/board_connection_button.dart';
@@ -12,10 +13,13 @@ import 'bulling_game_screen.dart';
 
 /// How each [BullseyeValue] reads on the setup tile and everywhere else a
 /// short label is needed for it.
-String bullseyeValueLabel(BullseyeValue value) => switch (value) {
-  BullseyeValue.two => 'BULLSEYE = 2',
-  BullseyeValue.three => 'BULLSEYE = 3',
-};
+String bullseyeValueLabel(BuildContext context, BullseyeValue value) {
+  final l10n = AppLocalizations.of(context)!;
+  return switch (value) {
+    BullseyeValue.two => l10n.bullseyeValueTwo,
+    BullseyeValue.three => l10n.bullseyeValueThree,
+  };
+}
 
 /// Picks the bullseye value, the target score, and who is playing, then
 /// starts a persisted leg.
@@ -26,8 +30,7 @@ class BullingSetupScreen extends ConsumerStatefulWidget {
   const BullingSetupScreen({super.key});
 
   @override
-  ConsumerState<BullingSetupScreen> createState() =>
-      _BullingSetupScreenState();
+  ConsumerState<BullingSetupScreen> createState() => _BullingSetupScreenState();
 }
 
 class _BullingSetupScreenState extends ConsumerState<BullingSetupScreen> {
@@ -73,36 +76,38 @@ class _BullingSetupScreenState extends ConsumerState<BullingSetupScreen> {
     ref.read(bullingGameProvider.notifier).restart(config);
 
     await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) => const BullingGameScreen(),
-      ),
+      MaterialPageRoute<void>(builder: (context) => const BullingGameScreen()),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final players = ref.watch(playersProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('BULLING SETUP'),
-        actions: const [BoardConnectionButton(), SizedBox(width: Gap.xs)],
+        title: Text(l10n.bullingSetupTitle),
+        actions: const [
+          BoardConnectionButton(),
+          SizedBox(width: Gap.xs),
+        ],
       ),
       body: SafeArea(
         child: CenteredContent(
           child: ListView(
             padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.sm, Gap.lg, Gap.lg),
             children: [
-              const _Eyebrow('Bullseye value'),
+              _Eyebrow(l10n.bullseyeValueSectionLabel),
               const SizedBox(height: Gap.md),
-              Column(
+              Row(
                 key: const Key('bullseye-value-column'),
                 children: [
                   for (final value in BullseyeValue.values) ...[
                     if (value != BullseyeValue.values.first)
-                      const SizedBox(height: Gap.sm),
+                      const SizedBox(width: Gap.sm),
                     _VariantChoice(
-                      label: bullseyeValueLabel(value),
+                      label: bullseyeValueLabel(context, value),
                       selected: value == _bullseyeValue,
                       onTap: () => setState(() => _bullseyeValue = value),
                     ),
@@ -110,7 +115,7 @@ class _BullingSetupScreenState extends ConsumerState<BullingSetupScreen> {
                 ],
               ),
               const SizedBox(height: Gap.lg),
-              const _Eyebrow('Target'),
+              _Eyebrow(l10n.targetLabel),
               const SizedBox(height: Gap.md),
               Row(
                 key: const Key('target-row'),
@@ -131,13 +136,16 @@ class _BullingSetupScreenState extends ConsumerState<BullingSetupScreen> {
               const SizedBox(height: Gap.xl),
               Row(
                 children: [
-                  const _Eyebrow('Players'),
+                  _Eyebrow(l10n.playersLabel),
                   const SizedBox(width: Gap.md),
                   Expanded(
                     child: Text(
                       _seats.isEmpty
-                          ? 'tap to add, in throwing order'
-                          : '${_seats.length} of ${GameConfig.maxPlayers}',
+                          ? l10n.tapToAddPlayers
+                          : l10n.seatsOfMax(
+                              _seats.length,
+                              GameConfig.maxPlayers,
+                            ),
                       textAlign: TextAlign.right,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -154,8 +162,8 @@ class _BullingSetupScreenState extends ConsumerState<BullingSetupScreen> {
                       controller: _newPlayer,
                       style: Type.body.copyWith(color: Palette.chalk),
                       cursorColor: Palette.live,
-                      decoration: const InputDecoration(
-                        labelText: 'Add a player',
+                      decoration: InputDecoration(
+                        labelText: l10n.addPlayerFieldLabel,
                       ),
                       textInputAction: TextInputAction.done,
                       onSubmitted: (_) => _addPlayer(),
@@ -181,13 +189,13 @@ class _BullingSetupScreenState extends ConsumerState<BullingSetupScreen> {
               const SizedBox(height: Gap.md),
               switch (players) {
                 AsyncError(:final error) => Text(
-                  'Could not load players: $error',
+                  l10n.couldNotLoadPlayers('$error'),
                   style: Type.body.copyWith(color: Palette.doubleBed),
                 ),
                 AsyncData(:final value) when value.isEmpty => Padding(
                   padding: const EdgeInsets.symmetric(vertical: Gap.xl),
                   child: Text(
-                    'No players yet. Add the first one above.',
+                    l10n.noPlayersYet,
                     style: Type.body.copyWith(color: Palette.chalkDim),
                   ),
                 ),
@@ -210,7 +218,7 @@ class _BullingSetupScreenState extends ConsumerState<BullingSetupScreen> {
               key: const Key('start-leg-button'),
               onPressed: _seats.isEmpty ? null : _start,
               child: Text(
-                _seats.isEmpty ? 'PICK AT LEAST ONE PLAYER' : 'START LEG',
+                _seats.isEmpty ? l10n.pickAtLeastOnePlayer : l10n.startLeg,
               ),
             ),
           ),
@@ -263,7 +271,9 @@ class _BullingSetupScreenState extends ConsumerState<BullingSetupScreen> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.close, size: 18),
-                  tooltip: 'Remove ${player.name}',
+                  tooltip: AppLocalizations.of(
+                    context,
+                  )!.removePlayerTooltip(player.name),
                   onPressed: () async {
                     setState(() => _seats.remove(player.id));
                     await ref

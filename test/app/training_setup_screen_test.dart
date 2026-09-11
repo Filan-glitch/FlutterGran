@@ -7,6 +7,7 @@ import 'package:fluttergran/app/screens/training_setup_screen.dart';
 import 'package:fluttergran/app/theme.dart';
 import 'package:fluttergran/app/training_controller.dart';
 import 'package:fluttergran/data/board/fake_board_source.dart';
+import 'package:fluttergran/l10n/app_localizations.dart';
 
 void main() {
   late FakeBoardSource board;
@@ -29,6 +30,8 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           theme: buildTheme(),
           home: const TrainingSetupScreen(),
         ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../providers.dart';
 import '../theme.dart';
 
@@ -15,25 +16,26 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('SETTINGS')),
+      appBar: AppBar(title: Text(l10n.settingsTitle)),
       body: SafeArea(
         child: CenteredContent(
           child: ListView(
             padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.sm, Gap.lg, Gap.lg),
             children: [
-              const _Eyebrow('Sound'),
+              _Eyebrow(l10n.soundSectionTitle),
               const SizedBox(height: Gap.sm),
               _SoundToggle(
-                label: 'Cues and commentary',
-                detail:
-                    'A click per dart, a buzz on a bust, a fanfare for a 180',
+                label: l10n.cuesAndCommentaryLabel,
+                detail: l10n.cuesAndCommentaryDetail,
                 value: ref.watch(soundEnabledProvider),
                 onChanged: ref.read(soundEnabledProvider.notifier).set,
               ),
               _SoundToggle(
-                label: 'Spoken totals',
-                detail: 'Each turn read out loud',
+                label: l10n.spokenTotalsLabel,
+                detail: l10n.spokenTotalsDetail,
                 value: ref.watch(speechEnabledProvider),
                 // With the master off there is nothing for this one to control,
                 // so it greys out rather than pretending. Its own setting is
@@ -42,7 +44,88 @@ class SettingsScreen extends ConsumerWidget {
                 enabled: ref.watch(soundEnabledProvider),
                 onChanged: ref.read(speechEnabledProvider.notifier).set,
               ),
+              const SizedBox(height: Gap.lg),
+              _Eyebrow(l10n.languageSectionTitle),
+              const SizedBox(height: Gap.sm),
+              _LanguageChoice(
+                value: ref.watch(localeProvider),
+                onChanged: ref.read(localeProvider.notifier).set,
+              ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// System / English / German, in the setup screens' segmented-tile idiom
+/// (`x01_setup_screen.dart`'s `_RuleChoice`) rather than a stock
+/// `DropdownButton` or `RadioListTile`.
+class _LanguageChoice extends StatelessWidget {
+  const _LanguageChoice({required this.value, required this.onChanged});
+
+  /// Null means "follow the system locale".
+  final Locale? value;
+  final ValueChanged<Locale?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final options = <Locale?, String>{
+      null: l10n.languageSystemOption,
+      const Locale('en'): l10n.languageEnglishOption,
+      const Locale('de'): l10n.languageGermanOption,
+    };
+
+    return Row(
+      children: [
+        for (final entry in options.entries) ...[
+          if (entry.key != options.keys.first) const SizedBox(width: Gap.sm),
+          Expanded(
+            child: _Tile(
+              label: entry.value,
+              selected: entry.key == value,
+              onTap: () => onChanged(entry.key),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _Tile extends StatelessWidget {
+  const _Tile({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected ? Palette.chalk : Palette.raised,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(4),
+        side: BorderSide(color: selected ? Palette.chalk : Palette.edge),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: Gap.md),
+          child: Center(
+            child: Text(
+              label.toUpperCase(),
+              style: Type.label.copyWith(
+                color: selected ? Palette.ground : Palette.chalkDim,
+              ),
+            ),
           ),
         ),
       ),

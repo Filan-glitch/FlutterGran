@@ -25,6 +25,7 @@ import 'package:fluttergran/domain/game_mode.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/game_config.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
+import 'package:fluttergran/l10n/app_localizations.dart';
 
 /// The mode name the resume banner prefixes its format eyebrow with -
 /// read from the registry rather than hardcoded, same reasoning as the
@@ -71,7 +72,12 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: MaterialApp(theme: buildTheme(), home: const MainMenuScreen()),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: buildTheme(),
+          home: const MainMenuScreen(),
+        ),
       ),
     );
     await frames(tester);
@@ -215,11 +221,12 @@ void main() {
 
         await pump(tester);
 
+        final context = tester.element(find.byType(MainMenuScreen));
         expect(find.byKey(const Key('menu-resume-banner')), findsOneWidget);
         expect(
           find.text(
             '${_modeName(GameMode.bulling)} · '
-            '${bullseyeValueLabel(BullseyeValue.two)} · 21',
+            '${bullseyeValueLabel(context, BullseyeValue.two)} · 21',
           ),
           findsOneWidget,
         );

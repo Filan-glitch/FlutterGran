@@ -6,6 +6,7 @@ import '../../domain/bulling/bulling_leg_state.dart';
 import '../../domain/segment.dart';
 import '../../domain/x01/leg_state.dart' show dartsPerTurn;
 import '../../domain/x01/thrown_dart.dart';
+import '../../l10n/app_localizations.dart';
 import '../bulling_controller.dart';
 import '../providers.dart';
 import '../theme.dart';
@@ -58,23 +59,23 @@ class BullingGameScreen extends ConsumerWidget {
   }
 
   Future<bool> _confirmLeave(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final leave = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Leave this leg?'),
+        title: Text(l10n.leaveLegTitle),
         content: Text(
-          'Your darts are saved. Resume from the main menu whenever '
-          'you like.',
+          l10n.leaveLegBody,
           style: Type.body.copyWith(color: Palette.chalkDim),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('STAY'),
+            child: Text(l10n.stayButton),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('LEAVE'),
+            child: Text(l10n.leaveButton),
           ),
         ],
       ),
@@ -102,11 +103,13 @@ class BullingGameScreen extends ConsumerWidget {
         ? const <Segment>{}
         : {Segment.outerBull, Segment.innerBull};
 
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          '${bullseyeValueLabel(leg.config.bullseyeValue)} · '
-          'FIRST TO ${leg.config.target}',
+          '${bullseyeValueLabel(context, leg.config.bullseyeValue)} · '
+          '${l10n.firstToTarget(leg.config.target)}',
         ),
         actions: [
           if (boardConnected)
@@ -118,13 +121,13 @@ class BullingGameScreen extends ConsumerWidget {
                 manualOverride ? Icons.videogame_asset : Icons.dialpad,
               ),
               tooltip: manualOverride
-                  ? 'Hide manual entry'
-                  : 'Enter a score by hand',
+                  ? l10n.hideManualEntryTooltip
+                  : l10n.enterScoreByHandTooltip,
             ),
           IconButton(
             onPressed: leg.darts.isEmpty ? null : controller.undo,
             icon: const Icon(Icons.undo),
-            tooltip: 'Undo last dart',
+            tooltip: l10n.undoLastDartTooltip,
           ),
           const SizedBox(width: Gap.xs),
         ],
@@ -185,7 +188,7 @@ class _BoardScoringAlone extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Text(
-        'THROW WHEN READY',
+        AppLocalizations.of(context)!.throwWhenReady,
         style: Type.eyebrow.copyWith(color: Palette.chalkDim),
       ),
     );
@@ -216,7 +219,7 @@ class _Scoreboard extends StatelessWidget {
               if (seat > 0) const VerticalDivider(width: 1),
               Expanded(
                 child: _PlayerColumn(
-                  name: nameFor(names, players[seat]),
+                  name: nameFor(context, names, players[seat]),
                   score: leg.scoreFor(players[seat]),
                   target: leg.config.target,
                   live: players[seat] == leg.currentPlayerId && !leg.isFinished,
@@ -286,7 +289,10 @@ class _PlayerColumn extends StatelessWidget {
           ),
         ),
         const SizedBox(height: Gap.xs),
-        Text('of $target', style: Type.label.copyWith(color: Palette.chalkDim)),
+        Text(
+          AppLocalizations.of(context)!.ofTarget(target),
+          style: Type.label.copyWith(color: Palette.chalkDim),
+        ),
       ],
     );
   }
@@ -381,6 +387,7 @@ class _TurnConfirm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final dartsThrown = turn.darts.map((dart) => dart.label).join('  ·  ');
 
     return SingleChildScrollView(
@@ -391,21 +398,17 @@ class _TurnConfirm extends StatelessWidget {
             children: [
               const SizedBox(height: Gap.xl),
               Text(
-                nameFor(names, turn.playerId).toUpperCase(),
+                nameFor(context, names, turn.playerId).toUpperCase(),
                 style: Type.eyebrow.copyWith(color: Palette.chalkDim),
               ),
               const SizedBox(height: Gap.md),
               Text(
-                turn.scored == 0
-                    ? 'NOTHING SCORED'
-                    : turn.scored == 1
-                    ? '1 POINT SCORED'
-                    : '${turn.scored} POINTS SCORED',
+                l10n.turnScoredLabel(turn.scored),
                 style: Type.score.copyWith(color: Palette.chalk),
               ),
               const SizedBox(height: Gap.sm),
               Text(
-                'now on ${turn.scoreAfter}',
+                l10n.nowOnScore(turn.scoreAfter),
                 style: Type.label.copyWith(color: Palette.chalkDim),
               ),
               if (dartsThrown.isNotEmpty) ...[
@@ -421,7 +424,7 @@ class _TurnConfirm extends StatelessWidget {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: onUndo,
-                      child: const Text('WRONG'),
+                      child: Text(l10n.wrongButton),
                     ),
                   ),
                   const SizedBox(width: Gap.md),
@@ -429,14 +432,18 @@ class _TurnConfirm extends StatelessWidget {
                     flex: 2,
                     child: FilledButton(
                       onPressed: onConfirm,
-                      child: Text(leg.isFinished ? 'FINISH' : 'NEXT PLAYER'),
+                      child: Text(
+                        leg.isFinished
+                            ? l10n.finishButton
+                            : l10n.nextPlayerButton,
+                      ),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: Gap.md),
               Text(
-                'or press the board button',
+                l10n.orPressBoardButton,
                 style: Type.label.copyWith(color: Palette.chalkDim),
               ),
             ],
@@ -462,6 +469,7 @@ class _LegWon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final winner = leg.winnerId!;
 
     return SingleChildScrollView(
@@ -471,21 +479,23 @@ class _LegWon extends StatelessWidget {
           child: Column(
             children: [
               Text(
-                'LEG WON',
+                l10n.legWonLabel,
                 style: Type.eyebrow.copyWith(color: Palette.trebleBed),
               ),
               const SizedBox(height: Gap.md),
               FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
-                  nameFor(names, winner).toUpperCase(),
+                  nameFor(context, names, winner).toUpperCase(),
                   style: Type.score.copyWith(color: Palette.chalk),
                 ),
               ),
               const SizedBox(height: Gap.lg),
               Text(
-                '${leg.scoreFor(winner)} points · '
-                '${leg.dartsThrownBy(winner)} darts',
+                l10n.legWonStatsBulling(
+                  leg.scoreFor(winner),
+                  leg.dartsThrownBy(winner),
+                ),
                 style: Type.label.copyWith(color: Palette.chalkDim),
               ),
               const SizedBox(height: Gap.xl),
@@ -494,7 +504,7 @@ class _LegWon extends StatelessWidget {
                 child: FilledButton(
                   key: const Key('bulling-play-again'),
                   onPressed: onPlayAgain,
-                  child: const Text('PLAY AGAIN'),
+                  child: Text(l10n.playAgainButton),
                 ),
               ),
             ],

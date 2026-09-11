@@ -12,6 +12,7 @@ import 'package:fluttergran/data/board/fake_board_source.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/training/training_drill.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
+import 'package:fluttergran/l10n/app_localizations.dart';
 
 /// Records rather than plays, and - unlike `AudioPlayersSoundPlayer` -
 /// schedules no real `Timer` for a delayed line, which would otherwise
@@ -61,6 +62,8 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           theme: buildTheme(),
           home: const TrainingGameScreen(),
         ),

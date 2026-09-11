@@ -9,6 +9,7 @@ import 'package:fluttergran/data/board/fake_board_source.dart';
 import 'package:fluttergran/data/db/database.dart';
 import 'package:fluttergran/data/db/game_repository.dart';
 import 'package:fluttergran/domain/x01/x01_rules.dart';
+import 'package:fluttergran/l10n/app_localizations.dart';
 
 /// Returns [value] without ever touching shared_preferences, so a test can
 /// seed the setup screen's starting point without depending on the plugin
@@ -62,7 +63,12 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: MaterialApp(theme: buildTheme(), home: const X01SetupScreen()),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: buildTheme(),
+          home: const X01SetupScreen(),
+        ),
       ),
     );
   }

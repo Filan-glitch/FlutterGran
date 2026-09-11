@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/app/providers.dart';
 import 'package:fluttergran/app/screens/settings_screen.dart';
 import 'package:fluttergran/app/theme.dart';
+import 'package:fluttergran/l10n/app_localizations.dart';
 
 void main() {
   late ProviderContainer container;
@@ -22,7 +23,12 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: MaterialApp(theme: buildTheme(), home: const SettingsScreen()),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: buildTheme(),
+          home: const SettingsScreen(),
+        ),
       ),
     );
   }

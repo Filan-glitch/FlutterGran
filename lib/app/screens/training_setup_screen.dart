@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/training/training_drill.dart';
 import '../../domain/x01/game_config.dart';
+import '../../l10n/app_localizations.dart';
 import '../providers.dart';
 import '../theme.dart';
 import '../widgets/board_connection_button.dart';
@@ -29,50 +30,52 @@ class _TrainingSetupScreenState extends ConsumerState<TrainingSetupScreen> {
         .start(drill: _drill, startScore: _startScore);
 
     await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) => const TrainingGameScreen(),
-      ),
+      MaterialPageRoute<void>(builder: (context) => const TrainingGameScreen()),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('TRAINING'),
-        actions: const [BoardConnectionButton(), SizedBox(width: Gap.xs)],
+        title: Text(l10n.trainingSetupTitle),
+        actions: const [
+          BoardConnectionButton(),
+          SizedBox(width: Gap.xs),
+        ],
       ),
       body: SafeArea(
         child: CenteredContent(
           child: ListView(
             padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.sm, Gap.lg, Gap.lg),
             children: [
-              const _Eyebrow('Drill'),
+              _Eyebrow(l10n.drillLabel),
               const SizedBox(height: Gap.md),
               Column(
                 key: const Key('drill-column'),
                 children: [
                   _DrillChoice(
-                    label: 'FREE PRACTICE',
-                    tagline: 'throw and see what you hit',
+                    label: l10n.freePracticeLabel,
+                    tagline: l10n.freePracticeTagline,
                     selected: _drill == TrainingDrill.freePractice,
                     onTap: () =>
                         setState(() => _drill = TrainingDrill.freePractice),
                   ),
                   const SizedBox(height: Gap.sm),
                   _DrillChoice(
-                    label: 'CHECKOUT PRACTICE',
-                    tagline: 'pick a score, practice finishing it',
+                    label: l10n.checkoutPracticeLabel,
+                    tagline: l10n.checkoutPracticeTagline,
                     selected: _drill == TrainingDrill.checkoutPractice,
-                    onTap: () => setState(
-                      () => _drill = TrainingDrill.checkoutPractice,
-                    ),
+                    onTap: () =>
+                        setState(() => _drill = TrainingDrill.checkoutPractice),
                   ),
                 ],
               ),
               if (_drill == TrainingDrill.checkoutPractice) ...[
                 const SizedBox(height: Gap.xl),
-                const _Eyebrow('Start score'),
+                _Eyebrow(l10n.startScoreLabel),
                 const SizedBox(height: Gap.md),
                 Row(
                   key: const Key('training-start-score-row'),
@@ -103,7 +106,7 @@ class _TrainingSetupScreenState extends ConsumerState<TrainingSetupScreen> {
             child: FilledButton(
               key: const Key('start-training-button'),
               onPressed: _start,
-              child: const Text('START'),
+              child: Text(l10n.startButton),
             ),
           ),
         ),

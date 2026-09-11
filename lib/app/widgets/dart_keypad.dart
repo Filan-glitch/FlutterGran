@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../domain/segment.dart';
+import '../../l10n/app_localizations.dart';
 import '../theme.dart';
 
 /// Entering a dart takes two decisions: which ring, then which wedge.
@@ -50,16 +51,24 @@ class _DartKeypadState extends State<DartKeypad> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Column(
       children: [
         SizedBox(
           width: double.infinity,
           child: SegmentedButton<Ring>(
             showSelectedIcon: false,
-            segments: const [
-              ButtonSegment(value: Ring.outerSingle, label: Text('SINGLE')),
-              ButtonSegment(value: Ring.doubleRing, label: Text('DOUBLE')),
-              ButtonSegment(value: Ring.triple, label: Text('TREBLE')),
+            segments: [
+              ButtonSegment(
+                value: Ring.outerSingle,
+                label: Text(l10n.ringSingle),
+              ),
+              ButtonSegment(
+                value: Ring.doubleRing,
+                label: Text(l10n.ringDouble),
+              ),
+              ButtonSegment(value: Ring.triple, label: Text(l10n.ringTreble)),
             ],
             selected: {_ring},
             onSelectionChanged: (selection) =>
@@ -125,7 +134,7 @@ class _DartKeypadState extends State<DartKeypad> {
               const SizedBox(width: Gap.xs + 2),
               Expanded(
                 child: _Key(
-                  label: 'BULL',
+                  label: l10n.keyBullLabel,
                   ring: Ring.innerBull,
                   highlighted: widget.highlight.contains(Segment.innerBull),
                   onTap: () => _enter(Segment.innerBull),
@@ -135,7 +144,7 @@ class _DartKeypadState extends State<DartKeypad> {
               Expanded(
                 flex: 2,
                 child: _Key(
-                  label: 'MISS',
+                  label: l10n.keyMissLabel,
                   ring: null,
                   highlighted: false,
                   onTap: widget.onMiss,
@@ -196,14 +205,15 @@ class _KeyState extends State<_Key> {
           : BorderSide(color: Palette.edge.withValues(alpha: 0.6)),
     );
 
+    final l10n = AppLocalizations.of(context)!;
     final key = Semantics(
       button: true,
       // Carries the checkout highlight to assistive tech, which otherwise has
       // no way to convey an outlined key.
       selected: widget.highlighted,
       label: switch (widget.ring) {
-        Ring.doubleRing => 'double ${widget.label}',
-        Ring.triple => 'treble ${widget.label}',
+        Ring.doubleRing => l10n.semanticDoubleKey(widget.label),
+        Ring.triple => l10n.semanticTrebleKey(widget.label),
         _ => widget.label,
       },
       child: Material(

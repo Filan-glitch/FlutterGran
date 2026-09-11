@@ -11,6 +11,7 @@ import 'package:fluttergran/data/db/database.dart';
 import 'package:fluttergran/data/db/game_repository.dart';
 import 'package:fluttergran/domain/x01/game_config.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
+import 'package:fluttergran/l10n/app_localizations.dart';
 
 void main() {
   late AppDatabase database;
@@ -37,7 +38,12 @@ void main() {
   Future<void> pump(WidgetTester tester) => tester.pumpWidget(
     UncontrolledProviderScope(
       container: container,
-      child: MaterialApp(theme: buildTheme(), home: const SplashScreen()),
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        theme: buildTheme(),
+        home: const SplashScreen(),
+      ),
     ),
   );
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/db/database.dart';
+import '../../l10n/app_localizations.dart';
 import '../providers.dart';
 import '../theme.dart';
 
@@ -55,14 +56,15 @@ class _RosterScreenState extends ConsumerState<RosterScreen> {
   /// tell "timed out" and "UNDO was tapped" apart.
   void _startDelete(Player player) {
     setState(() => _pendingDeleteIds.add(player.id));
+    final l10n = AppLocalizations.of(context)!;
 
     ScaffoldMessenger.of(context)
         .showSnackBar(
           SnackBar(
-            content: Text('Removed ${player.name}'),
+            content: Text(l10n.removedPlayerSnackbar(player.name)),
             duration: const Duration(seconds: 4),
             action: SnackBarAction(
-              label: 'UNDO',
+              label: l10n.undoLabel,
               onPressed: () {
                 if (!mounted) return;
                 setState(() => _pendingDeleteIds.remove(player.id));
@@ -90,10 +92,11 @@ class _RosterScreenState extends ConsumerState<RosterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final players = ref.watch(playersProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('ROSTER')),
+      appBar: AppBar(title: Text(l10n.rosterTitle)),
       body: SafeArea(
         child: CenteredContent(
           child: ListView(
@@ -106,8 +109,8 @@ class _RosterScreenState extends ConsumerState<RosterScreen> {
                       controller: _newPlayer,
                       style: Type.body.copyWith(color: Palette.chalk),
                       cursorColor: Palette.live,
-                      decoration: const InputDecoration(
-                        labelText: 'Add a player',
+                      decoration: InputDecoration(
+                        labelText: l10n.addPlayerFieldLabel,
                       ),
                       textInputAction: TextInputAction.done,
                       onSubmitted: (_) => _addPlayer(),
@@ -133,17 +136,16 @@ class _RosterScreenState extends ConsumerState<RosterScreen> {
               const SizedBox(height: Gap.lg),
               switch (players) {
                 AsyncError(:final error) => Text(
-                  'Could not load players: $error',
+                  l10n.couldNotLoadPlayers('$error'),
                   style: Type.body.copyWith(color: Palette.doubleBed),
                 ),
-                AsyncData(:final value) when _visible(value).isEmpty =>
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: Gap.xl),
-                    child: Text(
-                      'No players yet. Add the first one above.',
-                      style: Type.body.copyWith(color: Palette.chalkDim),
-                    ),
+                AsyncData(:final value) when _visible(value).isEmpty => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: Gap.xl),
+                  child: Text(
+                    l10n.noPlayersYet,
+                    style: Type.body.copyWith(color: Palette.chalkDim),
                   ),
+                ),
                 AsyncData(:final value) => Column(
                   children: [
                     for (final player in _visible(value))
@@ -290,9 +292,7 @@ class _PlayerTileState extends State<_PlayerTile> {
                         key: Key('player-name-${widget.player.id}'),
                         onTap: _startEditing,
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: Gap.md,
-                          ),
+                          padding: const EdgeInsets.symmetric(vertical: Gap.md),
                           child: Text(
                             widget.player.name,
                             style: Type.body.copyWith(color: Palette.chalk),

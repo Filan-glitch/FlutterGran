@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../domain/game_mode.dart';
+import '../../l10n/app_localizations.dart';
 import '../theme.dart';
 import 'atc_setup_screen.dart';
 import 'bulling_setup_screen.dart';
@@ -58,7 +59,9 @@ class SelectGameModeScreen extends StatelessWidget {
     ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('SELECT GAME MODE')),
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.selectGameModeTitle),
+      ),
       body: SafeArea(
         child: CenteredContent(
           child: SingleChildScrollView(
@@ -67,8 +70,7 @@ class SelectGameModeScreen extends StatelessWidget {
               builder: (context, constraints) {
                 const spacing = Gap.md;
                 final width =
-                    (constraints.maxWidth - spacing * (columns - 1)) /
-                    columns;
+                    (constraints.maxWidth - spacing * (columns - 1)) / columns;
 
                 return Wrap(
                   spacing: spacing,
@@ -150,7 +152,7 @@ class _ModeTile extends StatelessWidget {
                 if (!enabled) ...[
                   const SizedBox(height: Gap.sm),
                   Text(
-                    'COMING SOON',
+                    AppLocalizations.of(context)!.comingSoonLabel,
                     style: Type.eyebrow.copyWith(color: Palette.chalkDim),
                   ),
                 ],
@@ -184,7 +186,7 @@ class _ComingSoonTile extends StatelessWidget {
           padding: const EdgeInsets.all(Gap.lg),
           child: Center(
             child: Text(
-              'MORE MODES COMING',
+              AppLocalizations.of(context)!.moreModesComingLabel,
               textAlign: TextAlign.center,
               style: Type.eyebrow.copyWith(color: Palette.chalkDim),
             ),

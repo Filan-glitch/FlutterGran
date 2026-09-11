@@ -7,6 +7,7 @@ import '../../domain/x01/leg_state.dart';
 import '../../domain/x01/match_state.dart';
 import '../../domain/x01/thrown_dart.dart';
 import '../../domain/x01/x01_rules.dart';
+import '../../l10n/app_localizations.dart';
 import '../audio/sound_controller.dart' show maximumTurn;
 import '../game_controller.dart';
 import '../providers.dart';
@@ -17,8 +18,9 @@ import '../widgets/dart_keypad.dart';
 const Key matchFiguresKey = Key('match-figures');
 
 /// Falls back to a seat label for a player who has since been deleted.
-String nameFor(Map<int, String> names, int playerId) =>
-    names[playerId] ?? 'Player $playerId';
+String nameFor(BuildContext context, Map<int, String> names, int playerId) =>
+    names[playerId] ??
+    AppLocalizations.of(context)!.playerFallbackName(playerId);
 
 class GameScreen extends ConsumerWidget {
   const GameScreen({super.key});
@@ -70,23 +72,23 @@ class GameScreen extends ConsumerWidget {
   /// they are about to lose a leg when they are not would teach them to fear
   /// the back button.
   Future<bool> _confirmLeave(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final leave = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Leave this leg?'),
+        title: Text(l10n.leaveLegTitle),
         content: Text(
-          'Your darts are saved. Resume from the main menu whenever '
-          'you like.',
+          l10n.leaveLegBody,
           style: Type.body.copyWith(color: Palette.chalkDim),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('STAY'),
+            child: Text(l10n.stayButton),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('LEAVE'),
+            child: Text(l10n.leaveButton),
           ),
         ],
       ),
@@ -125,6 +127,7 @@ class GameScreen extends ConsumerWidget {
     // can be trusted to score for itself, and comes back the moment someone
     // says otherwise, board present or not.
     final keypadVisible = !boardConnected || manualOverride;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
@@ -143,13 +146,13 @@ class GameScreen extends ConsumerWidget {
                 manualOverride ? Icons.videogame_asset : Icons.dialpad,
               ),
               tooltip: manualOverride
-                  ? 'Hide manual entry'
-                  : 'Enter a score by hand',
+                  ? l10n.hideManualEntryTooltip
+                  : l10n.enterScoreByHandTooltip,
             ),
           IconButton(
             onPressed: leg.darts.isEmpty ? null : controller.undo,
             icon: const Icon(Icons.undo),
-            tooltip: 'Undo last dart',
+            tooltip: l10n.undoLastDartTooltip,
           ),
           const SizedBox(width: Gap.xs),
         ],
@@ -388,7 +391,7 @@ class _Scoreboard extends StatelessWidget {
             if (seat > 0) const SizedBox(width: Gap.md),
             Expanded(
               child: _HeroPlayerCard(
-                name: nameFor(names, players[seat]),
+                name: nameFor(context, names, players[seat]),
                 remaining: leg.remaining[players[seat]]!,
                 average: leg.averageFor(players[seat]),
                 live: players[seat] == leg.currentPlayerId && !leg.isFinished,
@@ -421,7 +424,7 @@ class _Scoreboard extends StatelessWidget {
           if (seat > 0) const VerticalDivider(width: 1),
           Expanded(
             child: _PlayerColumn(
-              name: nameFor(names, players[seat]),
+              name: nameFor(context, names, players[seat]),
               remaining: leg.remaining[players[seat]]!,
               average: leg.averageFor(players[seat]),
               live: players[seat] == leg.currentPlayerId && !leg.isFinished,
@@ -467,6 +470,7 @@ class _HeroPlayerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final accent = won ? Palette.trebleBed : Palette.live;
     final lit = live || won;
 
@@ -500,7 +504,7 @@ class _HeroPlayerCard extends StatelessWidget {
               ),
               if (legsWon != null)
                 Text(
-                  'LEGS $legsWon',
+                  l10n.legsCount(legsWon!),
                   // Chalk, not `accent`: this is a match tally, not this
                   // leg's live state, and `Palette.live` is spent only on
                   // state, per its own doc - the same rule `_PlayerColumn`
@@ -535,7 +539,9 @@ class _HeroPlayerCard extends StatelessWidget {
           ),
           const SizedBox(height: Gap.xs),
           Text(
-            average == null ? 'AVG —' : 'AVG ${average!.toStringAsFixed(1)}',
+            average == null
+                ? l10n.avgDash
+                : l10n.avgValue(average!.toStringAsFixed(1)),
             style: Type.label.copyWith(color: Palette.chalkDim),
           ),
         ],
@@ -565,6 +571,7 @@ class _PlayerColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final accent = won ? Palette.trebleBed : Palette.live;
     final lit = live || won;
 
@@ -616,7 +623,7 @@ class _PlayerColumn extends StatelessWidget {
         if (legsWon != null) ...[
           const SizedBox(height: Gap.sm),
           Text(
-            'LEGS $legsWon',
+            l10n.legsCount(legsWon!),
             style: Type.eyebrow.copyWith(
               color: legsWon! > 0 ? Palette.chalk : Palette.chalkDim,
             ),
@@ -666,7 +673,7 @@ class _TurnLedger extends StatelessWidget {
             // beside it are what should take the rest of the row.
             constraints: const BoxConstraints(minWidth: 72),
             child: Text(
-              busted ? 'BUST' : '$total',
+              busted ? AppLocalizations.of(context)!.bustLabel : '$total',
               textAlign: TextAlign.right,
               style: busted
                   ? Type.notation.copyWith(color: Palette.doubleBed)
@@ -737,7 +744,10 @@ class _CheckoutStrip extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text('CHECKOUT', style: Type.eyebrow.copyWith(color: Palette.live)),
+          Text(
+            AppLocalizations.of(context)!.checkoutLabel,
+            style: Type.eyebrow.copyWith(color: Palette.live),
+          ),
           const SizedBox(width: Gap.md),
           Expanded(
             child: Pulse(
@@ -801,7 +811,10 @@ class _CheckoutPanel extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('CHECKOUT', style: Type.eyebrow.copyWith(color: Palette.live)),
+            Text(
+              AppLocalizations.of(context)!.checkoutLabel,
+              style: Type.eyebrow.copyWith(color: Palette.live),
+            ),
             const SizedBox(height: Gap.sm),
             Text(
               routes.first.toString(),
@@ -843,6 +856,7 @@ class _TurnConfirm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     // This is always either the phone's inline panel or the tablet's
     // full-screen takeover, never both from the same call site - the two
     // never overlap, so the device is enough to tell which one this is.
@@ -853,7 +867,7 @@ class _TurnConfirm extends StatelessWidget {
     final maximum = !turn.busted && turn.scored == maximumTurn;
 
     Widget score = Text(
-      turn.busted ? 'BUST' : '${turn.scored}',
+      turn.busted ? l10n.bustLabel : '${turn.scored}',
       style: (hero ? Type.scoreHero : Type.score).copyWith(
         color: turn.busted ? Palette.doubleBed : Palette.chalk,
       ),
@@ -888,7 +902,7 @@ class _TurnConfirm extends StatelessWidget {
             children: [
               const Spacer(),
               Text(
-                nameFor(names, turn.playerId).toUpperCase(),
+                nameFor(context, names, turn.playerId).toUpperCase(),
                 style: hero
                     ? Type.title.copyWith(
                         color: Palette.chalkDim,
@@ -907,7 +921,7 @@ class _TurnConfirm extends StatelessWidget {
               score,
               const SizedBox(height: Gap.sm),
               Text(
-                '${turn.scoreBefore} → ${turn.scoreAfter}',
+                l10n.scoreArrow(turn.scoreBefore, turn.scoreAfter),
                 style: (hero ? Type.scoreSmall : Type.label).copyWith(
                   color: Palette.chalkDim,
                 ),
@@ -918,7 +932,7 @@ class _TurnConfirm extends StatelessWidget {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: onUndo,
-                      child: const Text('WRONG'),
+                      child: Text(l10n.wrongButton),
                     ),
                   ),
                   const SizedBox(width: Gap.md),
@@ -926,14 +940,18 @@ class _TurnConfirm extends StatelessWidget {
                     flex: 2,
                     child: FilledButton(
                       onPressed: onConfirm,
-                      child: Text(leg.isFinished ? 'FINISH' : 'NEXT PLAYER'),
+                      child: Text(
+                        leg.isFinished
+                            ? l10n.finishButton
+                            : l10n.nextPlayerButton,
+                      ),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: Gap.md),
               Text(
-                'or press the board button',
+                l10n.orPressBoardButton,
                 style: Type.label.copyWith(color: Palette.chalkDim),
               ),
             ],
@@ -968,6 +986,7 @@ class _LegWon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final winner = leg.winnerId!;
     final match = this.match;
     final running = match != null && !match.isFinished;
@@ -980,27 +999,29 @@ class _LegWon extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'LEG WON',
+                l10n.legWonLabel,
                 style: Type.eyebrow.copyWith(color: Palette.trebleBed),
               ),
               const SizedBox(height: Gap.md),
               FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
-                  nameFor(names, winner).toUpperCase(),
+                  nameFor(context, names, winner).toUpperCase(),
                   style: Type.score.copyWith(color: Palette.chalk),
                 ),
               ),
               const SizedBox(height: Gap.lg),
               Text(
-                '${leg.dartsThrownBy(winner)} darts · '
-                '${leg.averageFor(winner)?.toStringAsFixed(1) ?? '—'} average',
+                l10n.legWonStatsX01(
+                  leg.dartsThrownBy(winner),
+                  leg.averageFor(winner)?.toStringAsFixed(1) ?? '—',
+                ),
                 style: Type.label.copyWith(color: Palette.chalkDim),
               ),
               if (running) ...[
                 const Spacer(),
                 Text(
-                  _standing(match),
+                  _standing(l10n, match),
                   style: Type.eyebrow.copyWith(color: Palette.chalkDim),
                 ),
                 const SizedBox(height: Gap.md),
@@ -1008,7 +1029,7 @@ class _LegWon extends StatelessWidget {
                   width: double.infinity,
                   child: FilledButton(
                     onPressed: onNextLeg,
-                    child: Text('THROW LEG ${match.nextLegNumber + 1}'),
+                    child: Text(l10n.throwLegNumber(match.nextLegNumber + 1)),
                   ),
                 ),
               ],
@@ -1024,13 +1045,12 @@ class _LegWon extends StatelessWidget {
   /// Somebody has just won a leg, so there is always a tally to read and always
   /// something still to win - a match that had been decided would be showing
   /// [_MatchWon] instead.
-  String _standing(MatchState match) {
+  String _standing(AppLocalizations l10n, MatchState match) {
     final tally = [
       for (final id in match.config.playerIds) '${match.legsWon[id] ?? 0}',
     ].join(' – ');
 
-    final left = match.legsToWinFrom;
-    return '$tally · $left ${left == 1 ? 'LEG' : 'LEGS'} TO WIN IT';
+    return l10n.standingLegsToWinIt(tally, match.legsToWinFrom);
   }
 }
 
@@ -1048,6 +1068,7 @@ class _MatchWon extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     // The leg that ended it is still live rather than re-read: it was won a
     // frame ago, and its last dart may not have reached the database yet.
     final current = ref.watch(gameProvider).leg;
@@ -1078,14 +1099,14 @@ class _MatchWon extends ConsumerWidget {
             child: Column(
               children: [
                 Text(
-                  'MATCH WON',
+                  l10n.matchWonLabel,
                   style: Type.eyebrow.copyWith(color: Palette.live),
                 ),
                 const SizedBox(height: Gap.md),
                 FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
-                    nameFor(names, winner).toUpperCase(),
+                    nameFor(context, names, winner).toUpperCase(),
                     style: Type.score.copyWith(color: Palette.chalk),
                   ),
                 ),
@@ -1108,7 +1129,7 @@ class _MatchWon extends ConsumerWidget {
                         if (seat > 0) const VerticalDivider(width: 1),
                         Expanded(
                           child: _MatchFigures(
-                            name: nameFor(names, players[seat]),
+                            name: nameFor(context, names, players[seat]),
                             stats: legs == null
                                 ? null
                                 : computeX01Stats(players[seat], legs),
@@ -1122,7 +1143,7 @@ class _MatchWon extends ConsumerWidget {
                 if (decided.hasError) ...[
                   const SizedBox(height: Gap.md),
                   Text(
-                    'THE EARLIER LEGS COULD NOT BE READ',
+                    l10n.earlierLegsCouldNotBeRead,
                     style: Type.eyebrow.copyWith(color: Palette.doubleBed),
                   ),
                 ],
@@ -1131,7 +1152,7 @@ class _MatchWon extends ConsumerWidget {
                   width: double.infinity,
                   child: FilledButton(
                     onPressed: ref.read(matchProvider.notifier).rematch,
-                    child: const Text('REMATCH'),
+                    child: Text(l10n.rematchButton),
                   ),
                 ),
                 const SizedBox(height: Gap.sm),
@@ -1146,7 +1167,7 @@ class _MatchWon extends ConsumerWidget {
                       ref.read(currentGameIdProvider.notifier).set(null);
                       Navigator.of(context).pop();
                     },
-                    child: const Text('BACK TO SETUP'),
+                    child: Text(l10n.backToSetupButton),
                   ),
                 ),
               ],
@@ -1177,6 +1198,7 @@ class _MatchFigures extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: Gap.md),
       child: Column(
@@ -1189,11 +1211,11 @@ class _MatchFigures extends StatelessWidget {
             ),
           ),
           const SizedBox(height: Gap.md),
-          _Figure('AVERAGE', _decimal(stats?.average)),
-          _Figure('FIRST NINE', _decimal(stats?.firstNineAverage)),
-          _Figure('180s', _whole(stats?.turnsOf180)),
-          _Figure('BEST OUT', _whole(stats?.bestCheckout)),
-          _Figure('BEST LEG', _whole(stats?.fewestDartsToWin)),
+          _Figure(l10n.figureAverage, _decimal(stats?.average)),
+          _Figure(l10n.figureFirstNine, _decimal(stats?.firstNineAverage)),
+          _Figure(l10n.figure180s, _whole(stats?.turnsOf180)),
+          _Figure(l10n.figureBestOut, _whole(stats?.bestCheckout)),
+          _Figure(l10n.figureBestLeg, _whole(stats?.fewestDartsToWin)),
         ],
       ),
     );
