@@ -1,4 +1,5 @@
 import '../segment.dart';
+import '../x01/x01_rules.dart';
 
 /// A way to finish a leg: an ordered list of darts whose values sum to the
 /// remaining score, ending on a segment that may legally check out.
@@ -10,7 +11,9 @@ class CheckoutRoute {
 
   int get total => darts.fold(0, (sum, segment) => sum + segment.value);
 
-  /// The dart that finishes the leg. Always a double or the inner bull.
+  /// The dart that finishes the leg. Legal under whichever out-rule the
+  /// route was searched for - a double or the inner bull at minimum, also a
+  /// triple under master-out, or anything at all under straight-out.
   Segment get finish => darts.last;
 
   @override
@@ -29,11 +32,9 @@ final List<Segment> _targets = List<Segment>.unmodifiable([
   Segment.innerBull,
 ]);
 
-/// Segments a leg may legally end on under double-out.
-final List<Segment> _finishers = List<Segment>.unmodifiable([
-  for (var n = 1; n <= 20; n++) Segment(n, Ring.doubleRing),
-  Segment.innerBull,
-]);
+/// Segments a leg may legally end on under [outRule].
+List<Segment> _finishersFor(X01OutRule outRule) =>
+    _targets.where(outRule.checksOut).toList();
 
 /// Every distinct target, indexed by the points it scores.
 ///
@@ -71,39 +72,48 @@ int _setupCost(Segment segment) {
   }
 }
 
-/// Cost of finishing on a segment. Lower is better.
+/// Cost of finishing on a segment under [outRule]. Lower is better.
 ///
-/// The cost is inversely proportional to the points the double is worth, which
-/// makes it flat at the top and steep at the bottom - the gap between D16 and
-/// D10 is small, the gap between D8 and D2 is enormous. That curve is what makes
-/// 80 read as `T20 D10` rather than `T16 D16`, while 64 still reads as
-/// `T16 D8` rather than `T20 D2`.
+/// Under double-out and master-out, the cost is inversely proportional to the
+/// points the double is worth, which makes it flat at the top and steep at
+/// the bottom - the gap between D16 and D10 is small, the gap between D8 and
+/// D2 is enormous. That curve is what makes 80 read as `T20 D10` rather than
+/// `T16 D16`, while 64 still reads as `T16 D8` rather than `T20 D2`.
 ///
-/// Odd doubles carry a flat penalty because missing one leaves an odd score that
-/// no double can finish. The bull carries a larger one: it is the smallest
-/// target on the board and missing it leaves the full score behind.
-int _finishCost(Segment finish) {
-  if (finish.ring == Ring.innerBull) return 40000 ~/ finish.value + 6000;
+/// Odd doubles carry a flat penalty because missing one leaves an odd score
+/// that no double can finish. The bull carries a larger one, and under
+/// master-out a triple finish carries the same one: both are the smallest
+/// targets available and missing either leaves the full score behind, so
+/// a double of similar value is preferred whenever one is reachable.
+///
+/// Under straight-out, nothing is a harder finish than any other dart of the
+/// same type - hitting the last single is exactly as easy as any setup
+/// single - so the finish costs the same as aiming it as a setup dart.
+int _finishCost(Segment finish, X01OutRule outRule) {
+  if (outRule == X01OutRule.straight) return _setupCost(finish);
+  if (finish.ring == Ring.innerBull || finish.ring == Ring.triple) {
+    return 40000 ~/ finish.value + 6000;
+  }
   return 40000 ~/ finish.value + (finish.number.isOdd ? 3000 : 0);
 }
 
-int _routeCost(CheckoutRoute route) {
-  var cost = _finishCost(route.finish);
+int _routeCost(CheckoutRoute route, X01OutRule outRule) {
+  var cost = _finishCost(route.finish, outRule);
   for (var i = 0; i < route.darts.length - 1; i++) {
     cost += _setupCost(route.darts[i]);
   }
   return cost;
 }
 
-/// Orders routes by how good the advice is, best first.
+/// Orders routes by how good the advice is under [outRule], best first.
 ///
 /// Fewest darts always wins outright - finishing in two beats any three-dart
 /// route however comfortable. Everything after that is the cost model above.
-int _compare(CheckoutRoute a, CheckoutRoute b) {
+int _compare(CheckoutRoute a, CheckoutRoute b, X01OutRule outRule) {
   var result = a.darts.length.compareTo(b.darts.length);
   if (result != 0) return result;
 
-  result = _routeCost(a).compareTo(_routeCost(b));
+  result = _routeCost(a, outRule).compareTo(_routeCost(b, outRule));
   if (result != 0) return result;
 
   // Same darts, different order: throw the biggest one first.
@@ -116,17 +126,25 @@ int _compare(CheckoutRoute a, CheckoutRoute b) {
   return a.toString().compareTo(b.toString());
 }
 
-/// Finds the best ways to check out [score] using at most [dartsLeft] darts.
+/// Finds the best ways to check out [score] using at most [dartsLeft] darts,
+/// under [outRule].
 ///
 /// Returns up to [limit] routes, best advice first, or an empty list when the
-/// score cannot be finished - which is the case for anything above 170, for 1,
-/// and for the bogey numbers such as 169 and 159.
-List<CheckoutRoute> findCheckouts(int score, int dartsLeft, {int limit = 3}) {
-  if (score < 2 || dartsLeft < 1) return const [];
+/// score cannot be finished - which is the case for anything above
+/// [maxCheckoutFor] the rule, for 1 under double or master-out, and for the
+/// bogey numbers such as 169 and 159.
+List<CheckoutRoute> findCheckouts(
+  int score,
+  int dartsLeft, {
+  int limit = 3,
+  X01OutRule outRule = X01OutRule.double,
+}) {
+  final minScore = outRule == X01OutRule.straight ? 1 : 2;
+  if (score < minScore || dartsLeft < 1) return const [];
 
   final routes = <CheckoutRoute>[];
 
-  for (final finish in _finishers) {
+  for (final finish in _finishersFor(outRule)) {
     final beforeFinish = score - finish.value;
 
     if (beforeFinish == 0) {
@@ -149,11 +167,20 @@ List<CheckoutRoute> findCheckouts(int score, int dartsLeft, {int limit = 3}) {
     }
   }
 
-  routes.sort(_compare);
+  routes.sort((a, b) => _compare(a, b, outRule));
   return List<CheckoutRoute>.unmodifiable(
     routes.length <= limit ? routes : routes.sublist(0, limit),
   );
 }
 
-/// The highest score that can be checked out with three darts: T20 T20 DB.
+/// The highest score that can be checked out with three darts under
+/// double-out: T20 T20 DB.
 const int maxCheckout = 170;
+
+/// The highest score checkable in three darts under [outRule].
+///
+/// Double-out tops out at [maxCheckout] (T20 T20 DB). Master-out and
+/// straight-out both reach 180 - T20 T20 T20 - since neither requires the
+/// last dart to be a double.
+int maxCheckoutFor(X01OutRule outRule) =>
+    outRule == X01OutRule.double ? maxCheckout : 180;

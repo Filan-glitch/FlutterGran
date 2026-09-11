@@ -6,6 +6,7 @@ import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/stats/player_stats.dart';
 import 'package:fluttergran/domain/x01/game_config.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
+import 'package:fluttergran/domain/x01/x01_rules.dart';
 
 void main() {
   late AppDatabase database;
@@ -79,7 +80,7 @@ void main() {
     expect(stats.legsWon, 1);
     expect(stats.bestCheckout, 40);
     expect(stats.fewestDartsToWin, 1);
-    expect(stats.checkoutRate, 1.0);
+    expect(stats.checkoutRateFor(X01OutRule.double), 1.0);
   });
 
   test('the heatmap counts where darts landed, per player', () async {

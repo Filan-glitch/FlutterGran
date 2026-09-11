@@ -6,6 +6,7 @@ import 'package:fluttergran/domain/x01/leg_reducer.dart';
 import 'package:fluttergran/domain/x01/leg_state.dart';
 import 'package:fluttergran/domain/x01/match_state.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
+import 'package:fluttergran/domain/x01/x01_rules.dart';
 import 'package:test/test.dart';
 
 ThrownDart s(int n) => ThrownDart(Segment(n, Ring.outerSingle));
@@ -46,7 +47,7 @@ void main() {
     test('reads as empty rather than zero', () {
       final stats = statsFor([leg(501, const [])]);
       expect(stats.average, isNull);
-      expect(stats.checkoutRate, isNull);
+      expect(stats.checkoutRateFor(X01OutRule.double), isNull);
       expect(stats.firstNineAverage, isNull);
       expect(stats.bestCheckout, isNull);
       expect(stats.fewestDartsToWin, isNull);
@@ -133,9 +134,11 @@ void main() {
         leg(60, [s(20), d(20)], players: 2),
       ]);
 
-      expect(stats.dartsAtDouble, 1);
-      expect(stats.doublesHit, 1);
-      expect(stats.checkoutRate, 1.0);
+      expect(stats.checkoutsByRule[X01OutRule.double], (
+        dartsAtFinish: 1,
+        finishesHit: 1,
+      ));
+      expect(stats.checkoutRateFor(X01OutRule.double), 1.0);
     });
 
     test('missing the double costs an attempt', () {
@@ -146,9 +149,11 @@ void main() {
       ]);
 
       // 40 and 38 are finishable, 39 is not.
-      expect(stats.dartsAtDouble, 2);
-      expect(stats.doublesHit, 0);
-      expect(stats.checkoutRate, 0.0);
+      expect(stats.checkoutsByRule[X01OutRule.double], (
+        dartsAtFinish: 2,
+        finishesHit: 0,
+      ));
+      expect(stats.checkoutRateFor(X01OutRule.double), 0.0);
     });
 
     test('the bull counts as a double', () {
@@ -156,19 +161,48 @@ void main() {
         leg(50, [ThrownDart(Segment.innerBull)], players: 2),
       ]);
 
-      expect(stats.dartsAtDouble, 1);
-      expect(stats.doublesHit, 1);
+      expect(stats.checkoutsByRule[X01OutRule.double], (
+        dartsAtFinish: 1,
+        finishesHit: 1,
+      ));
     });
 
-    test('not counted at all when the leg is not double out', () {
+    test('kept separate per out-rule, not mixed into one aggregate', () {
       final stats = computeX01Stats(1, [
         foldLeg(
-          GameConfig(startScore: 40, playerIds: const [1], doubleOut: false),
+          GameConfig(
+            startScore: 40,
+            playerIds: const [1],
+            outRule: X01OutRule.straight,
+          ),
           [s(20), s(20)],
         ),
       ]);
 
-      expect(stats.dartsAtDouble, 0);
+      expect(stats.checkoutsByRule.containsKey(X01OutRule.double), isFalse);
+      expect(stats.checkoutsByRule[X01OutRule.straight], (
+        dartsAtFinish: 2,
+        finishesHit: 1,
+      ));
+      expect(stats.checkoutRateFor(X01OutRule.double), isNull);
+    });
+
+    test('a triple counts as a finish attempt and hit under master-out', () {
+      final stats = computeX01Stats(1, [
+        foldLeg(
+          GameConfig(
+            startScore: 60,
+            playerIds: const [1],
+            outRule: X01OutRule.master,
+          ),
+          [t(20)],
+        ),
+      ]);
+
+      expect(stats.checkoutsByRule[X01OutRule.master], (
+        dartsAtFinish: 1,
+        finishesHit: 1,
+      ));
     });
   });
 

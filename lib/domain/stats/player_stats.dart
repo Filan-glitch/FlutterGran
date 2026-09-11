@@ -6,16 +6,24 @@ import '../game_mode.dart';
 import '../segment.dart';
 import '../x01/leg_state.dart';
 import '../x01/match_state.dart';
+import '../x01/x01_rules.dart';
 import 'mode_stats.dart';
 
 export 'mode_stats.dart';
+
+/// Whether [score] can be finished with a single dart, under [outRule].
+///
+/// This is the definition behind "darts at a finish": a dart only counts as
+/// an attempt if the player was actually on a finish when they threw it.
+bool isOneDartFinishFor(int score, X01OutRule outRule) => Segment.all.any(
+  (segment) => segment.value == score && outRule.checksOut(segment),
+);
 
 /// Whether a score can be finished with a single dart at a double.
 ///
 /// This is the definition behind "darts at double": a dart only counts as an
 /// attempt if the player was actually on a finish when they threw it.
-bool isOneDartFinish(int score) =>
-    score == 50 || (score.isEven && score >= 2 && score <= 40);
+bool isOneDartFinish(int score) => isOneDartFinishFor(score, X01OutRule.double);
 
 /// A player's whole record, one entry per mode they have ever played.
 ///
@@ -63,8 +71,8 @@ X01Stats computeX01Stats(
   var turnsOf140Plus = 0;
   var turnsOf100Plus = 0;
   var turnsOf60Plus = 0;
-  var dartsAtDouble = 0;
-  var doublesHit = 0;
+  final dartsAtFinishByRule = <X01OutRule, int>{};
+  final finishesHitByRule = <X01OutRule, int>{};
   int? bestCheckout;
   int? fewestDartsToWin;
   var firstNinePoints = 0;
@@ -73,6 +81,12 @@ X01Stats computeX01Stats(
   for (final leg in legs) {
     if (!leg.config.playerIds.contains(playerId)) continue;
     legsPlayed++;
+
+    final outRule = leg.config.outRule;
+    // Whether this player has opened yet, tracked across the leg the same
+    // way the reducer does - only this player's own darts can change it, so
+    // walking just their turns in order is enough to keep it in step.
+    var playerOpened = leg.config.inRule == X01InRule.straight;
 
     var turnIndex = 0;
     for (final turn in leg.turns) {
@@ -92,15 +106,25 @@ X01Stats computeX01Stats(
         firstNineDarts += turn.darts.length;
       }
 
-      if (leg.config.doubleOut) {
-        // Walk the turn dart by dart. A dart counts as an attempt only if the
-        // score standing before it could be finished by one double.
-        var standing = turn.scoreBefore;
-        for (final dart in turn.darts) {
-          if (isOneDartFinish(standing)) dartsAtDouble++;
-          if (dart.isDouble && standing - dart.value == 0) doublesHit++;
-          standing -= dart.value;
+      // Walk the turn dart by dart, re-deriving each dart's effective value
+      // the same way the reducer does - a dart before opening scores
+      // nothing, so it must not be mistaken for a scoring attempt either. A
+      // dart counts as a finish attempt only if the score standing before it
+      // could actually be finished in one, under this leg's out-rule.
+      var standing = turn.scoreBefore;
+      for (final dart in turn.darts) {
+        final effectiveValue = playerOpened
+            ? dart.value
+            : (dart.opensUnder(leg.config.inRule) ? dart.value : 0);
+        playerOpened |= effectiveValue > 0;
+
+        if (isOneDartFinishFor(standing, outRule)) {
+          dartsAtFinishByRule[outRule] = (dartsAtFinishByRule[outRule] ?? 0) + 1;
         }
+        if (dart.checksOutUnder(outRule) && standing - effectiveValue == 0) {
+          finishesHitByRule[outRule] = (finishesHitByRule[outRule] ?? 0) + 1;
+        }
+        standing -= effectiveValue;
       }
 
       turnIndex++;
@@ -129,6 +153,14 @@ X01Stats computeX01Stats(
     if (match.winnerId == playerId) matchesWon++;
   }
 
+  final checkoutsByRule = <X01OutRule, ({int dartsAtFinish, int finishesHit})>{
+    for (final rule in dartsAtFinishByRule.keys)
+      rule: (
+        dartsAtFinish: dartsAtFinishByRule[rule]!,
+        finishesHit: finishesHitByRule[rule] ?? 0,
+      ),
+  };
+
   return X01Stats(
     legsPlayed: legsPlayed,
     legsWon: legsWon,
@@ -141,8 +173,7 @@ X01Stats computeX01Stats(
     turnsOf140Plus: turnsOf140Plus,
     turnsOf100Plus: turnsOf100Plus,
     turnsOf60Plus: turnsOf60Plus,
-    dartsAtDouble: dartsAtDouble,
-    doublesHit: doublesHit,
+    checkoutsByRule: checkoutsByRule,
     bestCheckout: bestCheckout,
     fewestDartsToWin: fewestDartsToWin,
     firstNinePoints: firstNinePoints,
@@ -173,7 +204,7 @@ AtcStats computeAtcStats(int playerId, Iterable<AtcLegState> legs) {
 
       // Walk the turn dart by dart, re-deriving which stop was standing
       // before each one - the same idiom `computeX01Stats` uses to re-derive
-      // "on a finish" for `dartsAtDouble`.
+      // "on a finish" for its checkout stats.
       var standing = turn.stopBefore;
       for (final dart in turn.darts) {
         dartsThrown++;

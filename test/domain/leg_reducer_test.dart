@@ -2,6 +2,7 @@ import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/game_config.dart';
 import 'package:fluttergran/domain/x01/leg_reducer.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
+import 'package:fluttergran/domain/x01/x01_rules.dart';
 import 'package:test/test.dart';
 
 ThrownDart s(int n) => ThrownDart(Segment(n, Ring.outerSingle));
@@ -16,12 +17,14 @@ final ThrownDart sbull = ThrownDart(Segment.outerBull);
 GameConfig config(
   int start, {
   int players = 1,
-  bool doubleOut = true,
+  X01InRule inRule = X01InRule.straight,
+  X01OutRule outRule = X01OutRule.double,
   int startingSeat = 0,
 }) => GameConfig(
   startScore: start,
   playerIds: [for (var i = 1; i <= players; i++) i],
-  doubleOut: doubleOut,
+  inRule: inRule,
+  outRule: outRule,
   startingSeat: startingSeat,
 );
 
@@ -102,14 +105,107 @@ void main() {
     });
 
     test('without double-out, landing on zero wins however you get there', () {
-      final state = foldLeg(config(40, doubleOut: false), [s(20), s(20)]);
+      final state = foldLeg(
+        config(40, outRule: X01OutRule.straight),
+        [s(20), s(20)],
+      );
       expect(state.winnerId, 1);
     });
 
     test('without double-out, being left on 1 is legal', () {
-      final state = foldLeg(config(20, players: 2, doubleOut: false), [s(19)]);
+      final state = foldLeg(
+        config(20, players: 2, outRule: X01OutRule.straight),
+        [s(19)],
+      );
       expect(state.remaining[1], 1);
       expect(state.turns, isEmpty, reason: 'the turn is still running');
+    });
+  });
+
+  group('opening (in-rule)', () {
+    test('straight-in: hasOpened is true from the start', () {
+      final state = initialLegState(config(501));
+      expect(state.hasOpened(1), isTrue);
+    });
+
+    test('double-in: a non-double dart scores nothing and does not open', () {
+      final state = foldLeg(config(501, inRule: X01InRule.double), [
+        s(20),
+        s(1),
+        miss,
+      ]);
+      expect(state.remaining[1], 501, reason: 'nothing scored - not opened');
+      expect(state.turns.single.busted, isFalse);
+      expect(state.turns.single.scored, 0);
+      expect(state.hasOpened(1), isFalse);
+    });
+
+    test('double-in: the qualifying double opens and scores', () {
+      final state = foldLeg(config(501, inRule: X01InRule.double, players: 2), [
+        s(20),
+        d(20),
+      ]);
+      expect(state.remaining[1], 501 - 40, reason: 'only the double counted');
+      expect(state.hasOpened(1), isTrue);
+    });
+
+    test('double-in: darts after opening score normally in the same turn', () {
+      final state = foldLeg(config(501, inRule: X01InRule.double, players: 2), [
+        d(20),
+        s(5),
+      ]);
+      expect(state.remaining[1], 501 - 40 - 5);
+    });
+
+    test('master-in: a triple also opens', () {
+      final state = foldLeg(config(501, inRule: X01InRule.master), [t(19)]);
+      expect(state.remaining[1], 501 - 57);
+      expect(state.hasOpened(1), isTrue);
+    });
+
+    test('master-in: the outer bull does not open', () {
+      final state = foldLeg(config(501, inRule: X01InRule.master), [sbull]);
+      expect(state.remaining[1], 501);
+      expect(state.hasOpened(1), isFalse);
+    });
+
+    test('a miss never opens', () {
+      final state = foldLeg(config(501, inRule: X01InRule.double), [miss]);
+      expect(state.remaining[1], 501);
+      expect(state.hasOpened(1), isFalse);
+    });
+  });
+
+  group('master-out', () {
+    test('a triple finishes the leg', () {
+      final state = foldLeg(config(60, players: 2, outRule: X01OutRule.master), [
+        t(20),
+      ]);
+      expect(state.winnerId, 1);
+      expect(state.remaining[1], 0);
+    });
+
+    test('being left on 1 still busts', () {
+      final state = foldLeg(config(20, players: 2, outRule: X01OutRule.master), [
+        s(19),
+      ]);
+      expect(state.remaining[1], 20);
+      expect(state.turns.single.busted, isTrue);
+    });
+
+    test('the inner bull still finishes', () {
+      final state = foldLeg(config(50, players: 2, outRule: X01OutRule.master), [
+        dbull,
+      ]);
+      expect(state.winnerId, 1);
+    });
+
+    test('the outer bull does not finish', () {
+      final state = foldLeg(config(25, players: 2, outRule: X01OutRule.master), [
+        sbull,
+      ]);
+      expect(state.isFinished, isFalse);
+      expect(state.turns.single.busted, isTrue);
     });
   });
 

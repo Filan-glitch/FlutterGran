@@ -145,7 +145,7 @@ void main() {
     await tester.tap(find.text('START LEG'));
     await pumpFrames(tester);
 
-    expect(find.text('501 · DOUBLE OUT'), findsOneWidget);
+    expect(find.text('501 · SI/DO'), findsOneWidget);
     // Both the scoreboard and the start-score choice show 501 at this point.
     expect(find.text('501'), findsWidgets);
 
@@ -202,7 +202,7 @@ void main() {
     await tester.tap(find.text('RESUME'));
     await pumpFrames(tester);
 
-    expect(find.text('501 · DOUBLE OUT'), findsOneWidget);
+    expect(find.text('501 · SI/DO'), findsOneWidget);
     expect(find.text('441'), findsOneWidget);
 
     await closeApp(tester);
@@ -218,7 +218,7 @@ void main() {
     await tester.tap(find.text('START LEG'));
     await pumpFrames(tester);
 
-    await popRoute(tester, find.text('501 · DOUBLE OUT'));
+    await popRoute(tester, find.text('501 · SI/DO'));
 
     // Nothing thrown, nothing to protect - straight back to setup, with
     // nothing left to resume.

@@ -6,6 +6,7 @@ import 'package:fluttergran/data/board/fake_board_source.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/game_config.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
+import 'package:fluttergran/domain/x01/x01_rules.dart';
 
 /// Lets queued stream events reach the controller before assertions run.
 Future<void> settle() => Future<void>.delayed(Duration.zero);
@@ -313,6 +314,26 @@ void main() {
       container.read(gameConfigProvider.notifier).setPlayerCount(4);
       expect(session().leg.config.playerIds, [1, 2, 3, 4]);
       expect(session().leg.remaining, hasLength(4));
+    });
+
+    test('setStartScore/setPlayerCount preserve the in/out rules', () {
+      final notifier = container.read(gameConfigProvider.notifier);
+      notifier.update(
+        GameConfig(
+          startScore: 501,
+          playerIds: const [1, 2],
+          inRule: X01InRule.master,
+          outRule: X01OutRule.straight,
+        ),
+      );
+
+      notifier.setStartScore(301);
+      expect(session().leg.config.inRule, X01InRule.master);
+      expect(session().leg.config.outRule, X01OutRule.straight);
+
+      notifier.setPlayerCount(3);
+      expect(session().leg.config.inRule, X01InRule.master);
+      expect(session().leg.config.outRule, X01OutRule.straight);
     });
   });
 }

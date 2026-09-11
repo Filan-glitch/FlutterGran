@@ -6,6 +6,7 @@ import '../../domain/atc/atc_stop.dart';
 import '../../domain/game_mode.dart';
 import '../../domain/segment.dart';
 import '../../domain/stats/mode_stats.dart';
+import '../../domain/x01/x01_rules.dart';
 import '../providers.dart';
 import '../theme.dart';
 import '../widgets/board_widget.dart';
@@ -132,11 +133,21 @@ class _Body extends ConsumerWidget {
             _Section(
               title: 'Finishing',
               rows: [
-                _Row('Checkout', _percent(x01.checkoutRate)),
-                _Row(
-                  'Darts at double',
-                  '${x01.doublesHit}/${x01.dartsAtDouble}',
-                ),
+                // One row pair per out-rule the player has actually played a
+                // leg under, rather than one aggregate figure mixing
+                // single/double/master-out legs together - "on a finish"
+                // means something different under each rule.
+                for (final rule in X01OutRule.values)
+                  if (x01.checkoutsByRule[rule] case final checkout?) ...[
+                    _Row(
+                      '${rule.label} checkout',
+                      _percent(x01.checkoutRateFor(rule)),
+                    ),
+                    _Row(
+                      '${rule.label} darts at finish',
+                      '${checkout.finishesHit}/${checkout.dartsAtFinish}',
+                    ),
+                  ],
                 _Row(
                   'Best checkout',
                   _optional(x01.bestCheckout),

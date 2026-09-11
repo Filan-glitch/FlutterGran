@@ -292,6 +292,26 @@ class $MatchesTable extends Matches with TableInfo<$MatchesTable, Match> {
     ),
     defaultValue: const Constant(true),
   );
+  @override
+  late final GeneratedColumnWithTypeConverter<X01InRule, String> inRule =
+      GeneratedColumn<String>(
+        'in_rule',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('straight'),
+      ).withConverter<X01InRule>($MatchesTable.$converterinRule);
+  @override
+  late final GeneratedColumnWithTypeConverter<X01OutRule, String> outRule =
+      GeneratedColumn<String>(
+        'out_rule',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('double'),
+      ).withConverter<X01OutRule>($MatchesTable.$converteroutRule);
   static const VerificationMeta _legsToPlayMeta = const VerificationMeta(
     'legsToPlay',
   );
@@ -355,6 +375,8 @@ class $MatchesTable extends Matches with TableInfo<$MatchesTable, Match> {
     id,
     startScore,
     doubleOut,
+    inRule,
+    outRule,
     legsToPlay,
     gameMode,
     startedAt,
@@ -443,6 +465,18 @@ class $MatchesTable extends Matches with TableInfo<$MatchesTable, Match> {
         DriftSqlType.bool,
         data['${effectivePrefix}double_out'],
       )!,
+      inRule: $MatchesTable.$converterinRule.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}in_rule'],
+        )!,
+      ),
+      outRule: $MatchesTable.$converteroutRule.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}out_rule'],
+        )!,
+      ),
       legsToPlay: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}legs_to_play'],
@@ -473,6 +507,10 @@ class $MatchesTable extends Matches with TableInfo<$MatchesTable, Match> {
     return $MatchesTable(attachedDatabase, alias);
   }
 
+  static JsonTypeConverter2<X01InRule, String, String> $converterinRule =
+      const EnumNameConverter<X01InRule>(X01InRule.values);
+  static JsonTypeConverter2<X01OutRule, String, String> $converteroutRule =
+      const EnumNameConverter<X01OutRule>(X01OutRule.values);
   static JsonTypeConverter2<GameMode, String, String> $convertergameMode =
       const EnumNameConverter<GameMode>(GameMode.values);
 }
@@ -480,7 +518,17 @@ class $MatchesTable extends Matches with TableInfo<$MatchesTable, Match> {
 class Match extends DataClass implements Insertable<Match> {
   final int id;
   final int startScore;
+
+  /// Kept only as a frozen legacy mirror of [outRule] (`true` for
+  /// `X01OutRule.double`), written on every insert so it never drifts out of
+  /// step. Nothing but the schema-8 migration reads it back.
   final bool doubleOut;
+
+  /// What it takes to open a leg. Stored by name, like [DartEvents.ring].
+  final X01InRule inRule;
+
+  /// What it takes to finish a leg.
+  final X01OutRule outRule;
 
   /// Best of this many legs. 1 is a single leg, which is what every game
   /// recorded before matches existed is.
@@ -497,6 +545,8 @@ class Match extends DataClass implements Insertable<Match> {
     required this.id,
     required this.startScore,
     required this.doubleOut,
+    required this.inRule,
+    required this.outRule,
     required this.legsToPlay,
     required this.gameMode,
     required this.startedAt,
@@ -509,6 +559,16 @@ class Match extends DataClass implements Insertable<Match> {
     map['id'] = Variable<int>(id);
     map['start_score'] = Variable<int>(startScore);
     map['double_out'] = Variable<bool>(doubleOut);
+    {
+      map['in_rule'] = Variable<String>(
+        $MatchesTable.$converterinRule.toSql(inRule),
+      );
+    }
+    {
+      map['out_rule'] = Variable<String>(
+        $MatchesTable.$converteroutRule.toSql(outRule),
+      );
+    }
     map['legs_to_play'] = Variable<int>(legsToPlay);
     {
       map['game_mode'] = Variable<String>(
@@ -530,6 +590,8 @@ class Match extends DataClass implements Insertable<Match> {
       id: Value(id),
       startScore: Value(startScore),
       doubleOut: Value(doubleOut),
+      inRule: Value(inRule),
+      outRule: Value(outRule),
       legsToPlay: Value(legsToPlay),
       gameMode: Value(gameMode),
       startedAt: Value(startedAt),
@@ -551,6 +613,12 @@ class Match extends DataClass implements Insertable<Match> {
       id: serializer.fromJson<int>(json['id']),
       startScore: serializer.fromJson<int>(json['startScore']),
       doubleOut: serializer.fromJson<bool>(json['doubleOut']),
+      inRule: $MatchesTable.$converterinRule.fromJson(
+        serializer.fromJson<String>(json['inRule']),
+      ),
+      outRule: $MatchesTable.$converteroutRule.fromJson(
+        serializer.fromJson<String>(json['outRule']),
+      ),
       legsToPlay: serializer.fromJson<int>(json['legsToPlay']),
       gameMode: $MatchesTable.$convertergameMode.fromJson(
         serializer.fromJson<String>(json['gameMode']),
@@ -567,6 +635,12 @@ class Match extends DataClass implements Insertable<Match> {
       'id': serializer.toJson<int>(id),
       'startScore': serializer.toJson<int>(startScore),
       'doubleOut': serializer.toJson<bool>(doubleOut),
+      'inRule': serializer.toJson<String>(
+        $MatchesTable.$converterinRule.toJson(inRule),
+      ),
+      'outRule': serializer.toJson<String>(
+        $MatchesTable.$converteroutRule.toJson(outRule),
+      ),
       'legsToPlay': serializer.toJson<int>(legsToPlay),
       'gameMode': serializer.toJson<String>(
         $MatchesTable.$convertergameMode.toJson(gameMode),
@@ -581,6 +655,8 @@ class Match extends DataClass implements Insertable<Match> {
     int? id,
     int? startScore,
     bool? doubleOut,
+    X01InRule? inRule,
+    X01OutRule? outRule,
     int? legsToPlay,
     GameMode? gameMode,
     DateTime? startedAt,
@@ -590,6 +666,8 @@ class Match extends DataClass implements Insertable<Match> {
     id: id ?? this.id,
     startScore: startScore ?? this.startScore,
     doubleOut: doubleOut ?? this.doubleOut,
+    inRule: inRule ?? this.inRule,
+    outRule: outRule ?? this.outRule,
     legsToPlay: legsToPlay ?? this.legsToPlay,
     gameMode: gameMode ?? this.gameMode,
     startedAt: startedAt ?? this.startedAt,
@@ -605,6 +683,8 @@ class Match extends DataClass implements Insertable<Match> {
           ? data.startScore.value
           : this.startScore,
       doubleOut: data.doubleOut.present ? data.doubleOut.value : this.doubleOut,
+      inRule: data.inRule.present ? data.inRule.value : this.inRule,
+      outRule: data.outRule.present ? data.outRule.value : this.outRule,
       legsToPlay: data.legsToPlay.present
           ? data.legsToPlay.value
           : this.legsToPlay,
@@ -625,6 +705,8 @@ class Match extends DataClass implements Insertable<Match> {
           ..write('id: $id, ')
           ..write('startScore: $startScore, ')
           ..write('doubleOut: $doubleOut, ')
+          ..write('inRule: $inRule, ')
+          ..write('outRule: $outRule, ')
           ..write('legsToPlay: $legsToPlay, ')
           ..write('gameMode: $gameMode, ')
           ..write('startedAt: $startedAt, ')
@@ -639,6 +721,8 @@ class Match extends DataClass implements Insertable<Match> {
     id,
     startScore,
     doubleOut,
+    inRule,
+    outRule,
     legsToPlay,
     gameMode,
     startedAt,
@@ -652,6 +736,8 @@ class Match extends DataClass implements Insertable<Match> {
           other.id == this.id &&
           other.startScore == this.startScore &&
           other.doubleOut == this.doubleOut &&
+          other.inRule == this.inRule &&
+          other.outRule == this.outRule &&
           other.legsToPlay == this.legsToPlay &&
           other.gameMode == this.gameMode &&
           other.startedAt == this.startedAt &&
@@ -663,6 +749,8 @@ class MatchesCompanion extends UpdateCompanion<Match> {
   final Value<int> id;
   final Value<int> startScore;
   final Value<bool> doubleOut;
+  final Value<X01InRule> inRule;
+  final Value<X01OutRule> outRule;
   final Value<int> legsToPlay;
   final Value<GameMode> gameMode;
   final Value<DateTime> startedAt;
@@ -672,6 +760,8 @@ class MatchesCompanion extends UpdateCompanion<Match> {
     this.id = const Value.absent(),
     this.startScore = const Value.absent(),
     this.doubleOut = const Value.absent(),
+    this.inRule = const Value.absent(),
+    this.outRule = const Value.absent(),
     this.legsToPlay = const Value.absent(),
     this.gameMode = const Value.absent(),
     this.startedAt = const Value.absent(),
@@ -682,6 +772,8 @@ class MatchesCompanion extends UpdateCompanion<Match> {
     this.id = const Value.absent(),
     required int startScore,
     this.doubleOut = const Value.absent(),
+    this.inRule = const Value.absent(),
+    this.outRule = const Value.absent(),
     required int legsToPlay,
     this.gameMode = const Value.absent(),
     this.startedAt = const Value.absent(),
@@ -693,6 +785,8 @@ class MatchesCompanion extends UpdateCompanion<Match> {
     Expression<int>? id,
     Expression<int>? startScore,
     Expression<bool>? doubleOut,
+    Expression<String>? inRule,
+    Expression<String>? outRule,
     Expression<int>? legsToPlay,
     Expression<String>? gameMode,
     Expression<DateTime>? startedAt,
@@ -703,6 +797,8 @@ class MatchesCompanion extends UpdateCompanion<Match> {
       if (id != null) 'id': id,
       if (startScore != null) 'start_score': startScore,
       if (doubleOut != null) 'double_out': doubleOut,
+      if (inRule != null) 'in_rule': inRule,
+      if (outRule != null) 'out_rule': outRule,
       if (legsToPlay != null) 'legs_to_play': legsToPlay,
       if (gameMode != null) 'game_mode': gameMode,
       if (startedAt != null) 'started_at': startedAt,
@@ -715,6 +811,8 @@ class MatchesCompanion extends UpdateCompanion<Match> {
     Value<int>? id,
     Value<int>? startScore,
     Value<bool>? doubleOut,
+    Value<X01InRule>? inRule,
+    Value<X01OutRule>? outRule,
     Value<int>? legsToPlay,
     Value<GameMode>? gameMode,
     Value<DateTime>? startedAt,
@@ -725,6 +823,8 @@ class MatchesCompanion extends UpdateCompanion<Match> {
       id: id ?? this.id,
       startScore: startScore ?? this.startScore,
       doubleOut: doubleOut ?? this.doubleOut,
+      inRule: inRule ?? this.inRule,
+      outRule: outRule ?? this.outRule,
       legsToPlay: legsToPlay ?? this.legsToPlay,
       gameMode: gameMode ?? this.gameMode,
       startedAt: startedAt ?? this.startedAt,
@@ -744,6 +844,16 @@ class MatchesCompanion extends UpdateCompanion<Match> {
     }
     if (doubleOut.present) {
       map['double_out'] = Variable<bool>(doubleOut.value);
+    }
+    if (inRule.present) {
+      map['in_rule'] = Variable<String>(
+        $MatchesTable.$converterinRule.toSql(inRule.value),
+      );
+    }
+    if (outRule.present) {
+      map['out_rule'] = Variable<String>(
+        $MatchesTable.$converteroutRule.toSql(outRule.value),
+      );
     }
     if (legsToPlay.present) {
       map['legs_to_play'] = Variable<int>(legsToPlay.value);
@@ -771,6 +881,8 @@ class MatchesCompanion extends UpdateCompanion<Match> {
           ..write('id: $id, ')
           ..write('startScore: $startScore, ')
           ..write('doubleOut: $doubleOut, ')
+          ..write('inRule: $inRule, ')
+          ..write('outRule: $outRule, ')
           ..write('legsToPlay: $legsToPlay, ')
           ..write('gameMode: $gameMode, ')
           ..write('startedAt: $startedAt, ')
@@ -825,6 +937,26 @@ class $GamesTable extends Games with TableInfo<$GamesTable, Game> {
     ),
     defaultValue: const Constant(true),
   );
+  @override
+  late final GeneratedColumnWithTypeConverter<X01InRule?, String> inRule =
+      GeneratedColumn<String>(
+        'in_rule',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('straight'),
+      ).withConverter<X01InRule?>($GamesTable.$converterinRulen);
+  @override
+  late final GeneratedColumnWithTypeConverter<X01OutRule?, String> outRule =
+      GeneratedColumn<String>(
+        'out_rule',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('double'),
+      ).withConverter<X01OutRule?>($GamesTable.$converteroutRulen);
   static const VerificationMeta _matchIdMeta = const VerificationMeta(
     'matchId',
   );
@@ -902,6 +1034,8 @@ class $GamesTable extends Games with TableInfo<$GamesTable, Game> {
     id,
     startScore,
     doubleOut,
+    inRule,
+    outRule,
     matchId,
     legNumber,
     gameMode,
@@ -990,6 +1124,18 @@ class $GamesTable extends Games with TableInfo<$GamesTable, Game> {
         DriftSqlType.bool,
         data['${effectivePrefix}double_out'],
       ),
+      inRule: $GamesTable.$converterinRulen.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}in_rule'],
+        ),
+      ),
+      outRule: $GamesTable.$converteroutRulen.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}out_rule'],
+        ),
+      ),
       matchId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}match_id'],
@@ -1024,6 +1170,14 @@ class $GamesTable extends Games with TableInfo<$GamesTable, Game> {
     return $GamesTable(attachedDatabase, alias);
   }
 
+  static JsonTypeConverter2<X01InRule, String, String> $converterinRule =
+      const EnumNameConverter<X01InRule>(X01InRule.values);
+  static JsonTypeConverter2<X01InRule?, String?, String?> $converterinRulen =
+      JsonTypeConverter2.asNullable($converterinRule);
+  static JsonTypeConverter2<X01OutRule, String, String> $converteroutRule =
+      const EnumNameConverter<X01OutRule>(X01OutRule.values);
+  static JsonTypeConverter2<X01OutRule?, String?, String?> $converteroutRulen =
+      JsonTypeConverter2.asNullable($converteroutRule);
   static JsonTypeConverter2<GameMode, String, String> $convertergameMode =
       const EnumNameConverter<GameMode>(GameMode.values);
 }
@@ -1037,7 +1191,15 @@ class Game extends DataClass implements Insertable<Game> {
 
   /// Null for the same reason as [startScore]: a mode with no double-out
   /// rule leaves this empty rather than writing a value that means nothing.
+  /// Kept only as a frozen legacy mirror of [outRule] - see the note on
+  /// [Matches.doubleOut].
   final bool? doubleOut;
+
+  /// What it takes to open a leg. Null for a mode with no in-rule.
+  final X01InRule? inRule;
+
+  /// What it takes to finish a leg. Null for a mode with no out-rule.
+  final X01OutRule? outRule;
   final int? matchId;
 
   /// Position in the match, from zero. Null for a leg outside a match.
@@ -1058,6 +1220,8 @@ class Game extends DataClass implements Insertable<Game> {
     required this.id,
     this.startScore,
     this.doubleOut,
+    this.inRule,
+    this.outRule,
     this.matchId,
     this.legNumber,
     required this.gameMode,
@@ -1074,6 +1238,16 @@ class Game extends DataClass implements Insertable<Game> {
     }
     if (!nullToAbsent || doubleOut != null) {
       map['double_out'] = Variable<bool>(doubleOut);
+    }
+    if (!nullToAbsent || inRule != null) {
+      map['in_rule'] = Variable<String>(
+        $GamesTable.$converterinRulen.toSql(inRule),
+      );
+    }
+    if (!nullToAbsent || outRule != null) {
+      map['out_rule'] = Variable<String>(
+        $GamesTable.$converteroutRulen.toSql(outRule),
+      );
     }
     if (!nullToAbsent || matchId != null) {
       map['match_id'] = Variable<int>(matchId);
@@ -1105,6 +1279,12 @@ class Game extends DataClass implements Insertable<Game> {
       doubleOut: doubleOut == null && nullToAbsent
           ? const Value.absent()
           : Value(doubleOut),
+      inRule: inRule == null && nullToAbsent
+          ? const Value.absent()
+          : Value(inRule),
+      outRule: outRule == null && nullToAbsent
+          ? const Value.absent()
+          : Value(outRule),
       matchId: matchId == null && nullToAbsent
           ? const Value.absent()
           : Value(matchId),
@@ -1131,6 +1311,12 @@ class Game extends DataClass implements Insertable<Game> {
       id: serializer.fromJson<int>(json['id']),
       startScore: serializer.fromJson<int?>(json['startScore']),
       doubleOut: serializer.fromJson<bool?>(json['doubleOut']),
+      inRule: $GamesTable.$converterinRulen.fromJson(
+        serializer.fromJson<String?>(json['inRule']),
+      ),
+      outRule: $GamesTable.$converteroutRulen.fromJson(
+        serializer.fromJson<String?>(json['outRule']),
+      ),
       matchId: serializer.fromJson<int?>(json['matchId']),
       legNumber: serializer.fromJson<int?>(json['legNumber']),
       gameMode: $GamesTable.$convertergameMode.fromJson(
@@ -1148,6 +1334,12 @@ class Game extends DataClass implements Insertable<Game> {
       'id': serializer.toJson<int>(id),
       'startScore': serializer.toJson<int?>(startScore),
       'doubleOut': serializer.toJson<bool?>(doubleOut),
+      'inRule': serializer.toJson<String?>(
+        $GamesTable.$converterinRulen.toJson(inRule),
+      ),
+      'outRule': serializer.toJson<String?>(
+        $GamesTable.$converteroutRulen.toJson(outRule),
+      ),
       'matchId': serializer.toJson<int?>(matchId),
       'legNumber': serializer.toJson<int?>(legNumber),
       'gameMode': serializer.toJson<String>(
@@ -1163,6 +1355,8 @@ class Game extends DataClass implements Insertable<Game> {
     int? id,
     Value<int?> startScore = const Value.absent(),
     Value<bool?> doubleOut = const Value.absent(),
+    Value<X01InRule?> inRule = const Value.absent(),
+    Value<X01OutRule?> outRule = const Value.absent(),
     Value<int?> matchId = const Value.absent(),
     Value<int?> legNumber = const Value.absent(),
     GameMode? gameMode,
@@ -1173,6 +1367,8 @@ class Game extends DataClass implements Insertable<Game> {
     id: id ?? this.id,
     startScore: startScore.present ? startScore.value : this.startScore,
     doubleOut: doubleOut.present ? doubleOut.value : this.doubleOut,
+    inRule: inRule.present ? inRule.value : this.inRule,
+    outRule: outRule.present ? outRule.value : this.outRule,
     matchId: matchId.present ? matchId.value : this.matchId,
     legNumber: legNumber.present ? legNumber.value : this.legNumber,
     gameMode: gameMode ?? this.gameMode,
@@ -1189,6 +1385,8 @@ class Game extends DataClass implements Insertable<Game> {
           ? data.startScore.value
           : this.startScore,
       doubleOut: data.doubleOut.present ? data.doubleOut.value : this.doubleOut,
+      inRule: data.inRule.present ? data.inRule.value : this.inRule,
+      outRule: data.outRule.present ? data.outRule.value : this.outRule,
       matchId: data.matchId.present ? data.matchId.value : this.matchId,
       legNumber: data.legNumber.present ? data.legNumber.value : this.legNumber,
       gameMode: data.gameMode.present ? data.gameMode.value : this.gameMode,
@@ -1208,6 +1406,8 @@ class Game extends DataClass implements Insertable<Game> {
           ..write('id: $id, ')
           ..write('startScore: $startScore, ')
           ..write('doubleOut: $doubleOut, ')
+          ..write('inRule: $inRule, ')
+          ..write('outRule: $outRule, ')
           ..write('matchId: $matchId, ')
           ..write('legNumber: $legNumber, ')
           ..write('gameMode: $gameMode, ')
@@ -1223,6 +1423,8 @@ class Game extends DataClass implements Insertable<Game> {
     id,
     startScore,
     doubleOut,
+    inRule,
+    outRule,
     matchId,
     legNumber,
     gameMode,
@@ -1237,6 +1439,8 @@ class Game extends DataClass implements Insertable<Game> {
           other.id == this.id &&
           other.startScore == this.startScore &&
           other.doubleOut == this.doubleOut &&
+          other.inRule == this.inRule &&
+          other.outRule == this.outRule &&
           other.matchId == this.matchId &&
           other.legNumber == this.legNumber &&
           other.gameMode == this.gameMode &&
@@ -1249,6 +1453,8 @@ class GamesCompanion extends UpdateCompanion<Game> {
   final Value<int> id;
   final Value<int?> startScore;
   final Value<bool?> doubleOut;
+  final Value<X01InRule?> inRule;
+  final Value<X01OutRule?> outRule;
   final Value<int?> matchId;
   final Value<int?> legNumber;
   final Value<GameMode> gameMode;
@@ -1259,6 +1465,8 @@ class GamesCompanion extends UpdateCompanion<Game> {
     this.id = const Value.absent(),
     this.startScore = const Value.absent(),
     this.doubleOut = const Value.absent(),
+    this.inRule = const Value.absent(),
+    this.outRule = const Value.absent(),
     this.matchId = const Value.absent(),
     this.legNumber = const Value.absent(),
     this.gameMode = const Value.absent(),
@@ -1270,6 +1478,8 @@ class GamesCompanion extends UpdateCompanion<Game> {
     this.id = const Value.absent(),
     this.startScore = const Value.absent(),
     this.doubleOut = const Value.absent(),
+    this.inRule = const Value.absent(),
+    this.outRule = const Value.absent(),
     this.matchId = const Value.absent(),
     this.legNumber = const Value.absent(),
     this.gameMode = const Value.absent(),
@@ -1281,6 +1491,8 @@ class GamesCompanion extends UpdateCompanion<Game> {
     Expression<int>? id,
     Expression<int>? startScore,
     Expression<bool>? doubleOut,
+    Expression<String>? inRule,
+    Expression<String>? outRule,
     Expression<int>? matchId,
     Expression<int>? legNumber,
     Expression<String>? gameMode,
@@ -1292,6 +1504,8 @@ class GamesCompanion extends UpdateCompanion<Game> {
       if (id != null) 'id': id,
       if (startScore != null) 'start_score': startScore,
       if (doubleOut != null) 'double_out': doubleOut,
+      if (inRule != null) 'in_rule': inRule,
+      if (outRule != null) 'out_rule': outRule,
       if (matchId != null) 'match_id': matchId,
       if (legNumber != null) 'leg_number': legNumber,
       if (gameMode != null) 'game_mode': gameMode,
@@ -1305,6 +1519,8 @@ class GamesCompanion extends UpdateCompanion<Game> {
     Value<int>? id,
     Value<int?>? startScore,
     Value<bool?>? doubleOut,
+    Value<X01InRule?>? inRule,
+    Value<X01OutRule?>? outRule,
     Value<int?>? matchId,
     Value<int?>? legNumber,
     Value<GameMode>? gameMode,
@@ -1316,6 +1532,8 @@ class GamesCompanion extends UpdateCompanion<Game> {
       id: id ?? this.id,
       startScore: startScore ?? this.startScore,
       doubleOut: doubleOut ?? this.doubleOut,
+      inRule: inRule ?? this.inRule,
+      outRule: outRule ?? this.outRule,
       matchId: matchId ?? this.matchId,
       legNumber: legNumber ?? this.legNumber,
       gameMode: gameMode ?? this.gameMode,
@@ -1336,6 +1554,16 @@ class GamesCompanion extends UpdateCompanion<Game> {
     }
     if (doubleOut.present) {
       map['double_out'] = Variable<bool>(doubleOut.value);
+    }
+    if (inRule.present) {
+      map['in_rule'] = Variable<String>(
+        $GamesTable.$converterinRulen.toSql(inRule.value),
+      );
+    }
+    if (outRule.present) {
+      map['out_rule'] = Variable<String>(
+        $GamesTable.$converteroutRulen.toSql(outRule.value),
+      );
     }
     if (matchId.present) {
       map['match_id'] = Variable<int>(matchId.value);
@@ -1366,6 +1594,8 @@ class GamesCompanion extends UpdateCompanion<Game> {
           ..write('id: $id, ')
           ..write('startScore: $startScore, ')
           ..write('doubleOut: $doubleOut, ')
+          ..write('inRule: $inRule, ')
+          ..write('outRule: $outRule, ')
           ..write('matchId: $matchId, ')
           ..write('legNumber: $legNumber, ')
           ..write('gameMode: $gameMode, ')
@@ -3211,6 +3441,8 @@ typedef $$MatchesTableCreateCompanionBuilder =
       Value<int> id,
       required int startScore,
       Value<bool> doubleOut,
+      Value<X01InRule> inRule,
+      Value<X01OutRule> outRule,
       required int legsToPlay,
       Value<GameMode> gameMode,
       Value<DateTime> startedAt,
@@ -3222,6 +3454,8 @@ typedef $$MatchesTableUpdateCompanionBuilder =
       Value<int> id,
       Value<int> startScore,
       Value<bool> doubleOut,
+      Value<X01InRule> inRule,
+      Value<X01OutRule> outRule,
       Value<int> legsToPlay,
       Value<GameMode> gameMode,
       Value<DateTime> startedAt,
@@ -3293,6 +3527,18 @@ class $$MatchesTableFilterComposer
     column: $table.doubleOut,
     builder: (column) => ColumnFilters(column),
   );
+
+  ColumnWithTypeConverterFilters<X01InRule, X01InRule, String> get inRule =>
+      $composableBuilder(
+        column: $table.inRule,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnWithTypeConverterFilters<X01OutRule, X01OutRule, String> get outRule =>
+      $composableBuilder(
+        column: $table.outRule,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
 
   ColumnFilters<int> get legsToPlay => $composableBuilder(
     column: $table.legsToPlay,
@@ -3388,6 +3634,16 @@ class $$MatchesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get inRule => $composableBuilder(
+    column: $table.inRule,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get outRule => $composableBuilder(
+    column: $table.outRule,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get legsToPlay => $composableBuilder(
     column: $table.legsToPlay,
     builder: (column) => ColumnOrderings(column),
@@ -3451,6 +3707,12 @@ class $$MatchesTableAnnotationComposer
 
   GeneratedColumn<bool> get doubleOut =>
       $composableBuilder(column: $table.doubleOut, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<X01InRule, String> get inRule =>
+      $composableBuilder(column: $table.inRule, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<X01OutRule, String> get outRule =>
+      $composableBuilder(column: $table.outRule, builder: (column) => column);
 
   GeneratedColumn<int> get legsToPlay => $composableBuilder(
     column: $table.legsToPlay,
@@ -3548,6 +3810,8 @@ class $$MatchesTableTableManager
                 Value<int> id = const Value.absent(),
                 Value<int> startScore = const Value.absent(),
                 Value<bool> doubleOut = const Value.absent(),
+                Value<X01InRule> inRule = const Value.absent(),
+                Value<X01OutRule> outRule = const Value.absent(),
                 Value<int> legsToPlay = const Value.absent(),
                 Value<GameMode> gameMode = const Value.absent(),
                 Value<DateTime> startedAt = const Value.absent(),
@@ -3557,6 +3821,8 @@ class $$MatchesTableTableManager
                 id: id,
                 startScore: startScore,
                 doubleOut: doubleOut,
+                inRule: inRule,
+                outRule: outRule,
                 legsToPlay: legsToPlay,
                 gameMode: gameMode,
                 startedAt: startedAt,
@@ -3568,6 +3834,8 @@ class $$MatchesTableTableManager
                 Value<int> id = const Value.absent(),
                 required int startScore,
                 Value<bool> doubleOut = const Value.absent(),
+                Value<X01InRule> inRule = const Value.absent(),
+                Value<X01OutRule> outRule = const Value.absent(),
                 required int legsToPlay,
                 Value<GameMode> gameMode = const Value.absent(),
                 Value<DateTime> startedAt = const Value.absent(),
@@ -3577,6 +3845,8 @@ class $$MatchesTableTableManager
                 id: id,
                 startScore: startScore,
                 doubleOut: doubleOut,
+                inRule: inRule,
+                outRule: outRule,
                 legsToPlay: legsToPlay,
                 gameMode: gameMode,
                 startedAt: startedAt,
@@ -3668,6 +3938,8 @@ typedef $$GamesTableCreateCompanionBuilder =
       Value<int> id,
       Value<int?> startScore,
       Value<bool?> doubleOut,
+      Value<X01InRule?> inRule,
+      Value<X01OutRule?> outRule,
       Value<int?> matchId,
       Value<int?> legNumber,
       Value<GameMode> gameMode,
@@ -3680,6 +3952,8 @@ typedef $$GamesTableUpdateCompanionBuilder =
       Value<int> id,
       Value<int?> startScore,
       Value<bool?> doubleOut,
+      Value<X01InRule?> inRule,
+      Value<X01OutRule?> outRule,
       Value<int?> matchId,
       Value<int?> legNumber,
       Value<GameMode> gameMode,
@@ -3822,6 +4096,18 @@ class $$GamesTableFilterComposer extends Composer<_$AppDatabase, $GamesTable> {
     column: $table.doubleOut,
     builder: (column) => ColumnFilters(column),
   );
+
+  ColumnWithTypeConverterFilters<X01InRule?, X01InRule, String> get inRule =>
+      $composableBuilder(
+        column: $table.inRule,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnWithTypeConverterFilters<X01OutRule?, X01OutRule, String> get outRule =>
+      $composableBuilder(
+        column: $table.outRule,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
 
   ColumnFilters<int> get legNumber => $composableBuilder(
     column: $table.legNumber,
@@ -4015,6 +4301,16 @@ class $$GamesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get inRule => $composableBuilder(
+    column: $table.inRule,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get outRule => $composableBuilder(
+    column: $table.outRule,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get legNumber => $composableBuilder(
     column: $table.legNumber,
     builder: (column) => ColumnOrderings(column),
@@ -4101,6 +4397,12 @@ class $$GamesTableAnnotationComposer
 
   GeneratedColumn<bool> get doubleOut =>
       $composableBuilder(column: $table.doubleOut, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<X01InRule?, String> get inRule =>
+      $composableBuilder(column: $table.inRule, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<X01OutRule?, String> get outRule =>
+      $composableBuilder(column: $table.outRule, builder: (column) => column);
 
   GeneratedColumn<int> get legNumber =>
       $composableBuilder(column: $table.legNumber, builder: (column) => column);
@@ -4301,6 +4603,8 @@ class $$GamesTableTableManager
                 Value<int> id = const Value.absent(),
                 Value<int?> startScore = const Value.absent(),
                 Value<bool?> doubleOut = const Value.absent(),
+                Value<X01InRule?> inRule = const Value.absent(),
+                Value<X01OutRule?> outRule = const Value.absent(),
                 Value<int?> matchId = const Value.absent(),
                 Value<int?> legNumber = const Value.absent(),
                 Value<GameMode> gameMode = const Value.absent(),
@@ -4311,6 +4615,8 @@ class $$GamesTableTableManager
                 id: id,
                 startScore: startScore,
                 doubleOut: doubleOut,
+                inRule: inRule,
+                outRule: outRule,
                 matchId: matchId,
                 legNumber: legNumber,
                 gameMode: gameMode,
@@ -4323,6 +4629,8 @@ class $$GamesTableTableManager
                 Value<int> id = const Value.absent(),
                 Value<int?> startScore = const Value.absent(),
                 Value<bool?> doubleOut = const Value.absent(),
+                Value<X01InRule?> inRule = const Value.absent(),
+                Value<X01OutRule?> outRule = const Value.absent(),
                 Value<int?> matchId = const Value.absent(),
                 Value<int?> legNumber = const Value.absent(),
                 Value<GameMode> gameMode = const Value.absent(),
@@ -4333,6 +4641,8 @@ class $$GamesTableTableManager
                 id: id,
                 startScore: startScore,
                 doubleOut: doubleOut,
+                inRule: inRule,
+                outRule: outRule,
                 matchId: matchId,
                 legNumber: legNumber,
                 gameMode: gameMode,

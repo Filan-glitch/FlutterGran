@@ -26,6 +26,7 @@ import '../domain/x01/game_config.dart';
 import '../domain/x01/leg_reducer.dart';
 import '../domain/x01/leg_state.dart';
 import '../domain/x01/match_state.dart';
+import '../domain/x01/x01_rules.dart';
 import 'atc_controller.dart';
 import 'audio/sound_controller.dart';
 import 'audio/sound_player.dart';
@@ -66,8 +67,9 @@ final boardConnectionProvider = StreamProvider<BoardConnectionState>(
   (ref) => ref.watch(boardReaderProvider).connectionState,
 );
 
-final checkoutTableProvider = Provider<CheckoutTable>(
-  (ref) => CheckoutTable(),
+/// A checkout table scoped to one out-rule - see [CheckoutTable].
+final checkoutTableProvider = Provider.family<CheckoutTable, X01OutRule>(
+  (ref, outRule) => CheckoutTable(outRule: outRule),
 );
 
 /// Whether the keypad is being shown by hand over a connected board.
@@ -101,7 +103,8 @@ class GameConfigController extends Notifier<GameConfig> {
   void setStartScore(int startScore) => state = GameConfig(
     startScore: startScore,
     playerIds: state.playerIds,
-    doubleOut: state.doubleOut,
+    inRule: state.inRule,
+    outRule: state.outRule,
     startingSeat: state.startingSeat,
   );
 
@@ -110,7 +113,8 @@ class GameConfigController extends Notifier<GameConfig> {
   void setPlayerCount(int count) => state = GameConfig(
     startScore: state.startScore,
     playerIds: [for (var i = 1; i <= count; i++) i],
-    doubleOut: state.doubleOut,
+    inRule: state.inRule,
+    outRule: state.outRule,
   );
 }
 
@@ -435,6 +439,79 @@ final soundEnabledProvider = NotifierProvider<BoolSetting, bool>(
 final speechEnabledProvider = NotifierProvider<BoolSetting, bool>(
   () => BoolSetting('speech.enabled'),
 );
+
+/// The x01 setup screen's remembered defaults: whatever was picked last time.
+typedef X01Defaults = ({
+  int startScore,
+  X01InRule inRule,
+  X01OutRule outRule,
+});
+
+/// Persists the last-used x01 start score and in/out rules, the same way
+/// [BoolSetting] persists a switch - shared_preferences, corrected a frame
+/// later if the stored value disagrees with the hardcoded fallback.
+class X01DefaultsController extends Notifier<X01Defaults> {
+  static const _startScoreKey = 'x01.startScore';
+  static const _inRuleKey = 'x01.inRule';
+  static const _outRuleKey = 'x01.outRule';
+
+  @override
+  X01Defaults build() {
+    unawaited(_load());
+    return (
+      startScore: 501,
+      inRule: X01InRule.straight,
+      outRule: X01OutRule.double,
+    );
+  }
+
+  Future<void> _load() async {
+    final prefs = await _preferences();
+    if (prefs == null) return;
+
+    final startScore = prefs.getInt(_startScoreKey);
+    final inRule = _parse(X01InRule.values, prefs.getString(_inRuleKey));
+    final outRule = _parse(X01OutRule.values, prefs.getString(_outRuleKey));
+
+    state = (
+      startScore: startScore ?? state.startScore,
+      inRule: inRule ?? state.inRule,
+      outRule: outRule ?? state.outRule,
+    );
+  }
+
+  Future<void> update(X01Defaults next) async {
+    state = next;
+    final prefs = await _preferences();
+    if (prefs == null) return;
+    await prefs.setInt(_startScoreKey, next.startScore);
+    await prefs.setString(_inRuleKey, next.inRule.name);
+    await prefs.setString(_outRuleKey, next.outRule.name);
+  }
+
+  T? _parse<T extends Enum>(List<T> values, String? name) {
+    if (name == null) return null;
+    for (final value in values) {
+      if (value.name == name) return value;
+    }
+    return null;
+  }
+
+  /// Null when there is no platform behind the channel - see the note on
+  /// [BoolSetting._preferences].
+  Future<SharedPreferences?> _preferences() async {
+    try {
+      return await SharedPreferences.getInstance();
+    } on MissingPluginException {
+      return null;
+    }
+  }
+}
+
+final x01DefaultsProvider =
+    NotifierProvider<X01DefaultsController, X01Defaults>(
+      X01DefaultsController.new,
+    );
 
 /// Overridden in tests with a fake that records rather than plays.
 final soundPlayerProvider = Provider<SoundPlayer>((ref) {

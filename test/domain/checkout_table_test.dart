@@ -1,5 +1,6 @@
 import 'package:fluttergran/domain/checkout/checkout_search.dart';
 import 'package:fluttergran/domain/checkout/checkout_table.dart';
+import 'package:fluttergran/domain/x01/x01_rules.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -40,5 +41,39 @@ void main() {
 
   test('the limit is respected', () {
     expect(CheckoutTable(limit: 1).routesFor(96, 3), hasLength(1));
+  });
+
+  group('rule-aware', () {
+    test('defaults to double-out, matching findCheckouts default', () {
+      final table = CheckoutTable();
+      expect(
+        table.routesFor(60, 1).map((r) => r.toString()),
+        findCheckouts(60, 1).map((r) => r.toString()),
+      );
+    });
+
+    test('agrees with findCheckouts for the out-rule it is built with', () {
+      for (final outRule in [X01OutRule.master, X01OutRule.straight]) {
+        final table = CheckoutTable(outRule: outRule);
+        for (var score = 1; score <= maxCheckoutFor(outRule); score++) {
+          expect(
+            table.routesFor(score, 3).map((r) => r.toString()),
+            findCheckouts(score, 3, outRule: outRule).map((r) => r.toString()),
+            reason: 'score $score under $outRule',
+          );
+        }
+      }
+    });
+
+    test('range bounds follow the out-rule', () {
+      final straight = CheckoutTable(outRule: X01OutRule.straight);
+      expect(straight.isCheckoutRange(1), isTrue);
+      expect(straight.isCheckoutRange(180), isTrue);
+      expect(straight.isCheckoutRange(181), isFalse);
+
+      final master = CheckoutTable(outRule: X01OutRule.master);
+      expect(master.isCheckoutRange(1), isFalse);
+      expect(master.isCheckoutRange(180), isTrue);
+    });
   });
 }

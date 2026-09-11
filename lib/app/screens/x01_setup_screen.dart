@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/db/database.dart';
 import '../../domain/x01/game_config.dart';
 import '../../domain/x01/match_state.dart';
+import '../../domain/x01/x01_rules.dart';
 import '../providers.dart';
 import '../theme.dart';
 import '../widgets/board_connection_button.dart';
@@ -29,10 +32,18 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
   final List<int> _seats = [];
 
   int _startScore = 501;
+  X01InRule _inRule = X01InRule.straight;
+  X01OutRule _outRule = X01OutRule.double;
 
   /// Best of this many legs. One is a single leg, exactly as the app has always
   /// played it.
   int _legsToPlay = 1;
+
+  /// Whether the start score/rules have been seeded from the remembered
+  /// defaults yet. Guards against a `ref.listen` firing after the initial
+  /// synchronous fallback but overwriting something the user has already
+  /// tapped in that first frame.
+  bool _userEditedRules = false;
 
   /// Whether the format can honestly be called a best of.
   ///
@@ -40,6 +51,15 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
   /// is not, so it is offered as the target instead. Empty counts as head to
   /// head: the roster starts empty and two is what fills it.
   bool get _headToHead => _seats.length <= 2;
+
+  @override
+  void initState() {
+    super.initState();
+    final defaults = ref.read(x01DefaultsProvider);
+    _startScore = defaults.startScore;
+    _inRule = defaults.inRule;
+    _outRule = defaults.outRule;
+  }
 
   @override
   void dispose() {
@@ -68,9 +88,16 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
           MatchConfig(
             startScore: _startScore,
             playerIds: _seats,
+            inRule: _inRule,
+            outRule: _outRule,
             legsToPlay: _legsToPlay,
           ),
         );
+    unawaited(
+      ref
+          .read(x01DefaultsProvider.notifier)
+          .update((startScore: _startScore, inRule: _inRule, outRule: _outRule)),
+    );
     if (!mounted) return;
 
     await Navigator.of(
@@ -81,6 +108,19 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
   @override
   Widget build(BuildContext context) {
     final players = ref.watch(playersProvider);
+
+    // The disk read behind x01DefaultsProvider resolves a frame after
+    // initState's synchronous fallback. Apply it if it lands - unless the
+    // user already tapped something in that first frame, in which case their
+    // tap wins.
+    ref.listen<X01Defaults>(x01DefaultsProvider, (_, defaults) {
+      if (_userEditedRules) return;
+      setState(() {
+        _startScore = defaults.startScore;
+        _inRule = defaults.inRule;
+        _outRule = defaults.outRule;
+      });
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -106,7 +146,10 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
                       child: _ScoreChoice(
                         score: score,
                         selected: score == _startScore,
-                        onTap: () => setState(() => _startScore = score),
+                        onTap: () => setState(() {
+                          _startScore = score;
+                          _userEditedRules = true;
+                        }),
                       ),
                     ),
                   ],
@@ -133,6 +176,52 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
                         score: _headToHead ? legs : legsToWinFor(legs),
                         selected: legs == _legsToPlay,
                         onTap: () => setState(() => _legsToPlay = legs),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: Gap.lg),
+              const _Eyebrow('In'),
+              const SizedBox(height: Gap.md),
+              Row(
+                key: const Key('in-rule-row'),
+                children: [
+                  for (final rule in X01InRule.values) ...[
+                    if (rule != X01InRule.values.first)
+                      const SizedBox(width: Gap.sm),
+                    Expanded(
+                      child: _RuleChoice(
+                        key: Key('in-rule-${rule.name}'),
+                        label: rule.label,
+                        selected: rule == _inRule,
+                        onTap: () => setState(() {
+                          _inRule = rule;
+                          _userEditedRules = true;
+                        }),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: Gap.lg),
+              const _Eyebrow('Out'),
+              const SizedBox(height: Gap.md),
+              Row(
+                key: const Key('out-rule-row'),
+                children: [
+                  for (final rule in X01OutRule.values) ...[
+                    if (rule != X01OutRule.values.first)
+                      const SizedBox(width: Gap.sm),
+                    Expanded(
+                      child: _RuleChoice(
+                        key: Key('out-rule-${rule.name}'),
+                        label: rule.label,
+                        selected: rule == _outRule,
+                        onTap: () => setState(() {
+                          _outRule = rule;
+                          _userEditedRules = true;
+                        }),
                       ),
                     ),
                   ],
@@ -309,6 +398,47 @@ class _Eyebrow extends StatelessWidget {
     text.toUpperCase(),
     style: Type.eyebrow.copyWith(color: Palette.chalkDim),
   );
+}
+
+/// A rule choice, styled identically to [_ScoreChoice] but showing a word
+/// instead of a scoreboard numeral - one of these per in-rule/out-rule option.
+class _RuleChoice extends StatelessWidget {
+  const _RuleChoice({
+    super.key,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected ? Palette.chalk : Palette.raised,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(4),
+        side: BorderSide(color: selected ? Palette.chalk : Palette.edge),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: Gap.md),
+          child: Center(
+            child: Text(
+              label.toUpperCase(),
+              style: Type.label.copyWith(
+                color: selected ? Palette.ground : Palette.chalkDim,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// One number in a row of them, set as a scoreboard numeral rather than a form

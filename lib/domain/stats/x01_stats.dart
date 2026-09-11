@@ -14,8 +14,7 @@ class X01Stats extends ModeStats {
     required this.turnsOf140Plus,
     required this.turnsOf100Plus,
     required this.turnsOf60Plus,
-    required this.dartsAtDouble,
-    required this.doublesHit,
+    required this.checkoutsByRule,
     required this.bestCheckout,
     required this.fewestDartsToWin,
     required this.firstNinePoints,
@@ -34,8 +33,7 @@ class X01Stats extends ModeStats {
     turnsOf140Plus: 0,
     turnsOf100Plus: 0,
     turnsOf60Plus: 0,
-    dartsAtDouble: 0,
-    doublesHit: 0,
+    checkoutsByRule: {},
     bestCheckout: null,
     fewestDartsToWin: null,
     firstNinePoints: 0,
@@ -65,11 +63,11 @@ class X01Stats extends ModeStats {
   final int turnsOf100Plus;
   final int turnsOf60Plus;
 
-  /// Darts thrown while on a finish.
-  final int dartsAtDouble;
-
-  /// Of those, the ones that won the leg.
-  final int doublesHit;
+  /// Darts thrown while on a finish, and of those the ones that actually
+  /// finished the leg - kept separate per out-rule, rather than one figure
+  /// mixing legs played under different rules together, since "on a finish"
+  /// means something different under each one.
+  final Map<X01OutRule, ({int dartsAtFinish, int finishesHit})> checkoutsByRule;
 
   /// Highest score ever checked out from.
   final int? bestCheckout;
@@ -90,9 +88,13 @@ class X01Stats extends ModeStats {
       ? null
       : firstNinePoints / firstNineDarts * dartsPerTurn;
 
-  /// Share of darts at a double that actually won the leg, 0 to 1.
-  double? get checkoutRate =>
-      dartsAtDouble == 0 ? null : doublesHit / dartsAtDouble;
+  /// Share of darts at a finish under [rule] that actually won the leg,
+  /// 0 to 1, or null when nothing has been thrown at a finish under it.
+  double? checkoutRateFor(X01OutRule rule) {
+    final entry = checkoutsByRule[rule];
+    if (entry == null || entry.dartsAtFinish == 0) return null;
+    return entry.finishesHit / entry.dartsAtFinish;
+  }
 
   /// Share of legs won, 0 to 1. Legs, not matches - this is what it has always
   /// meant and what the rest of the app reads it as.

@@ -1,6 +1,7 @@
 import 'game_config.dart';
 import 'leg_state.dart';
 import 'thrown_dart.dart';
+import 'x01_rules.dart';
 
 /// Replays a dart log under [config] and returns the resulting leg state.
 ///
@@ -12,6 +13,7 @@ LegState foldLeg(GameConfig config, List<ThrownDart> darts) {
     for (final id in config.playerIds) id: config.startScore,
   };
   final turns = <Turn>[];
+  final opened = <int>{};
 
   var playerIndex = config.startingSeat;
   var turnDarts = <ThrownDart>[];
@@ -25,21 +27,35 @@ LegState foldLeg(GameConfig config, List<ThrownDart> darts) {
     final playerId = config.playerIds[playerIndex];
     turnDarts.add(dart);
 
-    final candidate = remaining[playerId]! - dart.value;
+    // Before opening under double/master-in, a dart that doesn't qualify
+    // scores nothing; one that does both opens the leg and scores, the same
+    // way a real double-in dart gets a player "in" even if it's their only
+    // dart to land. Once open, every dart scores normally.
+    final alreadyOpen =
+        config.inRule == X01InRule.straight || opened.contains(playerId);
+    if (!alreadyOpen && dart.opensUnder(config.inRule)) {
+      opened.add(playerId);
+    }
+    final effectiveValue = (alreadyOpen || opened.contains(playerId))
+        ? dart.value
+        : 0;
+
+    final candidate = remaining[playerId]! - effectiveValue;
 
     // A turn busts by overshooting, by landing exactly on zero without the
-    // required double, or by leaving 1 - which no double can finish.
+    // required finish, or by leaving 1 - which nothing but straight-out can
+    // finish.
     var busted = false;
     var won = false;
     if (candidate < 0) {
       busted = true;
     } else if (candidate == 0) {
-      if (config.doubleOut && !dart.isDouble) {
+      if (!dart.checksOutUnder(config.outRule)) {
         busted = true;
       } else {
         won = true;
       }
-    } else if (candidate == 1 && config.doubleOut) {
+    } else if (candidate == 1 && config.outRule != X01OutRule.straight) {
       busted = true;
     }
 
@@ -74,6 +90,7 @@ LegState foldLeg(GameConfig config, List<ThrownDart> darts) {
     currentTurnDarts: List<ThrownDart>.unmodifiable(turnDarts),
     turns: List<Turn>.unmodifiable(turns),
     winnerId: winnerId,
+    openedPlayerIds: Set<int>.unmodifiable(opened),
   );
 }
 

@@ -12,6 +12,7 @@ import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/leg_reducer.dart';
 import 'package:fluttergran/domain/x01/match_state.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
+import 'package:fluttergran/domain/x01/x01_rules.dart';
 
 /// The games table exactly as schema 2 wrote it: no match, no leg number.
 ///
@@ -131,12 +132,29 @@ CREATE TABLE IF NOT EXISTS games (
   winner_player_id INTEGER NULL REFERENCES players (id)
 )''';
 
+/// The `matches` table exactly as schema 5 through 7 wrote it: no
+/// `in_rule`/`out_rule` columns yet. Its shape did not change again until
+/// schema 8, so every frozen schema in that range shares this one constant
+/// rather than repeating it with nothing different.
+const String _matchesSinceV5 = '''
+CREATE TABLE IF NOT EXISTS matches (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  start_score INTEGER NOT NULL,
+  double_out INTEGER NOT NULL DEFAULT 1 CHECK ("double_out" IN (0, 1)),
+  legs_to_play INTEGER NOT NULL,
+  game_mode TEXT NOT NULL DEFAULT 'x01',
+  started_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+  finished_at INTEGER NULL,
+  winner_player_id INTEGER NULL REFERENCES players (id)
+)''';
+
 /// An [AppDatabase] frozen at schema 5, the version just before Around the
 /// Clock's nullable columns and `atc_games` table.
 ///
-/// `matches`/`players`/`gameSeats`/`dartEvents` are unchanged between 5 and
-/// 6, so they still come from the current classes - only `games` needed its
-/// own frozen shape.
+/// `players`/`gameSeats`/`dartEvents` are unchanged between 5 and 6, so they
+/// still come from the current classes - `matches`/`games` need their own
+/// frozen shape, now that the current classes carry columns (`in_rule`/
+/// `out_rule`) schema 5 never had.
 class _SchemaV5 extends AppDatabase {
   _SchemaV5(super.executor);
 
@@ -147,10 +165,7 @@ class _SchemaV5 extends AppDatabase {
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) async {
       await m.createTable(players);
-      // Qualified with `this.`: a bare `matches` here resolves to the
-      // top-level `matches()` matcher from `package:matcher`, not this
-      // table getter - the same name collides across the two libraries.
-      await m.createTable(this.matches);
+      await m.database.customStatement(_matchesSinceV5);
       await m.database.customStatement(_gamesAtV5);
       await m.createTable(gameSeats);
       await m.createTable(dartEvents);
@@ -158,14 +173,28 @@ class _SchemaV5 extends AppDatabase {
   );
 }
 
+/// The `games` table exactly as schema 6 and 7 wrote it: nullable
+/// `start_score`/`double_out`, no `in_rule`/`out_rule` yet. Its shape did not
+/// change again until schema 8, so both frozen schemas share this constant.
+const String _gamesSinceV6 = '''
+CREATE TABLE IF NOT EXISTS games (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  start_score INTEGER NULL,
+  double_out INTEGER NULL DEFAULT 1 CHECK ("double_out" IN (0, 1)),
+  match_id INTEGER NULL REFERENCES matches (id),
+  leg_number INTEGER NULL,
+  game_mode TEXT NOT NULL DEFAULT 'x01',
+  started_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+  finished_at INTEGER NULL,
+  winner_player_id INTEGER NULL REFERENCES players (id)
+)''';
+
 /// An [AppDatabase] frozen at schema 6, the version just before Bulling's
 /// `bulling_games` table.
 ///
-/// Every table's shape is already what the current classes produce -
-/// `games` gained its nullable `start_score`/`double_out` back at v6, and
-/// nothing about `players`/`matches`/`gameSeats`/`dartEvents`/`atcGames`
-/// has changed since - so this only has to leave `bullingGames` out of
-/// `onCreate`.
+/// `players`/`gameSeats`/`dartEvents`/`atcGames` are unchanged since 6, so
+/// they still come from the current classes - `matches`/`games` need their
+/// own frozen shape, for the same reason [_SchemaV5] does.
 class _SchemaV6 extends AppDatabase {
   _SchemaV6(super.executor);
 
@@ -176,11 +205,38 @@ class _SchemaV6 extends AppDatabase {
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) async {
       await m.createTable(players);
-      await m.createTable(this.matches);
-      await m.createTable(games);
+      await m.database.customStatement(_matchesSinceV5);
+      await m.database.customStatement(_gamesSinceV6);
       await m.createTable(gameSeats);
       await m.createTable(dartEvents);
       await m.createTable(atcGames);
+    },
+  );
+}
+
+/// An [AppDatabase] frozen at schema 7, the version just before
+/// `in_rule`/`out_rule`.
+///
+/// `players`/`gameSeats`/`dartEvents`/`atcGames`/`bullingGames` are
+/// unchanged since 7, so they still come from the current classes -
+/// `matches`/`games` need their own frozen shape, for the same reason
+/// [_SchemaV5] does.
+class _SchemaV7 extends AppDatabase {
+  _SchemaV7(super.executor);
+
+  @override
+  int get schemaVersion => 7;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (m) async {
+      await m.createTable(players);
+      await m.database.customStatement(_matchesSinceV5);
+      await m.database.customStatement(_gamesSinceV6);
+      await m.createTable(gameSeats);
+      await m.createTable(dartEvents);
+      await m.createTable(atcGames);
+      await m.createTable(bullingGames);
     },
   );
 }
@@ -202,6 +258,7 @@ void main() {
 
   ThrownDart t(int n) => ThrownDart(Segment(n, Ring.triple));
   ThrownDart d(int n) => ThrownDart(Segment(n, Ring.doubleRing));
+  ThrownDart s(int n) => ThrownDart(Segment(n, Ring.outerSingle));
 
   /// Writes one leg the way schema 2 stored legs, and returns its id.
   Future<int> seedV2({
@@ -699,4 +756,207 @@ void main() {
 
     await db.close();
   });
+
+  /// Writes one leg the way schema 7 stored it, with [doubleOut] set exactly
+  /// as given - including null, for a non-x01 leg that has no such rule.
+  Future<int> seedV7Game({
+    required List<ThrownDart> darts,
+    int startScore = 501,
+    bool? doubleOut = true,
+    GameMode gameMode = GameMode.x01,
+  }) async {
+    final db = _SchemaV7(NativeDatabase(file));
+
+    final finn = await db
+        .into(db.players)
+        .insertReturning(PlayersCompanion.insert(name: 'Finn'));
+    final sam = await db
+        .into(db.players)
+        .insertReturning(PlayersCompanion.insert(name: 'Sam'));
+    final seats = [finn.id, sam.id];
+
+    final gameId = await db
+        .into(db.games)
+        .insert(
+          GamesCompanion.insert(
+            startScore: Value(startScore),
+            doubleOut: Value(doubleOut),
+            gameMode: Value(gameMode),
+          ),
+        );
+
+    for (var seat = 0; seat < seats.length; seat++) {
+      await db
+          .into(db.gameSeats)
+          .insert(
+            GameSeatsCompanion.insert(
+              gameId: gameId,
+              playerId: seats[seat],
+              seat: seat,
+            ),
+          );
+    }
+
+    for (var i = 0; i < darts.length; i++) {
+      await db
+          .into(db.dartEvents)
+          .insert(
+            DartEventsCompanion.insert(
+              gameId: gameId,
+              ordinal: i,
+              playerId: seats[(i ~/ 3) % seats.length],
+              number: Value(darts[i].segment?.number),
+              ring: Value(darts[i].segment?.ring),
+              value: darts[i].value,
+            ),
+          );
+    }
+
+    await db.close();
+    return gameId;
+  }
+
+  /// Writes one match the way schema 7 stored it, with no first leg - the
+  /// column backfill is what these tests are after, not a playable match.
+  Future<int> seedV7Match({bool doubleOut = true}) async {
+    final db = _SchemaV7(NativeDatabase(file));
+    final matchId = await db
+        .into(db.matches)
+        .insert(
+          MatchesCompanion.insert(
+            startScore: 501,
+            doubleOut: Value(doubleOut),
+            legsToPlay: 3,
+          ),
+        );
+    await db.close();
+    return matchId;
+  }
+
+  /// Reads `double_out`/`in_rule`/`out_rule` straight off a `games` row,
+  /// bypassing [GameConfig] so a row the domain layer would refuse to load
+  /// (no seats) can still be inspected.
+  Future<({bool? doubleOut, String? inRule, String? outRule})> gameRuleRow(
+    AppDatabase db,
+    int gameId,
+  ) async {
+    final row = await db
+        .customSelect(
+          'SELECT double_out, in_rule, out_rule FROM games WHERE id = ?',
+          variables: [Variable.withInt(gameId)],
+        )
+        .getSingle();
+    return (
+      doubleOut: row.read<bool?>('double_out'),
+      inRule: row.read<String?>('in_rule'),
+      outRule: row.read<String?>('out_rule'),
+    );
+  }
+
+  Future<({bool doubleOut, String? inRule, String? outRule})> matchRuleRow(
+    AppDatabase db,
+    int matchId,
+  ) async {
+    final row = await db
+        .customSelect(
+          'SELECT double_out, in_rule, out_rule FROM matches WHERE id = ?',
+          variables: [Variable.withInt(matchId)],
+        )
+        .getSingle();
+    return (
+      doubleOut: row.read<bool>('double_out'),
+      inRule: row.read<String?>('in_rule'),
+      outRule: row.read<String?>('out_rule'),
+    );
+  }
+
+  test('a version 7 database opens at the current version', () async {
+    await seedV7Game(darts: const [], doubleOut: true);
+
+    final db = migrated();
+    await db.select(db.matches).get();
+
+    final version = await db.customSelect('PRAGMA user_version').getSingle();
+    expect(version.read<int>('user_version'), db.schemaVersion);
+
+    await db.close();
+  });
+
+  test(
+    'an old double-out leg backfills to in_rule straight, out_rule double',
+    () async {
+      final gameId = await seedV7Game(darts: const [], doubleOut: true);
+
+      final db = migrated();
+      final row = await gameRuleRow(db, gameId);
+      expect(row.inRule, 'straight');
+      expect(row.outRule, 'double');
+
+      await db.close();
+    },
+  );
+
+  test('an old straight-out leg backfills to out_rule straight', () async {
+    final gameId = await seedV7Game(darts: const [], doubleOut: false);
+
+    final db = migrated();
+    final row = await gameRuleRow(db, gameId);
+    expect(row.inRule, 'straight');
+    expect(row.outRule, 'straight');
+
+    await db.close();
+  });
+
+  test(
+    'a non-x01 leg with double_out null leaves in_rule/out_rule null too',
+    () async {
+      final gameId = await seedV7Game(
+        darts: const [],
+        doubleOut: null,
+        gameMode: GameMode.aroundTheClock,
+      );
+
+      final db = migrated();
+      final row = await gameRuleRow(db, gameId);
+      expect(row.inRule, isNull);
+      expect(row.outRule, isNull);
+
+      await db.close();
+    },
+  );
+
+  test('an old match backfills the same way as a leg', () async {
+    final matchId = await seedV7Match(doubleOut: false);
+
+    final db = migrated();
+    final row = await matchRuleRow(db, matchId);
+    expect(row.inRule, 'straight');
+    expect(row.outRule, 'straight');
+
+    await db.close();
+  });
+
+  test(
+    'a backfilled straight-out leg still loads and folds correctly',
+    () async {
+      final gameId = await seedV7Game(
+        darts: [s(20), s(20)],
+        startScore: 40,
+        doubleOut: false,
+      );
+
+      final db = migrated();
+      final repository = GameRepository(db);
+
+      final config = await repository.loadConfig(gameId);
+      expect(config, isNotNull);
+      expect(config!.outRule, X01OutRule.straight);
+      expect(config.inRule, X01InRule.straight);
+
+      final leg = foldLeg(config, await repository.loadLog(gameId));
+      expect(leg.winnerId, config.playerIds[0], reason: 'straight-out wins on zero');
+
+      await db.close();
+    },
+  );
 }

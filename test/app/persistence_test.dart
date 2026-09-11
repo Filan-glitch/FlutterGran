@@ -12,6 +12,7 @@ import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/game_config.dart';
 import 'package:fluttergran/domain/x01/leg_reducer.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
+import 'package:fluttergran/domain/x01/x01_rules.dart';
 
 /// Lets the fire-and-forget database writes land before assertions run.
 Future<void> settle() => Future<void>.delayed(const Duration(milliseconds: 20));
@@ -247,6 +248,22 @@ void main() {
 
     test('a game that was never written has no config either', () async {
       expect(await repository.loadConfig(9999), isNull);
+    });
+
+    test('a non-default in/out rule round-trips', () async {
+      final finn = await repository.addPlayer('Finn');
+      final sam = await repository.addPlayer('Sam');
+      final config = GameConfig(
+        startScore: 501,
+        playerIds: [finn.id, sam.id],
+        inRule: X01InRule.master,
+        outRule: X01OutRule.straight,
+      );
+      final gameId = await repository.startGame(config);
+
+      final stored = await repository.loadConfig(gameId);
+      expect(stored!.inRule, X01InRule.master);
+      expect(stored.outRule, X01OutRule.straight);
     });
   });
 

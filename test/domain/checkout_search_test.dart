@@ -1,5 +1,6 @@
 import 'package:fluttergran/domain/checkout/checkout_search.dart';
 import 'package:fluttergran/domain/segment.dart';
+import 'package:fluttergran/domain/x01/x01_rules.dart';
 import 'package:test/test.dart';
 
 /// Scores below 171 that cannot be finished with three darts.
@@ -167,6 +168,79 @@ void main() {
       // 130 needs three darts; offering it on two would be wrong advice.
       expect(findCheckouts(130, 3), isNotEmpty);
       expect(findCheckouts(130, 2), isEmpty);
+    });
+  });
+
+  group('rule-aware finishing', () {
+    test('maxCheckoutFor: 170 under double-out, 180 under master/straight', () {
+      expect(maxCheckoutFor(X01OutRule.double), 170);
+      expect(maxCheckoutFor(X01OutRule.master), 180);
+      expect(maxCheckoutFor(X01OutRule.straight), 180);
+    });
+
+    test('the double-out default is unchanged', () {
+      expect(route(96, 3), 'T20 D18');
+    });
+
+    for (final outRule in [X01OutRule.master, X01OutRule.straight]) {
+      group('under ${outRule.label}-out', () {
+        test('every suggested route is legal, for every reachable score', () {
+          final max = maxCheckoutFor(outRule);
+          for (var score = 1; score <= max; score++) {
+            for (var dartsLeft = 1; dartsLeft <= 3; dartsLeft++) {
+              for (final candidate in findCheckouts(
+                score,
+                dartsLeft,
+                outRule: outRule,
+              )) {
+                expect(
+                  candidate.total,
+                  score,
+                  reason: '$candidate does not add up to $score',
+                );
+                expect(
+                  outRule.checksOut(candidate.finish),
+                  isTrue,
+                  reason: '$candidate finishes on a segment that cannot '
+                      'check out under $outRule',
+                );
+                expect(candidate.darts.length, lessThanOrEqualTo(dartsLeft));
+              }
+            }
+          }
+        });
+
+        test('nothing above the rule maximum can be finished', () {
+          final max = maxCheckoutFor(outRule);
+          expect(findCheckouts(max + 1, 3, outRule: outRule), isEmpty);
+        });
+      });
+    }
+
+    test('straight-out can finish from 1, unlike double or master', () {
+      expect(
+        findCheckouts(1, 1, outRule: X01OutRule.straight),
+        isNotEmpty,
+      );
+      expect(findCheckouts(1, 1, outRule: X01OutRule.double), isEmpty);
+      expect(findCheckouts(1, 1, outRule: X01OutRule.master), isEmpty);
+    });
+
+    test('master-out can finish on a triple', () {
+      final routes = findCheckouts(60, 1, outRule: X01OutRule.master);
+      expect(routes, isNotEmpty);
+      expect(routes.first.finish, const Segment(20, Ring.triple));
+    });
+
+    test('180 is the highest master/straight finish, via three triples', () {
+      expect(
+        findCheckouts(180, 3, outRule: X01OutRule.master),
+        isNotEmpty,
+      );
+      expect(
+        findCheckouts(181, 3, outRule: X01OutRule.master),
+        isEmpty,
+      );
     });
   });
 
