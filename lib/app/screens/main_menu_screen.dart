@@ -13,10 +13,12 @@ import 'roster_screen.dart';
 import 'select_game_mode_screen.dart';
 import 'settings_screen.dart';
 import 'stats_screen.dart';
+import 'training_setup_screen.dart';
 
-/// The app's front door. Everything else hangs off one of the five actions
-/// here, in the order a returning player actually wants them: pick a leg
-/// back up if one is open, otherwise start a new one; statistics is a
+/// The app's front door. Everything else hangs off one of the actions here,
+/// in the order a returning player actually wants them: pick a leg back up
+/// if one is open, otherwise start a new one; training sits right below Play
+/// because it is the other place darts actually get thrown; statistics is a
 /// routine visit so it outranks roster, which is mostly a once-per-guest
 /// chore; settings is last because it is rarely touched at all.
 class MainMenuScreen extends ConsumerWidget {
@@ -143,6 +145,19 @@ class MainMenuScreen extends ConsumerWidget {
                 StaggeredEntry(
                   index: 2,
                   child: _MenuRow(
+                    key: const Key('menu-training-row'),
+                    icon: Icons.fitness_center,
+                    label: 'Training',
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (context) => const TrainingSetupScreen(),
+                      ),
+                    ),
+                  ),
+                ),
+                StaggeredEntry(
+                  index: 3,
+                  child: _MenuRow(
                     key: const Key('menu-statistics-row'),
                     icon: Icons.insights,
                     label: 'Statistics',
@@ -154,7 +169,7 @@ class MainMenuScreen extends ConsumerWidget {
                   ),
                 ),
                 StaggeredEntry(
-                  index: 3,
+                  index: 4,
                   child: _MenuRow(
                     key: const Key('menu-roster-row'),
                     icon: Icons.people_outline,
@@ -167,7 +182,7 @@ class MainMenuScreen extends ConsumerWidget {
                   ),
                 ),
                 StaggeredEntry(
-                  index: 4,
+                  index: 5,
                   child: _MenuRow(
                     key: const Key('menu-settings-row'),
                     icon: Icons.settings_outlined,

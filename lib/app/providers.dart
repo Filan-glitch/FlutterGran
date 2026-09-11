@@ -29,9 +29,11 @@ import '../domain/x01/match_state.dart';
 import 'atc_controller.dart';
 import 'audio/sound_controller.dart';
 import 'audio/sound_player.dart';
+import 'audio/training_sound.dart';
 import 'bulling_controller.dart';
 import 'game_controller.dart';
 import 'match_controller.dart';
+import 'training_controller.dart';
 
 /// The board the app is reading.
 ///
@@ -155,6 +157,14 @@ final bullingConfigProvider =
 final bullingGameProvider =
     NotifierProvider<BullingController, BullingSession>(
       BullingController.new,
+    );
+
+/// The training session on screen. Never fed by [gameRepositoryProvider] and
+/// never sets [currentGameIdProvider] - see [TrainingController] for why that
+/// is the whole persistence story.
+final trainingProvider =
+    NotifierProvider<TrainingController, TrainingSession>(
+      TrainingController.new,
     );
 
 final matchProvider = NotifierProvider<MatchController, MatchSession?>(
@@ -461,4 +471,43 @@ final soundControllerProvider = Provider<SoundController>((ref) {
   });
 
   return controller;
+});
+
+/// Watches the training session and plays what it hears.
+///
+/// Deliberately not [SoundController]: that class's `observe` is hard-wired
+/// to [soundsFor] and `GameSession`. This is the same "screen just watches
+/// it to keep it alive" idiom with [soundsForTraining] in place of
+/// [soundsFor].
+final trainingSoundControllerProvider = Provider<void>((ref) {
+  final player = ref.watch(soundPlayerProvider);
+
+  ref.listen(trainingProvider, (previous, next) {
+    if (!ref.read(soundEnabledProvider)) {
+      player.silence();
+      return;
+    }
+
+    for (final sound in soundsForTraining(previous, next)) {
+      switch (sound.channel) {
+        case SoundChannel.cue:
+          player.playCue(sound.asset);
+        case SoundChannel.speech:
+          if (ref.read(speechEnabledProvider)) {
+            player.playSpeech(sound.asset, after: sound.delay);
+          }
+      }
+    }
+  });
+
+  // Same immediate-silence idiom [soundControllerProvider] uses: without
+  // this, a line already queued behind a delayed checkout cue would keep
+  // waiting to speak until the next training dart, well after the toggle
+  // that was supposed to silence it.
+  ref.listen(soundEnabledProvider, (_, enabled) {
+    if (!enabled) player.silence();
+  });
+  ref.listen(speechEnabledProvider, (_, enabled) {
+    if (!enabled) player.silence();
+  });
 });
