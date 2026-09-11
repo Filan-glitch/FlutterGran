@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart' show Locale;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -438,6 +439,52 @@ final soundEnabledProvider = NotifierProvider<BoolSetting, bool>(
 /// dart cue with it.
 final speechEnabledProvider = NotifierProvider<BoolSetting, bool>(
   () => BoolSetting('speech.enabled'),
+);
+
+/// The app's language, or null to follow the device's own.
+///
+/// Same shape as [BoolSetting] - shared_preferences, a synchronous default
+/// corrected a frame later if a stored value disagrees - but for a `Locale?`
+/// rather than a `bool`. Null is stored as the key's absence rather than as
+/// some sentinel string, so "System" round-trips exactly: nothing was ever
+/// written for it in the first place.
+class LocaleSetting extends Notifier<Locale?> {
+  static const _key = 'app.locale';
+
+  @override
+  Locale? build() {
+    unawaited(_load());
+    return null;
+  }
+
+  Future<void> _load() async {
+    final stored = (await _preferences())?.getString(_key);
+    if (stored != null) state = Locale(stored);
+  }
+
+  Future<void> set(Locale? value) async {
+    state = value;
+    final preferences = await _preferences();
+    if (value == null) {
+      await preferences?.remove(_key);
+    } else {
+      await preferences?.setString(_key, value.languageCode);
+    }
+  }
+
+  /// Null when there is no platform behind the channel - see the identical
+  /// note on [BoolSetting._preferences].
+  Future<SharedPreferences?> _preferences() async {
+    try {
+      return await SharedPreferences.getInstance();
+    } on MissingPluginException {
+      return null;
+    }
+  }
+}
+
+final localeProvider = NotifierProvider<LocaleSetting, Locale?>(
+  LocaleSetting.new,
 );
 
 /// The x01 setup screen's remembered defaults: whatever was picked last time.

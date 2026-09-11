@@ -2,24 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'app/providers.dart';
 import 'app/screens/splash_screen.dart';
 import 'app/theme.dart';
+import 'l10n/app_localizations.dart';
 
 void main() {
   runApp(const ProviderScope(child: FlutterGranApp()));
 }
 
-class FlutterGranApp extends StatelessWidget {
+class FlutterGranApp extends ConsumerWidget {
   const FlutterGranApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
       title: 'Chalk',
       // One theme, always dark. A scoreboard read across a room in a garage
       // has no business being white, and a light variant would mean a second
       // set of decisions for a situation that does not arise.
       theme: buildTheme(),
+      // Null follows the device's own language when it is one of
+      // [AppLocalizations.supportedLocales], and falls back to the first
+      // supported locale (English) otherwise - exactly the default the
+      // Settings screen's Language section offers as "System". Picking
+      // English or German there stores a concrete `Locale` here instead.
+      locale: ref.watch(localeProvider),
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
       // The child is the navigator MaterialApp builds around `home`, and is
       // null only for an app that has no routes at all. This one always has
       // one, so the empty case is a placeholder for a state that cannot arise

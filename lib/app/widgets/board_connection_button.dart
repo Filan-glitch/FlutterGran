@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/board/board_source.dart';
+import '../../l10n/app_localizations.dart';
 import '../providers.dart';
 import '../theme.dart';
 
@@ -51,6 +52,7 @@ class _BoardConnectionButtonState extends ConsumerState<BoardConnectionButton> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final state =
         ref.watch(boardConnectionProvider).value ??
         ref.read(boardSourceProvider).currentState;
@@ -59,20 +61,20 @@ class _BoardConnectionButtonState extends ConsumerState<BoardConnectionButton> {
     final String label;
     if (!_attempted) {
       color = Colors.white;
-      label = 'Connect board';
+      label = l10n.connectBoardTooltip;
     } else {
       (color, label) = switch (state) {
         BoardConnectionState.connected => (
           const Color(0xFF3D9C64),
-          'Board connected',
+          l10n.boardConnectedTooltip,
         ),
         BoardConnectionState.scanning || BoardConnectionState.connecting => (
           const Color(0xFF3B82F6),
-          'Connecting to board…',
+          l10n.connectingToBoardTooltip,
         ),
         BoardConnectionState.disconnected => (
           const Color(0xFFBF3B30),
-          'Board disconnected',
+          l10n.boardDisconnectedTooltip,
         ),
       };
     }

@@ -5,6 +5,7 @@ import '../../domain/checkout/checkout_search.dart';
 import '../../domain/training/free_practice_state.dart';
 import '../../domain/x01/leg_state.dart';
 import '../../domain/x01/thrown_dart.dart';
+import '../../l10n/app_localizations.dart';
 import '../providers.dart';
 import '../theme.dart';
 import '../training_controller.dart';
@@ -18,6 +19,7 @@ class TrainingGameScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final session = ref.watch(trainingProvider);
     final controller = ref.read(trainingProvider.notifier);
 
@@ -32,9 +34,10 @@ class TrainingGameScreen extends ConsumerWidget {
     };
 
     final routes = switch (session) {
-      CheckoutPracticeSession(:final leg) when !leg.isFinished => ref
-          .watch(checkoutTableProvider(leg.config.outRule))
-          .routesFor(leg.currentRemaining, leg.dartsLeftThisTurn),
+      CheckoutPracticeSession(:final leg) when !leg.isFinished =>
+        ref
+            .watch(checkoutTableProvider(leg.config.outRule))
+            .routesFor(leg.currentRemaining, leg.dartsLeftThisTurn),
       _ => const <CheckoutRoute>[],
     };
 
@@ -55,16 +58,16 @@ class TrainingGameScreen extends ConsumerWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Text(switch (session) {
-            FreePracticeSession() => 'FREE PRACTICE',
+            FreePracticeSession() => l10n.freePracticeLabel,
             CheckoutPracticeSession(:final startScore) =>
-              '$startScore · CHECKOUT PRACTICE',
+              l10n.checkoutPracticeWithScore(startScore),
           }),
           actions: [
             const BoardConnectionButton(),
             IconButton(
               onPressed: darts.isEmpty ? null : controller.undo,
               icon: const Icon(Icons.undo),
-              tooltip: 'Undo last dart',
+              tooltip: l10n.undoLastDartTooltip,
             ),
             const SizedBox(width: Gap.xs),
           ],
@@ -97,6 +100,7 @@ class _FreePracticeBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final darts = practice.currentTurnDarts;
     final total = darts.fold<int>(0, (sum, dart) => sum + dart.value);
 
@@ -107,15 +111,15 @@ class _FreePracticeBody extends StatelessWidget {
         const SizedBox(height: Gap.xl),
         _StatGrid(
           stats: [
-            _Stat('DARTS', '${practice.dartsThrown}'),
+            _Stat(l10n.statDarts, '${practice.dartsThrown}'),
             _Stat(
-              'AVERAGE',
+              l10n.statAverage,
               practice.average == null
                   ? '—'
                   : practice.average!.toStringAsFixed(1),
             ),
-            _Stat('BEST TURN', practice.bestTurn?.toString() ?? '—'),
-            _Stat('180s', '${practice.oneEightyCount}'),
+            _Stat(l10n.statBestTurn, practice.bestTurn?.toString() ?? '—'),
+            _Stat(l10n.figure180s, '${practice.oneEightyCount}'),
           ],
         ),
       ],
@@ -168,7 +172,9 @@ class _CheckoutPracticeBody extends StatelessWidget {
         ),
         const SizedBox(height: Gap.md),
         Text(
-          'CHECKOUTS THIS SESSION: $checkoutsCompleted',
+          AppLocalizations.of(
+            context,
+          )!.checkoutsThisSession(checkoutsCompleted),
           style: Type.eyebrow.copyWith(color: Palette.chalkDim),
         ),
       ],
@@ -189,21 +195,25 @@ class _CheckedOutPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(Gap.lg),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('CHECKED OUT', style: Type.title.copyWith(color: Palette.live)),
+            Text(
+              l10n.checkedOutLabel,
+              style: Type.title.copyWith(color: Palette.live),
+            ),
             const SizedBox(height: Gap.sm),
             Text(
-              'in $dartsThrown dart${dartsThrown == 1 ? '' : 's'}',
+              l10n.inDartsCount(dartsThrown),
               style: Type.body.copyWith(color: Palette.chalkDim),
             ),
             const SizedBox(height: Gap.md),
             Text(
-              'CHECKOUTS THIS SESSION: $checkoutsCompleted',
+              l10n.checkoutsThisSession(checkoutsCompleted),
               style: Type.eyebrow.copyWith(color: Palette.chalkDim),
             ),
             const SizedBox(height: Gap.xl),
@@ -212,7 +222,7 @@ class _CheckedOutPanel extends StatelessWidget {
               child: FilledButton(
                 key: const Key('throw-again-button'),
                 onPressed: onThrowAgain,
-                child: const Text('THROW AGAIN'),
+                child: Text(l10n.throwAgainButton),
               ),
             ),
             const SizedBox(height: Gap.sm),
@@ -221,7 +231,7 @@ class _CheckedOutPanel extends StatelessWidget {
               child: OutlinedButton(
                 key: const Key('training-done-button'),
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('DONE'),
+                child: Text(l10n.doneButton),
               ),
             ),
           ],
@@ -263,7 +273,7 @@ class _DartRow extends StatelessWidget {
         ConstrainedBox(
           constraints: const BoxConstraints(minWidth: 72),
           child: Text(
-            struck ? 'BUST' : '$total',
+            struck ? AppLocalizations.of(context)!.bustLabel : '$total',
             textAlign: TextAlign.right,
             style: struck
                 ? Type.notation.copyWith(color: Palette.doubleBed)
@@ -330,7 +340,10 @@ class _CheckoutStrip extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text('CHECKOUT', style: Type.eyebrow.copyWith(color: Palette.live)),
+          Text(
+            AppLocalizations.of(context)!.checkoutLabel,
+            style: Type.eyebrow.copyWith(color: Palette.live),
+          ),
           const SizedBox(width: Gap.md),
           Expanded(
             child: Text(
@@ -400,7 +413,10 @@ class _StatTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(stat.label, style: Type.eyebrow.copyWith(color: Palette.chalkDim)),
+          Text(
+            stat.label,
+            style: Type.eyebrow.copyWith(color: Palette.chalkDim),
+          ),
           const SizedBox(height: Gap.xs),
           Text(
             stat.value,

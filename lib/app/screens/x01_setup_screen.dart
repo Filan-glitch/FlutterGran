@@ -7,10 +7,34 @@ import '../../data/db/database.dart';
 import '../../domain/x01/game_config.dart';
 import '../../domain/x01/match_state.dart';
 import '../../domain/x01/x01_rules.dart';
+import '../../l10n/app_localizations.dart';
 import '../providers.dart';
 import '../theme.dart';
 import '../widgets/board_connection_button.dart';
 import 'game_screen.dart';
+
+/// How each [X01InRule] reads on the setup chip and the stats screen's
+/// checkout rows - the localized counterpart to [X01InRuleChecks.label],
+/// which domain code (and tests) still use internally. Mirrors
+/// `atc_setup_screen.dart`'s `atcVariantLabel`.
+String x01InRuleLabel(BuildContext context, X01InRule rule) {
+  final l10n = AppLocalizations.of(context)!;
+  return switch (rule) {
+    X01InRule.straight => l10n.x01RuleStraight,
+    X01InRule.double => l10n.x01RuleDouble,
+    X01InRule.master => l10n.x01RuleMaster,
+  };
+}
+
+/// The out-rule counterpart to [x01InRuleLabel].
+String x01OutRuleLabel(BuildContext context, X01OutRule rule) {
+  final l10n = AppLocalizations.of(context)!;
+  return switch (rule) {
+    X01OutRule.straight => l10n.x01RuleStraight,
+    X01OutRule.double => l10n.x01RuleDouble,
+    X01OutRule.master => l10n.x01RuleMaster,
+  };
+}
 
 /// Picks the x01 format and who is playing it, then starts a persisted leg.
 ///
@@ -94,9 +118,11 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
           ),
         );
     unawaited(
-      ref
-          .read(x01DefaultsProvider.notifier)
-          .update((startScore: _startScore, inRule: _inRule, outRule: _outRule)),
+      ref.read(x01DefaultsProvider.notifier).update((
+        startScore: _startScore,
+        inRule: _inRule,
+        outRule: _outRule,
+      )),
     );
     if (!mounted) return;
 
@@ -107,6 +133,7 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final players = ref.watch(playersProvider);
 
     // The disk read behind x01DefaultsProvider resolves a frame after
@@ -124,8 +151,11 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('X01 SETUP'),
-        actions: const [BoardConnectionButton(), SizedBox(width: Gap.xs)],
+        title: Text(l10n.x01SetupTitle),
+        actions: const [
+          BoardConnectionButton(),
+          SizedBox(width: Gap.xs),
+        ],
       ),
       body: SafeArea(
         child: CenteredContent(
@@ -134,7 +164,7 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
             children: [
               // The start score set as a scoreboard number rather than a form
               // field: it is the number everyone is about to count down from.
-              const _Eyebrow('Start score'),
+              _Eyebrow(l10n.startScoreLabel),
               const SizedBox(height: Gap.md),
               Row(
                 key: const Key('start-score-row'),
@@ -164,7 +194,7 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
               // need reach - three players can take one each - so the same choice
               // is named for the target it really sets. The stored format does
               // not change with the wording.
-              _Eyebrow(_headToHead ? 'Best of' : 'First to'),
+              _Eyebrow(_headToHead ? l10n.bestOfLabel : l10n.firstToLabel),
               const SizedBox(height: Gap.md),
               Row(
                 children: [
@@ -182,7 +212,7 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
                 ],
               ),
               const SizedBox(height: Gap.lg),
-              const _Eyebrow('In'),
+              _Eyebrow(l10n.inRuleLabel),
               const SizedBox(height: Gap.md),
               Row(
                 key: const Key('in-rule-row'),
@@ -193,7 +223,7 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
                     Expanded(
                       child: _RuleChoice(
                         key: Key('in-rule-${rule.name}'),
-                        label: rule.label,
+                        label: x01InRuleLabel(context, rule),
                         selected: rule == _inRule,
                         onTap: () => setState(() {
                           _inRule = rule;
@@ -205,7 +235,7 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
                 ],
               ),
               const SizedBox(height: Gap.lg),
-              const _Eyebrow('Out'),
+              _Eyebrow(l10n.outRuleLabel),
               const SizedBox(height: Gap.md),
               Row(
                 key: const Key('out-rule-row'),
@@ -216,7 +246,7 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
                     Expanded(
                       child: _RuleChoice(
                         key: Key('out-rule-${rule.name}'),
-                        label: rule.label,
+                        label: x01OutRuleLabel(context, rule),
                         selected: rule == _outRule,
                         onTap: () => setState(() {
                           _outRule = rule;
@@ -230,13 +260,16 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
               const SizedBox(height: Gap.xl),
               Row(
                 children: [
-                  const _Eyebrow('Players'),
+                  _Eyebrow(l10n.playersLabel),
                   const SizedBox(width: Gap.md),
                   Expanded(
                     child: Text(
                       _seats.isEmpty
-                          ? 'tap to add, in throwing order'
-                          : '${_seats.length} of ${GameConfig.maxPlayers}',
+                          ? l10n.tapToAddPlayers
+                          : l10n.seatsOfMax(
+                              _seats.length,
+                              GameConfig.maxPlayers,
+                            ),
                       textAlign: TextAlign.right,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -253,8 +286,8 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
                       controller: _newPlayer,
                       style: Type.body.copyWith(color: Palette.chalk),
                       cursorColor: Palette.live,
-                      decoration: const InputDecoration(
-                        labelText: 'Add a player',
+                      decoration: InputDecoration(
+                        labelText: l10n.addPlayerFieldLabel,
                       ),
                       textInputAction: TextInputAction.done,
                       onSubmitted: (_) => _addPlayer(),
@@ -280,13 +313,13 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
               const SizedBox(height: Gap.md),
               switch (players) {
                 AsyncError(:final error) => Text(
-                  'Could not load players: $error',
+                  l10n.couldNotLoadPlayers('$error'),
                   style: Type.body.copyWith(color: Palette.doubleBed),
                 ),
                 AsyncData(:final value) when value.isEmpty => Padding(
                   padding: const EdgeInsets.symmetric(vertical: Gap.xl),
                   child: Text(
-                    'No players yet. Add the first one above.',
+                    l10n.noPlayersYet,
                     style: Type.body.copyWith(color: Palette.chalkDim),
                   ),
                 ),
@@ -313,10 +346,10 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
               onPressed: _seats.isEmpty ? null : _start,
               child: Text(
                 _seats.isEmpty
-                    ? 'PICK AT LEAST ONE PLAYER'
+                    ? l10n.pickAtLeastOnePlayer
                     : _legsToPlay == 1
-                    ? 'START LEG'
-                    : 'START BEST OF $_legsToPlay',
+                    ? l10n.startLeg
+                    : l10n.startBestOf(_legsToPlay),
               ),
             ),
           ),
@@ -371,7 +404,9 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.close, size: 18),
-                  tooltip: 'Remove ${player.name}',
+                  tooltip: AppLocalizations.of(
+                    context,
+                  )!.removePlayerTooltip(player.name),
                   onPressed: () async {
                     setState(() => _seats.remove(player.id));
                     await ref

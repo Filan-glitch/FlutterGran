@@ -7,6 +7,7 @@ import 'package:fluttergran/app/screens/roster_screen.dart';
 import 'package:fluttergran/app/theme.dart';
 import 'package:fluttergran/data/db/database.dart';
 import 'package:fluttergran/data/db/game_repository.dart';
+import 'package:fluttergran/l10n/app_localizations.dart';
 
 void main() {
   late AppDatabase database;
@@ -39,7 +40,12 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: MaterialApp(theme: buildTheme(), home: const RosterScreen()),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: buildTheme(),
+          home: const RosterScreen(),
+        ),
       ),
     );
     await frames(tester);

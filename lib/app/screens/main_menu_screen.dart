@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/game_mode.dart';
+import '../../l10n/app_localizations.dart';
 import '../providers.dart';
 import '../theme.dart';
 import 'atc_game_screen.dart';
@@ -88,6 +89,7 @@ class MainMenuScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     // Only offered once it has actually been left - while it is open the
     // game screen owns it, and offering to resume what is already on screen
     // is nonsense.
@@ -137,7 +139,7 @@ class MainMenuScreen extends ConsumerWidget {
                           builder: (context) => const SelectGameModeScreen(),
                         ),
                       ),
-                      child: const Text('PLAY'),
+                      child: Text(l10n.playButton),
                     ),
                   ),
                 ),
@@ -147,7 +149,7 @@ class MainMenuScreen extends ConsumerWidget {
                   child: _MenuRow(
                     key: const Key('menu-training-row'),
                     icon: Icons.fitness_center,
-                    label: 'Training',
+                    label: l10n.trainingMenuLabel,
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute<void>(
                         builder: (context) => const TrainingSetupScreen(),
@@ -160,7 +162,7 @@ class MainMenuScreen extends ConsumerWidget {
                   child: _MenuRow(
                     key: const Key('menu-statistics-row'),
                     icon: Icons.insights,
-                    label: 'Statistics',
+                    label: l10n.statisticsMenuLabel,
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute<void>(
                         builder: (context) => const StatsScreen(),
@@ -173,7 +175,7 @@ class MainMenuScreen extends ConsumerWidget {
                   child: _MenuRow(
                     key: const Key('menu-roster-row'),
                     icon: Icons.people_outline,
-                    label: 'Roster',
+                    label: l10n.rosterMenuLabel,
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute<void>(
                         builder: (context) => const RosterScreen(),
@@ -186,7 +188,7 @@ class MainMenuScreen extends ConsumerWidget {
                   child: _MenuRow(
                     key: const Key('menu-settings-row'),
                     icon: Icons.settings_outlined,
-                    label: 'Settings',
+                    label: l10n.settingsMenuLabel,
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute<void>(
                         builder: (context) => const SettingsScreen(),
@@ -292,6 +294,7 @@ class _ResumeBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final resumable = this.resumable;
     final (format, playerIds, currentPlayerId, figures) = switch (resumable) {
       ResumableX01Leg(:final leg) => (
@@ -304,7 +307,7 @@ class _ResumeBanner extends StatelessWidget {
       ),
       ResumableAtcLeg(:final leg) => (
         '${_modeName(GameMode.aroundTheClock)} · '
-            '${atcVariantLabel(leg.config.variant)}',
+            '${atcVariantLabel(context, leg.config.variant)}',
         leg.config.playerIds,
         leg.currentPlayerId,
         <int, String>{
@@ -314,7 +317,7 @@ class _ResumeBanner extends StatelessWidget {
       ),
       ResumableBullingLeg(:final leg) => (
         '${_modeName(GameMode.bulling)} · '
-            '${bullseyeValueLabel(leg.config.bullseyeValue)} · '
+            '${bullseyeValueLabel(context, leg.config.bullseyeValue)} · '
             '${leg.config.target}',
         leg.config.playerIds,
         leg.currentPlayerId,
@@ -344,7 +347,7 @@ class _ResumeBanner extends StatelessWidget {
                   Pulse(
                     min: 0.75,
                     child: Text(
-                      'LEG IN PROGRESS',
+                      l10n.legInProgressLabel,
                       style: Type.eyebrow.copyWith(color: Palette.live),
                     ),
                   ),
@@ -370,7 +373,7 @@ class _ResumeBanner extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          nameFor(names, playerId).toUpperCase(),
+                          nameFor(context, names, playerId).toUpperCase(),
                           style: Type.eyebrow.copyWith(
                             color: playerId == currentPlayerId
                                 ? Palette.live
@@ -391,7 +394,7 @@ class _ResumeBanner extends StatelessWidget {
                   ],
                   const Spacer(),
                   Text(
-                    'RESUME',
+                    l10n.resumeLabel,
                     style: Type.eyebrow.copyWith(color: Palette.live),
                   ),
                   const SizedBox(width: Gap.xs),

@@ -15,6 +15,7 @@ import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/leg_state.dart';
 import 'package:fluttergran/domain/x01/match_state.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
+import 'package:fluttergran/l10n/app_localizations.dart';
 
 /// Silent, so the end of a leg does not go looking for an audio plugin.
 class _MutePlayer implements SoundPlayer {
@@ -81,7 +82,12 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: MaterialApp(theme: buildTheme(), home: const GameScreen()),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: buildTheme(),
+          home: const GameScreen(),
+        ),
       ),
     );
     await frames(tester);

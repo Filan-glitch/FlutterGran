@@ -7,9 +7,11 @@ import '../../domain/game_mode.dart';
 import '../../domain/segment.dart';
 import '../../domain/stats/mode_stats.dart';
 import '../../domain/x01/x01_rules.dart';
+import '../../l10n/app_localizations.dart';
 import '../providers.dart';
 import '../theme.dart';
 import '../widgets/board_widget.dart';
+import 'x01_setup_screen.dart' show x01OutRuleLabel;
 
 /// A player's record across every leg they have played.
 class StatsScreen extends ConsumerStatefulWidget {
@@ -24,12 +26,13 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final players = ref.watch(playersProvider).value ?? const <Player>[];
     final selected = _playerId ?? (players.isEmpty ? null : players.first.id);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('STATISTICS'),
+        title: Text(l10n.statisticsTitle),
         actions: [
           if (players.isNotEmpty)
             Padding(
@@ -55,8 +58,8 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
       body: SafeArea(
         child: selected == null
             ? _Empty(
-                headline: 'No players yet',
-                detail: 'Add one on the setup screen to start a record.',
+                headline: l10n.noPlayersYetHeadline,
+                detail: l10n.noPlayersYetDetail,
               )
             : _Body(playerId: selected),
       ),
@@ -71,6 +74,7 @@ class _Body extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final statsByMode = ref.watch(playerStatsProvider(playerId));
     // Read as absent keys rather than assumed present, which is the honest
     // contract of a map keyed by mode - what keeps this code unchanged when
@@ -88,8 +92,8 @@ class _Body extends ConsumerWidget {
 
     if (!hasX01 && !hasAtc && !hasBulling) {
       return _Empty(
-        headline: 'No legs yet',
-        detail: 'Play a leg and every dart in it lands here.',
+        headline: l10n.noLegsYetHeadline,
+        detail: l10n.noLegsYetDetail,
       );
     }
 
@@ -100,7 +104,7 @@ class _Body extends ConsumerWidget {
           if (hasX01) ...[
             // A mode label above its section, so a second mode's section reads
             // as a distinct record rather than more rows appended to this one.
-            const _Eyebrow('X01'),
+            _Eyebrow(l10n.x01Label),
             const SizedBox(height: Gap.sm),
             // The three-dart average is the number a darts player quotes when
             // asked how they play, so it is the headline and everything else
@@ -109,29 +113,27 @@ class _Body extends ConsumerWidget {
               value: x01.average == null
                   ? '—'
                   : x01.average!.toStringAsFixed(2),
-              label: 'Three-dart average',
-              detail:
-                  '${x01.dartsThrown} darts over ${x01.legsPlayed} '
-                  '${x01.legsPlayed == 1 ? 'leg' : 'legs'}',
+              label: l10n.threeDartAverageLabel,
+              detail: l10n.dartsOverLegs(x01.dartsThrown, x01.legsPlayed),
             ),
             const SizedBox(height: Gap.xl),
             _Section(
-              title: 'Scoring',
+              title: l10n.scoringSectionTitle,
               rows: [
-                _Row('First 9 average', _decimal(x01.firstNineAverage)),
-                _Row('Best turn', '${x01.bestTurn}'),
+                _Row(l10n.firstNineAverageRow, _decimal(x01.firstNineAverage)),
+                _Row(l10n.bestTurnRow, '${x01.bestTurn}'),
                 _Row(
-                  '180s',
+                  l10n.figure180s,
                   '${x01.turnsOf180}',
                   milestone: x01.turnsOf180 > 0,
                 ),
-                _Row('140+', '${x01.turnsOf140Plus}'),
-                _Row('100+', '${x01.turnsOf100Plus}'),
-                _Row('60+', '${x01.turnsOf60Plus}'),
+                _Row(l10n.oneFortyPlusRow, '${x01.turnsOf140Plus}'),
+                _Row(l10n.oneHundredPlusRow, '${x01.turnsOf100Plus}'),
+                _Row(l10n.sixtyPlusRow, '${x01.turnsOf60Plus}'),
               ],
             ),
             _Section(
-              title: 'Finishing',
+              title: l10n.finishingSectionTitle,
               rows: [
                 // One row pair per out-rule the player has actually played a
                 // leg under, rather than one aggregate figure mixing
@@ -140,30 +142,32 @@ class _Body extends ConsumerWidget {
                 for (final rule in X01OutRule.values)
                   if (x01.checkoutsByRule[rule] case final checkout?) ...[
                     _Row(
-                      '${rule.label} checkout',
+                      l10n.ruleCheckoutRow(x01OutRuleLabel(context, rule)),
                       _percent(x01.checkoutRateFor(rule)),
                     ),
                     _Row(
-                      '${rule.label} darts at finish',
+                      l10n.ruleDartsAtFinishRow(x01OutRuleLabel(context, rule)),
                       '${checkout.finishesHit}/${checkout.dartsAtFinish}',
                     ),
                   ],
                 _Row(
-                  'Best checkout',
+                  l10n.bestCheckoutRow,
                   _optional(x01.bestCheckout),
                   milestone: x01.bestCheckout != null,
                 ),
                 _Row(
-                  'Best leg',
-                  _optional(x01.fewestDartsToWin, suffix: ' darts'),
+                  l10n.bestLegRow,
+                  x01.fewestDartsToWin == null
+                      ? '—'
+                      : l10n.dartsCount(x01.fewestDartsToWin!),
                 ),
               ],
             ),
             _Section(
-              title: 'Legs',
+              title: l10n.legsSectionTitle,
               rows: [
-                _Row('Won', '${x01.legsWon} of ${x01.legsPlayed}'),
-                _Row('Win rate', _percent(x01.winRate)),
+                _Row(l10n.wonLabel, l10n.wonRatio(x01.legsWon, x01.legsPlayed)),
+                _Row(l10n.winRateLabel, _percent(x01.winRate)),
               ],
             ),
             // Its own section, under the legs rather than mixed into them: a
@@ -171,37 +175,42 @@ class _Body extends ConsumerWidget {
             // figures above have always meant legs.
             if (x01.matchesPlayed > 0)
               _Section(
-                title: 'Matches',
+                title: l10n.matchesSectionTitle,
                 rows: [
-                  _Row('Won', '${x01.matchesWon} of ${x01.matchesPlayed}'),
-                  _Row('Win rate', _percent(x01.matchWinRate)),
+                  _Row(
+                    l10n.wonLabel,
+                    l10n.wonRatio(x01.matchesWon, x01.matchesPlayed),
+                  ),
+                  _Row(l10n.winRateLabel, _percent(x01.matchWinRate)),
                 ],
               ),
           ],
           if (hasAtc) ...[
             if (hasX01) const SizedBox(height: Gap.xl),
-            const _Eyebrow('AROUND THE CLOCK'),
+            _Eyebrow(l10n.aroundTheClockLabel),
             const SizedBox(height: Gap.sm),
             _Headline(
               value: _percent(atc.hitRate),
-              label: 'Hit rate',
-              detail: '${atc.qualifyingDarts} of ${atc.dartsThrown} darts',
+              label: l10n.hitRateLabel,
+              detail: l10n.xOfYDarts(atc.qualifyingDarts, atc.dartsThrown),
             ),
             const SizedBox(height: Gap.xl),
             _Section(
-              title: 'Legs',
+              title: l10n.legsSectionTitle,
               rows: [
-                _Row('Won', '${atc.legsWon} of ${atc.legsPlayed}'),
-                _Row('Win rate', _percent(atc.winRate)),
+                _Row(l10n.wonLabel, l10n.wonRatio(atc.legsWon, atc.legsPlayed)),
+                _Row(l10n.winRateLabel, _percent(atc.winRate)),
                 _Row(
-                  'Best leg',
-                  _optional(atc.fewestDartsToWin, suffix: ' darts'),
+                  l10n.bestLegRow,
+                  atc.fewestDartsToWin == null
+                      ? '—'
+                      : l10n.dartsCount(atc.fewestDartsToWin!),
                 ),
               ],
             ),
             if (_weakestStops(atc.perStop) case final weak when weak.isNotEmpty)
               _Section(
-                title: 'Weak spots',
+                title: l10n.weakSpotsSectionTitle,
                 rows: [
                   for (final entry in weak)
                     _Row(
@@ -213,44 +222,47 @@ class _Body extends ConsumerWidget {
           ],
           if (hasBulling) ...[
             if (hasX01 || hasAtc) const SizedBox(height: Gap.xl),
-            const _Eyebrow('BULLING'),
+            _Eyebrow(l10n.bullingLabel),
             const SizedBox(height: Gap.sm),
             _Headline(
               value: _percent(bulling.hitRate),
-              label: 'Hit rate',
-              detail: '${bulling.scoringDarts} of ${bulling.dartsThrown} darts',
+              label: l10n.hitRateLabel,
+              detail: l10n.xOfYDarts(bulling.scoringDarts, bulling.dartsThrown),
             ),
             const SizedBox(height: Gap.xl),
             _Section(
-              title: 'Legs',
+              title: l10n.legsSectionTitle,
               rows: [
-                _Row('Won', '${bulling.legsWon} of ${bulling.legsPlayed}'),
-                _Row('Win rate', _percent(bulling.winRate)),
                 _Row(
-                  'Best leg',
-                  _optional(bulling.fewestDartsToWin, suffix: ' darts'),
+                  l10n.wonLabel,
+                  l10n.wonRatio(bulling.legsWon, bulling.legsPlayed),
+                ),
+                _Row(l10n.winRateLabel, _percent(bulling.winRate)),
+                _Row(
+                  l10n.bestLegRow,
+                  bulling.fewestDartsToWin == null
+                      ? '—'
+                      : l10n.dartsCount(bulling.fewestDartsToWin!),
                 ),
               ],
             ),
             _Section(
-              title: 'Scoring',
+              title: l10n.scoringSectionTitle,
               rows: [
-                _Row('Points scored', '${bulling.pointsScored}'),
-                _Row('Outer bull hits', '${bulling.outerBullHits}'),
-                _Row('Bullseye hits', '${bulling.innerBullHits}'),
+                _Row(l10n.pointsScoredRow, '${bulling.pointsScored}'),
+                _Row(l10n.outerBullHitsRow, '${bulling.outerBullHits}'),
+                _Row(l10n.bullseyeHitsRow, '${bulling.innerBullHits}'),
               ],
             ),
           ],
           const SizedBox(height: Gap.lg),
           Text(
-            'WHERE THE DARTS LAND',
+            l10n.whereDartsLandTitle,
             style: Type.eyebrow.copyWith(color: Palette.chalkDim),
           ),
           const SizedBox(height: Gap.xs),
           Text(
-            counts.isEmpty
-                ? 'No darts recorded yet.'
-                : 'Shaded against the busiest segment.',
+            counts.isEmpty ? l10n.noDartsRecorded : l10n.shadedAgainstBusiest,
             style: Type.label.copyWith(color: Palette.chalkDim),
           ),
           const SizedBox(height: Gap.md),
@@ -295,8 +307,7 @@ class _Body extends ConsumerWidget {
   static String _percent(double? value) =>
       value == null ? '—' : '${(value * 100).toStringAsFixed(0)}%';
 
-  static String _optional(int? value, {String suffix = ''}) =>
-      value == null ? '—' : '$value$suffix';
+  static String _optional(int? value) => value == null ? '—' : '$value';
 }
 
 /// A small tracked-caps label marking which mode's section follows, matching

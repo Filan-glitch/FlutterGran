@@ -1,0 +1,263 @@
+{
+  "@@locale": "en",
+
+  "selectGameModeTitle": "SELECT GAME MODE",
+  "comingSoonLabel": "COMING SOON",
+  "moreModesComingLabel": "MORE MODES COMING",
+
+  "x01SetupTitle": "X01 SETUP",
+  "startScoreLabel": "Start score",
+  "bestOfLabel": "Best of",
+  "firstToLabel": "First to",
+  "inRuleLabel": "In",
+  "outRuleLabel": "Out",
+  "playersLabel": "Players",
+  "tapToAddPlayers": "tap to add, in throwing order",
+  "seatsOfMax": "{seated} of {max}",
+  "@seatsOfMax": {
+    "placeholders": { "seated": { "type": "int" }, "max": { "type": "int" } }
+  },
+  "addPlayerFieldLabel": "Add a player",
+  "couldNotLoadPlayers": "Could not load players: {error}",
+  "@couldNotLoadPlayers": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "noPlayersYet": "No players yet. Add the first one above.",
+  "removePlayerTooltip": "Remove {name}",
+  "@removePlayerTooltip": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "pickAtLeastOnePlayer": "PICK AT LEAST ONE PLAYER",
+  "startLeg": "START LEG",
+  "startBestOf": "START BEST OF {legs}",
+  "@startBestOf": {
+    "placeholders": { "legs": { "type": "int" } }
+  },
+  "x01RuleStraight": "Straight",
+  "x01RuleDouble": "Double",
+  "x01RuleMaster": "Master",
+
+  "rosterTitle": "ROSTER",
+  "removedPlayerSnackbar": "Removed {name}",
+  "@removedPlayerSnackbar": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "undoLabel": "UNDO",
+
+  "playButton": "PLAY",
+  "trainingMenuLabel": "Training",
+  "statisticsMenuLabel": "Statistics",
+  "rosterMenuLabel": "Roster",
+  "settingsMenuLabel": "Settings",
+  "legInProgressLabel": "LEG IN PROGRESS",
+  "resumeLabel": "RESUME",
+
+  "settingsTitle": "SETTINGS",
+  "soundSectionTitle": "Sound",
+  "cuesAndCommentaryLabel": "Cues and commentary",
+  "cuesAndCommentaryDetail": "A click per dart, a buzz on a bust, a fanfare for a 180",
+  "spokenTotalsLabel": "Spoken totals",
+  "spokenTotalsDetail": "Each turn read out loud",
+  "languageSectionTitle": "Language",
+  "languageSystemOption": "System",
+  "languageEnglishOption": "English",
+  "languageGermanOption": "German",
+
+  "atcSetupTitle": "AROUND THE CLOCK SETUP",
+  "variantLabel": "Variant",
+  "atcVariantAnyPart": "ANY PART",
+  "atcVariantMasters": "MASTERS",
+  "atcVariantDoublesOnly": "DOUBLES ONLY",
+
+  "bullingSetupTitle": "BULLING SETUP",
+  "bullseyeValueSectionLabel": "Bullseye value",
+  "bullseyeValueTwo": "BULLSEYE = 2",
+  "bullseyeValueThree": "BULLSEYE = 3",
+  "targetLabel": "Target",
+
+  "trainingSetupTitle": "TRAINING",
+  "drillLabel": "Drill",
+  "freePracticeLabel": "FREE PRACTICE",
+  "freePracticeTagline": "throw and see what you hit",
+  "checkoutPracticeLabel": "CHECKOUT PRACTICE",
+  "checkoutPracticeTagline": "pick a score, practice finishing it",
+  "startButton": "START",
+
+  "connectBoardTooltip": "Connect board",
+  "boardConnectedTooltip": "Board connected",
+  "connectingToBoardTooltip": "Connecting to board…",
+  "boardDisconnectedTooltip": "Board disconnected",
+
+  "ringSingle": "SINGLE",
+  "ringDouble": "DOUBLE",
+  "ringTreble": "TREBLE",
+  "keyBullLabel": "BULL",
+  "keyMissLabel": "MISS",
+  "semanticDoubleKey": "double {label}",
+  "@semanticDoubleKey": {
+    "placeholders": { "label": { "type": "String" } }
+  },
+  "semanticTrebleKey": "treble {label}",
+  "@semanticTrebleKey": {
+    "placeholders": { "label": { "type": "String" } }
+  },
+
+  "playerFallbackName": "Player {id}",
+  "@playerFallbackName": {
+    "placeholders": { "id": { "type": "int" } }
+  },
+  "leaveLegTitle": "Leave this leg?",
+  "leaveLegBody": "Your darts are saved. Resume from the main menu whenever you like.",
+  "stayButton": "STAY",
+  "leaveButton": "LEAVE",
+  "hideManualEntryTooltip": "Hide manual entry",
+  "enterScoreByHandTooltip": "Enter a score by hand",
+  "undoLastDartTooltip": "Undo last dart",
+  "legsCount": "LEGS {count}",
+  "@legsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "avgDash": "AVG —",
+  "avgValue": "AVG {value}",
+  "@avgValue": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+  "bustLabel": "BUST",
+  "wrongButton": "WRONG",
+  "finishButton": "FINISH",
+  "nextPlayerButton": "NEXT PLAYER",
+  "orPressBoardButton": "or press the board button",
+  "legWonLabel": "LEG WON",
+  "throwLegNumber": "THROW LEG {number}",
+  "@throwLegNumber": {
+    "placeholders": { "number": { "type": "int" } }
+  },
+  "standingLegsToWinIt": "{tally} · {left} {left, plural, =1{LEG} other{LEGS}} TO WIN IT",
+  "@standingLegsToWinIt": {
+    "placeholders": { "tally": { "type": "String" }, "left": { "type": "int" } }
+  },
+  "matchWonLabel": "MATCH WON",
+  "earlierLegsCouldNotBeRead": "THE EARLIER LEGS COULD NOT BE READ",
+  "rematchButton": "REMATCH",
+  "backToSetupButton": "BACK TO SETUP",
+  "figureAverage": "AVERAGE",
+  "figureFirstNine": "FIRST NINE",
+  "figure180s": "180s",
+  "figureBestOut": "BEST OUT",
+  "figureBestLeg": "BEST LEG",
+  "checkoutLabel": "CHECKOUT",
+  "scoreArrow": "{before} → {after}",
+  "@scoreArrow": {
+    "placeholders": { "before": { "type": "int" }, "after": { "type": "int" } }
+  },
+  "legWonStatsX01": "{darts} darts · {average} average",
+  "@legWonStatsX01": {
+    "placeholders": { "darts": { "type": "int" }, "average": { "type": "String" } }
+  },
+
+  "throwWhenReady": "THROW WHEN READY",
+  "stopsClearedLabel": "{count, plural, =0{NOTHING CLEARED} =1{1 STOP CLEARED} other{{count} STOPS CLEARED}}",
+  "@stopsClearedLabel": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "nowOnStop": "now on {stop}",
+  "@nowOnStop": {
+    "placeholders": { "stop": { "type": "String" } }
+  },
+  "dartsCount": "{count} darts",
+  "@dartsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "playAgainButton": "PLAY AGAIN",
+
+  "firstToTarget": "FIRST TO {target}",
+  "@firstToTarget": {
+    "placeholders": { "target": { "type": "int" } }
+  },
+  "ofTarget": "of {target}",
+  "@ofTarget": {
+    "placeholders": { "target": { "type": "int" } }
+  },
+  "turnScoredLabel": "{count, plural, =0{NOTHING SCORED} =1{1 POINT SCORED} other{{count} POINTS SCORED}}",
+  "@turnScoredLabel": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "nowOnScore": "now on {score}",
+  "@nowOnScore": {
+    "placeholders": { "score": { "type": "int" } }
+  },
+  "legWonStatsBulling": "{points} points · {darts} darts",
+  "@legWonStatsBulling": {
+    "placeholders": { "points": { "type": "int" }, "darts": { "type": "int" } }
+  },
+
+  "statisticsTitle": "STATISTICS",
+  "noPlayersYetHeadline": "No players yet",
+  "noPlayersYetDetail": "Add one on the setup screen to start a record.",
+  "noLegsYetHeadline": "No legs yet",
+  "noLegsYetDetail": "Play a leg and every dart in it lands here.",
+  "x01Label": "X01",
+  "aroundTheClockLabel": "AROUND THE CLOCK",
+  "bullingLabel": "BULLING",
+  "threeDartAverageLabel": "Three-dart average",
+  "dartsOverLegs": "{darts} darts over {legs} {legs, plural, one{leg} other{legs}}",
+  "@dartsOverLegs": {
+    "placeholders": { "darts": { "type": "int" }, "legs": { "type": "int" } }
+  },
+  "scoringSectionTitle": "Scoring",
+  "firstNineAverageRow": "First 9 average",
+  "bestTurnRow": "Best turn",
+  "oneFortyPlusRow": "140+",
+  "oneHundredPlusRow": "100+",
+  "sixtyPlusRow": "60+",
+  "finishingSectionTitle": "Finishing",
+  "ruleCheckoutRow": "{rule} checkout",
+  "@ruleCheckoutRow": {
+    "placeholders": { "rule": { "type": "String" } }
+  },
+  "ruleDartsAtFinishRow": "{rule} darts at finish",
+  "@ruleDartsAtFinishRow": {
+    "placeholders": { "rule": { "type": "String" } }
+  },
+  "bestCheckoutRow": "Best checkout",
+  "bestLegRow": "Best leg",
+  "legsSectionTitle": "Legs",
+  "wonRatio": "{won} of {played}",
+  "@wonRatio": {
+    "placeholders": { "won": { "type": "int" }, "played": { "type": "int" } }
+  },
+  "wonLabel": "Won",
+  "winRateLabel": "Win rate",
+  "matchesSectionTitle": "Matches",
+  "weakSpotsSectionTitle": "Weak spots",
+  "hitRateLabel": "Hit rate",
+  "xOfYDarts": "{x} of {y} darts",
+  "@xOfYDarts": {
+    "placeholders": { "x": { "type": "int" }, "y": { "type": "int" } }
+  },
+  "pointsScoredRow": "Points scored",
+  "outerBullHitsRow": "Outer bull hits",
+  "bullseyeHitsRow": "Bullseye hits",
+  "whereDartsLandTitle": "WHERE THE DARTS LAND",
+  "noDartsRecorded": "No darts recorded yet.",
+  "shadedAgainstBusiest": "Shaded against the busiest segment.",
+
+  "checkoutPracticeWithScore": "{score} · CHECKOUT PRACTICE",
+  "@checkoutPracticeWithScore": {
+    "placeholders": { "score": { "type": "int" } }
+  },
+  "statDarts": "DARTS",
+  "statAverage": "AVERAGE",
+  "statBestTurn": "BEST TURN",
+  "checkoutsThisSession": "CHECKOUTS THIS SESSION: {count}",
+  "@checkoutsThisSession": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "checkedOutLabel": "CHECKED OUT",
+  "inDartsCount": "in {count, plural, one{{count} dart} other{{count} darts}}",
+  "@inDartsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "throwAgainButton": "THROW AGAIN",
+  "doneButton": "DONE"
+}

@@ -11,6 +11,7 @@ import 'package:fluttergran/app/theme.dart';
 import 'package:fluttergran/data/board/fake_board_source.dart';
 import 'package:fluttergran/data/db/database.dart';
 import 'package:fluttergran/domain/game_mode.dart';
+import 'package:fluttergran/l10n/app_localizations.dart';
 
 /// [SelectGameModeScreen] itself is a plain [StatelessWidget], but tapping
 /// its one real tile pushes [X01SetupScreen], which watches
@@ -52,6 +53,8 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           theme: buildTheme(),
           home: SelectGameModeScreen(modes: modes),
         ),

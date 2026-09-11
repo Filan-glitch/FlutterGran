@@ -37,13 +37,13 @@ const List<GameModeDescriptor> gameModeRegistry = [
   GameModeDescriptor(
     id: GameMode.aroundTheClock,
     displayName: 'AROUND THE CLOCK',
-    tagline: '1-20 · bull · bullseye',
+    tagline: '',
     isAvailable: true,
   ),
   GameModeDescriptor(
     id: GameMode.bulling,
     displayName: 'BULLING',
-    tagline: 'bull · bullseye · race to target',
+    tagline: '21 · 31 · 41',
     isAvailable: true,
   ),
 ];

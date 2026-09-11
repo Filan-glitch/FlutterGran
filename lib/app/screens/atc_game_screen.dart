@@ -7,6 +7,7 @@ import '../../domain/atc/atc_stop.dart';
 import '../../domain/segment.dart';
 import '../../domain/x01/leg_state.dart' show dartsPerTurn;
 import '../../domain/x01/thrown_dart.dart';
+import '../../l10n/app_localizations.dart';
 import '../atc_controller.dart';
 import '../providers.dart';
 import '../theme.dart';
@@ -56,23 +57,23 @@ class AtcGameScreen extends ConsumerWidget {
   }
 
   Future<bool> _confirmLeave(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final leave = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Leave this leg?'),
+        title: Text(l10n.leaveLegTitle),
         content: Text(
-          'Your darts are saved. Resume from the main menu whenever '
-          'you like.',
+          l10n.leaveLegBody,
           style: Type.body.copyWith(color: Palette.chalkDim),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('STAY'),
+            child: Text(l10n.stayButton),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('LEAVE'),
+            child: Text(l10n.leaveButton),
           ),
         ],
       ),
@@ -103,9 +104,11 @@ class AtcGameScreen extends ConsumerWidget {
                 segment,
           };
 
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(atcVariantLabel(leg.config.variant)),
+        title: Text(atcVariantLabel(context, leg.config.variant)),
         actions: [
           if (boardConnected)
             IconButton(
@@ -116,13 +119,13 @@ class AtcGameScreen extends ConsumerWidget {
                 manualOverride ? Icons.videogame_asset : Icons.dialpad,
               ),
               tooltip: manualOverride
-                  ? 'Hide manual entry'
-                  : 'Enter a score by hand',
+                  ? l10n.hideManualEntryTooltip
+                  : l10n.enterScoreByHandTooltip,
             ),
           IconButton(
             onPressed: leg.darts.isEmpty ? null : controller.undo,
             icon: const Icon(Icons.undo),
-            tooltip: 'Undo last dart',
+            tooltip: l10n.undoLastDartTooltip,
           ),
           const SizedBox(width: Gap.xs),
         ],
@@ -183,7 +186,7 @@ class _BoardScoringAlone extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Text(
-        'THROW WHEN READY',
+        AppLocalizations.of(context)!.throwWhenReady,
         style: Type.eyebrow.copyWith(color: Palette.chalkDim),
       ),
     );
@@ -214,7 +217,7 @@ class _Scoreboard extends StatelessWidget {
               if (seat > 0) const VerticalDivider(width: 1),
               Expanded(
                 child: _PlayerColumn(
-                  name: nameFor(names, players[seat]),
+                  name: nameFor(context, names, players[seat]),
                   stop: leg.currentStopFor(players[seat]),
                   live: players[seat] == leg.currentPlayerId && !leg.isFinished,
                   won: leg.winnerId == players[seat],
@@ -379,7 +382,10 @@ class _TurnConfirm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final dartsThrown = turn.darts.map((dart) => dart.label).join('  ·  ');
+    final stopAfter =
+        AtcStop.track[turn.stopAfter.clamp(0, AtcStop.track.length - 1)];
 
     return SingleChildScrollView(
       child: Padding(
@@ -389,21 +395,17 @@ class _TurnConfirm extends StatelessWidget {
             children: [
               const SizedBox(height: Gap.xl),
               Text(
-                nameFor(names, turn.playerId).toUpperCase(),
+                nameFor(context, names, turn.playerId).toUpperCase(),
                 style: Type.eyebrow.copyWith(color: Palette.chalkDim),
               ),
               const SizedBox(height: Gap.md),
               Text(
-                turn.stopsCleared == 0
-                    ? 'NOTHING CLEARED'
-                    : turn.stopsCleared == 1
-                    ? '1 STOP CLEARED'
-                    : '${turn.stopsCleared} STOPS CLEARED',
+                l10n.stopsClearedLabel(turn.stopsCleared),
                 style: Type.score.copyWith(color: Palette.chalk),
               ),
               const SizedBox(height: Gap.sm),
               Text(
-                'now on ${AtcStop.track[turn.stopAfter.clamp(0, AtcStop.track.length - 1)].label}',
+                l10n.nowOnStop(stopAfter.label),
                 style: Type.label.copyWith(color: Palette.chalkDim),
               ),
               if (dartsThrown.isNotEmpty) ...[
@@ -419,7 +421,7 @@ class _TurnConfirm extends StatelessWidget {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: onUndo,
-                      child: const Text('WRONG'),
+                      child: Text(l10n.wrongButton),
                     ),
                   ),
                   const SizedBox(width: Gap.md),
@@ -427,14 +429,18 @@ class _TurnConfirm extends StatelessWidget {
                     flex: 2,
                     child: FilledButton(
                       onPressed: onConfirm,
-                      child: Text(leg.isFinished ? 'FINISH' : 'NEXT PLAYER'),
+                      child: Text(
+                        leg.isFinished
+                            ? l10n.finishButton
+                            : l10n.nextPlayerButton,
+                      ),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: Gap.md),
               Text(
-                'or press the board button',
+                l10n.orPressBoardButton,
                 style: Type.label.copyWith(color: Palette.chalkDim),
               ),
             ],
@@ -460,6 +466,7 @@ class _LegWon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final winner = leg.winnerId!;
 
     return SingleChildScrollView(
@@ -469,20 +476,20 @@ class _LegWon extends StatelessWidget {
           child: Column(
             children: [
               Text(
-                'LEG WON',
+                l10n.legWonLabel,
                 style: Type.eyebrow.copyWith(color: Palette.trebleBed),
               ),
               const SizedBox(height: Gap.md),
               FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
-                  nameFor(names, winner).toUpperCase(),
+                  nameFor(context, names, winner).toUpperCase(),
                   style: Type.score.copyWith(color: Palette.chalk),
                 ),
               ),
               const SizedBox(height: Gap.lg),
               Text(
-                '${leg.dartsThrownBy(winner)} darts',
+                l10n.dartsCount(leg.dartsThrownBy(winner)),
                 style: Type.label.copyWith(color: Palette.chalkDim),
               ),
               const SizedBox(height: Gap.xl),
@@ -491,7 +498,7 @@ class _LegWon extends StatelessWidget {
                 child: FilledButton(
                   key: const Key('atc-play-again'),
                   onPressed: onPlayAgain,
-                  child: const Text('PLAY AGAIN'),
+                  child: Text(l10n.playAgainButton),
                 ),
               ),
             ],

@@ -5,6 +5,7 @@ import '../../data/db/database.dart';
 import '../../domain/atc/atc_config.dart';
 import '../../domain/atc/atc_variant.dart';
 import '../../domain/x01/game_config.dart';
+import '../../l10n/app_localizations.dart';
 import '../providers.dart';
 import '../theme.dart';
 import '../widgets/board_connection_button.dart';
@@ -12,11 +13,14 @@ import 'atc_game_screen.dart';
 
 /// How each [AtcVariant] reads on the setup tile and everywhere else a short
 /// label is needed for it.
-String atcVariantLabel(AtcVariant variant) => switch (variant) {
-  AtcVariant.anyPart => 'ANY PART',
-  AtcVariant.masters => 'MASTERS',
-  AtcVariant.doublesOnly => 'DOUBLES ONLY',
-};
+String atcVariantLabel(BuildContext context, AtcVariant variant) {
+  final l10n = AppLocalizations.of(context)!;
+  return switch (variant) {
+    AtcVariant.anyPart => l10n.atcVariantAnyPart,
+    AtcVariant.masters => l10n.atcVariantMasters,
+    AtcVariant.doublesOnly => l10n.atcVariantDoublesOnly,
+  };
+}
 
 /// Picks the Around the Clock variant and who is playing it, then starts a
 /// persisted leg.
@@ -72,28 +76,32 @@ class _AtcSetupScreenState extends ConsumerState<AtcSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final players = ref.watch(playersProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('AROUND THE CLOCK SETUP'),
-        actions: const [BoardConnectionButton(), SizedBox(width: Gap.xs)],
+        title: Text(l10n.atcSetupTitle),
+        actions: const [
+          BoardConnectionButton(),
+          SizedBox(width: Gap.xs),
+        ],
       ),
       body: SafeArea(
         child: CenteredContent(
           child: ListView(
             padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.sm, Gap.lg, Gap.lg),
             children: [
-              const _Eyebrow('Variant'),
+              _Eyebrow(l10n.variantLabel),
               const SizedBox(height: Gap.md),
-              Column(
+              Row(
                 key: const Key('variant-column'),
                 children: [
                   for (final variant in AtcVariant.values) ...[
                     if (variant != AtcVariant.values.first)
-                      const SizedBox(height: Gap.sm),
+                      const SizedBox(width: Gap.sm),
                     _VariantChoice(
-                      label: atcVariantLabel(variant),
+                      label: atcVariantLabel(context, variant),
                       selected: variant == _variant,
                       onTap: () => setState(() => _variant = variant),
                     ),
@@ -103,13 +111,16 @@ class _AtcSetupScreenState extends ConsumerState<AtcSetupScreen> {
               const SizedBox(height: Gap.xl),
               Row(
                 children: [
-                  const _Eyebrow('Players'),
+                  _Eyebrow(l10n.playersLabel),
                   const SizedBox(width: Gap.md),
                   Expanded(
                     child: Text(
                       _seats.isEmpty
-                          ? 'tap to add, in throwing order'
-                          : '${_seats.length} of ${GameConfig.maxPlayers}',
+                          ? l10n.tapToAddPlayers
+                          : l10n.seatsOfMax(
+                              _seats.length,
+                              GameConfig.maxPlayers,
+                            ),
                       textAlign: TextAlign.right,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -126,8 +137,8 @@ class _AtcSetupScreenState extends ConsumerState<AtcSetupScreen> {
                       controller: _newPlayer,
                       style: Type.body.copyWith(color: Palette.chalk),
                       cursorColor: Palette.live,
-                      decoration: const InputDecoration(
-                        labelText: 'Add a player',
+                      decoration: InputDecoration(
+                        labelText: l10n.addPlayerFieldLabel,
                       ),
                       textInputAction: TextInputAction.done,
                       onSubmitted: (_) => _addPlayer(),
@@ -153,13 +164,13 @@ class _AtcSetupScreenState extends ConsumerState<AtcSetupScreen> {
               const SizedBox(height: Gap.md),
               switch (players) {
                 AsyncError(:final error) => Text(
-                  'Could not load players: $error',
+                  l10n.couldNotLoadPlayers('$error'),
                   style: Type.body.copyWith(color: Palette.doubleBed),
                 ),
                 AsyncData(:final value) when value.isEmpty => Padding(
                   padding: const EdgeInsets.symmetric(vertical: Gap.xl),
                   child: Text(
-                    'No players yet. Add the first one above.',
+                    l10n.noPlayersYet,
                     style: Type.body.copyWith(color: Palette.chalkDim),
                   ),
                 ),
@@ -182,7 +193,7 @@ class _AtcSetupScreenState extends ConsumerState<AtcSetupScreen> {
               key: const Key('start-leg-button'),
               onPressed: _seats.isEmpty ? null : _start,
               child: Text(
-                _seats.isEmpty ? 'PICK AT LEAST ONE PLAYER' : 'START LEG',
+                _seats.isEmpty ? l10n.pickAtLeastOnePlayer : l10n.startLeg,
               ),
             ),
           ),
@@ -235,7 +246,9 @@ class _AtcSetupScreenState extends ConsumerState<AtcSetupScreen> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.close, size: 18),
-                  tooltip: 'Remove ${player.name}',
+                  tooltip: AppLocalizations.of(
+                    context,
+                  )!.removePlayerTooltip(player.name),
                   onPressed: () async {
                     setState(() => _seats.remove(player.id));
                     await ref

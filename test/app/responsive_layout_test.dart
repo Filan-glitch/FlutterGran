@@ -13,6 +13,7 @@ import 'package:fluttergran/data/db/game_repository.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/match_state.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
+import 'package:fluttergran/l10n/app_localizations.dart';
 
 /// The three shapes the app is laid out for, in logical pixels.
 const phonePortrait = Size(411, 923); // Pixel 9a
@@ -103,6 +104,8 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           theme: buildTheme(),
           builder: (context, child) {
             final media = MediaQuery.of(context);

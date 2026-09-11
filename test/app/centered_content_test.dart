@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/app/theme.dart';
+import 'package:fluttergran/l10n/app_localizations.dart';
 
 /// The wrapper every form-shaped screen (setup, statistics, diagnostics) puts
 /// around its `ListView`, so a single column of controls sized for a phone
@@ -14,6 +15,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: CenteredContent(
             child: SizedBox(
