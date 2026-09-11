@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../domain/game_mode.dart';
-import '../../l10n/app_localizations.dart';
+import '../l10n_extensions.dart';
 import '../theme.dart';
 import 'atc_setup_screen.dart';
 import 'bulling_setup_screen.dart';
@@ -60,7 +60,7 @@ class SelectGameModeScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.selectGameModeTitle),
+        title: Text(context.l10n.selectGameModeTitle),
       ),
       body: SafeArea(
         child: CenteredContent(
@@ -152,7 +152,7 @@ class _ModeTile extends StatelessWidget {
                 if (!enabled) ...[
                   const SizedBox(height: Gap.sm),
                   Text(
-                    AppLocalizations.of(context)!.comingSoonLabel,
+                    context.l10n.comingSoonLabel,
                     style: Type.eyebrow.copyWith(color: Palette.chalkDim),
                   ),
                 ],
@@ -186,7 +186,7 @@ class _ComingSoonTile extends StatelessWidget {
           padding: const EdgeInsets.all(Gap.lg),
           child: Center(
             child: Text(
-              AppLocalizations.of(context)!.moreModesComingLabel,
+              context.l10n.moreModesComingLabel,
               textAlign: TextAlign.center,
               style: Type.eyebrow.copyWith(color: Palette.chalkDim),
             ),

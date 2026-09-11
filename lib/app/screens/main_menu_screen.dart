@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/game_mode.dart';
-import '../../l10n/app_localizations.dart';
+import '../l10n_extensions.dart';
 import '../providers.dart';
 import '../theme.dart';
 import 'atc_game_screen.dart';
@@ -89,7 +89,7 @@ class MainMenuScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
     // Only offered once it has actually been left - while it is open the
     // game screen owns it, and offering to resume what is already on screen
     // is nonsense.
@@ -294,7 +294,7 @@ class _ResumeBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
     final resumable = this.resumable;
     final (format, playerIds, currentPlayerId, figures) = switch (resumable) {
       ResumableX01Leg(:final leg) => (

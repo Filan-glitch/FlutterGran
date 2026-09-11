@@ -6,8 +6,8 @@ import '../../domain/bulling/bulling_leg_state.dart';
 import '../../domain/segment.dart';
 import '../../domain/x01/leg_state.dart' show dartsPerTurn;
 import '../../domain/x01/thrown_dart.dart';
-import '../../l10n/app_localizations.dart';
 import '../bulling_controller.dart';
+import '../l10n_extensions.dart';
 import '../providers.dart';
 import '../theme.dart';
 import '../widgets/dart_keypad.dart';
@@ -59,7 +59,7 @@ class BullingGameScreen extends ConsumerWidget {
   }
 
   Future<bool> _confirmLeave(BuildContext context) async {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
     final leave = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -103,7 +103,7 @@ class BullingGameScreen extends ConsumerWidget {
         ? const <Segment>{}
         : {Segment.outerBull, Segment.innerBull};
 
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
 
     return Scaffold(
       appBar: AppBar(
@@ -188,7 +188,7 @@ class _BoardScoringAlone extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Text(
-        AppLocalizations.of(context)!.throwWhenReady,
+        context.l10n.throwWhenReady,
         style: Type.eyebrow.copyWith(color: Palette.chalkDim),
       ),
     );
@@ -290,7 +290,7 @@ class _PlayerColumn extends StatelessWidget {
         ),
         const SizedBox(height: Gap.xs),
         Text(
-          AppLocalizations.of(context)!.ofTarget(target),
+          context.l10n.ofTarget(target),
           style: Type.label.copyWith(color: Palette.chalkDim),
         ),
       ],
@@ -387,7 +387,7 @@ class _TurnConfirm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
     final dartsThrown = turn.darts.map((dart) => dart.label).join('  ·  ');
 
     return SingleChildScrollView(
@@ -469,7 +469,7 @@ class _LegWon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
     final winner = leg.winnerId!;
 
     return SingleChildScrollView(

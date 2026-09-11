@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/board/board_source.dart';
-import '../../l10n/app_localizations.dart';
+import '../l10n_extensions.dart';
 import '../providers.dart';
 import '../theme.dart';
 
@@ -52,7 +52,7 @@ class _BoardConnectionButtonState extends ConsumerState<BoardConnectionButton> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
     final state =
         ref.watch(boardConnectionProvider).value ??
         ref.read(boardSourceProvider).currentState;

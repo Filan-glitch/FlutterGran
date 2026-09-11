@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/db/database.dart';
-import '../../l10n/app_localizations.dart';
+import '../l10n_extensions.dart';
 import '../providers.dart';
 import '../theme.dart';
 
@@ -56,7 +56,7 @@ class _RosterScreenState extends ConsumerState<RosterScreen> {
   /// tell "timed out" and "UNDO was tapped" apart.
   void _startDelete(Player player) {
     setState(() => _pendingDeleteIds.add(player.id));
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
 
     ScaffoldMessenger.of(context)
         .showSnackBar(
@@ -92,7 +92,7 @@ class _RosterScreenState extends ConsumerState<RosterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
     final players = ref.watch(playersProvider);
 
     return Scaffold(

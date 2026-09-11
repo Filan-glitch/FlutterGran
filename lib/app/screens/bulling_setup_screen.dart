@@ -6,6 +6,7 @@ import '../../domain/bulling/bulling_config.dart';
 import '../../domain/bulling/bulling_variant.dart';
 import '../../domain/x01/game_config.dart';
 import '../../l10n/app_localizations.dart';
+import '../l10n_extensions.dart';
 import '../providers.dart';
 import '../theme.dart';
 import '../widgets/board_connection_button.dart';
@@ -14,7 +15,7 @@ import 'bulling_game_screen.dart';
 /// How each [BullseyeValue] reads on the setup tile and everywhere else a
 /// short label is needed for it.
 String bullseyeValueLabel(BuildContext context, BullseyeValue value) {
-  final l10n = AppLocalizations.of(context)!;
+  final l10n = context.l10n;
   return switch (value) {
     BullseyeValue.two => l10n.bullseyeValueTwo,
     BullseyeValue.three => l10n.bullseyeValueThree,
@@ -82,7 +83,7 @@ class _BullingSetupScreenState extends ConsumerState<BullingSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
     final players = ref.watch(playersProvider);
 
     return Scaffold(
@@ -200,7 +201,7 @@ class _BullingSetupScreenState extends ConsumerState<BullingSetupScreen> {
                   ),
                 ),
                 AsyncData(:final value) => Column(
-                  children: [for (final player in value) _tile(player)],
+                  children: [for (final player in value) _tile(player, l10n)],
                 ),
                 _ => const SizedBox.shrink(),
               },
@@ -227,7 +228,7 @@ class _BullingSetupScreenState extends ConsumerState<BullingSetupScreen> {
     );
   }
 
-  Widget _tile(Player player) {
+  Widget _tile(Player player, AppLocalizations l10n) {
     final seat = _seats.indexOf(player.id);
     final selected = seat >= 0;
     final full = _seats.length >= GameConfig.maxPlayers;
@@ -271,9 +272,7 @@ class _BullingSetupScreenState extends ConsumerState<BullingSetupScreen> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.close, size: 18),
-                  tooltip: AppLocalizations.of(
-                    context,
-                  )!.removePlayerTooltip(player.name),
+                  tooltip: l10n.removePlayerTooltip(player.name),
                   onPressed: () async {
                     setState(() => _seats.remove(player.id));
                     await ref

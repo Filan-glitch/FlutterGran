@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../l10n/app_localizations.dart';
+import '../l10n_extensions.dart';
 import '../providers.dart';
 import '../theme.dart';
+import '../widgets/selectable_tile.dart';
 
 /// App-wide preferences, away from any one game's setup.
 ///
@@ -16,7 +17,7 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settingsTitle)),
@@ -71,7 +72,7 @@ class _LanguageChoice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
     final options = <Locale?, String>{
       null: l10n.languageSystemOption,
       const Locale('en'): l10n.languageEnglishOption,
@@ -83,7 +84,7 @@ class _LanguageChoice extends StatelessWidget {
         for (final entry in options.entries) ...[
           if (entry.key != options.keys.first) const SizedBox(width: Gap.sm),
           Expanded(
-            child: _Tile(
+            child: SelectableTile(
               label: entry.value,
               selected: entry.key == value,
               onTap: () => onChanged(entry.key),
@@ -91,44 +92,6 @@ class _LanguageChoice extends StatelessWidget {
           ),
         ],
       ],
-    );
-  }
-}
-
-class _Tile extends StatelessWidget {
-  const _Tile({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: selected ? Palette.chalk : Palette.raised,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(4),
-        side: BorderSide(color: selected ? Palette.chalk : Palette.edge),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: Gap.md),
-          child: Center(
-            child: Text(
-              label.toUpperCase(),
-              style: Type.label.copyWith(
-                color: selected ? Palette.ground : Palette.chalkDim,
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

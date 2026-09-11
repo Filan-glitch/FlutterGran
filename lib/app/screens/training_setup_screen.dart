@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/training/training_drill.dart';
 import '../../domain/x01/game_config.dart';
-import '../../l10n/app_localizations.dart';
+import '../l10n_extensions.dart';
 import '../providers.dart';
 import '../theme.dart';
 import '../widgets/board_connection_button.dart';
@@ -36,7 +36,7 @@ class _TrainingSetupScreenState extends ConsumerState<TrainingSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
 
     return Scaffold(
       appBar: AppBar(

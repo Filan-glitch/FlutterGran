@@ -8,33 +8,37 @@ import '../../domain/x01/game_config.dart';
 import '../../domain/x01/match_state.dart';
 import '../../domain/x01/x01_rules.dart';
 import '../../l10n/app_localizations.dart';
+import '../l10n_extensions.dart';
 import '../providers.dart';
 import '../theme.dart';
 import '../widgets/board_connection_button.dart';
+import '../widgets/selectable_tile.dart';
 import 'game_screen.dart';
 
-/// How each [X01InRule] reads on the setup chip and the stats screen's
+/// How each in/out rule reads on the setup chip and the stats screen's
 /// checkout rows - the localized counterpart to [X01InRuleChecks.label],
 /// which domain code (and tests) still use internally. Mirrors
 /// `atc_setup_screen.dart`'s `atcVariantLabel`.
-String x01InRuleLabel(BuildContext context, X01InRule rule) {
-  final l10n = AppLocalizations.of(context)!;
-  return switch (rule) {
-    X01InRule.straight => l10n.x01RuleStraight,
-    X01InRule.double => l10n.x01RuleDouble,
-    X01InRule.master => l10n.x01RuleMaster,
+///
+/// [X01InRule] and [X01OutRule] are separate enums (an in-rule and an
+/// out-rule are independent choices) but share the same three member names,
+/// so one name-keyed lookup serves both instead of two identical switches.
+String _x01RuleLabel(BuildContext context, Enum rule) {
+  final l10n = context.l10n;
+  return switch (rule.name) {
+    'straight' => l10n.x01RuleStraight,
+    'double' => l10n.x01RuleDouble,
+    'master' => l10n.x01RuleMaster,
+    _ => throw ArgumentError('unknown rule: ${rule.name}'),
   };
 }
 
+String x01InRuleLabel(BuildContext context, X01InRule rule) =>
+    _x01RuleLabel(context, rule);
+
 /// The out-rule counterpart to [x01InRuleLabel].
-String x01OutRuleLabel(BuildContext context, X01OutRule rule) {
-  final l10n = AppLocalizations.of(context)!;
-  return switch (rule) {
-    X01OutRule.straight => l10n.x01RuleStraight,
-    X01OutRule.double => l10n.x01RuleDouble,
-    X01OutRule.master => l10n.x01RuleMaster,
-  };
-}
+String x01OutRuleLabel(BuildContext context, X01OutRule rule) =>
+    _x01RuleLabel(context, rule);
 
 /// Picks the x01 format and who is playing it, then starts a persisted leg.
 ///
@@ -133,7 +137,7 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
     final players = ref.watch(playersProvider);
 
     // The disk read behind x01DefaultsProvider resolves a frame after
@@ -221,7 +225,7 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
                     if (rule != X01InRule.values.first)
                       const SizedBox(width: Gap.sm),
                     Expanded(
-                      child: _RuleChoice(
+                      child: SelectableTile(
                         key: Key('in-rule-${rule.name}'),
                         label: x01InRuleLabel(context, rule),
                         selected: rule == _inRule,
@@ -244,7 +248,7 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
                     if (rule != X01OutRule.values.first)
                       const SizedBox(width: Gap.sm),
                     Expanded(
-                      child: _RuleChoice(
+                      child: SelectableTile(
                         key: Key('out-rule-${rule.name}'),
                         label: x01OutRuleLabel(context, rule),
                         selected: rule == _outRule,
@@ -324,7 +328,7 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
                   ),
                 ),
                 AsyncData(:final value) => Column(
-                  children: [for (final player in value) _tile(player)],
+                  children: [for (final player in value) _tile(player, l10n)],
                 ),
                 // Deliberately blank rather than a spinner: this is a local
                 // query that resolves in a frame, and a flash of spinner is
@@ -358,7 +362,7 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
     );
   }
 
-  Widget _tile(Player player) {
+  Widget _tile(Player player, AppLocalizations l10n) {
     final seat = _seats.indexOf(player.id);
     final selected = seat >= 0;
     final full = _seats.length >= GameConfig.maxPlayers;
@@ -404,9 +408,7 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.close, size: 18),
-                  tooltip: AppLocalizations.of(
-                    context,
-                  )!.removePlayerTooltip(player.name),
+                  tooltip: l10n.removePlayerTooltip(player.name),
                   onPressed: () async {
                     setState(() => _seats.remove(player.id));
                     await ref
@@ -433,47 +435,6 @@ class _Eyebrow extends StatelessWidget {
     text.toUpperCase(),
     style: Type.eyebrow.copyWith(color: Palette.chalkDim),
   );
-}
-
-/// A rule choice, styled identically to [_ScoreChoice] but showing a word
-/// instead of a scoreboard numeral - one of these per in-rule/out-rule option.
-class _RuleChoice extends StatelessWidget {
-  const _RuleChoice({
-    super.key,
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: selected ? Palette.chalk : Palette.raised,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(4),
-        side: BorderSide(color: selected ? Palette.chalk : Palette.edge),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: Gap.md),
-          child: Center(
-            child: Text(
-              label.toUpperCase(),
-              style: Type.label.copyWith(
-                color: selected ? Palette.ground : Palette.chalkDim,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 /// One number in a row of them, set as a scoreboard numeral rather than a form

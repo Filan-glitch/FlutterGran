@@ -387,6 +387,21 @@ final currentGameIdProvider = NotifierProvider<CurrentGameId, int?>(
 /// `Matches`. That branch and this one were meant to run in parallel; two
 /// branches minting the same schema version is a merge nobody enjoys, over two
 /// bits of state that have no business being in a games database anyway.
+/// Null when there is no platform behind the channel.
+///
+/// That is the test binding, where no preference has ever been written and
+/// the defaults are exactly what the tests want. It is the only case this
+/// swallows - a genuine read failure on a device would still surface. Shared
+/// by every [Notifier] in this file that persists to shared_preferences, so
+/// the try/catch lives in exactly one place.
+Future<SharedPreferences?> _preferences() async {
+  try {
+    return await SharedPreferences.getInstance();
+  } on MissingPluginException {
+    return null;
+  }
+}
+
 class BoolSetting extends Notifier<bool> {
   BoolSetting(this._key);
 
@@ -411,19 +426,6 @@ class BoolSetting extends Notifier<bool> {
     state = value;
     await (await _preferences())?.setBool(_key, value);
   }
-
-  /// Null when there is no platform behind the channel.
-  ///
-  /// That is the test binding, where no preference has ever been written and
-  /// the defaults are exactly what the tests want. It is the only case this
-  /// swallows - a genuine read failure on a device would still surface.
-  Future<SharedPreferences?> _preferences() async {
-    try {
-      return await SharedPreferences.getInstance();
-    } on MissingPluginException {
-      return null;
-    }
-  }
 }
 
 /// The master switch: off means silence, cues and commentary alike.
@@ -444,10 +446,10 @@ final speechEnabledProvider = NotifierProvider<BoolSetting, bool>(
 /// The app's language, or null to follow the device's own.
 ///
 /// Same shape as [BoolSetting] - shared_preferences, a synchronous default
-/// corrected a frame later if a stored value disagrees - but for a `Locale?`
-/// rather than a `bool`. Null is stored as the key's absence rather than as
-/// some sentinel string, so "System" round-trips exactly: nothing was ever
-/// written for it in the first place.
+/// corrected a frame later if a stored value disagrees, [_preferences] shared
+/// with it too - but for a `Locale?` rather than a `bool`. Null is stored as
+/// the key's absence rather than as some sentinel string, so "System"
+/// round-trips exactly: nothing was ever written for it in the first place.
 class LocaleSetting extends Notifier<Locale?> {
   static const _key = 'app.locale';
 
@@ -469,16 +471,6 @@ class LocaleSetting extends Notifier<Locale?> {
       await preferences?.remove(_key);
     } else {
       await preferences?.setString(_key, value.languageCode);
-    }
-  }
-
-  /// Null when there is no platform behind the channel - see the identical
-  /// note on [BoolSetting._preferences].
-  Future<SharedPreferences?> _preferences() async {
-    try {
-      return await SharedPreferences.getInstance();
-    } on MissingPluginException {
-      return null;
     }
   }
 }
@@ -542,16 +534,6 @@ class X01DefaultsController extends Notifier<X01Defaults> {
       if (value.name == name) return value;
     }
     return null;
-  }
-
-  /// Null when there is no platform behind the channel - see the note on
-  /// [BoolSetting._preferences].
-  Future<SharedPreferences?> _preferences() async {
-    try {
-      return await SharedPreferences.getInstance();
-    } on MissingPluginException {
-      return null;
-    }
   }
 }
 

@@ -5,7 +5,7 @@ import '../../domain/checkout/checkout_search.dart';
 import '../../domain/training/free_practice_state.dart';
 import '../../domain/x01/leg_state.dart';
 import '../../domain/x01/thrown_dart.dart';
-import '../../l10n/app_localizations.dart';
+import '../l10n_extensions.dart';
 import '../providers.dart';
 import '../theme.dart';
 import '../training_controller.dart';
@@ -19,7 +19,7 @@ class TrainingGameScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
     final session = ref.watch(trainingProvider);
     final controller = ref.read(trainingProvider.notifier);
 
@@ -100,7 +100,7 @@ class _FreePracticeBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
     final darts = practice.currentTurnDarts;
     final total = darts.fold<int>(0, (sum, dart) => sum + dart.value);
 
@@ -172,9 +172,7 @@ class _CheckoutPracticeBody extends StatelessWidget {
         ),
         const SizedBox(height: Gap.md),
         Text(
-          AppLocalizations.of(
-            context,
-          )!.checkoutsThisSession(checkoutsCompleted),
+          context.l10n.checkoutsThisSession(checkoutsCompleted),
           style: Type.eyebrow.copyWith(color: Palette.chalkDim),
         ),
       ],
@@ -195,7 +193,7 @@ class _CheckedOutPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(Gap.lg),
@@ -273,7 +271,7 @@ class _DartRow extends StatelessWidget {
         ConstrainedBox(
           constraints: const BoxConstraints(minWidth: 72),
           child: Text(
-            struck ? AppLocalizations.of(context)!.bustLabel : '$total',
+            struck ? context.l10n.bustLabel : '$total',
             textAlign: TextAlign.right,
             style: struck
                 ? Type.notation.copyWith(color: Palette.doubleBed)
@@ -341,7 +339,7 @@ class _CheckoutStrip extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
-            AppLocalizations.of(context)!.checkoutLabel,
+            context.l10n.checkoutLabel,
             style: Type.eyebrow.copyWith(color: Palette.live),
           ),
           const SizedBox(width: Gap.md),

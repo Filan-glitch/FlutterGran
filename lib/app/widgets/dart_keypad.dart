@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../domain/segment.dart';
-import '../../l10n/app_localizations.dart';
+import '../l10n_extensions.dart';
 import '../theme.dart';
 
 /// Entering a dart takes two decisions: which ring, then which wedge.
@@ -51,7 +51,7 @@ class _DartKeypadState extends State<DartKeypad> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
 
     return Column(
       children: [
@@ -205,7 +205,7 @@ class _KeyState extends State<_Key> {
           : BorderSide(color: Palette.edge.withValues(alpha: 0.6)),
     );
 
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
     final key = Semantics(
       button: true,
       // Carries the checkout highlight to assistive tech, which otherwise has

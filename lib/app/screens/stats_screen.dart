@@ -7,7 +7,7 @@ import '../../domain/game_mode.dart';
 import '../../domain/segment.dart';
 import '../../domain/stats/mode_stats.dart';
 import '../../domain/x01/x01_rules.dart';
-import '../../l10n/app_localizations.dart';
+import '../l10n_extensions.dart';
 import '../providers.dart';
 import '../theme.dart';
 import '../widgets/board_widget.dart';
@@ -26,7 +26,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
     final players = ref.watch(playersProvider).value ?? const <Player>[];
     final selected = _playerId ?? (players.isEmpty ? null : players.first.id);
 
@@ -74,7 +74,7 @@ class _Body extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
     final statsByMode = ref.watch(playerStatsProvider(playerId));
     // Read as absent keys rather than assumed present, which is the honest
     // contract of a map keyed by mode - what keeps this code unchanged when

@@ -10,6 +10,7 @@ import '../../domain/x01/x01_rules.dart';
 import '../../l10n/app_localizations.dart';
 import '../audio/sound_controller.dart' show maximumTurn;
 import '../game_controller.dart';
+import '../l10n_extensions.dart';
 import '../providers.dart';
 import '../theme.dart';
 import '../widgets/dart_keypad.dart';
@@ -20,7 +21,7 @@ const Key matchFiguresKey = Key('match-figures');
 /// Falls back to a seat label for a player who has since been deleted.
 String nameFor(BuildContext context, Map<int, String> names, int playerId) =>
     names[playerId] ??
-    AppLocalizations.of(context)!.playerFallbackName(playerId);
+    context.l10n.playerFallbackName(playerId);
 
 class GameScreen extends ConsumerWidget {
   const GameScreen({super.key});
@@ -72,7 +73,7 @@ class GameScreen extends ConsumerWidget {
   /// they are about to lose a leg when they are not would teach them to fear
   /// the back button.
   Future<bool> _confirmLeave(BuildContext context) async {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
     final leave = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -127,7 +128,7 @@ class GameScreen extends ConsumerWidget {
     // can be trusted to score for itself, and comes back the moment someone
     // says otherwise, board present or not.
     final keypadVisible = !boardConnected || manualOverride;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
 
     return Scaffold(
       appBar: AppBar(
@@ -470,7 +471,7 @@ class _HeroPlayerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
     final accent = won ? Palette.trebleBed : Palette.live;
     final lit = live || won;
 
@@ -571,7 +572,7 @@ class _PlayerColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
     final accent = won ? Palette.trebleBed : Palette.live;
     final lit = live || won;
 
@@ -673,7 +674,7 @@ class _TurnLedger extends StatelessWidget {
             // beside it are what should take the rest of the row.
             constraints: const BoxConstraints(minWidth: 72),
             child: Text(
-              busted ? AppLocalizations.of(context)!.bustLabel : '$total',
+              busted ? context.l10n.bustLabel : '$total',
               textAlign: TextAlign.right,
               style: busted
                   ? Type.notation.copyWith(color: Palette.doubleBed)
@@ -745,7 +746,7 @@ class _CheckoutStrip extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
-            AppLocalizations.of(context)!.checkoutLabel,
+            context.l10n.checkoutLabel,
             style: Type.eyebrow.copyWith(color: Palette.live),
           ),
           const SizedBox(width: Gap.md),
@@ -812,7 +813,7 @@ class _CheckoutPanel extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              AppLocalizations.of(context)!.checkoutLabel,
+              context.l10n.checkoutLabel,
               style: Type.eyebrow.copyWith(color: Palette.live),
             ),
             const SizedBox(height: Gap.sm),
@@ -856,7 +857,7 @@ class _TurnConfirm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
     // This is always either the phone's inline panel or the tablet's
     // full-screen takeover, never both from the same call site - the two
     // never overlap, so the device is enough to tell which one this is.
@@ -986,7 +987,7 @@ class _LegWon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
     final winner = leg.winnerId!;
     final match = this.match;
     final running = match != null && !match.isFinished;
@@ -1068,7 +1069,7 @@ class _MatchWon extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
     // The leg that ended it is still live rather than re-read: it was won a
     // frame ago, and its last dart may not have reached the database yet.
     final current = ref.watch(gameProvider).leg;
@@ -1198,7 +1199,7 @@ class _MatchFigures extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.l10n;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: Gap.md),
       child: Column(
