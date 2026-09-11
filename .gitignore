@@ -18,6 +18,10 @@ migrate_working_dir/
 *.iws
 .idea/
 
+# Locally-installed Claude Code skills - machine-local tool config, not
+# project code. graphify-out/ stays tracked; it's the project's own graph.
+.claude/skills/
+
 # The .vscode folder contains launch configuration and tasks you configure in
 # VS Code which you may wish to be included in version control, so this line
 # is commented out by default.
