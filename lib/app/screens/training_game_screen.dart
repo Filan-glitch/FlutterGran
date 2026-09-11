@@ -44,7 +44,13 @@ class TrainingGameScreen extends ConsumerWidget {
         // There is nothing to confirm before leaving - unlike a real leg,
         // nothing here is saved, so there is nothing to lose that the player
         // was not already choosing to lose by leaving.
-        if (didPop) controller.leave();
+        if (!didPop) return;
+        controller.leave();
+        // A checkout just completed can still have a delayed "game shot"
+        // queued behind its cue (`SoundTiming.afterCheckoutCue`). Leaving
+        // the training session must not let that line speak into whatever
+        // screen comes next.
+        ref.read(soundPlayerProvider).silence();
       },
       child: Scaffold(
         appBar: AppBar(

@@ -499,4 +499,15 @@ final trainingSoundControllerProvider = Provider<void>((ref) {
       }
     }
   });
+
+  // Same immediate-silence idiom [soundControllerProvider] uses: without
+  // this, a line already queued behind a delayed checkout cue would keep
+  // waiting to speak until the next training dart, well after the toggle
+  // that was supposed to silence it.
+  ref.listen(soundEnabledProvider, (_, enabled) {
+    if (!enabled) player.silence();
+  });
+  ref.listen(speechEnabledProvider, (_, enabled) {
+    if (!enabled) player.silence();
+  });
 });
