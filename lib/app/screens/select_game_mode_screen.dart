@@ -144,11 +144,13 @@ class _ModeTile extends StatelessWidget {
                     color: enabled ? Palette.chalk : Palette.chalkDim,
                   ),
                 ),
-                const SizedBox(height: Gap.xs),
-                Text(
-                  mode.tagline,
-                  style: Type.label.copyWith(color: Palette.chalkDim),
-                ),
+                if (mode.tagline case final tagline?) ...[
+                  const SizedBox(height: Gap.xs),
+                  Text(
+                    tagline,
+                    style: Type.label.copyWith(color: Palette.chalkDim),
+                  ),
+                ],
                 if (!enabled) ...[
                   const SizedBox(height: Gap.sm),
                   Text(

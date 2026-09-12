@@ -17,7 +17,11 @@ class GameModeDescriptor {
 
   final GameMode id;
   final String displayName;
-  final String tagline;
+
+  /// Null when there is no short, honest way to sum the mode up in a line -
+  /// the select-screen tile then shows no tagline at all rather than an
+  /// empty one.
+  final String? tagline;
 
   /// Whether this mode has an engine and a setup screen behind it yet.
   final bool isAvailable;
@@ -37,7 +41,7 @@ const List<GameModeDescriptor> gameModeRegistry = [
   GameModeDescriptor(
     id: GameMode.aroundTheClock,
     displayName: 'AROUND THE CLOCK',
-    tagline: '',
+    tagline: null,
     isAvailable: true,
   ),
   GameModeDescriptor(
