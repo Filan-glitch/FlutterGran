@@ -100,6 +100,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get trainingMenuLabel => 'Training';
 
   @override
+  String get rulesMenuLabel => 'Rules';
+
+  @override
   String get statisticsMenuLabel => 'Statistics';
 
   @override
@@ -144,6 +147,49 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get languageGermanOption => 'German';
+
+  @override
+  String get rulesTitle => 'RULES';
+
+  @override
+  String get rulesX01Objective =>
+      'Race to exactly zero. Each player starts at the chosen score — 301, 501, or 701 — and works it down with three darts a turn.';
+
+  @override
+  String get rulesX01InRule =>
+      'In rule sets what starts your scoring: Straight — any dart counts right away. Double — darts before your first double score nothing; that double both opens your score and counts. Master — a double or a triple opens it.';
+
+  @override
+  String get rulesX01OutRule =>
+      'Out rule sets what can finish a leg: Straight — any dart can take you out on exactly zero. Double — only a double finishes. Master — a double or a triple finishes. Overshooting zero, landing on it without a qualifying finish, or leaving exactly 1 under double or master out all bust the turn — your score resets to what it was when the turn began.';
+
+  @override
+  String get rulesX01Format =>
+      'A match is played over several legs — best of 1, 3, 5, or 7. With two players it\'s first to more than half; with three or four it\'s simply first to that many legs, since a majority isn\'t guaranteed to fall within them.';
+
+  @override
+  String get rulesAtcObjective =>
+      'Clear 22 stops in order — 1 through 20, then the outer bull, then the bullseye. First to clear them all wins.';
+
+  @override
+  String get rulesAtcVariant =>
+      'Variant sets what clears a numbered stop (the two bull stops are unaffected): Any part — single, double, or triple all count. Masters — double or triple only. Doubles only — double only.';
+
+  @override
+  String get rulesBullingObjective =>
+      'First to reach or pass the target score — 21, 31, or 41 — by hitting bulls wins. The outer bull is worth 1 point; the inner bull (bullseye) is worth 2 or 3, set at setup. Everything else scores nothing.';
+
+  @override
+  String get rulesBullingValue =>
+      'A leg ends the moment a player reaches target, even mid-turn — any darts thrown after that in the same turn don\'t count.';
+
+  @override
+  String get rulesTrainingFreePractice =>
+      'Free practice — no target or win condition. Just throw; the session tracks your total, best turn, 180 count, and three-dart average.';
+
+  @override
+  String get rulesTrainingCheckoutPractice =>
+      'Checkout practice — pick a start score and practice finishing it under double-out, the same rule as an X01 leg, with the checkout suggestion shown throughout.';
 
   @override
   String get atcSetupTitle => 'AROUND THE CLOCK SETUP';

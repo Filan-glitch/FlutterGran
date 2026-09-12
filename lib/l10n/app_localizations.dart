@@ -260,6 +260,12 @@ abstract class AppLocalizations {
   /// **'Training'**
   String get trainingMenuLabel;
 
+  /// No description provided for @rulesMenuLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Rules'**
+  String get rulesMenuLabel;
+
   /// No description provided for @statisticsMenuLabel.
   ///
   /// In en, this message translates to:
@@ -349,6 +355,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'German'**
   String get languageGermanOption;
+
+  /// No description provided for @rulesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'RULES'**
+  String get rulesTitle;
+
+  /// No description provided for @rulesX01Objective.
+  ///
+  /// In en, this message translates to:
+  /// **'Race to exactly zero. Each player starts at the chosen score — 301, 501, or 701 — and works it down with three darts a turn.'**
+  String get rulesX01Objective;
+
+  /// No description provided for @rulesX01InRule.
+  ///
+  /// In en, this message translates to:
+  /// **'In rule sets what starts your scoring: Straight — any dart counts right away. Double — darts before your first double score nothing; that double both opens your score and counts. Master — a double or a triple opens it.'**
+  String get rulesX01InRule;
+
+  /// No description provided for @rulesX01OutRule.
+  ///
+  /// In en, this message translates to:
+  /// **'Out rule sets what can finish a leg: Straight — any dart can take you out on exactly zero. Double — only a double finishes. Master — a double or a triple finishes. Overshooting zero, landing on it without a qualifying finish, or leaving exactly 1 under double or master out all bust the turn — your score resets to what it was when the turn began.'**
+  String get rulesX01OutRule;
+
+  /// No description provided for @rulesX01Format.
+  ///
+  /// In en, this message translates to:
+  /// **'A match is played over several legs — best of 1, 3, 5, or 7. With two players it\'s first to more than half; with three or four it\'s simply first to that many legs, since a majority isn\'t guaranteed to fall within them.'**
+  String get rulesX01Format;
+
+  /// No description provided for @rulesAtcObjective.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear 22 stops in order — 1 through 20, then the outer bull, then the bullseye. First to clear them all wins.'**
+  String get rulesAtcObjective;
+
+  /// No description provided for @rulesAtcVariant.
+  ///
+  /// In en, this message translates to:
+  /// **'Variant sets what clears a numbered stop (the two bull stops are unaffected): Any part — single, double, or triple all count. Masters — double or triple only. Doubles only — double only.'**
+  String get rulesAtcVariant;
+
+  /// No description provided for @rulesBullingObjective.
+  ///
+  /// In en, this message translates to:
+  /// **'First to reach or pass the target score — 21, 31, or 41 — by hitting bulls wins. The outer bull is worth 1 point; the inner bull (bullseye) is worth 2 or 3, set at setup. Everything else scores nothing.'**
+  String get rulesBullingObjective;
+
+  /// No description provided for @rulesBullingValue.
+  ///
+  /// In en, this message translates to:
+  /// **'A leg ends the moment a player reaches target, even mid-turn — any darts thrown after that in the same turn don\'t count.'**
+  String get rulesBullingValue;
+
+  /// No description provided for @rulesTrainingFreePractice.
+  ///
+  /// In en, this message translates to:
+  /// **'Free practice — no target or win condition. Just throw; the session tracks your total, best turn, 180 count, and three-dart average.'**
+  String get rulesTrainingFreePractice;
+
+  /// No description provided for @rulesTrainingCheckoutPractice.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkout practice — pick a start score and practice finishing it under double-out, the same rule as an X01 leg, with the checkout suggestion shown throughout.'**
+  String get rulesTrainingCheckoutPractice;
 
   /// No description provided for @atcSetupTitle.
   ///

@@ -11,6 +11,7 @@ import 'bulling_game_screen.dart';
 import 'bulling_setup_screen.dart' show bullseyeValueLabel;
 import 'game_screen.dart';
 import 'roster_screen.dart';
+import 'rules_screen.dart';
 import 'select_game_mode_screen.dart';
 import 'settings_screen.dart';
 import 'stats_screen.dart';
@@ -19,9 +20,11 @@ import 'training_setup_screen.dart';
 /// The app's front door. Everything else hangs off one of the actions here,
 /// in the order a returning player actually wants them: pick a leg back up
 /// if one is open, otherwise start a new one; training sits right below Play
-/// because it is the other place darts actually get thrown; statistics is a
-/// routine visit so it outranks roster, which is mostly a once-per-guest
-/// chore; settings is last because it is rarely touched at all.
+/// because it is the other place darts actually get thrown; rules follows
+/// it as the reference you reach for mid-session, not a routine visit;
+/// statistics is a routine visit so it outranks roster, which is mostly a
+/// once-per-guest chore; settings is last because it is rarely touched at
+/// all.
 class MainMenuScreen extends ConsumerWidget {
   const MainMenuScreen({super.key});
 
@@ -160,6 +163,19 @@ class MainMenuScreen extends ConsumerWidget {
                 StaggeredEntry(
                   index: 3,
                   child: _MenuRow(
+                    key: const Key('menu-rules-row'),
+                    icon: Icons.help_outline,
+                    label: l10n.rulesMenuLabel,
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (context) => const RulesScreen(),
+                      ),
+                    ),
+                  ),
+                ),
+                StaggeredEntry(
+                  index: 4,
+                  child: _MenuRow(
                     key: const Key('menu-statistics-row'),
                     icon: Icons.insights,
                     label: l10n.statisticsMenuLabel,
@@ -171,7 +187,7 @@ class MainMenuScreen extends ConsumerWidget {
                   ),
                 ),
                 StaggeredEntry(
-                  index: 4,
+                  index: 5,
                   child: _MenuRow(
                     key: const Key('menu-roster-row'),
                     icon: Icons.people_outline,
@@ -184,7 +200,7 @@ class MainMenuScreen extends ConsumerWidget {
                   ),
                 ),
                 StaggeredEntry(
-                  index: 5,
+                  index: 6,
                   child: _MenuRow(
                     key: const Key('menu-settings-row'),
                     icon: Icons.settings_outlined,

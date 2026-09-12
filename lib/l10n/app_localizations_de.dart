@@ -100,6 +100,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get trainingMenuLabel => 'Training';
 
   @override
+  String get rulesMenuLabel => 'Regeln';
+
+  @override
   String get statisticsMenuLabel => 'Statistik';
 
   @override
@@ -144,6 +147,49 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get languageGermanOption => 'Deutsch';
+
+  @override
+  String get rulesTitle => 'REGELN';
+
+  @override
+  String get rulesX01Objective =>
+      'Ziel ist es, exakt auf null zu kommen. Jeder Spieler startet bei der gewählten Punktzahl – 301, 501 oder 701 – und spielt sie mit drei Darts pro Aufnahme herunter.';
+
+  @override
+  String get rulesX01InRule =>
+      'Die In-Regel legt fest, wodurch das Punkten beginnt: Straight – jeder Dart zählt sofort. Double – Darts vor deinem ersten Doppel zählen nicht; dieses Doppel eröffnet die Punktzahl und zählt zugleich. Master – ein Doppel oder ein Triple eröffnet sie.';
+
+  @override
+  String get rulesX01OutRule =>
+      'Die Out-Regel legt fest, womit ein Leg beendet werden kann: Straight – jeder Dart kann bei exakt null beenden. Double – nur ein Doppel beendet das Leg. Master – ein Doppel oder ein Triple beendet es. Über null hinauszuwerfen, ohne gültiges Finish auf null zu landen, oder bei Double- bzw. Master-out genau 1 übrig zu lassen, gilt jeweils als Bust – die Punktzahl wird auf den Stand vor der Aufnahme zurückgesetzt.';
+
+  @override
+  String get rulesX01Format =>
+      'Ein Match wird über mehrere Legs gespielt – Best of 1, 3, 5 oder 7. Bei zwei Spielern gewinnt, wer mehr als die Hälfte holt; bei drei oder vier zählt einfach, wer zuerst die genannte Anzahl erreicht, da eine Mehrheit dabei nicht garantiert ist.';
+
+  @override
+  String get rulesAtcObjective =>
+      '22 Stationen der Reihe nach freispielen – 1 bis 20, dann der äußere Bull, dann das Bullseye. Wer zuerst alle freispielt, gewinnt.';
+
+  @override
+  String get rulesAtcVariant =>
+      'Die Variante legt fest, was eine nummerierte Station freispielt (die beiden Bull-Stationen sind davon nicht betroffen): Beliebiges Feld – Einfach, Doppel oder Triple zählen alle. Masters – nur Doppel oder Triple. Nur Doppel – nur ein Doppel zählt.';
+
+  @override
+  String get rulesBullingObjective =>
+      'Wer zuerst die Zielpunktzahl – 21, 31 oder 41 – erreicht oder überschreitet, gewinnt, indem er Bulls trifft. Der äußere Bull zählt 1 Punkt, der innere Bull (Bullseye) zählt 2 oder 3, je nach Einstellung. Alles andere zählt nichts.';
+
+  @override
+  String get rulesBullingValue =>
+      'Ein Leg endet in dem Moment, in dem das Ziel erreicht wird – auch mitten in einer Aufnahme. Darts, die danach in derselben Aufnahme geworfen werden, zählen nicht mehr.';
+
+  @override
+  String get rulesTrainingFreePractice =>
+      'Freies Training – kein Ziel, keine Gewinnbedingung. Einfach werfen; die Sitzung erfasst Gesamtpunktzahl, beste Aufnahme, Anzahl der 180er und den Drei-Darts-Schnitt.';
+
+  @override
+  String get rulesTrainingCheckoutPractice =>
+      'Checkout-Training – eine Startpunktzahl wählen und das Finish unter Double-out üben, nach derselben Regel wie ein X01-Leg, mit durchgehend angezeigtem Checkout-Vorschlag.';
 
   @override
   String get atcSetupTitle => 'AROUND THE CLOCK EINRICHTUNG';

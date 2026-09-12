@@ -9,6 +9,7 @@ import 'package:fluttergran/app/screens/bulling_setup_screen.dart'
     show bullseyeValueLabel;
 import 'package:fluttergran/app/screens/main_menu_screen.dart';
 import 'package:fluttergran/app/screens/roster_screen.dart';
+import 'package:fluttergran/app/screens/rules_screen.dart';
 import 'package:fluttergran/app/screens/select_game_mode_screen.dart';
 import 'package:fluttergran/app/screens/settings_screen.dart';
 import 'package:fluttergran/app/screens/stats_screen.dart';
@@ -278,6 +279,15 @@ void main() {
     await frames(tester);
 
     expect(find.byType(TrainingSetupScreen), findsOneWidget);
+  });
+
+  testWidgets('RULES navigates to the rules screen', (tester) async {
+    await pump(tester);
+
+    await tester.tap(find.byKey(const Key('menu-rules-row')));
+    await frames(tester);
+
+    expect(find.byType(RulesScreen), findsOneWidget);
   });
 
   testWidgets('STATISTICS navigates to the stats screen', (tester) async {
