@@ -110,8 +110,8 @@
     "semantic_hash": ""
   },
   "lib/app/screens/x01_setup_screen.dart": {
-    "mtime": 1789149387.9571996,
-    "ast_hash": "03e9194bca3a9175aca52578a958b413",
+    "mtime": 1789220117.1147816,
+    "ast_hash": "43eba9f19bac1a6ae4672b469dad0cdf",
     "semantic_hash": ""
   },
   "lib/app/theme.dart": {
@@ -1600,8 +1600,8 @@
     "semantic_hash": ""
   },
   "lib/app/screens/atc_setup_screen.dart": {
-    "mtime": 1789149307.210902,
-    "ast_hash": "c47ab98ede0465a98f1bec25cac3f43b",
+    "mtime": 1789220119.7968242,
+    "ast_hash": "0ffe181eeb0affabd340b51f4afedfd7",
     "semantic_hash": ""
   },
   "lib/domain/atc/atc_config.dart": {
@@ -1690,8 +1690,8 @@
     "semantic_hash": ""
   },
   "lib/app/screens/bulling_setup_screen.dart": {
-    "mtime": 1789149307.2131844,
-    "ast_hash": "6e463645b0b3ddfe0756381fce36b0b3",
+    "mtime": 1789220122.5758681,
+    "ast_hash": "a87364db925d0494c0104d9045e02f80",
     "semantic_hash": ""
   },
   "lib/domain/bulling/bulling_config.dart": {
@@ -1765,8 +1765,8 @@
     "semantic_hash": ""
   },
   "lib/app/screens/training_setup_screen.dart": {
-    "mtime": 1789149298.6899405,
-    "ast_hash": "f1532035b0709c2c9d514ad341e3d36a",
+    "mtime": 1789220125.288911,
+    "ast_hash": "8bf8d62b282c14c649026edc999e386c",
     "semantic_hash": ""
   },
   "lib/app/training_controller.dart": {
@@ -1810,8 +1810,8 @@
     "semantic_hash": ""
   },
   "test/app/x01_setup_screen_test.dart": {
-    "mtime": 1789148847.6992934,
-    "ast_hash": "f57a9ea53bf7ed22615a727a3e980e7e",
+    "mtime": 1789220203.962104,
+    "ast_hash": "b1676b2c8276519e60c90220f88b3463",
     "semantic_hash": ""
   },
   "test/domain/x01_rules_test.dart": {
@@ -1862,6 +1862,11 @@
   "l10n.yaml": {
     "mtime": 1789148847.6952934,
     "ast_hash": "4725a0e1d7a200afc68ee8f909547cfb",
+    "semantic_hash": ""
+  },
+  "lib/app/widgets/rules_button.dart": {
+    "mtime": 1789220155.763384,
+    "ast_hash": "8f5e162c3337c3b5f00e31230164527b",
     "semantic_hash": ""
   }
 }
