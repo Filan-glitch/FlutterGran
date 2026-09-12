@@ -48,8 +48,8 @@ void main() {
   Future<void> pumpScreen(
     WidgetTester tester, {
     List<GameModeDescriptor> modes = gameModeRegistry,
-  }) {
-    return tester.pumpWidget(
+  }) async {
+    await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
         child: MaterialApp(
@@ -60,6 +60,9 @@ void main() {
         ),
       ),
     );
+    // Tiles stagger in (see `StaggeredEntry`); settle that one-shot entrance
+    // before asserting so its timer is never still pending at tear-down.
+    await tester.pumpAndSettle();
   }
 
   testWidgets('the x01 tile navigates to X01 Setup', (tester) async {
