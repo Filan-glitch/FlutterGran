@@ -10,6 +10,7 @@ import '../l10n_extensions.dart';
 import '../providers.dart';
 import '../theme.dart';
 import '../widgets/board_connection_button.dart';
+import '../widgets/rules_button.dart';
 import 'atc_game_screen.dart';
 
 /// How each [AtcVariant] reads on the setup tile and everywhere else a short
@@ -84,6 +85,7 @@ class _AtcSetupScreenState extends ConsumerState<AtcSetupScreen> {
       appBar: AppBar(
         title: Text(l10n.atcSetupTitle),
         actions: const [
+          RulesButton(),
           BoardConnectionButton(),
           SizedBox(width: Gap.xs),
         ],

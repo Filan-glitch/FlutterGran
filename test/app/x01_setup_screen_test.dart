@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/app/providers.dart';
+import 'package:fluttergran/app/screens/rules_screen.dart';
 import 'package:fluttergran/app/screens/x01_setup_screen.dart';
 import 'package:fluttergran/app/theme.dart';
 import 'package:fluttergran/data/board/fake_board_source.dart';
@@ -72,6 +73,16 @@ void main() {
       ),
     );
   }
+
+  testWidgets('the rules icon opens the rules screen', (tester) async {
+    await pump(tester);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.help_outline));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(RulesScreen), findsOneWidget);
+  });
 
   testWidgets('starting without touching the rule chips uses straight-in, '
       'double-out', (tester) async {

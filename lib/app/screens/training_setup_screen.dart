@@ -7,6 +7,7 @@ import '../l10n_extensions.dart';
 import '../providers.dart';
 import '../theme.dart';
 import '../widgets/board_connection_button.dart';
+import '../widgets/rules_button.dart';
 import 'training_game_screen.dart';
 
 /// Picks a drill and, for checkout practice, a start score - then opens a
@@ -42,6 +43,7 @@ class _TrainingSetupScreenState extends ConsumerState<TrainingSetupScreen> {
       appBar: AppBar(
         title: Text(l10n.trainingSetupTitle),
         actions: const [
+          RulesButton(),
           BoardConnectionButton(),
           SizedBox(width: Gap.xs),
         ],

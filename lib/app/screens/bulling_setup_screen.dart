@@ -10,6 +10,7 @@ import '../l10n_extensions.dart';
 import '../providers.dart';
 import '../theme.dart';
 import '../widgets/board_connection_button.dart';
+import '../widgets/rules_button.dart';
 import 'bulling_game_screen.dart';
 
 /// How each [BullseyeValue] reads on the setup tile and everywhere else a
@@ -90,6 +91,7 @@ class _BullingSetupScreenState extends ConsumerState<BullingSetupScreen> {
       appBar: AppBar(
         title: Text(l10n.bullingSetupTitle),
         actions: const [
+          RulesButton(),
           BoardConnectionButton(),
           SizedBox(width: Gap.xs),
         ],
