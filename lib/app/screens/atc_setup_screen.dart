@@ -8,6 +8,7 @@ import '../../domain/x01/game_config.dart';
 import '../../l10n/app_localizations.dart';
 import '../l10n_extensions.dart';
 import '../providers.dart';
+import '../rules_topic.dart';
 import '../theme.dart';
 import '../widgets/board_connection_button.dart';
 import '../widgets/rules_button.dart';
@@ -85,7 +86,7 @@ class _AtcSetupScreenState extends ConsumerState<AtcSetupScreen> {
       appBar: AppBar(
         title: Text(l10n.atcSetupTitle),
         actions: const [
-          RulesButton(),
+          RulesButton(topic: RulesTopic.aroundTheClock),
           BoardConnectionButton(),
           SizedBox(width: Gap.xs),
         ],

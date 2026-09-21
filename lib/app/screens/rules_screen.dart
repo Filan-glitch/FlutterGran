@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 
 import '../l10n_extensions.dart';
+import '../rules_topic.dart';
 import '../theme.dart';
+import 'rules_detail_screen.dart';
 
-/// A static reference for what each game mode does - what a leg is racing
-/// toward, and what its setup-screen rule choices actually change.
+/// A quick "which mode does what" picker, reached from the main menu.
 ///
-/// Nothing here is interactive or persisted: it exists purely to be read.
-/// The setup screens themselves only ever show bare rule labels ("Straight",
-/// "ANY PART") - correct for a screen you use every game, but useless the
-/// one time you actually need reminding what "Master" means. This is that
-/// second place.
+/// Deliberately shallow: one icon and one line per mode, nothing to read
+/// here beyond deciding where to go. Full detail - what "Master" means,
+/// what busts a leg - lives one tap away in [RulesDetailScreen], the same
+/// screen a setup screen's info button opens directly for whichever mode
+/// it's already for.
 class RulesScreen extends StatelessWidget {
   const RulesScreen({super.key});
 
@@ -25,27 +26,8 @@ class RulesScreen extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.sm, Gap.lg, Gap.lg),
             children: [
-              _Eyebrow(l10n.x01Label),
-              const SizedBox(height: Gap.sm),
-              _RuleParagraph(l10n.rulesX01Objective),
-              _RuleParagraph(l10n.rulesX01InRule),
-              _RuleParagraph(l10n.rulesX01OutRule),
-              _RuleParagraph(l10n.rulesX01Format),
-              const SizedBox(height: Gap.lg),
-              _Eyebrow(l10n.aroundTheClockLabel),
-              const SizedBox(height: Gap.sm),
-              _RuleParagraph(l10n.rulesAtcObjective),
-              _RuleParagraph(l10n.rulesAtcVariant),
-              const SizedBox(height: Gap.lg),
-              _Eyebrow(l10n.bullingLabel),
-              const SizedBox(height: Gap.sm),
-              _RuleParagraph(l10n.rulesBullingObjective),
-              _RuleParagraph(l10n.rulesBullingValue),
-              const SizedBox(height: Gap.lg),
-              _Eyebrow(l10n.trainingSetupTitle),
-              const SizedBox(height: Gap.sm),
-              _RuleParagraph(l10n.rulesTrainingFreePractice),
-              _RuleParagraph(l10n.rulesTrainingCheckoutPractice),
+              for (final topic in RulesTopic.values)
+                _RulesTopicRow(topic: topic),
             ],
           ),
         ),
@@ -54,30 +36,61 @@ class RulesScreen extends StatelessWidget {
   }
 }
 
-/// Section heading, in the settings screen's uppercase-eyebrow idiom
-/// (`settings_screen.dart`'s `_Eyebrow`) - each screen keeps its own copy of
-/// this rather than sharing one private widget across files.
-class _Eyebrow extends StatelessWidget {
-  const _Eyebrow(this.text);
+/// One mode's picker row. A separate copy of `main_menu_screen.dart`'s
+/// `_MenuRow` chrome rather than a shared widget, matching this file's own
+/// prior precedent (see the old `_Eyebrow`'s doc comment) of each screen
+/// keeping its own copy of small look-alike widgets.
+class _RulesTopicRow extends StatelessWidget {
+  const _RulesTopicRow({required this.topic});
 
-  final String text;
-
-  @override
-  Widget build(BuildContext context) => Text(
-    text.toUpperCase(),
-    style: Type.eyebrow.copyWith(color: Palette.chalkDim),
-  );
-}
-
-/// One block of explanatory copy under a mode's heading.
-class _RuleParagraph extends StatelessWidget {
-  const _RuleParagraph(this.text);
-
-  final String text;
+  final RulesTopic topic;
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: Gap.sm),
-    child: Text(text, style: Type.body.copyWith(color: Palette.chalk)),
-  );
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: Gap.sm),
+      child: Material(
+        color: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(4),
+          side: const BorderSide(color: Palette.edge),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          key: Key('rules-overview-${topic.name}'),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (context) => RulesDetailScreen(topic: topic),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: Gap.lg,
+              vertical: Gap.md,
+            ),
+            child: Row(
+              children: [
+                Icon(topic.icon, size: 20, color: Palette.chalkDim),
+                const SizedBox(width: Gap.md),
+                Expanded(
+                  child: Text(
+                    topic.overview(l10n),
+                    style: Type.body.copyWith(color: Palette.chalk),
+                  ),
+                ),
+                const SizedBox(width: Gap.md),
+                const Icon(
+                  Icons.chevron_right,
+                  size: 18,
+                  color: Palette.chalkDim,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

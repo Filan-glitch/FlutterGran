@@ -8,6 +8,7 @@ import '../../domain/x01/game_config.dart';
 import '../../l10n/app_localizations.dart';
 import '../l10n_extensions.dart';
 import '../providers.dart';
+import '../rules_topic.dart';
 import '../theme.dart';
 import '../widgets/board_connection_button.dart';
 import '../widgets/rules_button.dart';
@@ -91,7 +92,7 @@ class _BullingSetupScreenState extends ConsumerState<BullingSetupScreen> {
       appBar: AppBar(
         title: Text(l10n.bullingSetupTitle),
         actions: const [
-          RulesButton(),
+          RulesButton(topic: RulesTopic.bulling),
           BoardConnectionButton(),
           SizedBox(width: Gap.xs),
         ],

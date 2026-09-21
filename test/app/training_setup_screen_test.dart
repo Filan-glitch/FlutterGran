@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/app/providers.dart';
+import 'package:fluttergran/app/rules_topic.dart';
+import 'package:fluttergran/app/screens/rules_detail_screen.dart';
 import 'package:fluttergran/app/screens/training_game_screen.dart';
 import 'package:fluttergran/app/screens/training_setup_screen.dart';
 import 'package:fluttergran/app/theme.dart';
@@ -38,6 +40,21 @@ void main() {
       ),
     );
   }
+
+  testWidgets('the rules icon opens the training rules, scoped to it alone', (
+    tester,
+  ) async {
+    await pump(tester);
+
+    await tester.tap(find.byIcon(Icons.help_outline));
+    await tester.pumpAndSettle();
+
+    final detail = tester.widget<RulesDetailScreen>(
+      find.byType(RulesDetailScreen),
+    );
+    expect(detail.topic, RulesTopic.training);
+    expect(find.text('TRAINING RULES'), findsOneWidget);
+  });
 
   testWidgets('offers free practice and checkout practice', (tester) async {
     await pump(tester);

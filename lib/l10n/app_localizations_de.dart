@@ -192,6 +192,34 @@ class AppLocalizationsDe extends AppLocalizations {
       'Checkout-Training – eine Startpunktzahl wählen und das Finish unter Double-out üben, nach derselben Regel wie ein X01-Leg, mit durchgehend angezeigtem Checkout-Vorschlag.';
 
   @override
+  String get rulesX01Title => 'X01 REGELN';
+
+  @override
+  String get rulesAtcTitle => 'AROUND THE CLOCK REGELN';
+
+  @override
+  String get rulesBullingTitle => 'BULLING REGELN';
+
+  @override
+  String get rulesTrainingTitle => 'TRAINING REGELN';
+
+  @override
+  String get rulesX01Overview =>
+      'Auf null herunterspielen und mit einem Doppel beenden';
+
+  @override
+  String get rulesAtcOverview =>
+      'Jede Zahl der Reihe nach freispielen, dann beide Bulls';
+
+  @override
+  String get rulesBullingOverview =>
+      'Wer zuerst das Ziel per Bulls erreicht, gewinnt';
+
+  @override
+  String get rulesTrainingOverview =>
+      'Freies Training oder Checkout-Übungen, solo';
+
+  @override
   String get atcSetupTitle => 'AROUND THE CLOCK EINRICHTUNG';
 
   @override

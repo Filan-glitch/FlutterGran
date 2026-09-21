@@ -192,6 +192,31 @@ class AppLocalizationsEn extends AppLocalizations {
       'Checkout practice — pick a start score and practice finishing it under double-out, the same rule as an X01 leg, with the checkout suggestion shown throughout.';
 
   @override
+  String get rulesX01Title => 'X01 RULES';
+
+  @override
+  String get rulesAtcTitle => 'AROUND THE CLOCK RULES';
+
+  @override
+  String get rulesBullingTitle => 'BULLING RULES';
+
+  @override
+  String get rulesTrainingTitle => 'TRAINING RULES';
+
+  @override
+  String get rulesX01Overview => 'Race down to zero and check out on a double';
+
+  @override
+  String get rulesAtcOverview => 'Clear every number in order, then both bulls';
+
+  @override
+  String get rulesBullingOverview =>
+      'First to the target by hitting bulls wins';
+
+  @override
+  String get rulesTrainingOverview => 'Free practice or checkout drills, solo';
+
+  @override
   String get atcSetupTitle => 'AROUND THE CLOCK SETUP';
 
   @override

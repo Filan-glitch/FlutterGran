@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fluttergran/app/rules_topic.dart';
+import 'package:fluttergran/app/screens/rules_detail_screen.dart';
 import 'package:fluttergran/app/screens/rules_screen.dart';
 import 'package:fluttergran/app/theme.dart';
 import 'package:fluttergran/l10n/app_localizations.dart';
@@ -26,39 +28,48 @@ void main() {
     );
   }
 
-  testWidgets('shows a heading and rule copy for every game mode', (
+  testWidgets('shows one short row per game mode, nothing more', (
     tester,
   ) async {
-    // The rules page is long enough to scroll on a phone-height surface, and
-    // the default test surface is phone-sized - without this, paragraphs
-    // past the fold never mount and `find.textContaining` on them fails, not
-    // because the copy is wrong but because the widget was never built. A
-    // tall surface renders the whole `ListView` at once, which is what this
-    // test actually wants to assert on.
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    tester.view.physicalSize = const Size(800, 3000);
-    tester.view.devicePixelRatio = 1.0;
-
     await pump(tester);
 
     expect(find.text('RULES'), findsOneWidget);
 
-    expect(find.text('X01'), findsOneWidget);
-    expect(find.textContaining('Race to exactly zero'), findsOneWidget);
     expect(
-      find.textContaining('a double or a triple opens it'),
+      find.text('Race down to zero and check out on a double'),
+      findsOneWidget,
+    );
+    expect(
+      find.text('Clear every number in order, then both bulls'),
+      findsOneWidget,
+    );
+    expect(
+      find.text('First to the target by hitting bulls wins'),
+      findsOneWidget,
+    );
+    expect(
+      find.text('Free practice or checkout drills, solo'),
       findsOneWidget,
     );
 
-    expect(find.text('AROUND THE CLOCK'), findsOneWidget);
-    expect(find.textContaining('Clear 22 stops in order'), findsOneWidget);
+    // The overview is a picker, not a reference - none of the detailed
+    // rule copy that used to live here belongs on this screen any more.
+    expect(find.textContaining('Race to exactly zero'), findsNothing);
+    expect(find.textContaining('Clear 22 stops in order'), findsNothing);
+  });
 
-    expect(find.text('BULLING'), findsOneWidget);
-    expect(find.textContaining('hitting bulls wins'), findsOneWidget);
+  testWidgets('tapping a row opens that mode\'s detail, scoped to it alone', (
+    tester,
+  ) async {
+    await pump(tester);
 
-    expect(find.text('TRAINING'), findsOneWidget);
-    expect(find.textContaining('Free practice'), findsOneWidget);
-    expect(find.textContaining('Checkout practice'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('rules-overview-x01')));
+    await tester.pumpAndSettle();
+
+    final detail = tester.widget<RulesDetailScreen>(
+      find.byType(RulesDetailScreen),
+    );
+    expect(detail.topic, RulesTopic.x01);
+    expect(find.text('X01 RULES'), findsOneWidget);
   });
 }

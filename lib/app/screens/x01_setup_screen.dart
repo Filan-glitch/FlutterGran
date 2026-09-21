@@ -10,6 +10,7 @@ import '../../domain/x01/x01_rules.dart';
 import '../../l10n/app_localizations.dart';
 import '../l10n_extensions.dart';
 import '../providers.dart';
+import '../rules_topic.dart';
 import '../theme.dart';
 import '../widgets/board_connection_button.dart';
 import '../widgets/rules_button.dart';
@@ -158,7 +159,7 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
       appBar: AppBar(
         title: Text(l10n.x01SetupTitle),
         actions: const [
-          RulesButton(),
+          RulesButton(topic: RulesTopic.x01),
           BoardConnectionButton(),
           SizedBox(width: Gap.xs),
         ],

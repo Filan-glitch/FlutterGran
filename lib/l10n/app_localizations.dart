@@ -422,6 +422,54 @@ abstract class AppLocalizations {
   /// **'Checkout practice — pick a start score and practice finishing it under double-out, the same rule as an X01 leg, with the checkout suggestion shown throughout.'**
   String get rulesTrainingCheckoutPractice;
 
+  /// No description provided for @rulesX01Title.
+  ///
+  /// In en, this message translates to:
+  /// **'X01 RULES'**
+  String get rulesX01Title;
+
+  /// No description provided for @rulesAtcTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AROUND THE CLOCK RULES'**
+  String get rulesAtcTitle;
+
+  /// No description provided for @rulesBullingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'BULLING RULES'**
+  String get rulesBullingTitle;
+
+  /// No description provided for @rulesTrainingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'TRAINING RULES'**
+  String get rulesTrainingTitle;
+
+  /// No description provided for @rulesX01Overview.
+  ///
+  /// In en, this message translates to:
+  /// **'Race down to zero and check out on a double'**
+  String get rulesX01Overview;
+
+  /// No description provided for @rulesAtcOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear every number in order, then both bulls'**
+  String get rulesAtcOverview;
+
+  /// No description provided for @rulesBullingOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'First to the target by hitting bulls wins'**
+  String get rulesBullingOverview;
+
+  /// No description provided for @rulesTrainingOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Free practice or checkout drills, solo'**
+  String get rulesTrainingOverview;
+
   /// No description provided for @atcSetupTitle.
   ///
   /// In en, this message translates to:
