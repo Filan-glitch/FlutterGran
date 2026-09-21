@@ -39,8 +39,8 @@ abstract final class GranBoardGatt {
 | | |
 |---|---|
 | **service** | The vendor service. Six independent implementations agree on it, and the board **advertises** it — which is what makes the scan filter possible |
-| **notify** | Board → app. The only characteristic the MVP uses |
-| **write** | App → board, write without response. **Never used.** The MVP is read-only |
+| **notify** | Board → app: every hit, miss and button press |
+| **write** | App → board, write without response. **LED frames only**, through `BoardSource.sendLed`. See "LED control" in `BOARD_PROTOCOL.md`. Optional: a board without it still scores |
 | **namePrefix** | `GRAN`, used only as a fallback when the service filter finds nothing. The full advertised name is not documented anywhere |
 
 ## Connection lifecycle

@@ -136,4 +136,87 @@ found. The fix races the completer that the scan-results listener fills in
 against `scanTimeout` directly, instead of trusting `startScan`'s return to
 mean anything about elapsed time.
 
-**The MVP is read-only. Nothing writes to the board.** All audio is app-side.
+**The only thing written to the board is LED frames**, and all audio is app-side.
+See below.
+
+## LED control
+
+The 132's LED ring is driven over the vendor service's **write**
+characteristic, `442f1572-8a00-9a28-cbe1-e1d4212d53eb`, using write without
+response. The format was reverse-engineered by others from the official app's
+traffic, in [GranBoard-with-Autodarts](https://github.com/Lennart-Jerome/GranBoard-with-Autodarts)
+(`dev-tools/README GranBoard_LED_Control.md`). That repo has no licence, so
+only the documented facts are used and none of its code. On 2026-09-21 the
+format was checked against a real 132 with that repo's
+`GranBoard_LED_Control.html`, run in desktop Chrome.
+
+The LEDs only light on **USB power**. They stay dark on AA batteries whatever
+is sent.
+
+### Static ring: 20 bytes
+
+One palette code per number, S1 to S20. Byte *n* is the segment with **number**
+*n* printed on it, not the *n*-th position around the ring (confirmed on the 132).
+The codes are:
+
+| Code | Colour | | Code | Colour |
+|---|---|---|---|---|
+| `00` | off | | `04` | light green |
+| `01` | red | | `05` | turquoise |
+| `02` | orange | | `06` | purple |
+| `03` | yellow | | `07` | white |
+
+Twenty `00` bytes turns the whole ring off.
+
+### Effect frames: 16 bytes
+
+| Byte | Meaning |
+|---|---|
+| `[0]` | op-code |
+| `[1..3]` | colour A, RGB |
+| `[4..6]` | colour B, RGB |
+| `[7..9]` | colour C, RGB |
+| `[10..11]` | hit-flash target id, little-endian |
+| `[12]` | speed. Effects run 0 (fast) to 35 (slow); the hit flash runs 0 (slow) to 255 (fast) |
+| `[15]` | always `01` |
+
+- **Hit flash:** op `01`, `02` or `03` for single, double or triple, with colours A
+  and B. The target ids for 1 to 20 are
+  `1C 31 37 22 16 28 01 07 10 2B 0A 13 25 0D 2E 04 34 1F 3A 19`. **Verified on the
+  132: each id lights the right number.** There is no target id for the bull.
+- **Effects that work on the 132:**
+  - `0C` touch rainbow
+  - `0D` rainbow + flicker (needs `[11]=02, [13]=02`)
+  - `0F` rainbow rotate
+  - `10` split rainbow
+  - `11` next-player sweep (needs `[10]=10`)
+  - `14` pulse (needs `[4]=7D`)
+  - `15` dim solid
+  - `16` colour cycle
+  - `17` blink
+  - `18` flicker
+  - `1B` shake
+  - `1D` sweep + fade
+  - `1F` 3-colour fade
+- **`19` hunt flicker does nothing on the 132.** It is left out of the
+  allow-list.
+
+Whether each effect loops or plays once was not measured. The app doesn't
+depend on either: `LedScheduler` holds each show for a fixed time and then
+repaints the resting ring, and that repaint also stops a looping effect.
+
+### Settings frames: never sent
+
+The same characteristic also accepts **12-byte settings frames**. These change
+how the board scores, and the app must never send them:
+
+| Frame ends in | Setting |
+|---|---|
+| `34 35` | reply interval |
+| `36 37` | out sensitivity |
+| `3A 3B` | target sensitivity presets |
+
+`BoardSource.sendLed` takes a `LedCommand`, not bytes, and
+`encodeLedCommand` (`lib/data/board/led_command.dart`) can only build 20- or
+16-byte frames from an allow-listed op. A settings frame therefore cannot be
+built from app code at all. `test/data/led_command_test.dart` pins this down.
