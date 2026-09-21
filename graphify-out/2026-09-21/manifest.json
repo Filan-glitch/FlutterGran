@@ -110,8 +110,8 @@
     "semantic_hash": ""
   },
   "lib/app/screens/x01_setup_screen.dart": {
-    "mtime": 1789299056.4462109,
-    "ast_hash": "5fb042d0ac9159dfbcb41662168fd732",
+    "mtime": 1789220117.1147816,
+    "ast_hash": "43eba9f19bac1a6ae4672b469dad0cdf",
     "semantic_hash": ""
   },
   "lib/app/theme.dart": {
@@ -1600,8 +1600,8 @@
     "semantic_hash": ""
   },
   "lib/app/screens/atc_setup_screen.dart": {
-    "mtime": 1789299057.4942205,
-    "ast_hash": "f154c514d44a8b3ddf7ce6e00b463c7e",
+    "mtime": 1789220119.7968242,
+    "ast_hash": "0ffe181eeb0affabd340b51f4afedfd7",
     "semantic_hash": ""
   },
   "lib/domain/atc/atc_config.dart": {
@@ -1690,8 +1690,8 @@
     "semantic_hash": ""
   },
   "lib/app/screens/bulling_setup_screen.dart": {
-    "mtime": 1789299058.2122273,
-    "ast_hash": "65735dcc69a2e868ce081fc600407690",
+    "mtime": 1789220122.5758681,
+    "ast_hash": "a87364db925d0494c0104d9045e02f80",
     "semantic_hash": ""
   },
   "lib/domain/bulling/bulling_config.dart": {
@@ -1765,8 +1765,8 @@
     "semantic_hash": ""
   },
   "lib/app/screens/training_setup_screen.dart": {
-    "mtime": 1789299059.0712352,
-    "ast_hash": "eba6b5f6fcfa82e054133235f982d7cb",
+    "mtime": 1789220125.288911,
+    "ast_hash": "8bf8d62b282c14c649026edc999e386c",
     "semantic_hash": ""
   },
   "lib/app/training_controller.dart": {
@@ -1795,8 +1795,8 @@
     "semantic_hash": ""
   },
   "test/app/training_setup_screen_test.dart": {
-    "mtime": 1789299159.799171,
-    "ast_hash": "35dad56ecef5f990a30d24dc6813fb20",
+    "mtime": 1789148847.6992934,
+    "ast_hash": "462cd5bb607fe64656a24c31bcb7a97f",
     "semantic_hash": ""
   },
   "test/domain/training/free_practice_state_test.dart": {
@@ -1810,8 +1810,8 @@
     "semantic_hash": ""
   },
   "test/app/x01_setup_screen_test.dart": {
-    "mtime": 1789299108.3006933,
-    "ast_hash": "fb70d28df69def641f37379c1143b68e",
+    "mtime": 1789220203.962104,
+    "ast_hash": "b1676b2c8276519e60c90220f88b3463",
     "semantic_hash": ""
   },
   "test/domain/x01_rules_test.dart": {
@@ -1825,8 +1825,8 @@
     "semantic_hash": ""
   },
   "lib/app/screens/rules_screen.dart": {
-    "mtime": 1789299030.6189702,
-    "ast_hash": "6391eaee5ca235f15546d6a47d8a7682",
+    "mtime": 1789216038.0458536,
+    "ast_hash": "c5d1f60a9202228431ca893ae29f19f1",
     "semantic_hash": ""
   },
   "lib/app/widgets/selectable_tile.dart": {
@@ -1835,23 +1835,23 @@
     "semantic_hash": ""
   },
   "lib/l10n/app_localizations.dart": {
-    "mtime": 1789301569.2202992,
-    "ast_hash": "aaaaa47c99cd79516b7a54febb052c0d",
+    "mtime": 1789216064.7422361,
+    "ast_hash": "575f34ecd54a0eeaed49caec7a277422",
     "semantic_hash": ""
   },
   "lib/l10n/app_localizations_de.dart": {
-    "mtime": 1789301569.2082994,
-    "ast_hash": "add26acf21c7310318413176dd71c133",
+    "mtime": 1789216064.7312357,
+    "ast_hash": "652f3f359144f45d72d0761c2167bccf",
     "semantic_hash": ""
   },
   "lib/l10n/app_localizations_en.dart": {
-    "mtime": 1789301569.2132993,
-    "ast_hash": "f139812c50b98f0923f40983b11b77e5",
+    "mtime": 1789216064.735236,
+    "ast_hash": "e56a43a928d2cb747473d7016f1e477a",
     "semantic_hash": ""
   },
   "test/app/rules_screen_test.dart": {
-    "mtime": 1789299118.4967878,
-    "ast_hash": "6a39d55bbcc709814735e4975cf5f0da",
+    "mtime": 1789216159.64677,
+    "ast_hash": "a01d72365696dd3c41e9baad9ebae4da",
     "semantic_hash": ""
   },
   "docs/FEATURE_IDEAS.md": {
@@ -1865,28 +1865,8 @@
     "semantic_hash": ""
   },
   "lib/app/widgets/rules_button.dart": {
-    "mtime": 1789299039.5590534,
-    "ast_hash": "8067d822a083ef6e0a37eedea6196772",
-    "semantic_hash": ""
-  },
-  "lib/app/rules_topic.dart": {
-    "mtime": 1789299009.0317686,
-    "ast_hash": "f590aa15708fd90e765d8b9e16eab9bb",
-    "semantic_hash": ""
-  },
-  "lib/app/screens/rules_detail_screen.dart": {
-    "mtime": 1789299019.8008692,
-    "ast_hash": "4d94ddf82af39c407b11f19a74e9dfca",
-    "semantic_hash": ""
-  },
-  "test/app/rules_detail_screen_test.dart": {
-    "mtime": 1789299128.0618768,
-    "ast_hash": "f8fceb2a46ed7723dfc5c167fb2a66df",
-    "semantic_hash": ""
-  },
-  "docs/RULES_SCREENS.md": {
-    "mtime": 1789301472.2844706,
-    "ast_hash": "6867c048ea572e973c33e8a4b3774dc3",
+    "mtime": 1789220155.763384,
+    "ast_hash": "8f5e162c3337c3b5f00e31230164527b",
     "semantic_hash": ""
   }
 }
