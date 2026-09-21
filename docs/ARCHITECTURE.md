@@ -218,6 +218,40 @@ because they are needed once a turn rather than three times.
 Spoken lines wait for the cue under them — `SoundTiming.afterBustCue` and
 friends — so the pair reads as one event instead of two sounds fighting.
 
+### Lights
+
+The board's LED ring uses the same design as audio, in `lib/app/lights/`:
+
+```
+state (before, after) ──▶ ledCuesFor…() ──▶ List<LedCue> ──▶ showFor() ──▶ LedScheduler ──▶ BoardSource.sendLed
+state (now)           ──▶ x01Ring / atcRing / … ──▶ resting RingPaint ──┘
+```
+
+- **`led_reactions.dart`** holds pure functions, one set per mode, with the same
+  one-dart guard as `soundsFor`. Undo and resume light nothing.
+  - It also works out the **resting ring**: the checkout route (next dart yellow,
+    the rest orange), the Around the Clock target, or turquoise all round for
+    bulling.
+- **`led_cue.dart`** is *what* happened. **`led_theme.dart`** is *how it looks*:
+  every colour, op, speed and hold time lives there. Seat colours are chosen so
+  the RGB effects and the 8-colour ring palette agree.
+- **`led_scheduler.dart`** owns the ring.
+  - Shows have priorities, so a stray dart can't cut a 180 short.
+  - After a show ends, the resting ring is painted back.
+  - Writes are spaced at least 60 ms apart, and only the latest one inside a
+    gap is sent.
+  - While no board is connected it does nothing at all: no writes and no timers.
+- **`lights_providers.dart`**:
+  - `ledSchedulerProvider` lives for the whole app, watched from `main.dart`.
+    It plays the connect sweep.
+  - **Outside a game** the ring rests on a slow forest-green pulse
+    (`idlePulse` in `led_theme.dart`). Inside one it rests on the game's own ring.
+  - Each game screen watches its `…LightsProvider` (autoDispose), which calls
+    `enterGame()`. Leaving the screen calls `leaveGame()` and the idle pulse
+    comes back.
+  - Settings: a master switch plus dart flashes, target ring and celebrations.
+    With the master off, nothing is written.
+
 ### Layout
 
 Two breakpoints, both `lib/app/theme.dart`, both keyed to the device's

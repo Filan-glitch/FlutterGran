@@ -8,6 +8,7 @@ import '../../domain/x01/leg_state.dart' show dartsPerTurn;
 import '../../domain/x01/thrown_dart.dart';
 import '../bulling_controller.dart';
 import '../l10n_extensions.dart';
+import '../lights/lights_providers.dart';
 import '../providers.dart';
 import '../theme.dart';
 import '../widgets/dart_keypad.dart';
@@ -27,6 +28,9 @@ class BullingGameScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(bullingGameProvider);
+    // Nothing is read from it: watching keeps the board's lights following
+    // this game, and turns them off when the screen goes.
+    ref.watch(bullingLightsProvider);
     final controller = ref.read(bullingGameProvider.notifier);
     final names = ref.watch(playerNamesProvider);
     final leg = session.leg;

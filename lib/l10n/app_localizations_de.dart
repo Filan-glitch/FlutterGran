@@ -137,6 +137,37 @@ class AppLocalizationsDe extends AppLocalizations {
   String get spokenTotalsDetail => 'Jede Aufnahme wird laut vorgelesen';
 
   @override
+  String get boardLightsSectionTitle => 'Board-Beleuchtung';
+
+  @override
+  String get boardLightsLabel => 'LED-Ring';
+
+  @override
+  String get boardLightsDetail =>
+      'Braucht USB-Strom - mit Batterien bleiben die LEDs dunkel';
+
+  @override
+  String get dartFlashesLabel => 'Treffer-Blitze';
+
+  @override
+  String get dartFlashesDetail =>
+      'Die getroffene Zahl leuchtet auf, ein Flackern bei einem Fehlwurf';
+
+  @override
+  String get targetRingLabel => 'Ziel auf dem Ring';
+
+  @override
+  String get targetRingDetail =>
+      'Der Checkout-Weg, deine Around-the-Clock-Zahl, das Bull';
+
+  @override
+  String get celebrationsLabel => 'Jubel';
+
+  @override
+  String get celebrationsDetail =>
+      'Game on, Ton plus, 180, gewonnene Legs und Matches';
+
+  @override
   String get languageSectionTitle => 'Sprache';
 
   @override

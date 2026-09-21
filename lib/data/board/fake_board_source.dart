@@ -3,6 +3,7 @@ import 'dart:async';
 import '../../domain/segment.dart';
 import 'board_source.dart';
 import 'granboard_segment_map.dart';
+import 'led_command.dart';
 
 /// Frame body for a segment, on a standard board.
 final Map<Segment, String> segmentToCode = Map<Segment, String>.unmodifiable({
@@ -55,6 +56,15 @@ class FakeBoardSource implements BoardSource {
   @override
   Future<void> disconnect() async {
     _setState(BoardConnectionState.disconnected);
+  }
+
+  /// Every LED command sent while connected, oldest first.
+  final List<LedCommand> ledCommands = [];
+
+  @override
+  Future<void> sendLed(LedCommand command) async {
+    if (!_current.isConnected) return;
+    ledCommands.add(command);
   }
 
   @override

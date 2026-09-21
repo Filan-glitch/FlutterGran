@@ -11,6 +11,7 @@ import '../../l10n/app_localizations.dart';
 import '../audio/sound_controller.dart' show maximumTurn;
 import '../game_controller.dart';
 import '../l10n_extensions.dart';
+import '../lights/lights_providers.dart';
 import '../providers.dart';
 import '../theme.dart';
 import '../widgets/dart_keypad.dart';
@@ -37,6 +38,8 @@ class GameScreen extends ConsumerWidget {
     // alive for as long as a leg is on screen, and its own listener on the game
     // does the rest - which is the point: this screen never asks for a sound.
     ref.watch(soundControllerProvider);
+    // Same idiom for the board's lights, which also go dark when this leaves.
+    ref.watch(x01LightsProvider);
 
     final routes = leg.isFinished || session.awaitingTurnConfirm
         ? const <CheckoutRoute>[]

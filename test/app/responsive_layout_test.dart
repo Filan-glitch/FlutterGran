@@ -58,6 +58,9 @@ void main() {
         databaseProvider.overrideWithValue(database),
         boardSourceProvider.overrideWithValue(board),
         soundPlayerProvider.overrideWithValue(_MutePlayer()),
+        // Layout is under test here, not the board's lights, whose shows
+        // would otherwise leave timers running past the end of each test.
+        ledEnabledProvider.overrideWith(_LightsOff.new),
       ],
     );
   });
@@ -450,4 +453,11 @@ void main() {
       },
     );
   });
+}
+
+class _LightsOff extends BoolSetting {
+  _LightsOff() : super('led.enabled');
+
+  @override
+  bool build() => false;
 }

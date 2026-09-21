@@ -46,6 +46,40 @@ class SettingsScreen extends ConsumerWidget {
                 onChanged: ref.read(speechEnabledProvider.notifier).set,
               ),
               const SizedBox(height: Gap.lg),
+              _Eyebrow(l10n.boardLightsSectionTitle),
+              const SizedBox(height: Gap.sm),
+              _SoundToggle(
+                label: l10n.boardLightsLabel,
+                detail: l10n.boardLightsDetail,
+                value: ref.watch(ledEnabledProvider),
+                onChanged: ref.read(ledEnabledProvider.notifier).set,
+              ),
+              // Greyed under the master, the same way spoken totals are.
+              for (final (label, detail, provider) in [
+                (
+                  l10n.dartFlashesLabel,
+                  l10n.dartFlashesDetail,
+                  ledDartFlashesProvider,
+                ),
+                (
+                  l10n.targetRingLabel,
+                  l10n.targetRingDetail,
+                  ledTargetRingProvider,
+                ),
+                (
+                  l10n.celebrationsLabel,
+                  l10n.celebrationsDetail,
+                  ledCelebrationsProvider,
+                ),
+              ])
+                _SoundToggle(
+                  label: label,
+                  detail: detail,
+                  value: ref.watch(provider),
+                  enabled: ref.watch(ledEnabledProvider),
+                  onChanged: ref.read(provider.notifier).set,
+                ),
+              const SizedBox(height: Gap.lg),
               _Eyebrow(l10n.languageSectionTitle),
               const SizedBox(height: Gap.sm),
               _LanguageChoice(

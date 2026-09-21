@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 import 'board_source.dart';
+import 'led_command.dart';
 
 /// The GranBoard's vendor GATT service and characteristics.
 ///
@@ -13,10 +14,11 @@ import 'board_source.dart';
 abstract final class GranBoardGatt {
   static final Guid service = Guid('442f1570-8a00-9a28-cbe1-e1d4212d53eb');
 
-  /// Board to app. The only characteristic the MVP uses.
+  /// Board to app: every hit, miss and button press.
   static final Guid notify = Guid('442f1571-8a00-9a28-cbe1-e1d4212d53eb');
 
-  /// App to board, write without response. Unused: the MVP never writes.
+  /// App to board, write without response. LED frames only - see
+  /// `led_command.dart` for why nothing else can be sent.
   static final Guid write = Guid('442f1572-8a00-9a28-cbe1-e1d4212d53eb');
 
   /// Advertised name prefix, used only as a fallback when the service filter
@@ -80,6 +82,7 @@ class BleBoardSource implements BoardSource {
   BoardConnectionState _current = BoardConnectionState.disconnected;
   BluetoothDevice? _device;
   StreamSubscription<List<int>>? _valueSubscription;
+  BluetoothCharacteristic? _writeCharacteristic;
   StreamSubscription<BluetoothConnectionState>? _deviceStateSubscription;
   Timer? _reconnect;
   DateTime? _lastScanAt;
@@ -216,6 +219,11 @@ class BleBoardSource implements BoardSource {
 
     await characteristic.setNotifyValue(true);
 
+    // Optional: a board without it still scores, it just stays dark.
+    _writeCharacteristic = service.characteristics
+        .where((candidate) => candidate.uuid == GranBoardGatt.write)
+        .firstOrNull;
+
     await _valueSubscription?.cancel();
     _valueSubscription = characteristic.onValueReceived.listen(_raw.add);
 
@@ -226,6 +234,7 @@ class BleBoardSource implements BoardSource {
   }
 
   void _onDropped() {
+    _writeCharacteristic = null;
     _setState(BoardConnectionState.disconnected);
     unawaited(_valueSubscription?.cancel());
     _valueSubscription = null;
@@ -246,6 +255,21 @@ class BleBoardSource implements BoardSource {
   }
 
   @override
+  Future<void> sendLed(LedCommand command) async {
+    final characteristic = _writeCharacteristic;
+    if (characteristic == null || !_current.isConnected) return;
+    try {
+      await characteristic.write(
+        encodeLedCommand(command),
+        withoutResponse: characteristic.properties.writeWithoutResponse,
+      );
+    } on Exception {
+      // A dropped frame is a missed flash, nothing more. The drop itself, if
+      // that is what this was, arrives through the connection state.
+    }
+  }
+
+  @override
   Future<void> disconnect() async {
     _wantConnection = false;
     _reconnect?.cancel();
@@ -255,6 +279,7 @@ class BleBoardSource implements BoardSource {
     _valueSubscription = null;
     await _deviceStateSubscription?.cancel();
     _deviceStateSubscription = null;
+    _writeCharacteristic = null;
 
     final board = _device;
     _device = null;

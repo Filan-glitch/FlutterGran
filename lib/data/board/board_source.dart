@@ -2,6 +2,7 @@ import 'dart:async';
 
 import '../../domain/board_event.dart';
 import 'frame_assembler.dart';
+import 'led_command.dart';
 import 'segment_codec.dart';
 
 /// Where a board connection currently stands.
@@ -14,9 +15,10 @@ enum BoardConnectionState {
   bool get isConnected => this == BoardConnectionState.connected;
 }
 
-/// A source of raw board notification bytes.
+/// A source of raw board notification bytes, and the way back to its LEDs.
 ///
-/// Deliberately the narrowest possible seam: bytes in, connection state out.
+/// Deliberately the narrowest possible seam: bytes in, connection state out,
+/// LED commands back.
 /// Everything above it - frame assembly, decoding, scoring - is identical
 /// whether the bytes come from Bluetooth or from a fake, which is what lets the
 /// whole app be developed and tested without hardware.
@@ -31,6 +33,14 @@ abstract class BoardSource {
   Future<void> connect();
 
   Future<void> disconnect();
+
+  /// Shows [command] on the board's LED ring.
+  ///
+  /// Takes a [LedCommand] rather than bytes on purpose: the settings frames the
+  /// board also accepts on this characteristic cannot be built from one. Never
+  /// throws and does nothing while disconnected - lighting is decoration, and
+  /// a failed write must never reach the scoring path.
+  Future<void> sendLed(LedCommand command);
 
   Future<void> dispose();
 }

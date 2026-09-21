@@ -6,6 +6,7 @@ import '../../domain/training/free_practice_state.dart';
 import '../../domain/x01/leg_state.dart';
 import '../../domain/x01/thrown_dart.dart';
 import '../l10n_extensions.dart';
+import '../lights/lights_providers.dart';
 import '../providers.dart';
 import '../theme.dart';
 import '../training_controller.dart';
@@ -27,6 +28,7 @@ class TrainingGameScreen extends ConsumerWidget {
     // listener alive for as long as this screen is on, the same idiom
     // `soundControllerProvider` uses for a real leg.
     ref.watch(trainingSoundControllerProvider);
+    ref.watch(trainingLightsProvider);
 
     final darts = switch (session) {
       FreePracticeSession(:final practice) => practice.darts,

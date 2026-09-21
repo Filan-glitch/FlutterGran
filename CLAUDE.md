@@ -2,8 +2,8 @@
 
 Flutter companion app for a **GranBoard 132** Bluetooth electronic dartboard.
 x01 (301/501/701, single/double/master in and out) for up to 4 players, best of 1/3/5/7
-legs, live checkout suggestions, spoken commentary and sound cues, and
-per-player statistics across every dart ever thrown.
+legs, live checkout suggestions, spoken commentary and sound cues, reactions on
+the board's LED ring, and per-player statistics across every dart ever thrown.
 
 MVP finished 2026-09-07 — real hardware connects and scores correctly, and the
 five post-MVP features (multi-leg matches, sound, app icon, end screen,
@@ -86,7 +86,10 @@ by state.
   pins an older analyzer — they cannot coexist. Providers are written by hand.
   `riverpod_lint`/`custom_lint` are also unavailable: `riverpod_lint` caps
   `riverpod_annotation <4.0.0` and so is incompatible with Riverpod 3.
-- Do not write to the board. The MVP is read-only; all audio is app-side.
+- Write only LED frames to the board, and only through `BoardSource.sendLed(LedCommand)`.
+  `LedCommand` allow-lists the ops confirmed on the 132. Never add a raw-bytes
+  write, and never send the 12-byte settings frames (`…34 35`, `…36 37`, `…3A 3B`):
+  they change how the board scores. LED protocol: `docs/BOARD_PROTOCOL.md`, "LED control".
 
 ## graphify
 

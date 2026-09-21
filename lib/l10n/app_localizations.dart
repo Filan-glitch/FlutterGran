@@ -332,6 +332,60 @@ abstract class AppLocalizations {
   /// **'Each turn read out loud'**
   String get spokenTotalsDetail;
 
+  /// No description provided for @boardLightsSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Board lights'**
+  String get boardLightsSectionTitle;
+
+  /// No description provided for @boardLightsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'LED ring'**
+  String get boardLightsLabel;
+
+  /// No description provided for @boardLightsDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs the board on USB power - the LEDs stay dark on batteries'**
+  String get boardLightsDetail;
+
+  /// No description provided for @dartFlashesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Dart flashes'**
+  String get dartFlashesLabel;
+
+  /// No description provided for @dartFlashesDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'The number you hit lights up, a flicker for a miss'**
+  String get dartFlashesDetail;
+
+  /// No description provided for @targetRingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Target on the ring'**
+  String get targetRingLabel;
+
+  /// No description provided for @targetRingDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'The checkout route, your Around the Clock number, the bull'**
+  String get targetRingDetail;
+
+  /// No description provided for @celebrationsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Celebrations'**
+  String get celebrationsLabel;
+
+  /// No description provided for @celebrationsDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Game on, ton plus, 180, legs and matches won'**
+  String get celebrationsDetail;
+
   /// No description provided for @languageSectionTitle.
   ///
   /// In en, this message translates to:

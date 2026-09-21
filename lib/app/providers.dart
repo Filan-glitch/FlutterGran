@@ -443,6 +443,28 @@ final speechEnabledProvider = NotifierProvider<BoolSetting, bool>(
   () => BoolSetting('speech.enabled'),
 );
 
+/// The master switch for the board's LED ring. Off means the app never
+/// writes to the board at all.
+final ledEnabledProvider = NotifierProvider<BoolSetting, bool>(
+  () => BoolSetting('led.enabled'),
+);
+
+/// A flash on every dart: the number hit, or a flicker for a miss.
+final ledDartFlashesProvider = NotifierProvider<BoolSetting, bool>(
+  () => BoolSetting('led.dartFlashes'),
+);
+
+/// The resting ring: the checkout route, the Around the Clock target, the
+/// bull in bulling.
+final ledTargetRingProvider = NotifierProvider<BoolSetting, bool>(
+  () => BoolSetting('led.targetRing'),
+);
+
+/// Game on, ton plus, 180, leg and match won.
+final ledCelebrationsProvider = NotifierProvider<BoolSetting, bool>(
+  () => BoolSetting('led.celebrations'),
+);
+
 /// The app's language, or null to follow the device's own.
 ///
 /// Same shape as [BoolSetting] - shared_preferences, a synchronous default

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'app/lights/lights_providers.dart';
 import 'app/providers.dart';
 import 'app/screens/splash_screen.dart';
 import 'app/theme.dart';
@@ -16,6 +17,10 @@ class FlutterGranApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Nothing is read from it. Watching keeps the board's LED scheduler, and
+    // its connect sweep, alive for the whole app rather than one screen.
+    ref.watch(ledSchedulerProvider);
+
     return MaterialApp(
       title: 'Chalk',
       // One theme, always dark. A scoreboard read across a room in a garage

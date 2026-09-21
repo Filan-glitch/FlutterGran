@@ -127,7 +127,10 @@ confused, so they sit three octaves apart with opposite contours.
 - **No `riverpod_lint` / `custom_lint`.** `riverpod_lint` caps
   `riverpod_annotation <4.0.0` and so is incompatible with Riverpod 3. Provider
   mistakes are not caught by tooling; keep providers few and small.
-- **Do not write to the board.** The MVP is read-only; all audio is app-side.
+- **Write only LED frames to the board.** Every write goes through
+  `BoardSource.sendLed(LedCommand)`, and `LedCommand` has no way to express the
+  12-byte settings frames (`…34 35`, `…36 37`, `…3A 3B`) that change how the
+  board scores. Never add a raw-bytes write path. All audio is app-side.
 
 ## Conventions
 

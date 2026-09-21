@@ -33,7 +33,8 @@ void main() {
     );
   }
 
-  /// The two switches, in the order they appear: sound first, then speech.
+  /// The two sound switches, in the order they appear: sound first, then
+  /// speech. The board-light switches follow them.
   (Switch, Switch) switches(WidgetTester tester) {
     final found = tester.widgetList<Switch>(find.byType(Switch)).toList();
     return (found[0], found[1]);
@@ -65,7 +66,7 @@ void main() {
     expect(speech.value, isTrue);
     expect(container.read(speechEnabledProvider), isTrue);
 
-    await tester.tap(find.byType(Switch).last);
+    await tester.tap(find.byType(Switch).at(1));
     await tester.pump();
 
     expect(container.read(speechEnabledProvider), isFalse);
@@ -107,5 +108,36 @@ void main() {
 
     (_, speech) = switches(tester);
     expect(speech.onChanged, isNotNull);
+  });
+
+  group('board lights', () {
+    /// The master and its three sub-switches, after the two sound ones.
+    List<Switch> lights(WidgetTester tester) =>
+        tester.widgetList<Switch>(find.byType(Switch)).skip(2).take(4).toList();
+
+    testWidgets('all four start on and the master flips on tap', (
+      tester,
+    ) async {
+      await pump(tester);
+      expect(lights(tester).map((toggle) => toggle.value), everyElement(isTrue));
+
+      await tester.ensureVisible(find.byType(Switch).at(2));
+      await tester.tap(find.byType(Switch).at(2));
+      await tester.pump();
+      expect(container.read(ledEnabledProvider), isFalse);
+    });
+
+    testWidgets('the sub-switches grey out while the master is off', (
+      tester,
+    ) async {
+      unawaited(container.read(ledEnabledProvider.notifier).set(false));
+      await pump(tester);
+
+      final [master, ...subs] = lights(tester);
+      expect(master.onChanged, isNotNull);
+      for (final sub in subs) {
+        expect(sub.onChanged, isNull);
+      }
+    });
   });
 }

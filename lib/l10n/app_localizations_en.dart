@@ -137,6 +137,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String get spokenTotalsDetail => 'Each turn read out loud';
 
   @override
+  String get boardLightsSectionTitle => 'Board lights';
+
+  @override
+  String get boardLightsLabel => 'LED ring';
+
+  @override
+  String get boardLightsDetail =>
+      'Needs the board on USB power - the LEDs stay dark on batteries';
+
+  @override
+  String get dartFlashesLabel => 'Dart flashes';
+
+  @override
+  String get dartFlashesDetail =>
+      'The number you hit lights up, a flicker for a miss';
+
+  @override
+  String get targetRingLabel => 'Target on the ring';
+
+  @override
+  String get targetRingDetail =>
+      'The checkout route, your Around the Clock number, the bull';
+
+  @override
+  String get celebrationsLabel => 'Celebrations';
+
+  @override
+  String get celebrationsDetail =>
+      'Game on, ton plus, 180, legs and matches won';
+
+  @override
   String get languageSectionTitle => 'Language';
 
   @override
