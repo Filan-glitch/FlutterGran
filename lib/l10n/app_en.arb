@@ -117,6 +117,35 @@
   "boardConnectedTooltip": "Board connected",
   "connectingToBoardTooltip": "Connecting to board…",
   "boardDisconnectedTooltip": "Board disconnected",
+  "boardConnectedNamedTooltip": "Connected to {name} - tap to disconnect",
+  "@boardConnectedNamedTooltip": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "boardRetryingTooltip": "Board lost - reconnecting. Tap to try now",
+  "bluetoothOffTooltip": "Bluetooth is off - tap to turn it on",
+  "bluetoothUnauthorizedTooltip": "Bluetooth permission needed - tap to ask again",
+  "bluetoothUnsupportedTooltip": "This device has no Bluetooth Low Energy",
+  "turnOnBluetoothInSettings": "Turn on Bluetooth in the system settings to connect the board",
+  "boardConnectedToast": "Board connected: {name}",
+  "@boardConnectedToast": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "boardConnectedToastUnnamed": "Board connected",
+  "boardLostToast": "Board connection lost - reconnecting…",
+  "bluetoothOffToast": "Bluetooth is off - turn it on to connect the board",
+  "boardSectionTitle": "Board",
+  "autoConnectLabel": "Connect automatically",
+  "autoConnectDetail": "When the app starts, and whenever it comes back to the front",
+  "forgetBoardLabel": "Forget board",
+  "forgetBoardDetail": "The next connection searches for a board again",
 
   "ringSingle": "SINGLE",
   "ringDouble": "DOUBLE",

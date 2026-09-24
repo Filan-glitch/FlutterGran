@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,93 +8,111 @@ import '../l10n_extensions.dart';
 import '../providers.dart';
 import '../theme.dart';
 
-/// One tap to connect the board, coloured by what it is doing.
+/// The board connection light, in every screen's app bar.
 ///
-/// This replaced a whole diagnostics screen after hardware day (2026-09-04)
-/// confirmed the connection and protocol both work exactly as documented -
-/// there is nothing left to verify, so nothing left to show. A single icon
-/// button is the whole interface: tap to connect, tap again to disconnect,
-/// and the colour says which.
+/// Holds no state of its own: everything it shows comes from
+/// [boardConnectionProvider], which is right from its first read. That is what
+/// lets a screen opened mid-session show the same light as the one before it -
+/// the old button kept "has this ever been tapped" per widget, so every new
+/// screen started white whatever the board was doing.
 ///
-/// White, blue and green are the only colours this button ever needs, chosen
-/// against the house palette rather than from it: [Palette] is deliberately
-/// all green plus one red (see its doc comment), but a connection light reads
-/// by a convention older than this app - blue for Bluetooth, red for off,
-/// green for on - and fighting that convention here would only make the icon
-/// harder to read at a glance, which is the entire point of it.
-class BoardConnectionButton extends ConsumerStatefulWidget {
+/// One tap does the obvious thing for the state it is in: connect, cancel,
+/// retry now, disconnect, or ask for Bluetooth to be switched on.
+class BoardConnectionButton extends ConsumerWidget {
   const BoardConnectionButton({super.key});
 
-  @override
-  ConsumerState<BoardConnectionButton> createState() =>
-      _BoardConnectionButtonState();
-}
-
-class _BoardConnectionButtonState extends ConsumerState<BoardConnectionButton> {
-  /// Whether the button has ever been tapped.
-  ///
-  /// [BoardConnectionState.disconnected] means both "never tried" and "tried
-  /// and failed / dropped", and those have to look different or a player who
-  /// has never touched the button would see the same red as one whose board
-  /// just fell over. This is the bit that tells them apart.
-  bool _attempted = false;
-
-  Future<void> _toggle() async {
+  Future<void> _onTap(
+    BuildContext context,
+    WidgetRef ref,
+    BoardConnectionState state,
+  ) async {
     final source = ref.read(boardSourceProvider);
-    final state =
-        ref.read(boardConnectionProvider).value ?? source.currentState;
-
-    setState(() => _attempted = true);
-    if (state.isConnected) {
-      await source.disconnect();
-    } else {
-      await source.connect();
+    switch (state) {
+      case BoardConnectionState.disconnected ||
+          BoardConnectionState.unauthorized:
+        await source.connect();
+      case BoardConnectionState.scanning ||
+          BoardConnectionState.connecting ||
+          BoardConnectionState.connected:
+        await source.disconnect();
+      case BoardConnectionState.retrying:
+        await source.retryNow();
+      case BoardConnectionState.bluetoothOff:
+        final messenger = ScaffoldMessenger.maybeOf(context);
+        final hint = context.l10n.turnOnBluetoothInSettings;
+        if (!await source.turnOnBluetooth()) {
+          messenger?.showSnackBar(SnackBar(content: Text(hint)));
+        }
+      case BoardConnectionState.unsupported:
+        break;
     }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final state =
-        ref.watch(boardConnectionProvider).value ??
-        ref.read(boardSourceProvider).currentState;
+    final state = ref.watch(boardConnectionProvider);
+    final name = ref.read(boardSourceProvider).boardName;
 
-    final Color color;
-    final String label;
-    if (!_attempted) {
-      color = Colors.white;
-      label = l10n.connectBoardTooltip;
-    } else {
-      (color, label) = switch (state) {
-        BoardConnectionState.connected => (
-          const Color(0xFF3D9C64),
-          l10n.boardConnectedTooltip,
-        ),
-        BoardConnectionState.scanning || BoardConnectionState.connecting => (
-          const Color(0xFF3B82F6),
-          l10n.connectingToBoardTooltip,
-        ),
-        BoardConnectionState.disconnected => (
-          const Color(0xFFBF3B30),
-          l10n.boardDisconnectedTooltip,
-        ),
-      };
+    final (icon, color, label) = switch (state) {
+      BoardConnectionState.disconnected => (
+        Icons.bluetooth,
+        Palette.chalk,
+        l10n.connectBoardTooltip,
+      ),
+      BoardConnectionState.scanning || BoardConnectionState.connecting => (
+        Icons.bluetooth_searching,
+        Palette.bluetoothBlue,
+        l10n.connectingToBoardTooltip,
+      ),
+      BoardConnectionState.retrying => (
+        Icons.bluetooth_searching,
+        Palette.bluetoothAmber,
+        l10n.boardRetryingTooltip,
+      ),
+      BoardConnectionState.connected => (
+        Icons.bluetooth_connected,
+        Palette.trebleBed,
+        name == null
+            ? l10n.boardConnectedTooltip
+            : l10n.boardConnectedNamedTooltip(name),
+      ),
+      BoardConnectionState.bluetoothOff => (
+        Icons.bluetooth_disabled,
+        Palette.doubleBed,
+        l10n.bluetoothOffTooltip,
+      ),
+      BoardConnectionState.unauthorized => (
+        Icons.bluetooth_disabled,
+        Palette.doubleBed,
+        l10n.bluetoothUnauthorizedTooltip,
+      ),
+      BoardConnectionState.unsupported => (
+        Icons.bluetooth_disabled,
+        Palette.chalkDim,
+        l10n.bluetoothUnsupportedTooltip,
+      ),
+    };
+
+    // Crossfades the glyph rather than swapping it outright, and pulses while
+    // something is still being decided - looking, connecting, or waiting to
+    // try again - so waiting looks like something is happening rather than
+    // the icon having quietly changed its mind.
+    Widget glyph = AnimatedSwitcher(
+      duration: Motion.scale(Motion.base),
+      child: Icon(icon, key: ValueKey((icon, color)), color: color),
+    );
+    if (state.isWorking) glyph = Pulse(child: glyph);
+    if (state == BoardConnectionState.retrying) {
+      glyph = Pulse(min: 0.35, child: glyph);
     }
 
-    final connecting =
-        state == BoardConnectionState.scanning ||
-        state == BoardConnectionState.connecting;
-
-    // Crossfades the glyph's colour rather than swapping it outright, and
-    // pulses while the state in between - scanning, connecting - is still
-    // being decided, so waiting looks like something is happening rather
-    // than the icon having quietly changed its mind.
-    Widget icon = AnimatedSwitcher(
-      duration: Motion.scale(Motion.base),
-      child: Icon(Icons.bluetooth, key: ValueKey(color), color: color),
+    return IconButton(
+      tooltip: label,
+      icon: glyph,
+      onPressed: state == BoardConnectionState.unsupported
+          ? null
+          : () => unawaited(_onTap(context, ref, state)),
     );
-    if (connecting) icon = Pulse(child: icon);
-
-    return IconButton(tooltip: label, icon: icon, onPressed: _toggle);
   }
 }

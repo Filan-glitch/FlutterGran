@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 import 'dart:math';
 
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 import 'board_source.dart';
+import 'known_board_store.dart';
 import 'led_command.dart';
 
 /// The GranBoard's vendor GATT service and characteristics.
@@ -64,15 +66,40 @@ Duration scanCooldown(DateTime? lastScanAt, DateTime now) {
 /// re-paired will never connect by that route, so eventually give up and look.
 const int reconnectsBeforeRescan = 3;
 
+/// Whether [error] is the platform refusing Bluetooth for want of permission.
+///
+/// flutter_blue_plus surfaces a denied permission as an ordinary exception
+/// from the scan or connect call, with nothing more specific than its message
+/// to go on. Retrying on a backoff would only re-prompt a player who already
+/// said no, so this is told apart from "no board".
+bool isPermissionError(Object error) =>
+    error.toString().toLowerCase().contains('permission');
+
 /// Reads a real GranBoard over Bluetooth Low Energy.
 ///
 /// Deliberately thin: it produces raw notification bytes and connection state,
 /// nothing else. Framing, decoding and scoring are shared with the fake, so
 /// this class is the only thing that has to be verified against hardware.
+///
+/// Once [connect] has been called it keeps trying until [disconnect]: through
+/// drops, failed attempts and the phone's Bluetooth being switched off and on
+/// again, which it follows rather than polling for.
 class BleBoardSource implements BoardSource {
-  BleBoardSource({this.scanTimeout = const Duration(seconds: 15)});
+  BleBoardSource({
+    this.scanTimeout = const Duration(seconds: 15),
+    this.connectTimeout = const Duration(seconds: 12),
+    this.store = const NoKnownBoardStore(),
+  });
 
   final Duration scanTimeout;
+
+  /// Well under the plugin's 35-second default: a board that is switched off
+  /// should fail over to the backoff quickly, not hold the button blue for
+  /// half a minute.
+  final Duration connectTimeout;
+
+  /// Where the last board connected to is remembered across launches.
+  final KnownBoardStore store;
 
   final StreamController<List<int>> _raw =
       StreamController<List<int>>.broadcast();
@@ -81,13 +108,18 @@ class BleBoardSource implements BoardSource {
 
   BoardConnectionState _current = BoardConnectionState.disconnected;
   BluetoothDevice? _device;
+  String? _boardName;
   StreamSubscription<List<int>>? _valueSubscription;
   BluetoothCharacteristic? _writeCharacteristic;
   StreamSubscription<BluetoothConnectionState>? _deviceStateSubscription;
+  StreamSubscription<BluetoothAdapterState>? _adapterSubscription;
+  BluetoothAdapterState _adapter = BluetoothAdapterState.unknown;
+  Completer<BluetoothDevice?>? _scan;
   Timer? _reconnect;
   DateTime? _lastScanAt;
   int _attempt = 0;
   bool _wantConnection = false;
+  bool _busy = false;
   bool _disposed = false;
 
   @override
@@ -98,6 +130,12 @@ class BleBoardSource implements BoardSource {
 
   @override
   BoardConnectionState get currentState => _current;
+
+  @override
+  String? get boardName => _boardName;
+
+  @override
+  bool get wantsConnection => _wantConnection;
 
   /// The board this source last connected to, for display.
   BluetoothDevice? get device => _device;
@@ -112,43 +150,121 @@ class BleBoardSource implements BoardSource {
   Future<void> connect() async {
     _wantConnection = true;
     _attempt = 0;
+    if (!await _watchAdapter()) return;
     await _attemptConnect();
   }
 
-  Future<void> _attemptConnect() async {
-    if (_disposed || !_wantConnection) return;
+  @override
+  Future<void> retryNow() async {
+    if (!_wantConnection || _busy || _current.isConnected) return;
+    _cancelReconnect();
+    await _attemptConnect();
+  }
 
+  /// Starts following the adapter, once. False when there is no BLE at all.
+  Future<bool> _watchAdapter() async {
+    if (_adapterSubscription != null) return true;
+    if (!await FlutterBluePlus.isSupported) {
+      _wantConnection = false;
+      _setState(BoardConnectionState.unsupported);
+      return false;
+    }
+    _adapterSubscription = FlutterBluePlus.adapterState.listen(_onAdapter);
+    return true;
+  }
+
+  void _onAdapter(BluetoothAdapterState adapter) {
+    _adapter = adapter;
+    switch (adapter) {
+      case BluetoothAdapterState.on:
+        // Bluetooth just came on - or was on all along and this is the first
+        // report. Either way a wanted board is worth trying for now, not after
+        // whatever backoff was pending while it was off.
+        if (_wantConnection && !_current.isConnected && !_busy) {
+          _cancelReconnect();
+          _attempt = 0;
+          unawaited(_attemptConnect());
+        }
+      case BluetoothAdapterState.off || BluetoothAdapterState.turningOff:
+        _cancelReconnect();
+        if (_wantConnection) _setState(BoardConnectionState.bluetoothOff);
+      case BluetoothAdapterState.unauthorized:
+        _cancelReconnect();
+        if (_wantConnection) _setState(BoardConnectionState.unauthorized);
+      case BluetoothAdapterState.unavailable:
+        _cancelReconnect();
+        _setState(BoardConnectionState.unsupported);
+      case BluetoothAdapterState.unknown || BluetoothAdapterState.turningOn:
+        break;
+    }
+  }
+
+  bool get _adapterOff =>
+      _adapter == BluetoothAdapterState.off ||
+      _adapter == BluetoothAdapterState.turningOff;
+
+  Future<void> _attemptConnect() async {
+    if (_disposed || !_wantConnection || _busy || _current.isConnected) return;
+    if (_adapterOff) {
+      _setState(BoardConnectionState.bluetoothOff);
+      return;
+    }
+
+    _busy = true;
     try {
-      // A board we have already seen can be reconnected to directly. That
-      // skips the scan entirely, which is faster and cannot hit the throttle.
+      // A board we have already seen can be reconnected to directly - this
+      // session's, or the one remembered from the last launch. That skips the
+      // scan entirely, which is faster and cannot hit the throttle. After
+      // [reconnectsBeforeRescan] failures it stops trusting either and looks.
       var board = _device;
+      if (board == null && _attempt < reconnectsBeforeRescan) {
+        final remembered = await store.read();
+        if (remembered != null) board = BluetoothDevice.fromId(remembered);
+      }
       if (board == null) {
         _setState(BoardConnectionState.scanning);
         board = await _findBoard();
       }
+      if (!_wantConnection) return;
       if (board == null) {
         _scheduleReconnect();
         return;
       }
 
-      if (!_wantConnection) return;
       _setState(BoardConnectionState.connecting);
 
       // `nonprofit` is the licence tier this project is distributed under.
       // Shipping commercially requires a purchased licence, or swapping the
       // package for flutter_blue_ultra or universal_ble.
-      await board.connect(license: License.nonprofit);
+      await board.connect(license: License.nonprofit, timeout: connectTimeout);
+
+      // Disconnect was pressed while the connect was in flight.
+      if (!_wantConnection) {
+        await _quietlyDisconnect(board);
+        return;
+      }
 
       await _subscribe(board);
 
       _device = board;
+      final name = board.platformName;
+      _boardName = name.isEmpty ? null : name;
       _attempt = 0;
       _setState(BoardConnectionState.connected);
-    } on Exception {
-      // Any failure - adapter off, scan timeout, GATT error - is the same
-      // situation: no board. Back off and try again.
+      unawaited(store.write(board.remoteId.str));
+    } on Exception catch (error) {
+      if (isPermissionError(error)) {
+        // No backoff: retrying would only re-prompt someone who said no. The
+        // next tap, or coming back to the app, asks again.
+        _setState(BoardConnectionState.unauthorized);
+        return;
+      }
+      // Any other failure - scan timeout, GATT error, a board that is off -
+      // is the same situation: no board. Back off and try again.
       if (_attempt >= reconnectsBeforeRescan) _device = null;
       _scheduleReconnect();
+    } finally {
+      _busy = false;
     }
   }
 
@@ -156,9 +272,10 @@ class BleBoardSource implements BoardSource {
   Future<BluetoothDevice?> _findBoard() async {
     final cooldown = scanCooldown(_lastScanAt, DateTime.now());
     if (cooldown > Duration.zero) await Future<void>.delayed(cooldown);
+    if (!_wantConnection) return null;
     _lastScanAt = DateTime.now();
 
-    final found = Completer<BluetoothDevice?>();
+    final found = _scan = Completer<BluetoothDevice?>();
 
     final subscription = FlutterBluePlus.onScanResults.listen((results) {
       for (final result in results) {
@@ -193,6 +310,7 @@ class BleBoardSource implements BoardSource {
         onTimeout: () => null,
       );
     } finally {
+      _scan = null;
       await subscription.cancel();
       await FlutterBluePlus.stopScan();
     }
@@ -235,16 +353,24 @@ class BleBoardSource implements BoardSource {
 
   void _onDropped() {
     _writeCharacteristic = null;
-    _setState(BoardConnectionState.disconnected);
     unawaited(_valueSubscription?.cancel());
     _valueSubscription = null;
-    if (_wantConnection) _scheduleReconnect();
+    if (_wantConnection) {
+      _scheduleReconnect();
+    } else {
+      _setState(BoardConnectionState.disconnected);
+    }
   }
 
   void _scheduleReconnect() {
     if (_disposed || !_wantConnection || _reconnect != null) return;
+    if (_adapterOff) {
+      // Nothing to retry against. The adapter coming back on retries at once.
+      _setState(BoardConnectionState.bluetoothOff);
+      return;
+    }
 
-    _setState(BoardConnectionState.disconnected);
+    _setState(BoardConnectionState.retrying);
     final delay = reconnectDelay(_attempt);
     _attempt++;
 
@@ -252,6 +378,11 @@ class BleBoardSource implements BoardSource {
       _reconnect = null;
       unawaited(_attemptConnect());
     });
+  }
+
+  void _cancelReconnect() {
+    _reconnect?.cancel();
+    _reconnect = null;
   }
 
   @override
@@ -270,10 +401,32 @@ class BleBoardSource implements BoardSource {
   }
 
   @override
+  Future<bool> turnOnBluetooth() async {
+    if (!Platform.isAndroid) return false;
+    try {
+      await FlutterBluePlus.turnOn();
+      return true;
+    } on Exception {
+      return false;
+    }
+  }
+
+  @override
+  Future<void> forgetBoard() async {
+    _device = null;
+    _boardName = null;
+    await store.write(null);
+  }
+
+  @override
   Future<void> disconnect() async {
     _wantConnection = false;
-    _reconnect?.cancel();
-    _reconnect = null;
+    _cancelReconnect();
+
+    // A scan in progress would otherwise hold the source busy until it timed
+    // out, swallowing a Connect tapped straight after this.
+    final scan = _scan;
+    if (scan != null && !scan.isCompleted) scan.complete(null);
 
     await _valueSubscription?.cancel();
     _valueSubscription = null;
@@ -282,21 +435,23 @@ class BleBoardSource implements BoardSource {
     _writeCharacteristic = null;
 
     final board = _device;
-    _device = null;
-    if (board != null) {
-      try {
-        await board.disconnect();
-      } on Exception {
-        // Already gone; nothing to do.
-      }
-    }
+    if (board != null) await _quietlyDisconnect(board);
 
     _setState(BoardConnectionState.disconnected);
+  }
+
+  Future<void> _quietlyDisconnect(BluetoothDevice board) async {
+    try {
+      await board.disconnect();
+    } on Exception {
+      // Already gone; nothing to do.
+    }
   }
 
   @override
   Future<void> dispose() async {
     await disconnect();
+    await _adapterSubscription?.cancel();
     _disposed = true;
     await _raw.close();
     await _state.close();

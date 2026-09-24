@@ -315,6 +315,63 @@ class AppLocalizationsDe extends AppLocalizations {
   String get boardDisconnectedTooltip => 'Board getrennt';
 
   @override
+  String boardConnectedNamedTooltip(String name) {
+    return 'Verbunden mit $name - tippen zum Trennen';
+  }
+
+  @override
+  String get boardRetryingTooltip =>
+      'Board verloren - verbinde neu. Tippen, um es jetzt zu versuchen';
+
+  @override
+  String get bluetoothOffTooltip =>
+      'Bluetooth ist aus - tippen zum Einschalten';
+
+  @override
+  String get bluetoothUnauthorizedTooltip =>
+      'Bluetooth-Berechtigung nötig - tippen, um erneut zu fragen';
+
+  @override
+  String get bluetoothUnsupportedTooltip =>
+      'Dieses Gerät hat kein Bluetooth Low Energy';
+
+  @override
+  String get turnOnBluetoothInSettings =>
+      'Schalte Bluetooth in den Systemeinstellungen ein, um das Board zu verbinden';
+
+  @override
+  String boardConnectedToast(String name) {
+    return 'Board verbunden: $name';
+  }
+
+  @override
+  String get boardConnectedToastUnnamed => 'Board verbunden';
+
+  @override
+  String get boardLostToast => 'Board-Verbindung verloren - verbinde neu…';
+
+  @override
+  String get bluetoothOffToast =>
+      'Bluetooth ist aus - schalte es ein, um das Board zu verbinden';
+
+  @override
+  String get boardSectionTitle => 'Board';
+
+  @override
+  String get autoConnectLabel => 'Automatisch verbinden';
+
+  @override
+  String get autoConnectDetail =>
+      'Beim App-Start und immer, wenn die App wieder in den Vordergrund kommt';
+
+  @override
+  String get forgetBoardLabel => 'Board vergessen';
+
+  @override
+  String get forgetBoardDetail =>
+      'Die nächste Verbindung sucht wieder nach einem Board';
+
+  @override
   String get ringSingle => 'EINFACH';
 
   @override

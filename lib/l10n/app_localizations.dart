@@ -650,6 +650,96 @@ abstract class AppLocalizations {
   /// **'Board disconnected'**
   String get boardDisconnectedTooltip;
 
+  /// No description provided for @boardConnectedNamedTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected to {name} - tap to disconnect'**
+  String boardConnectedNamedTooltip(String name);
+
+  /// No description provided for @boardRetryingTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Board lost - reconnecting. Tap to try now'**
+  String get boardRetryingTooltip;
+
+  /// No description provided for @bluetoothOffTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Bluetooth is off - tap to turn it on'**
+  String get bluetoothOffTooltip;
+
+  /// No description provided for @bluetoothUnauthorizedTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Bluetooth permission needed - tap to ask again'**
+  String get bluetoothUnauthorizedTooltip;
+
+  /// No description provided for @bluetoothUnsupportedTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'This device has no Bluetooth Low Energy'**
+  String get bluetoothUnsupportedTooltip;
+
+  /// No description provided for @turnOnBluetoothInSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on Bluetooth in the system settings to connect the board'**
+  String get turnOnBluetoothInSettings;
+
+  /// No description provided for @boardConnectedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Board connected: {name}'**
+  String boardConnectedToast(String name);
+
+  /// No description provided for @boardConnectedToastUnnamed.
+  ///
+  /// In en, this message translates to:
+  /// **'Board connected'**
+  String get boardConnectedToastUnnamed;
+
+  /// No description provided for @boardLostToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Board connection lost - reconnecting…'**
+  String get boardLostToast;
+
+  /// No description provided for @bluetoothOffToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Bluetooth is off - turn it on to connect the board'**
+  String get bluetoothOffToast;
+
+  /// No description provided for @boardSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Board'**
+  String get boardSectionTitle;
+
+  /// No description provided for @autoConnectLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect automatically'**
+  String get autoConnectLabel;
+
+  /// No description provided for @autoConnectDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'When the app starts, and whenever it comes back to the front'**
+  String get autoConnectDetail;
+
+  /// No description provided for @forgetBoardLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Forget board'**
+  String get forgetBoardLabel;
+
+  /// No description provided for @forgetBoardDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'The next connection searches for a board again'**
+  String get forgetBoardDetail;
+
   /// No description provided for @ringSingle.
   ///
   /// In en, this message translates to:

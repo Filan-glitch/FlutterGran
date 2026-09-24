@@ -54,6 +54,13 @@ abstract final class Palette {
   /// axis left to separate them on, and this has to out-read both [brand] and
   /// [trebleBed] at a glance.
   static const Color live = Color(0xFF7BE8AA);
+
+  /// The board connection light's in-between states. Deliberately off-palette:
+  /// a Bluetooth light reads by a convention older than this app - blue while
+  /// it looks, amber while it waits to try again - and green for connected and
+  /// red for trouble come from [trebleBed] and [doubleBed].
+  static const Color bluetoothBlue = Color(0xFF3B82F6);
+  static const Color bluetoothAmber = Color(0xFFE0A030);
 }
 
 /// Motion tokens. Every animation in the app pulls its duration and curve

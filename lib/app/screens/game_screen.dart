@@ -123,8 +123,7 @@ class GameScreen extends ConsumerWidget {
     // earns the hero layout with it.
     final hero = MediaQuery.sizeOf(context).shortestSide >= heroLayout;
 
-    final connectionState = ref.watch(boardConnectionProvider).value;
-    final boardConnected = connectionState?.isConnected ?? false;
+    final boardConnected = ref.watch(boardConnectionProvider).isConnected;
     final manualOverride = ref.watch(keypadOverrideProvider);
 
     // The keypad is the fallback path: it disappears the moment a real board
