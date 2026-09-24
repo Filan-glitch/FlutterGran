@@ -70,13 +70,13 @@
     "semantic_hash": ""
   },
   "lib/app/providers.dart": {
-    "mtime": 1790018622.3178263,
-    "ast_hash": "c35fbfab5bdecb9f58a341cf4462df0e",
+    "mtime": 1790274217.0829635,
+    "ast_hash": "a538aa92f17353eb768d25e61ac74b59",
     "semantic_hash": ""
   },
   "lib/app/screens/game_screen.dart": {
-    "mtime": 1790018667.3034818,
-    "ast_hash": "fc97da97295772530fd36e923fd9c3e5",
+    "mtime": 1790274217.0839636,
+    "ast_hash": "522f17347c0388b9e6d8ed62262c6244",
     "semantic_hash": ""
   },
   "lib/app/screens/main_menu_screen.dart": {
@@ -115,13 +115,13 @@
     "semantic_hash": ""
   },
   "lib/app/theme.dart": {
-    "mtime": 1789065327.8927116,
-    "ast_hash": "2d6001ca3512cf9ce5c435bde58a7511",
+    "mtime": 1790274217.0849636,
+    "ast_hash": "8147829cf9da0a4adef8214c81b5e1f9",
     "semantic_hash": ""
   },
   "lib/app/widgets/board_connection_button.dart": {
-    "mtime": 1789149298.7067916,
-    "ast_hash": "a182f3c1aa64190406c47f1df6872680",
+    "mtime": 1790274217.0849636,
+    "ast_hash": "6a72877d709865d85c51778b0937c978",
     "semantic_hash": ""
   },
   "lib/app/widgets/board_widget.dart": {
@@ -135,18 +135,18 @@
     "semantic_hash": ""
   },
   "lib/data/board/ble_board_source.dart": {
-    "mtime": 1790018428.644988,
-    "ast_hash": "e79680f8a60c20aedf7c6d3c265d63d5",
+    "mtime": 1790274217.0849636,
+    "ast_hash": "9b050fbb55cc848812f72aecfcaad092",
     "semantic_hash": ""
   },
   "lib/data/board/board_source.dart": {
-    "mtime": 1790018428.6439266,
-    "ast_hash": "dd54f5627017bd085f5650991a452354",
+    "mtime": 1790274217.0849636,
+    "ast_hash": "0fb8889c203f73e60744db0e1affe6b1",
     "semantic_hash": ""
   },
   "lib/data/board/fake_board_source.dart": {
-    "mtime": 1790018428.6444345,
-    "ast_hash": "0837151da11d1c556562c48359d7126c",
+    "mtime": 1790274217.0849636,
+    "ast_hash": "22b7477663677ef57196bc806279297f",
     "semantic_hash": ""
   },
   "lib/data/board/frame_assembler.dart": {
@@ -245,8 +245,8 @@
     "semantic_hash": ""
   },
   "lib/main.dart": {
-    "mtime": 1790018667.3022406,
-    "ast_hash": "c3ef54c328412bd8f6482760c18cfba4",
+    "mtime": 1790274217.0869637,
+    "ast_hash": "db0431e9f80b8d8827abf7a921d1892f",
     "semantic_hash": ""
   },
   "test/app/board_geometry_test.dart": {
@@ -1595,8 +1595,8 @@
     "semantic_hash": ""
   },
   "lib/app/screens/atc_game_screen.dart": {
-    "mtime": 1790018667.3041928,
-    "ast_hash": "94bf5f079bffbba07415101ecbdaf787",
+    "mtime": 1790274217.0839636,
+    "ast_hash": "4e3f77d4689ee5e8fb2a8043ece46210",
     "semantic_hash": ""
   },
   "lib/app/screens/atc_setup_screen.dart": {
@@ -1685,8 +1685,8 @@
     "semantic_hash": ""
   },
   "lib/app/screens/bulling_game_screen.dart": {
-    "mtime": 1790018667.3047032,
-    "ast_hash": "2d70a2b2a0fed6ff3c8f88e7fa3e5a27",
+    "mtime": 1790274217.0839636,
+    "ast_hash": "55719b7ae0d993f627372877d5deaf0d",
     "semantic_hash": ""
   },
   "lib/app/screens/bulling_setup_screen.dart": {
@@ -1835,18 +1835,18 @@
     "semantic_hash": ""
   },
   "lib/l10n/app_localizations.dart": {
-    "mtime": 1790019762.3885796,
-    "ast_hash": "f805fde16ffa923823c4ed0f710cd192",
+    "mtime": 1790274217.0859635,
+    "ast_hash": "6884db774329342f320eb12d5eddee38",
     "semantic_hash": ""
   },
   "lib/l10n/app_localizations_de.dart": {
-    "mtime": 1790019762.3575797,
-    "ast_hash": "64fe2cc962a35cfc8b70e7bb4a4d94fc",
+    "mtime": 1790274217.0869637,
+    "ast_hash": "313009dd3bb7b2671752d256350ec3b2",
     "semantic_hash": ""
   },
   "lib/l10n/app_localizations_en.dart": {
-    "mtime": 1790019762.3705797,
-    "ast_hash": "873d3d612d050125e4cb82efab71f7da",
+    "mtime": 1790274217.0869637,
+    "ast_hash": "6bd74eb23406d3d2e43a6a3350f226ac",
     "semantic_hash": ""
   },
   "test/app/rules_screen_test.dart": {
@@ -1932,6 +1932,16 @@
   "test/data/led_command_test.dart": {
     "mtime": 1790018457.7263784,
     "ast_hash": "ec5f08f5c297fbb8e6cc7b2640693361",
+    "semantic_hash": ""
+  },
+  "lib/app/board_lifecycle.dart": {
+    "mtime": 1790274217.0829635,
+    "ast_hash": "1f81cf325a88ef88afd0cff1d9410125",
+    "semantic_hash": ""
+  },
+  "lib/data/board/known_board_store.dart": {
+    "mtime": 1790274217.0859635,
+    "ast_hash": "d9e9be5edd45699b9468b7112df6a580",
     "semantic_hash": ""
   }
 }
