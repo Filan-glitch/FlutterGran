@@ -213,11 +213,20 @@ to the log*, so anything that moves the log by more than one — a restart, a
 resume, an undo, the start of the next leg — plays nothing. Resuming a stored
 leg would otherwise read out the total of a turn thrown yesterday.
 
+Every mode has its own mapping of the same shape - `soundsForAtc`,
+`soundsForBulling`, `soundsForTraining` - and its own provider that the game
+screen watches to keep alive. x01 alone speaks turn totals, busts and 180s;
+the others click every dart, call game on, say "no score" for an empty turn
+(Bulling reads its points out) and play the checkout for a win.
+
 Two players are held open. Cues run on `PlayerMode.lowLatency` (a SoundPool of
 decoded PCM on Android) because a click that lags is worse than no click;
 commentary runs on the normal media player, where a few tens of milliseconds do
 not matter. The four cues are warmed at startup; the 186 spoken lines are not,
-because they are needed once a turn rather than three times.
+because they are needed once a turn rather than three times. Neither player
+has a position updater: audioplayers' default one leaks a per-frame polling
+loop on every play of a sound that never completes, which a SoundPool cue
+never does - see CLAUDE.md.
 
 Spoken lines wait for the cue under them — `SoundTiming.afterBustCue` and
 friends — so the pair reads as one event instead of two sounds fighting.

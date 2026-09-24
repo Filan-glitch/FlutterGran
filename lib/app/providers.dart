@@ -30,6 +30,8 @@ import '../domain/x01/leg_state.dart';
 import '../domain/x01/match_state.dart';
 import '../domain/x01/x01_rules.dart';
 import 'atc_controller.dart';
+import 'audio/atc_sound.dart';
+import 'audio/bulling_sound.dart';
 import 'audio/sound_controller.dart';
 import 'audio/sound_player.dart';
 import 'audio/training_sound.dart';
@@ -670,53 +672,75 @@ final soundControllerProvider = Provider<SoundController>((ref) {
     );
   });
 
-  // Silence what is already queued the moment a switch goes off, rather than
-  // letting the line that was waiting behind a cue arrive after it.
-  ref.listen(soundEnabledProvider, (_, enabled) {
-    if (!enabled) controller.player.silence();
-  });
-  ref.listen(speechEnabledProvider, (_, enabled) {
-    if (!enabled) controller.player.silence();
-  });
+  _silenceWhenSwitchedOff(ref, controller.player);
 
   return controller;
 });
 
-/// Watches the training session and plays what it hears.
-///
-/// Deliberately not [SoundController]: that class's `observe` is hard-wired
-/// to [soundsFor] and `GameSession`. This is the same "screen just watches
-/// it to keep it alive" idiom with [soundsForTraining] in place of
-/// [soundsFor].
-final trainingSoundControllerProvider = Provider<void>((ref) {
-  final player = ref.watch(soundPlayerProvider);
-
-  ref.listen(trainingProvider, (previous, next) {
-    if (!ref.read(soundEnabledProvider)) {
-      player.silence();
-      return;
-    }
-
-    for (final sound in soundsForTraining(previous, next)) {
-      switch (sound.channel) {
-        case SoundChannel.cue:
-          player.playCue(sound.asset);
-        case SoundChannel.speech:
-          if (ref.read(speechEnabledProvider)) {
-            player.playSpeech(sound.asset, after: sound.delay);
-          }
-      }
-    }
-  });
-
-  // Same immediate-silence idiom [soundControllerProvider] uses: without
-  // this, a line already queued behind a delayed checkout cue would keep
-  // waiting to speak until the next training dart, well after the toggle
-  // that was supposed to silence it.
+/// Silences what is already queued the moment either switch goes off, rather
+/// than letting a line that was waiting behind a cue arrive after it - well
+/// after the toggle that was supposed to silence it.
+void _silenceWhenSwitchedOff(Ref ref, SoundPlayer player) {
   ref.listen(soundEnabledProvider, (_, enabled) {
     if (!enabled) player.silence();
   });
   ref.listen(speechEnabledProvider, (_, enabled) {
     if (!enabled) player.silence();
   });
+}
+
+/// Plays [sounds] on [player], minus whatever the two switches turn off.
+///
+/// [SoundController.observe] does the same for x01, hard-wired to
+/// [soundsFor] and `GameSession`; every other mode goes through this.
+void _play(Ref ref, SoundPlayer player, List<Sound> sounds) {
+  if (!ref.read(soundEnabledProvider)) {
+    player.silence();
+    return;
+  }
+
+  for (final sound in sounds) {
+    switch (sound.channel) {
+      case SoundChannel.cue:
+        player.playCue(sound.asset);
+      case SoundChannel.speech:
+        if (ref.read(speechEnabledProvider)) {
+          player.playSpeech(sound.asset, after: sound.delay);
+        }
+    }
+  }
+}
+
+/// Watches the training session and plays what it hears.
+///
+/// The same "screen just watches it to keep it alive" idiom as
+/// [soundControllerProvider], with [soundsForTraining] in place of
+/// [soundsFor].
+final trainingSoundControllerProvider = Provider<void>((ref) {
+  final player = ref.watch(soundPlayerProvider);
+  ref.listen(
+    trainingProvider,
+    (previous, next) => _play(ref, player, soundsForTraining(previous, next)),
+  );
+  _silenceWhenSwitchedOff(ref, player);
+});
+
+/// Watches an Around the Clock leg and plays what it hears.
+final atcSoundControllerProvider = Provider<void>((ref) {
+  final player = ref.watch(soundPlayerProvider);
+  ref.listen(
+    atcGameProvider,
+    (previous, next) => _play(ref, player, soundsForAtc(previous, next)),
+  );
+  _silenceWhenSwitchedOff(ref, player);
+});
+
+/// Watches a Bulling leg and plays what it hears.
+final bullingSoundControllerProvider = Provider<void>((ref) {
+  final player = ref.watch(soundPlayerProvider);
+  ref.listen(
+    bullingGameProvider,
+    (previous, next) => _play(ref, player, soundsForBulling(previous, next)),
+  );
+  _silenceWhenSwitchedOff(ref, player);
 });
