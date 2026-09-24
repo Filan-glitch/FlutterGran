@@ -283,8 +283,8 @@ shortest side rather than a `LayoutBuilder`'s local width — the same question
   scoreboard becomes per-player hero cards (`_HeroPlayerCard`) instead of a
   thin row, a turn's result becomes a full-screen takeover
   (`Positioned.fill` in the same `Stack` `_MatchWon` already used) instead of
-  sharing the play slot, and checkout gets its own panel (`_CheckoutPanel`)
-  instead of a strip. `_Scaled` in `main.dart` also locks the app to
+  sharing the play slot, and the checkout card (`CheckoutCard`, one chip per
+  dart of the route) is drawn at its larger `hero` scale. `_Scaled` in `main.dart` also locks the app to
   landscape at this threshold — a scoreboard on a stand is mounted once, not
   rotated screen to screen.
 

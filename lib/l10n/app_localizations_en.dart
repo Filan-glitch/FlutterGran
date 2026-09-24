@@ -496,6 +496,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get checkoutLabel => 'CHECKOUT';
 
   @override
+  String checkoutDartsLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count DARTS',
+      one: '1 DART',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get checkoutNextDart => 'next dart';
+
+  @override
+  String get checkoutOr => 'or';
+
+  @override
+  String semanticCheckoutRoute(int remaining, String route) {
+    return 'Checkout $remaining: $route';
+  }
+
+  @override
   String scoreArrow(int before, int after) {
     return '$before → $after';
   }

@@ -6,6 +6,7 @@ import 'package:fluttergran/app/audio/sound_controller.dart';
 import 'package:fluttergran/app/providers.dart';
 import 'package:fluttergran/app/screens/game_screen.dart';
 import 'package:fluttergran/app/theme.dart';
+import 'package:fluttergran/app/widgets/checkout_card.dart';
 import 'package:fluttergran/app/widgets/dart_keypad.dart';
 import 'package:fluttergran/data/board/fake_board_source.dart';
 import 'package:fluttergran/data/db/database.dart';
@@ -146,6 +147,19 @@ void main() {
         expect(find.byType(DartKeypad), findsOneWidget);
         expect(find.text('20'), findsOneWidget);
         expect(find.text('BULL'), findsOneWidget);
+        expect(find.text('MISS'), findsOneWidget);
+      });
+
+      // A three-dart finish with alternates: the checkout card at its
+      // tallest, taking its height out of the keypad's.
+      testWidgets('nothing overflows on $name with a checkout on', (
+        tester,
+      ) async {
+        await openAt(tester, size, startScore: 121);
+
+        expect(tester.takeException(), isNull);
+        expect(find.byKey(checkoutNextDartKey), findsOneWidget);
+        expect(find.byType(DartKeypad), findsOneWidget);
         expect(find.text('MISS'), findsOneWidget);
       });
     }
@@ -299,17 +313,28 @@ void main() {
       expect(score.style?.fontSize, Type.score.fontSize);
     });
 
-    testWidgets('gives the checkout its own panel on the connected tablet', (
+    /// How big the next dart's notation is drawn.
+    double nextDartSize(WidgetTester tester) => tester
+        .widget<Text>(
+          find.descendant(
+            of: find.byKey(checkoutNextDartKey),
+            matching: find.text('D20'),
+          ),
+        )
+        .style!
+        .fontSize!;
+
+    testWidgets('draws the checkout larger on the connected tablet', (
       tester,
     ) async {
       await openAt(tester, tabS6Lite, startScore: 40);
-      expect(find.byKey(const Key('checkout-panel')), findsOneWidget);
-    });
+      final tablet = nextDartSize(tester);
 
-    testWidgets('keeps the checkout a strip on a phone', (tester) async {
-      await openAt(tester, phoneLandscape, startScore: 40);
-      expect(find.byKey(const Key('checkout-panel')), findsNothing);
+      // Same leg, on a phone's worth of screen.
+      tester.view.physicalSize = phoneLandscape;
+      await tester.pump();
       expect(find.text('CHECKOUT'), findsOneWidget);
+      expect(nextDartSize(tester), lessThan(tablet));
     });
   });
 

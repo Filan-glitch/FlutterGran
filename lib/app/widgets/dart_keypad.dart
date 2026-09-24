@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../domain/segment.dart';
 import '../l10n_extensions.dart';
 import '../theme.dart';
+import 'ring_colours.dart';
 
 /// Entering a dart takes two decisions: which ring, then which wedge.
 ///
@@ -191,12 +192,7 @@ class _KeyState extends State<_Key> {
 
   @override
   Widget build(BuildContext context) {
-    final (background, foreground) = switch (widget.ring) {
-      Ring.doubleRing || Ring.innerBull => (Palette.doubleBed, Palette.chalk),
-      Ring.triple || Ring.outerBull => (Palette.trebleBed, Palette.chalk),
-      null => (Palette.sunk, Palette.chalkDim),
-      _ => (Palette.raised, Palette.chalk),
-    };
+    final (background, foreground) = ringColours(widget.ring);
 
     final border = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(4),

@@ -11,6 +11,7 @@ import '../providers.dart';
 import '../theme.dart';
 import '../training_controller.dart';
 import '../widgets/board_connection_button.dart';
+import '../widgets/checkout_card.dart';
 
 /// Throw darts and see what happened - free practice, or a chosen checkout
 /// worked at on repeat. Nothing shown here is ever written to the database;
@@ -159,7 +160,13 @@ class _CheckoutPracticeBody extends StatelessWidget {
           '${leg.currentRemaining}',
           style: Type.score.copyWith(color: Palette.chalk),
         ),
-        _CheckoutStrip(routes: routes),
+        CheckoutCard(
+          routes: routes,
+          remaining: leg.currentRemaining,
+          dartsLeft: leg.dartsLeftThisTurn,
+          hero: MediaQuery.sizeOf(context).shortestSide >= heroLayout,
+          padding: const EdgeInsets.only(top: Gap.md),
+        ),
         const SizedBox(height: Gap.lg),
         _DartRow(
           darts: leg.currentTurnDarts,
@@ -318,50 +325,6 @@ class _DartSlot extends StatelessWidget {
           decorationColor: Palette.doubleBed,
           decorationThickness: 2,
         ),
-      ),
-    );
-  }
-}
-
-/// What to throw, when there is something on - the training-screen's own
-/// copy of `_CheckoutStrip` in `game_screen.dart`, same reason as
-/// [_DartSlot].
-class _CheckoutStrip extends StatelessWidget {
-  const _CheckoutStrip({required this.routes});
-
-  final List<CheckoutRoute> routes;
-
-  @override
-  Widget build(BuildContext context) {
-    if (routes.isEmpty) return const SizedBox(height: Gap.sm);
-
-    return Padding(
-      padding: const EdgeInsets.only(top: Gap.md),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            context.l10n.checkoutLabel,
-            style: Type.eyebrow.copyWith(color: Palette.live),
-          ),
-          const SizedBox(width: Gap.md),
-          Expanded(
-            child: Text(
-              routes.first.toString(),
-              style: Type.notation.copyWith(color: Palette.live, fontSize: 22),
-            ),
-          ),
-          if (routes.length > 1)
-            Flexible(
-              child: Text(
-                routes.skip(1).join('   '),
-                textAlign: TextAlign.right,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Type.label.copyWith(color: Palette.chalkDim),
-              ),
-            ),
-        ],
       ),
     );
   }

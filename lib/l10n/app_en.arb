@@ -205,6 +205,16 @@
   "figureBestOut": "BEST OUT",
   "figureBestLeg": "BEST LEG",
   "checkoutLabel": "CHECKOUT",
+  "checkoutDartsLeft": "{count, plural, =1{1 DART} other{{count} DARTS}}",
+  "@checkoutDartsLeft": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "checkoutNextDart": "next dart",
+  "checkoutOr": "or",
+  "semanticCheckoutRoute": "Checkout {remaining}: {route}",
+  "@semanticCheckoutRoute": {
+    "placeholders": { "remaining": { "type": "int" }, "route": { "type": "String" } }
+  },
   "scoreArrow": "{before} → {after}",
   "@scoreArrow": {
     "placeholders": { "before": { "type": "int" }, "after": { "type": "int" } }
