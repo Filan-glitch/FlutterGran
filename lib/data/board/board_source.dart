@@ -6,13 +6,43 @@ import 'led_command.dart';
 import 'segment_codec.dart';
 
 /// Where a board connection currently stands.
+///
+/// Every state a player could need to tell apart has its own value: "not
+/// trying" is not "Bluetooth is off", and neither is "lost it, trying again".
+/// They used to share `disconnected`, which is how a red icon came to mean
+/// four different things.
 enum BoardConnectionState {
+  /// Not trying: never asked to, or the player disconnected.
   disconnected,
+
+  /// The phone's Bluetooth is off. Picks up on its own once it comes on.
+  bluetoothOff,
+
+  /// Bluetooth permission was refused. Needs the player to try again.
+  unauthorized,
+
+  /// This device has no Bluetooth Low Energy at all.
+  unsupported,
+
   scanning,
   connecting,
-  connected;
+  connected,
+
+  /// Lost the board, or failed to reach it, and a retry is scheduled.
+  retrying;
 
   bool get isConnected => this == BoardConnectionState.connected;
+
+  /// Actively looking for or connecting to a board right now.
+  bool get isWorking =>
+      this == BoardConnectionState.scanning ||
+      this == BoardConnectionState.connecting;
+
+  /// Stuck on something only the player can fix.
+  bool get needsUser =>
+      this == BoardConnectionState.bluetoothOff ||
+      this == BoardConnectionState.unauthorized ||
+      this == BoardConnectionState.unsupported;
 }
 
 /// A source of raw board notification bytes, and the way back to its LEDs.
@@ -30,9 +60,29 @@ abstract class BoardSource {
 
   BoardConnectionState get currentState;
 
+  /// The board's advertised name, once one has been found.
+  String? get boardName;
+
+  /// Whether a connection is wanted - asked for, and not since disconnected.
+  /// Stays true through drops, retries and the adapter being off.
+  bool get wantsConnection;
+
+  /// Starts wanting a connection, and keeps retrying until [disconnect].
   Future<void> connect();
 
+  /// Stops wanting a connection, and drops any there is.
   Future<void> disconnect();
+
+  /// Skips whatever backoff is pending and tries now. Does nothing unless a
+  /// connection is wanted and not already up or underway.
+  Future<void> retryNow();
+
+  /// Asks the platform to switch Bluetooth on. Android only - elsewhere this
+  /// returns false and the player has to do it in the system settings.
+  Future<bool> turnOnBluetooth();
+
+  /// Forgets the remembered board, so the next connection scans afresh.
+  Future<void> forgetBoard();
 
   /// Shows [command] on the board's LED ring.
   ///

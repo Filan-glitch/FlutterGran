@@ -95,8 +95,7 @@ class BullingGameScreen extends ConsumerWidget {
     Map<int, String> names,
     BullingLegState leg,
   ) {
-    final connectionState = ref.watch(boardConnectionProvider).value;
-    final boardConnected = connectionState?.isConnected ?? false;
+    final boardConnected = ref.watch(boardConnectionProvider).isConnected;
     final manualOverride = ref.watch(keypadOverrideProvider);
     final keypadVisible = !boardConnected || manualOverride;
 

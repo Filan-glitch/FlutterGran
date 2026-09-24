@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/board/ble_board_source.dart';
 import '../data/board/board_source.dart';
+import '../data/board/known_board_store.dart';
 import '../data/board/segment_codec.dart';
 import '../data/db/database.dart';
 import '../data/db/game_repository.dart';
@@ -44,10 +45,52 @@ import 'training_controller.dart';
 /// end to end, so scripted bytes are a test-only concern from here on; tests
 /// override this provider directly with a `FakeBoardSource`.
 final boardSourceProvider = Provider<BoardSource>((ref) {
-  final source = BleBoardSource();
+  final source = BleBoardSource(store: ref.read(knownBoardProvider.notifier));
   ref.onDispose(source.dispose);
   return source;
 });
+
+/// The board remembered from the last connection, by platform device id, or
+/// null when there is none. Backs the source's [KnownBoardStore], so the next
+/// launch can connect straight to it without scanning.
+class KnownBoardController extends Notifier<String?>
+    implements KnownBoardStore {
+  static const _key = 'board.knownDeviceId';
+
+  bool _loaded = false;
+
+  @override
+  String? build() {
+    unawaited(read());
+    return null;
+  }
+
+  @override
+  Future<String?> read() async {
+    if (!_loaded) {
+      _loaded = true;
+      final stored = (await _preferences())?.getString(_key);
+      if (stored != null) state = stored;
+    }
+    return state;
+  }
+
+  @override
+  Future<void> write(String? deviceId) async {
+    _loaded = true;
+    state = deviceId;
+    final preferences = await _preferences();
+    if (deviceId == null) {
+      await preferences?.remove(_key);
+    } else {
+      await preferences?.setString(_key, deviceId);
+    }
+  }
+}
+
+final knownBoardProvider = NotifierProvider<KnownBoardController, String?>(
+  KnownBoardController.new,
+);
 
 final segmentCodecProvider = Provider<SegmentCodec>((ref) => SegmentCodec());
 
@@ -64,8 +107,32 @@ final boardEventsProvider = StreamProvider<BoardEvent>(
   (ref) => ref.watch(boardReaderProvider).events,
 );
 
-final boardConnectionProvider = StreamProvider<BoardConnectionState>(
-  (ref) => ref.watch(boardReaderProvider).connectionState,
+/// Where the board connection stands, right now.
+///
+/// A [Notifier] seeded from the source's current state rather than a
+/// `StreamProvider` over its broadcast stream: a stream provider first watched
+/// *after* the connect event had nothing to show until the next event, so a
+/// screen opened mid-session read a connected board as absent. This is
+/// correct from the first read, on any screen, at any time.
+class BoardConnectionController extends Notifier<BoardConnectionState> {
+  @override
+  BoardConnectionState build() {
+    final source = ref.watch(boardSourceProvider);
+    final subscription = source.connectionState.listen((next) => state = next);
+    ref.onDispose(subscription.cancel);
+    return source.currentState;
+  }
+}
+
+final boardConnectionProvider =
+    NotifierProvider<BoardConnectionController, BoardConnectionState>(
+      BoardConnectionController.new,
+    );
+
+/// Whether the app connects to the board by itself: at launch, and again
+/// when it comes back to the foreground. On by default.
+final autoConnectProvider = NotifierProvider<BoolSetting, bool>(
+  () => BoolSetting('board.autoConnect'),
 );
 
 /// A checkout table scoped to one out-rule - see [CheckoutTable].
@@ -407,13 +474,19 @@ class BoolSetting extends Notifier<bool> {
 
   final String _key;
 
+  /// Completes once the stored value, if any, has replaced the default. For
+  /// the rare reader that must act on the real value rather than the first
+  /// frame's - auto-connect at launch, which cannot take back a connection it
+  /// started on a default the player had switched off.
+  Future<void> ready = Future<void>.value();
+
   @override
   bool build() {
     // Both settings default on, and correct themselves a frame later if the
     // stored value disagrees. Holding the first frame on a disk read to avoid
     // one frame of the default is the wrong way round: the default is right for
     // everyone who has never touched the switch.
-    unawaited(_load());
+    ready = _load();
     return true;
   }
 

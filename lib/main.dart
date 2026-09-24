@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'app/board_lifecycle.dart';
 import 'app/lights/lights_providers.dart';
 import 'app/providers.dart';
 import 'app/screens/splash_screen.dart';
@@ -20,9 +21,12 @@ class FlutterGranApp extends ConsumerWidget {
     // Nothing is read from it. Watching keeps the board's LED scheduler, and
     // its connect sweep, alive for the whole app rather than one screen.
     ref.watch(ledSchedulerProvider);
+    // Same idiom: auto-connect, the resume retry and connection toasts.
+    ref.watch(boardLifecycleProvider);
 
     return MaterialApp(
       title: 'Chalk',
+      scaffoldMessengerKey: scaffoldMessengerKey,
       // One theme, always dark. A scoreboard read across a room in a garage
       // has no business being white, and a light variant would mean a second
       // set of decisions for a situation that does not arise.

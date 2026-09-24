@@ -93,8 +93,7 @@ class AtcGameScreen extends ConsumerWidget {
     Map<int, String> names,
     AtcLegState leg,
   ) {
-    final connectionState = ref.watch(boardConnectionProvider).value;
-    final boardConnected = connectionState?.isConnected ?? false;
+    final boardConnected = ref.watch(boardConnectionProvider).isConnected;
     final manualOverride = ref.watch(keypadOverrideProvider);
     final keypadVisible = !boardConnected || manualOverride;
 

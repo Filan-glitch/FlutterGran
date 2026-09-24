@@ -18,7 +18,7 @@ final Map<Segment, String> segmentToCode = Map<Segment, String>.unmodifiable({
 /// integration, and it is the part that would otherwise go completely
 /// unexercised until hardware arrives.
 class FakeBoardSource implements BoardSource {
-  FakeBoardSource({this.greeting = 'GB8;102'});
+  FakeBoardSource({this.greeting = 'GB8;102', this.name = 'GRANBOARD'});
 
   /// Greeting sent on connect. Real boards send this with no `@` terminator,
   /// so it can arrive glued to the first hit.
@@ -29,7 +29,20 @@ class FakeBoardSource implements BoardSource {
   final StreamController<BoardConnectionState> _state =
       StreamController<BoardConnectionState>.broadcast();
 
+  /// The name reported once connected.
+  final String name;
+
   BoardConnectionState _current = BoardConnectionState.disconnected;
+  bool _wantConnection = false;
+  bool _adapterOn = true;
+
+  /// How many times each entry point was called, for tests of whoever
+  /// drives the connection.
+  int connectCalls = 0;
+  int disconnectCalls = 0;
+  int retryCalls = 0;
+  int turnOnCalls = 0;
+  int forgetCalls = 0;
 
   @override
   Stream<List<int>> get rawFrames => _raw.stream;
@@ -46,7 +59,23 @@ class FakeBoardSource implements BoardSource {
   }
 
   @override
+  String? get boardName => _current.isConnected ? name : null;
+
+  @override
+  bool get wantsConnection => _wantConnection;
+
+  @override
   Future<void> connect() async {
+    connectCalls++;
+    _wantConnection = true;
+    _attempt();
+  }
+
+  void _attempt() {
+    if (!_adapterOn) {
+      _setState(BoardConnectionState.bluetoothOff);
+      return;
+    }
     _setState(BoardConnectionState.scanning);
     _setState(BoardConnectionState.connecting);
     _setState(BoardConnectionState.connected);
@@ -55,7 +84,48 @@ class FakeBoardSource implements BoardSource {
 
   @override
   Future<void> disconnect() async {
+    disconnectCalls++;
+    _wantConnection = false;
     _setState(BoardConnectionState.disconnected);
+  }
+
+  @override
+  Future<void> retryNow() async {
+    retryCalls++;
+    if (!_wantConnection || _current.isConnected) return;
+    _attempt();
+  }
+
+  @override
+  Future<bool> turnOnBluetooth() async {
+    turnOnCalls++;
+    setAdapterOn();
+    return true;
+  }
+
+  @override
+  Future<void> forgetBoard() async => forgetCalls++;
+
+  /// Puts the source in [state] directly, for tests of how a state looks.
+  void forceState(BoardConnectionState state) => _setState(state);
+
+  /// The board fell away while still wanted: a retry is now pending.
+  void dropConnection() => _setState(
+    _wantConnection
+        ? BoardConnectionState.retrying
+        : BoardConnectionState.disconnected,
+  );
+
+  /// The phone's Bluetooth was switched off.
+  void setAdapterOff() {
+    _adapterOn = false;
+    if (_wantConnection) _setState(BoardConnectionState.bluetoothOff);
+  }
+
+  /// The phone's Bluetooth came back on, and a wanted board reconnects.
+  void setAdapterOn() {
+    _adapterOn = true;
+    if (_wantConnection && !_current.isConnected) _attempt();
   }
 
   /// Every LED command sent while connected, oldest first.
