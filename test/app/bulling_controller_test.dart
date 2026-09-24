@@ -144,6 +144,30 @@ void main() {
       expect(session().leg.darts, hasLength(2));
     });
 
+    test('the button mid-turn ends it and hands over', () async {
+      board.hit(Segment.outerBull);
+      await settle();
+
+      board.pressButton();
+      await settle();
+
+      expect(session().leg.darts, hasLength(3));
+      expect(
+        session().leg.darts.skip(1),
+        everyElement(const ThrownDart.miss()),
+      );
+      expect(session().awaitingTurnConfirm, isFalse);
+      expect(session().leg.currentPlayerId, 2);
+    });
+
+    test('the button before a dart is thrown costs all three', () async {
+      board.pressButton();
+      await settle();
+
+      expect(session().leg.darts, hasLength(3));
+      expect(session().leg.currentPlayerId, 2);
+    });
+
     test('the button confirms the turn', () async {
       board.emitBatch(['3.4', '3.5', '3.6']);
       await settle();

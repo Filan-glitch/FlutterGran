@@ -143,6 +143,30 @@ void main() {
       expect(session().leg.darts, hasLength(2));
     });
 
+    test('the button mid-turn ends it and hands over', () async {
+      board.hit(const Segment(1, Ring.outerSingle));
+      await settle();
+
+      board.pressButton();
+      await settle();
+
+      expect(session().leg.darts, hasLength(3));
+      expect(
+        session().leg.darts.skip(1),
+        everyElement(const ThrownDart.miss()),
+      );
+      expect(session().awaitingTurnConfirm, isFalse);
+      expect(session().leg.currentPlayerId, 2);
+    });
+
+    test('the button before a dart is thrown costs all three', () async {
+      board.pressButton();
+      await settle();
+
+      expect(session().leg.darts, hasLength(3));
+      expect(session().leg.currentPlayerId, 2);
+    });
+
     test('the button confirms the turn', () async {
       // Distinct segments, same frames `game_controller_test.dart` uses -
       // this test only cares that three darts arrive, not what they score.

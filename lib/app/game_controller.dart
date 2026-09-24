@@ -80,11 +80,10 @@ class GameController extends Notifier<GameSession> {
         if (_manualOverrideOpen) return;
         addDart(const ThrownDart.miss());
       case ButtonPress():
-        // The board's only confirmed input, bound to the one action the game
-        // can live without if the 132's touch sensor turns out to be silent.
-        // Never gated on the override: confirming is not scoring, and is the
-        // one board input that stays useful with the keypad pulled up too.
-        confirmTurn();
+        // The board's change-player button, doing what it says. Never gated
+        // on the override: it is a deliberate press, not a dart the keypad
+        // could be double-counting, and it stays useful with the keypad up.
+        endTurn();
       case UnknownFrame():
         // Surfaced by the diagnostics screen, never scored.
         break;
@@ -169,6 +168,23 @@ class GameController extends Notifier<GameSession> {
       leg: state.leg,
       acknowledgedTurns: state.leg.turns.length,
     );
+  }
+
+  /// Ends the turn now and hands over: every dart not thrown is a miss.
+  ///
+  /// What the board's button means. A dart that bounces out never reaches
+  /// the board as a frame, so without this the turn could only be finished
+  /// from the screen. Each missing dart goes through [addDart] like a keyed
+  /// miss, so it is stored, heard and lit exactly as one would be. A miss can
+  /// neither bust nor finish a leg, so the last one always closes the turn.
+  void endTurn() {
+    if (state.leg.isFinished) return;
+    if (!state.awaitingTurnConfirm) {
+      for (var left = state.leg.dartsLeftThisTurn; left > 0; left--) {
+        addDart(const ThrownDart.miss());
+      }
+    }
+    confirmTurn();
   }
 
   /// Starts a fresh leg under [config], or the current one if omitted.
