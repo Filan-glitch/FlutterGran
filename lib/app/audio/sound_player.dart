@@ -14,6 +14,16 @@ import 'sound_controller.dart';
 /// milliseconds.
 class AudioPlayersSoundPlayer implements SoundPlayer {
   AudioPlayersSoundPlayer() {
+    // Nothing here ever reads a playback position, and audioplayers' default
+    // way of reporting one is a leak for this app. It polls the platform every
+    // frame from each `play()`, starts a fresh polling loop on every play
+    // without ending the last, and only stops them all when a sound completes.
+    // The low-latency cue player never completes on Android - a SoundPool has
+    // no completion callback - so each dart left one more loop running for
+    // good, and a long session drowned the platform channel the board's
+    // notifications arrive on. No updater, no polling.
+    _cues.positionUpdater = null;
+    _speech.positionUpdater = null;
     unawaited(_prepare());
   }
 

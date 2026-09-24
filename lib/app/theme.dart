@@ -134,6 +134,14 @@ class _PulseState extends State<Pulse> with SingleTickerProviderStateMixin {
     duration: Motion.pulse,
   );
 
+  /// Built once, not per build: a [CurvedAnimation] registers itself on its
+  /// parent when it is made and only lets go when disposed, so one per
+  /// rebuild left a listener behind on every dart.
+  late final CurvedAnimation _curve = CurvedAnimation(
+    parent: _controller,
+    curve: Curves.easeInOut,
+  );
+
   @override
   void initState() {
     super.initState();
@@ -142,6 +150,7 @@ class _PulseState extends State<Pulse> with SingleTickerProviderStateMixin {
 
   @override
   void dispose() {
+    _curve.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -150,10 +159,7 @@ class _PulseState extends State<Pulse> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     if (Motion.reduced) return widget.child;
     return FadeTransition(
-      opacity: Tween(
-        begin: widget.min,
-        end: 1.0,
-      ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut)),
+      opacity: Tween(begin: widget.min, end: 1.0).animate(_curve),
       child: widget.child,
     );
   }
