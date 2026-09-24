@@ -189,8 +189,12 @@ owned by any one mode's setup screen. `X01SetupScreen` still lets you
 *select* players from the roster inline (add-in-place is still there too,
 for now - see `x01_setup_screen.dart`), but renaming and freely deleting
 a player (their darts and seat cascade with them - see
-`GameRepository.removePlayer`) live only in `RosterScreen`, behind a
-hold-to-delete-plus-undo gesture rather than a single destructive tap.
+`GameRepository.removePlayer`) live only in `RosterScreen`. A tap on
+delete hides the player at once behind a 4-second UNDO snackbar, and the
+real delete runs when that closes - through a repository captured up front,
+so it lands even if the roster was left meanwhile. The snackbar sets
+`persist: false`: one with an action otherwise never closes on its own, and
+the delete never happened.
 
 ### Audio
 
