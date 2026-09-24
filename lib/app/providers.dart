@@ -103,7 +103,15 @@ final boardReaderProvider = Provider<BoardReader>((ref) {
   return reader;
 });
 
-final boardEventsProvider = StreamProvider<BoardEvent>(
+/// Everything the board says, as a plain stream to subscribe to.
+///
+/// Deliberately not a `StreamProvider`. That would make each event the
+/// provider's *state*, and Riverpod only tells listeners about a state that
+/// differs from the last one. Every miss is the same `const BoardMiss()` and
+/// every press the same `const ButtonPress()`, so a second miss in a row
+/// equalled the first and was silently dropped. These are events, not state:
+/// each one has to arrive, however much it looks like the one before.
+final boardEventsProvider = Provider<Stream<BoardEvent>>(
   (ref) => ref.watch(boardReaderProvider).events,
 );
 

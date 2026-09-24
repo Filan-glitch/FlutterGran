@@ -8,11 +8,14 @@ import 'package:fluttergran/domain/x01/game_config.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
 import 'package:fluttergran/domain/x01/x01_rules.dart';
 
+import 'board_clock.dart';
+
 /// Lets queued stream events reach the controller before assertions run.
 Future<void> settle() => Future<void>.delayed(Duration.zero);
 
 void main() {
   late FakeBoardSource board;
+  late BoardClock clock;
   late ProviderContainer container;
 
   GameSession session() => container.read(gameProvider);
@@ -20,8 +23,12 @@ void main() {
 
   setUp(() {
     board = FakeBoardSource();
+    clock = BoardClock();
     container = ProviderContainer(
-      overrides: [boardSourceProvider.overrideWithValue(board)],
+      overrides: [
+        boardSourceProvider.overrideWithValue(board),
+        clock.readerFor(board),
+      ],
     );
     // Providers auto-dispose in Riverpod 3, and `read` alone does not keep one
     // alive. A listener stands in for the widget that watches it in the app -
@@ -189,6 +196,19 @@ void main() {
 
       expect(session().leg.remaining[1], 501);
       expect(session().leg.darts, hasLength(1));
+    });
+
+    test('two misses in a row both use a dart', () async {
+      // The board sends the same `OUT@` for every miss. Two of them must not
+      // collapse into one just because they look alike.
+      board.emitMiss();
+      await settle();
+      clock.advance();
+      board.emitMiss();
+      await settle();
+
+      expect(session().leg.darts, hasLength(2));
+      expect(session().leg.remaining[1], 501);
     });
 
     test('the button confirms the turn', () async {

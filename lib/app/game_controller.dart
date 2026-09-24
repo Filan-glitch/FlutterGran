@@ -53,10 +53,8 @@ class GameController extends Notifier<GameSession> {
   GameSession build() {
     final config = ref.watch(gameConfigProvider);
 
-    ref.listen(boardEventsProvider, (previous, next) {
-      final event = next.value;
-      if (event != null) handleBoardEvent(event);
-    });
+    final events = ref.watch(boardEventsProvider).listen(handleBoardEvent);
+    ref.onDispose(events.cancel);
 
     // Read rather than watched: the override can flip mid-leg without
     // rebuilding this leg out from under the player, the way watching

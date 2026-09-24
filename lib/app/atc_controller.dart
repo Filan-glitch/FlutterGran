@@ -44,10 +44,8 @@ class AtcController extends Notifier<AtcSession> {
   AtcSession build() {
     final config = ref.watch(atcConfigProvider);
 
-    ref.listen(boardEventsProvider, (previous, next) {
-      final event = next.value;
-      if (event != null) handleBoardEvent(event);
-    });
+    final events = ref.watch(boardEventsProvider).listen(handleBoardEvent);
+    ref.onDispose(events.cancel);
 
     _manualOverrideOpen = ref.read(keypadOverrideProvider);
     ref.listen(keypadOverrideProvider, (previous, next) {

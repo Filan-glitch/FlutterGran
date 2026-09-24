@@ -7,11 +7,14 @@ import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/training/training_drill.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
 
+import 'board_clock.dart';
+
 /// Lets queued stream events reach the controller before assertions run.
 Future<void> settle() => Future<void>.delayed(Duration.zero);
 
 void main() {
   late FakeBoardSource board;
+  late BoardClock clock;
   late ProviderContainer container;
 
   TrainingSession session() => container.read(trainingProvider);
@@ -19,8 +22,12 @@ void main() {
 
   setUp(() {
     board = FakeBoardSource();
+    clock = BoardClock();
     container = ProviderContainer(
-      overrides: [boardSourceProvider.overrideWithValue(board)],
+      overrides: [
+        boardSourceProvider.overrideWithValue(board),
+        clock.readerFor(board),
+      ],
     );
     // Providers auto-dispose without a listener - see the equivalent setUp in
     // game_controller_test.dart.
@@ -72,6 +79,16 @@ void main() {
       await settle();
       final s = session() as FreePracticeSession;
       expect(s.practice.dartsThrown, 1);
+    });
+
+    test('two misses in a row both use a dart', () async {
+      board.emitMiss();
+      await settle();
+      clock.advance();
+      board.emitMiss();
+      await settle();
+      final s = session() as FreePracticeSession;
+      expect(s.practice.dartsThrown, 2);
     });
 
     test('board darts are ignored once the player has left', () async {
