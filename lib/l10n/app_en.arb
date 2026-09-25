@@ -225,7 +225,7 @@
   "figureReached": "REACHED",
   "figurePoints": "POINTS",
 
-  "dartsCount": "{count} darts",
+  "dartsCount": "{count, plural, =1{1 dart} other{{count} darts}}",
   "@dartsCount": {
     "placeholders": { "count": { "type": "int" } }
   },

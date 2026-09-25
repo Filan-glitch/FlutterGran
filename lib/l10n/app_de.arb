@@ -166,7 +166,7 @@
   "figureReached": "ERREICHT",
   "figurePoints": "PUNKTE",
 
-  "dartsCount": "{count} Darts",
+  "dartsCount": "{count, plural, =1{1 Dart} other{{count} Darts}}",
   "playAgainButton": "NOCHMAL SPIELEN",
 
   "firstToTarget": "BIS {target}",

@@ -539,7 +539,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String dartsCount(int count) {
-    return '$count darts';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count darts',
+      one: '1 dart',
+    );
+    return '$_temp0';
   }
 
   @override

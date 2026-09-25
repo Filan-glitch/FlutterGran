@@ -1019,7 +1019,7 @@ abstract class AppLocalizations {
   /// No description provided for @dartsCount.
   ///
   /// In en, this message translates to:
-  /// **'{count} darts'**
+  /// **'{count, plural, =1{1 dart} other{{count} darts}}'**
   String dartsCount(int count);
 
   /// No description provided for @playAgainButton.
