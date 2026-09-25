@@ -20,16 +20,12 @@ class AimCard extends StatelessWidget {
     super.key,
     required this.stop,
     required this.variant,
-    required this.variantLabel,
     required this.dartsLeft,
     this.hero = false,
   });
 
   final AtcStop stop;
   final AtcVariant variant;
-
-  /// How [variant] reads, said under a chip that stands for any bed.
-  final String variantLabel;
 
   final int dartsLeft;
   final bool hero;
@@ -43,7 +39,7 @@ class AimCard extends StatelessWidget {
       dartsLeft: dartsLeft,
       hero: hero,
       chips: [
-        for (final aim in aimsFor(stop, variant, anyPartCaption: variantLabel))
+        for (final aim in aimsFor(stop, variant))
           SegmentChip(
             label: aim.label,
             ring: aim.ring,
@@ -63,10 +59,10 @@ typedef Aim = ({String label, Ring ring, String? caption});
 /// The beds that clear [stop] under [variant], as chips.
 ///
 /// A bull stop is a single ring, so it is one chip whatever the variant. A
-/// numbered stop under "any part" is one plain chip for the number, captioned
-/// [anyPartCaption], rather than three for its beds - any of them will do,
-/// and saying so once is clearer than three lit chips.
-List<Aim> aimsFor(AtcStop stop, AtcVariant variant, {String? anyPartCaption}) {
+/// numbered stop under "any part" is one plain chip for the number rather
+/// than three for its beds - any of them will do, and saying so once is
+/// clearer than three lit chips.
+List<Aim> aimsFor(AtcStop stop, AtcVariant variant) {
   if (stop.ring case final ring?) {
     return [
       (label: stop.label, ring: ring, caption: '${Segment(25, ring).value}'),
@@ -79,7 +75,7 @@ List<Aim> aimsFor(AtcStop stop, AtcVariant variant, {String? anyPartCaption}) {
 
   return switch (variant) {
     AtcVariant.anyPart => [
-      (label: '$number', ring: Ring.outerSingle, caption: anyPartCaption),
+      (label: '$number', ring: Ring.outerSingle, caption: null),
     ],
     AtcVariant.masters => [bed(Ring.doubleRing), bed(Ring.triple)],
     AtcVariant.doublesOnly => [bed(Ring.doubleRing)],

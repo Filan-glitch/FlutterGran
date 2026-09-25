@@ -157,9 +157,7 @@ List<LedCue>? _legCues(
 
 LedCue _dartCue(ThrownDart dart, {required int seat}) {
   final segment = dart.segment;
-  return segment == null
-      ? const DartMissed()
-      : DartLanded(segment, seat: seat);
+  return segment == null ? const DartMissed() : DartLanded(segment, seat: seat);
 }
 
 /// The turn summary was dismissed and play moved on to someone else.

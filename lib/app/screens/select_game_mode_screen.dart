@@ -59,9 +59,7 @@ class SelectGameModeScreen extends StatelessWidget {
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(context.l10n.selectGameModeTitle),
-      ),
+      appBar: AppBar(title: Text(context.l10n.selectGameModeTitle)),
       body: SafeArea(
         child: CenteredContent(
           child: GridView.builder(

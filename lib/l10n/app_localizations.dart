@@ -1022,24 +1022,6 @@ abstract class AppLocalizations {
   /// **'POINTS'**
   String get figurePoints;
 
-  /// No description provided for @throwWhenReady.
-  ///
-  /// In en, this message translates to:
-  /// **'THROW WHEN READY'**
-  String get throwWhenReady;
-
-  /// No description provided for @stopsClearedLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =0{NOTHING CLEARED} =1{1 STOP CLEARED} other{{count} STOPS CLEARED}}'**
-  String stopsClearedLabel(int count);
-
-  /// No description provided for @nowOnStop.
-  ///
-  /// In en, this message translates to:
-  /// **'now on {stop}'**
-  String nowOnStop(String stop);
-
   /// No description provided for @dartsCount.
   ///
   /// In en, this message translates to:
@@ -1063,24 +1045,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'of {target}'**
   String ofTarget(int target);
-
-  /// No description provided for @turnScoredLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =0{NOTHING SCORED} =1{1 POINT SCORED} other{{count} POINTS SCORED}}'**
-  String turnScoredLabel(int count);
-
-  /// No description provided for @nowOnScore.
-  ///
-  /// In en, this message translates to:
-  /// **'now on {score}'**
-  String nowOnScore(int score);
-
-  /// No description provided for @legWonStatsBulling.
-  ///
-  /// In en, this message translates to:
-  /// **'{points} points · {darts} darts'**
-  String legWonStatsBulling(int points, int darts);
 
   /// No description provided for @statisticsTitle.
   ///

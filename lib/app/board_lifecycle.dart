@@ -91,9 +91,10 @@ void _show(BoardToast toast, String? boardName) {
   if (l10n == null) return;
 
   final text = switch (toast) {
-    BoardToast.connected => boardName == null
-        ? l10n.boardConnectedToastUnnamed
-        : l10n.boardConnectedToast(boardName),
+    BoardToast.connected =>
+      boardName == null
+          ? l10n.boardConnectedToastUnnamed
+          : l10n.boardConnectedToast(boardName),
     BoardToast.lost => l10n.boardLostToast,
     BoardToast.bluetoothOff => l10n.bluetoothOffToast,
   };

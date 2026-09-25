@@ -168,7 +168,10 @@ class TrainingController extends Notifier<TrainingSession> {
   ///
   /// No-op for free practice, which has no finished state to reset from.
   void throwAgain() {
-    if (state case CheckoutPracticeSession(:final leg, :final checkoutsCompleted)) {
+    if (state case CheckoutPracticeSession(
+      :final leg,
+      :final checkoutsCompleted,
+    )) {
       state = CheckoutPracticeSession(
         leg: initialLegState(leg.config),
         checkoutsCompleted: checkoutsCompleted,

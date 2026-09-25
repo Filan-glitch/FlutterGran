@@ -109,13 +109,13 @@ LedShow showFor(LedCue cue) => switch (cue) {
     LedStep(EffectFrame(LedEffect.rainbowRotate, speed: 3), LedTiming.gameOn),
   ], priority: LedPriority.dart),
   TonPlus() => const LedShow([
-    LedStep(EffectFrame(LedEffect.pulse, a: _gold, speed: 8), LedTiming.tonPlus),
+    LedStep(
+      EffectFrame(LedEffect.pulse, a: _gold, speed: 8),
+      LedTiming.tonPlus,
+    ),
   ], priority: LedPriority.turn),
   Maximum() => const LedShow([
-    LedStep(
-      EffectFrame(LedEffect.rainbowFlicker, speed: 4),
-      LedTiming.maximum,
-    ),
+    LedStep(EffectFrame(LedEffect.rainbowFlicker, speed: 4), LedTiming.maximum),
   ], priority: LedPriority.big),
   LegWon(:final seat) => LedShow([
     LedStep(

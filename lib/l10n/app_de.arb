@@ -167,17 +167,11 @@
   "figureReached": "ERREICHT",
   "figurePoints": "PUNKTE",
 
-  "throwWhenReady": "WERFEN, WENN BEREIT",
-  "stopsClearedLabel": "{count, plural, =0{NICHTS FREIGESPIELT} =1{1 STATION FREIGESPIELT} other{{count} STATIONEN FREIGESPIELT}}",
-  "nowOnStop": "jetzt auf {stop}",
   "dartsCount": "{count} Darts",
   "playAgainButton": "NOCHMAL SPIELEN",
 
   "firstToTarget": "BIS {target}",
   "ofTarget": "von {target}",
-  "turnScoredLabel": "{count, plural, =0{NICHTS GEPUNKTET} =1{1 PUNKT ERZIELT} other{{count} PUNKTE ERZIELT}}",
-  "nowOnScore": "jetzt bei {score}",
-  "legWonStatsBulling": "{points} Punkte · {darts} Darts",
 
   "statisticsTitle": "STATISTIK",
   "noPlayersYetHeadline": "Noch keine Spieler",

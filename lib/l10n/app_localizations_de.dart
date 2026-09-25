@@ -549,26 +549,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get figurePoints => 'PUNKTE';
 
   @override
-  String get throwWhenReady => 'WERFEN, WENN BEREIT';
-
-  @override
-  String stopsClearedLabel(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count STATIONEN FREIGESPIELT',
-      one: '1 STATION FREIGESPIELT',
-      zero: 'NICHTS FREIGESPIELT',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String nowOnStop(String stop) {
-    return 'jetzt auf $stop';
-  }
-
-  @override
   String dartsCount(int count) {
     return '$count Darts';
   }
@@ -584,28 +564,6 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String ofTarget(int target) {
     return 'von $target';
-  }
-
-  @override
-  String turnScoredLabel(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count PUNKTE ERZIELT',
-      one: '1 PUNKT ERZIELT',
-      zero: 'NICHTS GEPUNKTET',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String nowOnScore(int score) {
-    return 'jetzt bei $score';
-  }
-
-  @override
-  String legWonStatsBulling(int points, int darts) {
-    return '$points Punkte · $darts Darts';
   }
 
   @override
