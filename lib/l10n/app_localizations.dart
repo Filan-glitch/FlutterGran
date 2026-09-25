@@ -956,6 +956,30 @@ abstract class AppLocalizations {
   /// **'CHECKOUT'**
   String get checkoutLabel;
 
+  /// No description provided for @checkoutDartsLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 DART} other{{count} DARTS}}'**
+  String checkoutDartsLeft(int count);
+
+  /// No description provided for @checkoutNextDart.
+  ///
+  /// In en, this message translates to:
+  /// **'next dart'**
+  String get checkoutNextDart;
+
+  /// No description provided for @checkoutOr.
+  ///
+  /// In en, this message translates to:
+  /// **'or'**
+  String get checkoutOr;
+
+  /// No description provided for @semanticCheckoutRoute.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkout {remaining}: {route}'**
+  String semanticCheckoutRoute(int remaining, String route);
+
   /// No description provided for @scoreArrow.
   ///
   /// In en, this message translates to:

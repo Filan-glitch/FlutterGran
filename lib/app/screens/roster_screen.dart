@@ -24,7 +24,7 @@ class _RosterScreenState extends ConsumerState<RosterScreen> {
   /// Ids hidden from the rendered list while their delete is still
   /// undoable.
   ///
-  /// Nothing is written to the database when a hold-to-delete fires - the id
+  /// Nothing is written to the database when a delete fires - the id
   /// just leaves the list the roster is built from. That is what makes undo
   /// free: reversing it is deleting the id from this set, not restoring a row
   /// that was never removed.
@@ -49,20 +49,25 @@ class _RosterScreenState extends ConsumerState<RosterScreen> {
 
   /// Starts the undo window for deleting [player].
   ///
-  /// The player disappears from the list the moment this is called - held
-  /// long enough to fire a long press, holding a dart, is already enough
-  /// intent to act on optimistically. The real, cascading delete is deferred
-  /// to the snackbar's own close callback, which is the one place that can
-  /// tell "timed out" and "UNDO was tapped" apart.
+  /// The player disappears from the list the moment this is called - UNDO
+  /// is what makes acting on a single tap safe. The real, cascading delete is
+  /// deferred to the snackbar's own close callback, which is the one place
+  /// that can tell "timed out" and "UNDO was tapped" apart.
   void _startDelete(Player player) {
     setState(() => _pendingDeleteIds.add(player.id));
     final l10n = context.l10n;
+    // Read now: the window can outlast this screen, and the delete must land
+    // even if the player has already navigated away from the roster.
+    final repository = ref.read(gameRepositoryProvider);
 
     ScaffoldMessenger.of(context)
         .showSnackBar(
           SnackBar(
             content: Text(l10n.removedPlayerSnackbar(player.name)),
             duration: const Duration(seconds: 4),
+            // A snackbar with an action stays up until it is tapped unless
+            // told otherwise - and one that never closes never commits.
+            persist: false,
             action: SnackBarAction(
               label: l10n.undoLabel,
               onPressed: () {
@@ -80,8 +85,7 @@ class _RosterScreenState extends ConsumerState<RosterScreen> {
           // call somehow landing for the same id. Either way there is
           // nothing left to delete for real.
           if (!_pendingDeleteIds.remove(player.id)) return;
-          if (!mounted) return;
-          ref.read(gameRepositoryProvider).removePlayer(player.id);
+          repository.removePlayer(player.id);
         });
   }
 
@@ -171,7 +175,7 @@ class _RosterScreenState extends ConsumerState<RosterScreen> {
 }
 
 /// One row of the roster: a name that becomes a text field when tapped, and
-/// a delete affordance that only acts on a hold.
+/// a delete button that removes the player behind an UNDO window.
 class _PlayerTile extends StatefulWidget {
   const _PlayerTile({
     required super.key,
@@ -307,10 +311,9 @@ class _PlayerTileState extends State<_PlayerTile> {
                 clipBehavior: Clip.antiAlias,
                 child: InkWell(
                   key: Key('delete-player-${widget.player.id}'),
-                  // A single tap does nothing destructive on purpose - the
-                  // whole point of hold-to-delete is that a tap alone can
-                  // never remove anyone.
-                  onTap: () {},
+                  // A tap acts: the snackbar's UNDO is the safety net, so
+                  // there is no reason to make anyone discover a hold.
+                  onTap: widget.onDelete,
                   onLongPress: widget.onDelete,
                   child: const Padding(
                     padding: EdgeInsets.all(Gap.sm),

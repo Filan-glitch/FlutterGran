@@ -68,7 +68,7 @@ Rules the assembler follows:
 
 | Body | Event |
 |---|---|
-| `BTN` | `ButtonPress` — the change-player button or touch sensor |
+| `BTN` | `ButtonPress` — the change-player button or touch sensor; ends the turn (`endTurn`) |
 | `OUT` | `BoardMiss` — a dart outside the scoring area |
 | a known coordinate | `DartHit(Segment)` |
 | anything else | `UnknownFrame(body)` |

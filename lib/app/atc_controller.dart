@@ -44,10 +44,8 @@ class AtcController extends Notifier<AtcSession> {
   AtcSession build() {
     final config = ref.watch(atcConfigProvider);
 
-    ref.listen(boardEventsProvider, (previous, next) {
-      final event = next.value;
-      if (event != null) handleBoardEvent(event);
-    });
+    final events = ref.watch(boardEventsProvider).listen(handleBoardEvent);
+    ref.onDispose(events.cancel);
 
     _manualOverrideOpen = ref.read(keypadOverrideProvider);
     ref.listen(keypadOverrideProvider, (previous, next) {
@@ -71,7 +69,7 @@ class AtcController extends Notifier<AtcSession> {
         if (_manualOverrideOpen) return;
         addDart(const ThrownDart.miss());
       case ButtonPress():
-        confirmTurn();
+        endTurn();
       case UnknownFrame():
         break;
     }
@@ -143,6 +141,21 @@ class AtcController extends Notifier<AtcSession> {
       leg: state.leg,
       acknowledgedTurns: state.leg.turns.length,
     );
+  }
+
+  /// Ends the turn now and hands over: every dart not thrown is a miss.
+  ///
+  /// The board button's job, the same as `GameController.endTurn` - see its
+  /// doc. A miss never finishes this leg either, so the last one always
+  /// closes the turn.
+  void endTurn() {
+    if (state.leg.isFinished) return;
+    if (!state.awaitingTurnConfirm) {
+      for (var left = state.leg.dartsLeftThisTurn; left > 0; left--) {
+        addDart(const ThrownDart.miss());
+      }
+    }
+    confirmTurn();
   }
 
   /// Starts a fresh leg under [config], or the current one if omitted.

@@ -8,11 +8,14 @@ import 'package:fluttergran/domain/atc/atc_variant.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
 
+import 'board_clock.dart';
+
 /// Lets queued stream events reach the controller before assertions run.
 Future<void> settle() => Future<void>.delayed(Duration.zero);
 
 void main() {
   late FakeBoardSource board;
+  late BoardClock clock;
   late ProviderContainer container;
 
   AtcSession session() => container.read(atcGameProvider);
@@ -20,8 +23,12 @@ void main() {
 
   setUp(() {
     board = FakeBoardSource();
+    clock = BoardClock();
     container = ProviderContainer(
-      overrides: [boardSourceProvider.overrideWithValue(board)],
+      overrides: [
+        boardSourceProvider.overrideWithValue(board),
+        clock.readerFor(board),
+      ],
     );
     container.listen(atcGameProvider, (_, _) {});
   });
@@ -124,6 +131,40 @@ void main() {
       await settle();
 
       expect(session().leg.stopIndex[1], 1);
+    });
+
+    test('two misses in a row both use a dart', () async {
+      board.emitMiss();
+      await settle();
+      clock.advance();
+      board.emitMiss();
+      await settle();
+
+      expect(session().leg.darts, hasLength(2));
+    });
+
+    test('the button mid-turn ends it and hands over', () async {
+      board.hit(const Segment(1, Ring.outerSingle));
+      await settle();
+
+      board.pressButton();
+      await settle();
+
+      expect(session().leg.darts, hasLength(3));
+      expect(
+        session().leg.darts.skip(1),
+        everyElement(const ThrownDart.miss()),
+      );
+      expect(session().awaitingTurnConfirm, isFalse);
+      expect(session().leg.currentPlayerId, 2);
+    });
+
+    test('the button before a dart is thrown costs all three', () async {
+      board.pressButton();
+      await settle();
+
+      expect(session().leg.darts, hasLength(3));
+      expect(session().leg.currentPlayerId, 2);
     });
 
     test('the button confirms the turn', () async {

@@ -14,6 +14,7 @@ import '../l10n_extensions.dart';
 import '../lights/lights_providers.dart';
 import '../providers.dart';
 import '../theme.dart';
+import '../widgets/checkout_card.dart';
 import '../widgets/dart_keypad.dart';
 
 /// The block of per-player figures on the match card.
@@ -21,8 +22,7 @@ const Key matchFiguresKey = Key('match-figures');
 
 /// Falls back to a seat label for a player who has since been deleted.
 String nameFor(BuildContext context, Map<int, String> names, int playerId) =>
-    names[playerId] ??
-    context.l10n.playerFallbackName(playerId);
+    names[playerId] ?? context.l10n.playerFallbackName(playerId);
 
 class GameScreen extends ConsumerWidget {
   const GameScreen({super.key});
@@ -188,9 +188,12 @@ class GameScreen extends ConsumerWidget {
                 if (boardScoringAlone) {
                   return Column(
                     children: [
-                      hero
-                          ? _CheckoutPanel(routes: routes)
-                          : _CheckoutStrip(routes: routes),
+                      CheckoutCard(
+                        routes: routes,
+                        remaining: leg.currentRemaining,
+                        dartsLeft: leg.dartsLeftThisTurn,
+                        hero: hero,
+                      ),
                       Expanded(
                         child: _Scoreboard(
                           leg: leg,
@@ -234,9 +237,12 @@ class GameScreen extends ConsumerWidget {
                 } else {
                   play = Column(
                     children: [
-                      hero
-                          ? _CheckoutPanel(routes: routes)
-                          : _CheckoutStrip(routes: routes),
+                      CheckoutCard(
+                        routes: routes,
+                        remaining: leg.currentRemaining,
+                        dartsLeft: leg.dartsLeftThisTurn,
+                        hero: hero,
+                      ),
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.fromLTRB(
@@ -724,114 +730,6 @@ class _DartSlot extends StatelessWidget {
           decoration: struck ? TextDecoration.lineThrough : null,
           decorationColor: Palette.doubleBed,
           decorationThickness: 2,
-        ),
-      ),
-    );
-  }
-}
-
-/// What to throw, when there is something on.
-class _CheckoutStrip extends StatelessWidget {
-  const _CheckoutStrip({required this.routes});
-
-  final List<CheckoutRoute> routes;
-
-  @override
-  Widget build(BuildContext context) {
-    if (routes.isEmpty) {
-      return const SizedBox(height: Gap.sm);
-    }
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(Gap.md, Gap.md, Gap.md, 0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            context.l10n.checkoutLabel,
-            style: Type.eyebrow.copyWith(color: Palette.live),
-          ),
-          const SizedBox(width: Gap.md),
-          Expanded(
-            child: Pulse(
-              min: 0.7,
-              child: Text(
-                routes.first.toString(),
-                style: Type.notation.copyWith(
-                  color: Palette.live,
-                  fontSize: 22,
-                ),
-              ),
-            ),
-          ),
-          if (routes.length > 1)
-            Flexible(
-              child: Text(
-                routes.skip(1).join('   '),
-                textAlign: TextAlign.right,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Type.label.copyWith(color: Palette.chalkDim),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-/// What to throw, when there is something on - the tablet's own dedicated
-/// panel rather than a strip sharing a line with everything else.
-///
-/// This is exactly the figure the whole hero pass is for: the thing a player
-/// three metres from the screen, darts in hand, needs to read without walking
-/// closer. The best route gets real size; the alternates get their own lines
-/// underneath it rather than trailing off the edge of the screen.
-class _CheckoutPanel extends StatelessWidget {
-  const _CheckoutPanel({required this.routes});
-
-  final List<CheckoutRoute> routes;
-
-  @override
-  Widget build(BuildContext context) {
-    if (routes.isEmpty) {
-      return const SizedBox(height: Gap.md);
-    }
-
-    final alternates = routes.skip(1);
-
-    return Pulse(
-      min: 0.85,
-      child: Container(
-        key: const Key('checkout-panel'),
-        margin: const EdgeInsets.fromLTRB(Gap.md, Gap.md, Gap.md, 0),
-        padding: const EdgeInsets.all(Gap.lg),
-        decoration: BoxDecoration(
-          color: Palette.raised,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Palette.live, width: 2),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              context.l10n.checkoutLabel,
-              style: Type.eyebrow.copyWith(color: Palette.live),
-            ),
-            const SizedBox(height: Gap.sm),
-            Text(
-              routes.first.toString(),
-              style: Type.notation.copyWith(color: Palette.live, fontSize: 34),
-            ),
-            for (final route in alternates)
-              Padding(
-                padding: const EdgeInsets.only(top: Gap.xs),
-                child: Text(
-                  route.toString(),
-                  style: Type.label.copyWith(color: Palette.chalkDim),
-                ),
-              ),
-          ],
         ),
       ),
     );

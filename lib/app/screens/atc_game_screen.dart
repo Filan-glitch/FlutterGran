@@ -31,6 +31,8 @@ class AtcGameScreen extends ConsumerWidget {
     // Nothing is read from it: watching keeps the board's lights following
     // this game, and turns them off when the screen goes.
     ref.watch(atcLightsProvider);
+    // Same idiom for sound: its own listener on the game does the rest.
+    ref.watch(atcSoundControllerProvider);
     final controller = ref.read(atcGameProvider.notifier);
     final names = ref.watch(playerNamesProvider);
     final leg = session.leg;

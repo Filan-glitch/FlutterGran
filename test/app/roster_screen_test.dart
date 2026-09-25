@@ -36,6 +36,15 @@ void main() {
     }
   }
 
+  /// Lets a delete's undo snackbar run its whole course - in, the window,
+  /// out - without UNDO being tapped.
+  Future<void> waitOutUndo(WidgetTester tester) async {
+    for (var i = 0; i < 4; i++) {
+      await tester.pump(const Duration(seconds: 2));
+    }
+    await frames(tester);
+  }
+
   Future<void> open(WidgetTester tester) async {
     await tester.pumpWidget(
       UncontrolledProviderScope(
@@ -168,17 +177,10 @@ void main() {
       // Nothing written yet - the undo window is still open.
       expect(await repository.allPlayers(), hasLength(1));
 
-      // Standing in for waiting out the snackbar's real ~4s window without
-      // ever tapping UNDO: `removeCurrentSnackBar` completes its `.closed`
-      // future the same way the real timeout does - with any reason other
-      // than `action` - but does it immediately rather than only after a
-      // real entrance/exit animation each get a settled frame, which is
-      // what keeps this deterministic instead of pumping through several
-      // seconds of real time.
-      ScaffoldMessenger.of(
-        tester.element(find.byType(RosterScreen)),
-      ).removeCurrentSnackBar();
-      await frames(tester);
+      // Really waits the window out. This used to call
+      // `removeCurrentSnackBar()` instead, which hid that a snackbar with an
+      // action no longer times out on its own - so the delete never landed.
+      await waitOutUndo(tester);
 
       expect(await repository.allPlayers(), isEmpty);
 
@@ -186,7 +188,7 @@ void main() {
     },
   );
 
-  testWidgets('a single tap on the delete icon deletes nothing', (
+  testWidgets('a tap on the delete icon hides the player and offers UNDO', (
     tester,
   ) async {
     final finn = await repository.addPlayer('Finn');
@@ -195,9 +197,43 @@ void main() {
     await tester.tap(find.byKey(Key('delete-player-${finn.id}')));
     await frames(tester);
 
-    expect(find.text('Finn'), findsOneWidget);
-    expect(find.text('Removed Finn'), findsNothing);
-    expect(await repository.allPlayers(), hasLength(1));
+    expect(find.text('Finn'), findsNothing);
+    expect(find.text('Removed Finn'), findsOneWidget);
+    expect(find.text('UNDO'), findsOneWidget);
+
+    await waitOutUndo(tester);
+    expect(await repository.allPlayers(), isEmpty);
+
+    await close(tester);
+  });
+
+  testWidgets('leaving the roster inside the undo window still deletes', (
+    tester,
+  ) async {
+    final finn = await repository.addPlayer('Finn');
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: buildTheme(),
+          home: const Scaffold(body: SizedBox.shrink()),
+        ),
+      ),
+    );
+    tester
+        .state<NavigatorState>(find.byType(Navigator))
+        .push(MaterialPageRoute<void>(builder: (_) => const RosterScreen()));
+    await frames(tester);
+
+    await tester.tap(find.byKey(Key('delete-player-${finn.id}')));
+    await frames(tester);
+    tester.state<NavigatorState>(find.byType(Navigator)).pop();
+    await frames(tester);
+
+    await waitOutUndo(tester);
+    expect(await repository.allPlayers(), isEmpty);
 
     await close(tester);
   });

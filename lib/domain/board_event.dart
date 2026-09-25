@@ -20,8 +20,9 @@ final class DartHit extends BoardEvent {
 
 /// The board reported a miss (`OUT@`).
 ///
-/// Rarely emitted in practice - the out sensor appears to ship at low
-/// sensitivity - so misses are usually recorded manually instead.
+/// Confirmed on the 132. Every miss is this same const instance, which is why
+/// board events must never be carried as provider state: two in a row are
+/// equal, and state that equals the last state is not announced.
 final class BoardMiss extends BoardEvent {
   const BoardMiss();
 
@@ -31,8 +32,9 @@ final class BoardMiss extends BoardEvent {
 
 /// The change-player button or touch sensor was pressed (`BTN@`).
 ///
-/// Unconfirmed on the GranBoard 132, which uses a touch sensor rather than a
-/// physical button, so nothing the game needs may depend on this arriving.
+/// Confirmed on the 132. Ends the turn in every turn-based mode, with the
+/// darts not thrown counted as misses. Nothing the game needs depends on it
+/// arriving - every screen can end a turn by itself.
 final class ButtonPress extends BoardEvent {
   const ButtonPress();
 

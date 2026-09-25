@@ -88,11 +88,13 @@ lookup cannot drift apart.
 
 | Body | Meaning | Confirmed? |
 |---|---|---|
-| `BTN` | the change-player button / touch sensor | **Unverified on the 132.** Nothing needed for play depends on it; it is a convenience for confirming a turn |
-| `OUT` | a dart outside the scoring area | **Unverified.** The 3s reportedly never sends it, so the keypad's MISS key is the reliable path |
+| `BTN` | the change-player button / touch sensor | **Confirmed on the 132 (2026-09-04).** Ends the turn: darts not thrown count as misses, and play passes to the next player. With the turn summary up it just confirms it |
+| `OUT` | a dart outside the scoring area | **Confirmed on the 132 (2026-09-04).** The 3s reportedly never sends it; the keypad's MISS key covers a board that doesn't |
 
-Both are treated as optional. The app is fully playable if the 132 sends
-neither.
+Both arrive as identical frames every time, so they reach the game as a plain
+event stream rather than as provider state - Riverpod drops a state equal to
+the one before, which once swallowed every second miss in a row. The app stays
+fully playable without either.
 
 ## What is confirmed, and what is not
 

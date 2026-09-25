@@ -155,6 +155,10 @@
   "figureBestOut": "BESTES FINISH",
   "figureBestLeg": "BESTES LEG",
   "checkoutLabel": "CHECKOUT",
+  "checkoutDartsLeft": "{count, plural, =1{1 DART} other{{count} DARTS}}",
+  "checkoutNextDart": "nächster Dart",
+  "checkoutOr": "oder",
+  "semanticCheckoutRoute": "Checkout {remaining}: {route}",
   "scoreArrow": "{before} → {after}",
   "legWonStatsX01": "{darts} Darts · {average} Schnitt",
 

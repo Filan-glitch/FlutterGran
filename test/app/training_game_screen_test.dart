@@ -8,6 +8,7 @@ import 'package:fluttergran/app/providers.dart';
 import 'package:fluttergran/app/screens/training_game_screen.dart';
 import 'package:fluttergran/app/theme.dart';
 import 'package:fluttergran/app/training_controller.dart';
+import 'package:fluttergran/app/widgets/checkout_card.dart';
 import 'package:fluttergran/data/board/fake_board_source.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/training/training_drill.dart';
@@ -98,6 +99,15 @@ void main() {
   });
 
   group('checkout practice', () {
+    /// The big remaining score, not the same figure repeated in the
+    /// checkout card's header and on its D20 chip.
+    Finder remainingScore(String score) => find.byWidgetPredicate(
+      (widget) =>
+          widget is Text &&
+          widget.data == score &&
+          widget.style?.fontSize == Type.score.fontSize,
+    );
+
     setUp(
       () => controller().start(
         drill: TrainingDrill.checkoutPractice,
@@ -110,9 +120,15 @@ void main() {
     ) async {
       await pump(tester);
 
-      expect(find.text('40'), findsOneWidget);
+      expect(remainingScore('40'), findsOneWidget);
       expect(find.text('CHECKOUT'), findsOneWidget);
-      expect(find.text('D20'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(checkoutNextDartKey),
+          matching: find.text('D20'),
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('checking out shows the completion panel', (tester) async {
@@ -137,7 +153,7 @@ void main() {
       await tester.pump();
 
       expect(find.text('CHECKED OUT'), findsNothing);
-      expect(find.text('40'), findsOneWidget);
+      expect(remainingScore('40'), findsOneWidget);
       expect(find.text('CHECKOUTS THIS SESSION: 1'), findsOneWidget);
     });
 

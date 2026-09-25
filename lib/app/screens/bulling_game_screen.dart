@@ -31,6 +31,8 @@ class BullingGameScreen extends ConsumerWidget {
     // Nothing is read from it: watching keeps the board's lights following
     // this game, and turns them off when the screen goes.
     ref.watch(bullingLightsProvider);
+    // Same idiom for sound: its own listener on the game does the rest.
+    ref.watch(bullingSoundControllerProvider);
     final controller = ref.read(bullingGameProvider.notifier);
     final names = ref.watch(playerNamesProvider);
     final leg = session.leg;

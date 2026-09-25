@@ -8,11 +8,14 @@ import 'package:fluttergran/domain/x01/game_config.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
 import 'package:fluttergran/domain/x01/x01_rules.dart';
 
+import 'board_clock.dart';
+
 /// Lets queued stream events reach the controller before assertions run.
 Future<void> settle() => Future<void>.delayed(Duration.zero);
 
 void main() {
   late FakeBoardSource board;
+  late BoardClock clock;
   late ProviderContainer container;
 
   GameSession session() => container.read(gameProvider);
@@ -20,8 +23,12 @@ void main() {
 
   setUp(() {
     board = FakeBoardSource();
+    clock = BoardClock();
     container = ProviderContainer(
-      overrides: [boardSourceProvider.overrideWithValue(board)],
+      overrides: [
+        boardSourceProvider.overrideWithValue(board),
+        clock.readerFor(board),
+      ],
     );
     // Providers auto-dispose in Riverpod 3, and `read` alone does not keep one
     // alive. A listener stands in for the widget that watches it in the app -
@@ -37,6 +44,7 @@ void main() {
 
   ThrownDart t(int n) => ThrownDart(Segment(n, Ring.triple));
   ThrownDart d(int n) => ThrownDart(Segment(n, Ring.doubleRing));
+  const miss = ThrownDart.miss();
 
   group('scoring by hand', () {
     test('a dart comes off the remaining score', () {
@@ -67,6 +75,48 @@ void main() {
 
       expect(session().leg.remaining[2], 501);
       expect(session().leg.darts, hasLength(3));
+    });
+
+    test('ending a turn counts the darts not thrown as misses', () {
+      controller()
+        ..addDart(t(20))
+        ..endTurn();
+
+      expect(session().leg.darts, [t(20), miss, miss]);
+      expect(session().leg.turns.single.scored, 60);
+      expect(session().awaitingTurnConfirm, isFalse);
+      expect(session().leg.currentPlayerId, 2);
+    });
+
+    test('ending a turn before throwing costs all three darts', () {
+      controller().endTurn();
+
+      expect(session().leg.darts, [miss, miss, miss]);
+      expect(session().leg.currentPlayerId, 2);
+    });
+
+    test('ending a turn with the summary up only confirms it', () {
+      controller()
+        ..addDart(t(20))
+        ..addDart(t(20))
+        ..addDart(t(20))
+        ..endTurn();
+
+      expect(session().leg.darts, hasLength(3));
+      expect(session().awaitingTurnConfirm, isFalse);
+      expect(session().leg.currentPlayerId, 2);
+    });
+
+    test('ending a turn after the leg is won does nothing', () {
+      container.read(gameConfigProvider.notifier).update(
+        GameConfig(startScore: 40, playerIds: const [1, 2]),
+      );
+      controller()
+        ..addDart(d(20))
+        ..endTurn();
+
+      expect(session().leg.isFinished, isTrue);
+      expect(session().leg.darts, [d(20)]);
     });
 
     test('confirming lets play resume', () {
@@ -189,6 +239,52 @@ void main() {
 
       expect(session().leg.remaining[1], 501);
       expect(session().leg.darts, hasLength(1));
+    });
+
+    test('two misses in a row both use a dart', () async {
+      // The board sends the same `OUT@` for every miss. Two of them must not
+      // collapse into one just because they look alike.
+      board.emitMiss();
+      await settle();
+      clock.advance();
+      board.emitMiss();
+      await settle();
+
+      expect(session().leg.darts, hasLength(2));
+      expect(session().leg.remaining[1], 501);
+    });
+
+    test('the button mid-turn ends it and hands over', () async {
+      // One dart registered, then the other two bounced out without a frame.
+      board.hit(const Segment(20, Ring.triple));
+      await settle();
+
+      board.pressButton();
+      await settle();
+
+      expect(session().leg.darts, hasLength(3));
+      expect(session().leg.darts.skip(1), everyElement(miss));
+      expect(session().leg.remaining[1], 441);
+      expect(session().awaitingTurnConfirm, isFalse);
+      expect(session().leg.currentPlayerId, 2);
+    });
+
+    test('two button presses in a row both act', () async {
+      board.emitBatch(['3.4', '3.5', '3.6']);
+      await settle();
+      board.pressButton();
+      await settle();
+      expect(session().awaitingTurnConfirm, isFalse);
+
+      // Player two's turn is ended from the board before throwing a dart,
+      // which is a second `BTN@` straight after the first.
+      clock.advance();
+      board.pressButton();
+      await settle();
+
+      expect(session().leg.turns, hasLength(2));
+      expect(session().leg.turns.last.darts, hasLength(3));
+      expect(session().leg.currentPlayerId, 1);
     });
 
     test('the button confirms the turn', () async {

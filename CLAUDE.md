@@ -86,6 +86,15 @@ by state.
   pins an older analyzer — they cannot coexist. Providers are written by hand.
   `riverpod_lint`/`custom_lint` are also unavailable: `riverpod_lint` caps
   `riverpod_annotation <4.0.0` and so is incompatible with Riverpod 3.
+- **audioplayers position polling leaks.** Every `play()` starts another per-frame
+  `getCurrentPosition` loop, and only completion stops them — which the low-latency
+  (SoundPool) player never reports on Android. That made long x01 sessions take
+  seconds to show a dart. `AudioPlayersSoundPlayer` sets `positionUpdater = null` on
+  both players; any new `AudioPlayer` must do the same unless it really reads position.
+- **Board events are a plain stream, never provider state.** Riverpod 3 skips a state
+  equal to the last one, and every miss/press is the same const object — a
+  `StreamProvider` swallowed every second miss in a row. Controllers subscribe to
+  `boardEventsProvider`'s stream directly.
 - Write only LED frames to the board, and only through `BoardSource.sendLed(LedCommand)`.
   `LedCommand` allow-lists the ops confirmed on the 132. Never add a raw-bytes
   write, and never send the 12-byte settings frames (`…34 35`, `…36 37`, `…3A 3B`):

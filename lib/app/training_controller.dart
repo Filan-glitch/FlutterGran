@@ -69,10 +69,8 @@ class TrainingController extends Notifier<TrainingSession> {
 
   @override
   TrainingSession build() {
-    ref.listen(boardEventsProvider, (previous, next) {
-      final event = next.value;
-      if (event != null) _handleBoardEvent(event);
-    });
+    final events = ref.watch(boardEventsProvider).listen(_handleBoardEvent);
+    ref.onDispose(events.cancel);
 
     return FreePracticeSession(initialFreePracticeState());
   }
