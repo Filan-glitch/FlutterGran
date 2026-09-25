@@ -6,6 +6,7 @@ import 'package:fluttergran/app/audio/sound_controller.dart';
 import 'package:fluttergran/app/providers.dart';
 import 'package:fluttergran/app/screens/atc_game_screen.dart';
 import 'package:fluttergran/app/screens/bulling_game_screen.dart';
+import 'package:fluttergran/app/screens/training_game_screen.dart';
 import 'package:fluttergran/app/theme.dart';
 import 'package:fluttergran/app/widgets/aim_card.dart';
 import 'package:fluttergran/app/widgets/dart_keypad.dart';
@@ -19,6 +20,7 @@ import 'package:fluttergran/domain/atc/atc_variant.dart';
 import 'package:fluttergran/domain/bulling/bulling_config.dart';
 import 'package:fluttergran/domain/bulling/bulling_variant.dart';
 import 'package:fluttergran/domain/segment.dart';
+import 'package:fluttergran/domain/training/training_drill.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
 import 'package:fluttergran/l10n/app_localizations.dart';
 
@@ -145,16 +147,12 @@ void main() {
     }
   }
 
-  /// Puts [mode]'s screen on top of a home route, in a viewport of exactly
-  /// [size], the app's own type scaling included.
-  Future<void> openAt(WidgetTester tester, _Mode mode, Size size) async {
+  /// Puts [screen] on top of a home route, in a viewport of exactly [size],
+  /// the app's own type scaling included.
+  Future<void> pushAt(WidgetTester tester, Widget screen, Size size) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-
-    final finn = await repository.addPlayer('Finn');
-    final ada = await repository.addPlayer('Ada');
-    await mode.start(container, repository, [finn.id, ada.id]);
 
     await tester.pumpWidget(
       UncontrolledProviderScope(
@@ -177,7 +175,7 @@ void main() {
               body: TextButton(
                 onPressed: () => Navigator.of(
                   context,
-                ).push(MaterialPageRoute<void>(builder: (_) => mode.screen)),
+                ).push(MaterialPageRoute<void>(builder: (_) => screen)),
                 child: const Text('open'),
               ),
             ),
@@ -188,6 +186,24 @@ void main() {
     await tester.tap(find.text('open'));
     await frames(tester);
     await frames(tester);
+  }
+
+  /// Starts [mode] for two players and puts its screen up.
+  Future<void> openAt(WidgetTester tester, _Mode mode, Size size) async {
+    final finn = await repository.addPlayer('Finn');
+    final ada = await repository.addPlayer('Ada');
+    await mode.start(container, repository, [finn.id, ada.id]);
+    await pushAt(tester, mode.screen, size);
+  }
+
+  /// Starts a [drill] session and puts the training screen up.
+  Future<void> trainAt(
+    WidgetTester tester,
+    TrainingDrill drill,
+    Size size,
+  ) async {
+    container.read(trainingProvider.notifier).start(drill: drill);
+    await pushAt(tester, const TrainingGameScreen(), size);
   }
 
   Rect where(WidgetTester tester, Finder finder) => tester.getRect(finder);
@@ -334,6 +350,50 @@ void main() {
   ) async {
     await openAt(tester, _atc, phonePortrait);
     expect(find.byKey(aimCardKey), findsOneWidget);
+  });
+
+  group('training', () {
+    for (final drill in TrainingDrill.values) {
+      for (final (name, size) in const [
+        ('a phone held upright', phonePortrait),
+        ('a phone on its side', phoneLandscape),
+        ('the Tab S6 Lite', tabS6Lite),
+      ]) {
+        testWidgets('${drill.name} fits $name', (tester) async {
+          await trainAt(tester, drill, size);
+          expect(tester.takeException(), isNull);
+
+          container.read(trainingProvider.notifier)
+            ..addDart(const ThrownDart(Segment(20, Ring.triple)))
+            ..addDart(const ThrownDart(Segment(20, Ring.triple)));
+          await frames(tester);
+          expect(tester.takeException(), isNull);
+        });
+      }
+    }
+
+    testWidgets('darts can be keyed in with no board connected', (
+      tester,
+    ) async {
+      await trainAt(tester, TrainingDrill.freePractice, phonePortrait);
+      expect(find.byType(DartKeypad), findsOneWidget);
+
+      await tester.tap(
+        find.descendant(of: find.byType(DartKeypad), matching: find.text('19')),
+      );
+      await frames(tester);
+
+      expect(find.text('S19'), findsOneWidget);
+    });
+
+    testWidgets('the keypad gives way once a board connects', (tester) async {
+      await trainAt(tester, TrainingDrill.freePractice, tabS6Lite);
+      await board.connect();
+      await frames(tester);
+
+      expect(find.byType(DartKeypad), findsNothing);
+      expect(find.byKey(const Key('hero-scoreboard')), findsOneWidget);
+    });
   });
 }
 
