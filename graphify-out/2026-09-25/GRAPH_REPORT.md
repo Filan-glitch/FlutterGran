@@ -1,16 +1,16 @@
-# Graph Report - FlutterGran  (2026-09-25)
+# Graph Report - FlutterGran  (2026-09-24)
 
 ## Corpus Check
-- 181 files · ~171,071 words
+- 169 files · ~169,478 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 5547 nodes · 7706 edges · 281 communities (247 shown, 34 thin omitted)
+- 5448 nodes · 7541 edges · 278 communities (243 shown, 35 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 48 edges (avg confidence: 0.52)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `ab9f7e07`
+- Built from commit: `89b289b3`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -24,10 +24,10 @@
 - leg_state.dart
 - providers.dart
 - atc_widget_test.dart
-- end_screen_test.dart
+- training_game_screen_test.dart
 - board_widget.dart
 - game_repository.dart
-- game_screen.dart
+- dart
 - mode_stats.dart
 - player_stats.dart
 - match_state.dart
@@ -41,10 +41,10 @@
 - persistence_test.dart
 - make_icon.py
 - AppDelegate
-- StatelessWidget
+- stats_screen.dart
 - make_cues.py
 - roster_screen.dart
-- main_menu_screen_test.dart
+- roster_screen_test.dart
 - Tailwind CSS Utility Reference
 - FakeBoardSource
 - app_localizations.dart
@@ -53,12 +53,12 @@
 - sound_player_test.dart
 - bulling_leg_state.dart
 - app_localizations_de.dart
-- game_over_card.dart
+- dart
 - Bulling Game Mode Implementation Plan
 - atc_stop.dart
 - frame_assembler.dart
 - dart_keypad.dart
-- MaterialPageRoute
+- playersProvider
 - Brand Guidelines v1.0
 - DataClass
 - Development
@@ -66,12 +66,12 @@
 - Data model
 - ../providers.dart
 - app_localizations_en.dart
-- scoreboard.dart
+- bulling_setup_screen.dart
 - DateTime
 - Architecture
 - The board protocol
 - return
-- select_game_mode_screen.dart
+- main_menu_screen.dart
 - training_setup_screen.dart
 - Design
 - main
@@ -82,7 +82,7 @@
 - Table
 - Canvas Design System
 - search_stack
-- mode_layout_test.dart
+- DesignSystemGenerator
 - worker.md
 - Form & Input Components
 - Tailwind CSS Responsive Design
@@ -91,15 +91,15 @@
 - package:fluttergran/domain/segment.dart
 - bool?
 - Random
-- aim_card.dart
+- dart
 - mode_sounds_test.dart
 - currentGameIdProvider
 - dart
 - free_practice_state.dart
 - dart
-- DesignSystemGenerator
+- read_rows
 - Around the Clock — design
-- aim_strip.dart
+- checkout_card.dart
 - responsive_layout_test.dart
 - Typography Specifications
 - package:flutter/material.dart
@@ -129,7 +129,7 @@
 - generate-slide.py
 - shadcn/ui Theming & Customization
 - TailwindConfigGenerator
-- match_controller.dart
+- dart:async
 - Asset Organization Guide
 - Primary Color Meanings
 - Core Logo Types
@@ -168,7 +168,7 @@
 - radius
 - Layout Patterns
 - ShadcnInstaller
-- test_data_contracts.py
+- parse_decision_rules
 - update.md
 - Logo Design Reference
 - Token Architecture
@@ -179,7 +179,7 @@
 - card
 - test_tailwind_config_gen.py
 - .generate_config_string
-- int?
+- leg_reducer.dart
 - Core Visual Elements
 - inject-brand-context.cjs
 - CIP Design Style Guide
@@ -197,7 +197,7 @@
 - Slide Strategies
 - ._base_config
 - test_text_layout_resilience.py
-- ../theme.dart
+- settings_screen.dart
 - sync-brand-to-tokens.cjs
 - BM25
 - test_validate_tokens.py
@@ -214,13 +214,13 @@
 - Pre-Delivery Checklist
 - Prerequisites
 - Brand Guidelines Template
-- test_core.py
+- generate_design_system
 - radius
 - bulling_controller.dart
 - game_config.dart
 - Common Rules for Professional UI
 - Example Workflow
-- setup_screens_test.dart
+- atc_setup_screen.dart
 - known_board_store.dart
 - segment.dart
 - Tips for Better Results
@@ -229,7 +229,7 @@
 - led_scheduler.dart
 - Feature ideas (not yet built)
 - bulling_reducer.dart
-- game_layout.dart
+- format_ascii_box
 - $type
 - padding-y
 - muted
@@ -237,17 +237,17 @@
 - ring
 - md
 - 16
-- main_menu_screen.dart
+- ModeStats
 - slides-create.md
 - create.md
 - AppLocalizations
 - _palette_is_dark
 - board_lifecycle.dart
 - Rules screens: overview vs detail
-- atc_reducer.dart
-- bool get
+- sm
+- 2
 - xl
-- Map
+- widget_test.dart
 - lights_providers.dart
 - .test_init_javascript
 - .test_write_config_creates_content
@@ -264,10 +264,10 @@
 - .test_add_components_success
 - BoardConnectionController
 - .test_add_all_components_dry_run
-- int get
+- bulling_config.dart
 - .test_list_installed_empty
 - .test_check_shadcn_config_not_exists
-- test_design_system_mode.py
+- _filter_anti_patterns_for_mode
 - .test_add_plugins_no_duplicates
 - .test_init_default_typescript
 - .test_generate_javascript_config
@@ -276,7 +276,7 @@
 - .test_validate_config_no_content
 - .test_default_output_path_javascript
 - .test_base_config_structure
-- reconnect_delay_test.dart
+- board_geometry_test.dart
 - .test_add_components_dry_run
 - .test_add_all_components_no_config
 - .test_list_installed_with_components
@@ -285,41 +285,38 @@
 - TrainingGameScreen
 - _FakeAudioPlatform
 - _FakeGlobalAudioPlatform
-- _row_identities
-- none
+- 6
+- dart:io
 - _FakeAudioCache
-- BoolSetting
-- 1
-- 3
 
 ## God Nodes (most connected - your core abstractions)
-1. `TailwindConfigGenerator` - 58 edges
-2. `_` - 48 edges
-3. `DesignSystemGenerator` - 48 edges
-4. `search()` - 46 edges
-5. `dart` - 44 edges
-6. `dart` - 36 edges
-7. `TestTailwindConfigGenerator` - 35 edges
-8. `search_stack()` - 35 edges
-9. `ShadcnInstaller` - 34 edges
-10. `FakeBoardSource` - 26 edges
+1. `dart` - 71 edges
+2. `TailwindConfigGenerator` - 58 edges
+3. `_` - 48 edges
+4. `DesignSystemGenerator` - 48 edges
+5. `dart` - 47 edges
+6. `dart` - 46 edges
+7. `search()` - 46 edges
+8. `dart` - 44 edges
+9. `dart` - 42 edges
+10. `dart` - 36 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `_MutePlayer` --implements--> `SoundPlayer`  [EXTRACTED]
   test/app/end_screen_test.dart → lib/app/audio/sound_controller.dart
-- `_MutePlayer` --implements--> `SoundPlayer`  [EXTRACTED]
-  test/app/mode_layout_test.dart → lib/app/audio/sound_controller.dart
 - `_FakePlayer` --implements--> `SoundPlayer`  [EXTRACTED]
   test/app/mode_sounds_test.dart → lib/app/audio/sound_controller.dart
 - `_MutePlayer` --implements--> `SoundPlayer`  [EXTRACTED]
   test/app/responsive_layout_test.dart → lib/app/audio/sound_controller.dart
-- `_MutePlayer` --implements--> `SoundPlayer`  [EXTRACTED]
-  test/app/setup_screens_test.dart → lib/app/audio/sound_controller.dart
+- `_FakePlayer` --implements--> `SoundPlayer`  [EXTRACTED]
+  test/app/sound_controller_test.dart → lib/app/audio/sound_controller.dart
+- `_FakePlayer` --implements--> `SoundPlayer`  [EXTRACTED]
+  test/app/training_game_screen_test.dart → lib/app/audio/sound_controller.dart
 
 ## Import Cycles
 - None detected.
 
-## Communities (281 total, 34 thin omitted)
+## Communities (278 total, 35 thin omitted)
 
 ### Community 0 - "database.dart"
 Cohesion: 0.02
@@ -343,7 +340,7 @@ Nodes (40): _, after, afterBustCue, afterCheckoutCue, afterOneEightyCue, asset, 
 
 ### Community 5 - "validate_data.py"
 Cohesion: 0.08
-Nodes (45): read_rows(), TestAccessibilityGuidance, TestChartsTypographyAndIcons, TestCurrentReactGuidance, TestSemanticColors, _catalog_date(), _check_app_interface_contract(), _check_catalog_contract() (+37 more)
+Nodes (46): read_rows(), TestAccessibilityGuidance, TestChartsTypographyAndIcons, TestCurrentReactGuidance, TestSemanticColors, _catalog_date(), _check_app_interface_contract(), _check_catalog_contract() (+38 more)
 
 ### Community 6 - "leg_state.dart"
 Cohesion: 0.07
@@ -351,31 +348,31 @@ Nodes (28): GameConfigController, GameConfig, averageFor, busted, config, curren
 
 ### Community 7 - "providers.dart"
 Cohesion: 0.03
-Nodes (76): audio/atc_sound.dart, audio/bulling_sound.dart, audio/sound_player.dart, audio/training_sound.dart, ../data/board/ble_board_source.dart, ../data/board/known_board_store.dart, ../data/board/segment_codec.dart, ../domain/checkout/checkout_table.dart (+68 more)
+Nodes (79): audio/atc_sound.dart, audio/bulling_sound.dart, audio/sound_player.dart, audio/training_sound.dart, ../data/board/ble_board_source.dart, ../data/board/known_board_store.dart, ../data/board/segment_codec.dart, ../domain/checkout/checkout_table.dart (+71 more)
 
 ### Community 8 - "atc_widget_test.dart"
-Cohesion: 0.06
-Nodes (35): dart:async, boardConnectionProvider, boardSourceProvider, build, BoardConnectionButton, build, _onTap, package:fluttergran/main.dart (+27 more)
+Cohesion: 0.09
+Nodes (21): package:fluttergran/app/widgets/dart_keypad.dart, highlight, main, pumpKeypad, pumpWidget, closeApp, database, keypadKey (+13 more)
 
-### Community 9 - "end_screen_test.dart"
+### Community 9 - "training_game_screen_test.dart"
 Cohesion: 0.05
-Nodes (39): SoundPlayer, AudioPlayersSoundPlayer, package:fluttergran/app/audio/sound_controller.dart, package:fluttergran/app/screens/game_screen.dart, board, checkout, container, d (+31 more)
+Nodes (36): _FakePlayer, SoundPlayer, AudioPlayersSoundPlayer, package:fluttergran/app/audio/sound_controller.dart, package:fluttergran/app/widgets/checkout_card.dart, _MutePlayer, _FakePlayer, _MutePlayer (+28 more)
 
 ### Community 10 - "board_widget.dart"
 Cohesion: 0.06
-Nodes (31): _black, BoardGeometry, boardWedgeOrder, build, _cream, doubleInner, doubleOuter, _green (+23 more)
+Nodes (32): _black, BoardGeometry, boardWedgeOrder, BoardWidget, build, _cream, doubleInner, doubleOuter (+24 more)
 
 ### Community 11 - "game_repository.dart"
 Cohesion: 0.05
 Nodes (43): database.dart, addPlayer, allPlayers, appendDart, _aroundTheClock, _bulling, db, deleteEmptyGames (+35 more)
 
-### Community 12 - "game_screen.dart"
-Cohesion: 0.05
-Nodes (50): AppLocalizations get, atc_setup_screen.dart, ../audio/sound_controller.dart, BuildContext, bulling_setup_screen.dart, ../../domain/atc/atc_leg_state.dart, ../../domain/bulling/bulling_leg_state.dart, ../../domain/bulling/bulling_reducer.dart (+42 more)
+### Community 12 - "dart"
+Cohesion: 0.04
+Nodes (66): ../../domain/stats/player_stats.dart, double?, dart, average, child, _confirmLeave, _DartSlot, _decimal (+58 more)
 
 ### Community 13 - "mode_stats.dart"
 Cohesion: 0.04
-Nodes (48): double? get, AtcStats, average, bestCheckout, bestTurn, BullingStats, checkoutRateFor, firstNineAverage (+40 more)
+Nodes (44): double? get, average, bestCheckout, bestTurn, checkoutRateFor, firstNineAverage, firstNineDarts, firstNinePoints (+36 more)
 
 ### Community 14 - "player_stats.dart"
 Cohesion: 0.05
@@ -383,7 +380,7 @@ Nodes (42): ../atc/atc_leg_state.dart, ../atc/atc_stop.dart, ../bulling/bulling_
 
 ### Community 15 - "match_state.dart"
 Cohesion: 0.07
-Nodes (26): GameConfig? get, config, counted, foldMatch, formatLabel, inRule, isFinished, isHeadToHead (+18 more)
+Nodes (27): GameConfig? get, config, counted, foldMatch, formatLabel, inRule, isFinished, isHeadToHead (+19 more)
 
 ### Community 16 - "migration_test.dart"
 Cohesion: 0.06
@@ -398,24 +395,24 @@ Cohesion: 0.06
 Nodes (38): dart:typed_data, a, b, black, byNumber, c, code, colourOf (+30 more)
 
 ### Community 19 - "board_source.dart"
-Cohesion: 0.06
-Nodes (35): BoardConnectionState get, frame_assembler.dart, led_command.dart, BleBoardSource, assembler, boardName, BoardSource, codec (+27 more)
+Cohesion: 0.05
+Nodes (36): BoardConnectionState get, frame_assembler.dart, led_command.dart, BleBoardSource, assembler, boardName, BoardReader, BoardSource (+28 more)
 
 ### Community 20 - "board_reader_test.dart"
-Cohesion: 0.13
-Nodes (20): BoardReader, BoardEvent, BoardMiss, body, ButtonPress, DartHit, segment, toString (+12 more)
+Cohesion: 0.16
+Nodes (17): BoardEvent, BoardMiss, body, ButtonPress, DartHit, segment, toString, UnknownFrame (+9 more)
 
 ### Community 21 - "package:flutter_riverpod/flutter_riverpod.dart"
 Cohesion: 0.04
-Nodes (63): _FakePlayer, RulesDetailScreen, package:flutter_riverpod/flutter_riverpod.dart, package:flutter_test/flutter_test.dart, package:fluttergran/app/rules_topic.dart, package:fluttergran/app/screens/rules_detail_screen.dart, package:fluttergran/app/screens/rules_screen.dart, package:fluttergran/app/screens/settings_screen.dart (+55 more)
+Nodes (63): RulesDetailScreen, package:flutter_riverpod/flutter_riverpod.dart, package:flutter_test/flutter_test.dart, package:fluttergran/app/rules_topic.dart, package:fluttergran/app/screens/atc_game_screen.dart, package:fluttergran/app/screens/atc_setup_screen.dart, package:fluttergran/app/screens/bulling_game_screen.dart, package:fluttergran/app/screens/bulling_setup_screen.dart (+55 more)
 
 ### Community 22 - "gray"
 Cohesion: 0.05
 Nodes (53): $type, $value, $type, $value, $type, $value, $type, $value (+45 more)
 
 ### Community 23 - "persistence_test.dart"
-Cohesion: 0.14
-Nodes (13): package:drift/drift.dart, board, container, controller, d, database, gameId, main (+5 more)
+Cohesion: 0.06
+Nodes (30): package:drift/drift.dart, package:fluttergran/domain/checkout/checkout_search.dart, package:fluttergran/domain/checkout/checkout_table.dart, package:fluttergran/domain/x01/leg_reducer.dart, package:fluttergran/domain/x01/x01_rules.dart, Set, board, container (+22 more)
 
 ### Community 24 - "make_icon.py"
 Cohesion: 0.19
@@ -425,21 +422,21 @@ Nodes (20): Image, _chalk_polygon(), corner_mask(), _down(), draw_mark(), foregr
 Cohesion: 0.11
 Nodes (14): Any, Flutter, FlutterAppDelegate, FlutterImplicitEngineBridge, FlutterImplicitEngineDelegate, FlutterSceneDelegate, AppDelegate, Bool (+6 more)
 
-### Community 26 - "StatelessWidget"
-Cohesion: 0.05
-Nodes (47): ../../domain/stats/mode_stats.dart, child, createState, _decimal, detail, _Empty, _FadeIn, _Headline (+39 more)
+### Community 26 - "stats_screen.dart"
+Cohesion: 0.08
+Nodes (23): ../../domain/atc/atc_stop.dart, ../../domain/stats/mode_stats.dart, child, createState, _decimal, detail, _Empty, _Eyebrow (+15 more)
 
 ### Community 27 - "make_cues.py"
 Cohesion: 0.25
 Nodes (19): Samples, bust(), checkout(), dart(), envelope(), main(), mix(), normalise() (+11 more)
 
 ### Community 28 - "roster_screen.dart"
-Cohesion: 0.05
-Nodes (36): ../../data/db/database.dart, FocusNode, _addPlayer, _commit, _controller, createState, didUpdateWidget, dispose (+28 more)
+Cohesion: 0.09
+Nodes (21): ../../data/db/database.dart, FocusNode, _addPlayer, _commit, _controller, createState, didUpdateWidget, dispose (+13 more)
 
-### Community 29 - "main_menu_screen_test.dart"
-Cohesion: 0.05
-Nodes (47): GameRepository, NavigatorState, package:drift/native.dart, package:fluttergran/app/screens/atc_game_screen.dart, package:fluttergran/app/screens/bulling_game_screen.dart, package:fluttergran/app/screens/main_menu_screen.dart, package:fluttergran/app/screens/roster_screen.dart, package:fluttergran/app/screens/splash_screen.dart (+39 more)
+### Community 29 - "roster_screen_test.dart"
+Cohesion: 0.06
+Nodes (36): GameRepository, NavigatorState, package:drift/native.dart, package:fluttergran/app/screens/main_menu_screen.dart, package:fluttergran/app/screens/roster_screen.dart, package:fluttergran/app/screens/splash_screen.dart, package:fluttergran/data/db/database.dart, package:fluttergran/data/db/game_repository.dart (+28 more)
 
 ### Community 30 - "Tailwind CSS Utility Reference"
 Cohesion: 0.05
@@ -451,7 +448,7 @@ Nodes (59): Batch, board_clock.dart, Duplicate, GreetingGluedTo, FakeBoardSource
 
 ### Community 32 - "app_localizations.dart"
 Cohesion: 0.01
-Nodes (215): app_localizations_de.dart, app_localizations_en.dart, class, addPlayerFieldLabel, aimLabel, aroundTheClockLabel, atcSetupTitle, atcVariantAnyPart (+207 more)
+Nodes (217): app_localizations_de.dart, app_localizations_en.dart, class, addPlayerFieldLabel, aroundTheClockLabel, atcSetupTitle, atcVariantAnyPart, atcVariantDoublesOnly (+209 more)
 
 ### Community 33 - "Connectivity"
 Cohesion: 0.12
@@ -467,15 +464,15 @@ Nodes (39): package:audioplayers_platform_interface/audioplayers_platform_interf
 
 ### Community 36 - "bulling_leg_state.dart"
 Cohesion: 0.09
-Nodes (21): BullingTurn? get, BullingTurn, config, currentPlayerId, currentPlayerIndex, currentTurnDarts, darts, dartsLeftThisTurn (+13 more)
+Nodes (22): BullingTurn? get, BullingLegState, BullingTurn, config, currentPlayerId, currentPlayerIndex, currentTurnDarts, darts (+14 more)
 
 ### Community 37 - "app_localizations_de.dart"
 Cohesion: 0.01
-Nodes (202): app_localizations.dart, addPlayerFieldLabel, aimLabel, aroundTheClockLabel, atcSetupTitle, atcVariantAnyPart, atcVariantDoublesOnly, atcVariantMasters (+194 more)
+Nodes (204): addPlayerFieldLabel, aroundTheClockLabel, atcSetupTitle, atcVariantAnyPart, atcVariantDoublesOnly, atcVariantMasters, autoConnectDetail, autoConnectLabel (+196 more)
 
-### Community 38 - "game_over_card.dart"
-Cohesion: 0.07
-Nodes (30): KnownBoardController, build, column, columns, error, eyebrow, FigureColumn, FigureRow (+22 more)
+### Community 38 - "dart"
+Cohesion: 0.10
+Nodes (22): dart, _BoardScoringAlone, _confirmLeave, _DartSlot, leg, _LegWon, live, name (+14 more)
 
 ### Community 39 - "Bulling Game Mode Implementation Plan"
 Cohesion: 0.09
@@ -490,12 +487,12 @@ Cohesion: 0.15
 Nodes (12): Duration, _buffer, dedupeWindow, feed, FrameAssembler, _greeting, _isRepeat, _lastAt (+4 more)
 
 ### Community 42 - "dart_keypad.dart"
-Cohesion: 0.12
-Nodes (16): build, createState, _enter, highlight, highlighted, _isHighlighted, _Key, _KeyState (+8 more)
-
-### Community 43 - "MaterialPageRoute"
 Cohesion: 0.07
-Nodes (35): ConsumerState, ConsumerStatefulWidget, playersProvider, playerStatsProvider, resumableLegProvider, segmentCountsProvider, x01DefaultsProvider, AtcSetupScreen (+27 more)
+Nodes (27): build, createState, DartKeypad, _DartKeypadState, _enter, highlight, highlighted, _isHighlighted (+19 more)
+
+### Community 43 - "playersProvider"
+Cohesion: 0.07
+Nodes (34): ConsumerState, ConsumerStatefulWidget, playersProvider, playerStatsProvider, resumableLegProvider, segmentCountsProvider, x01DefaultsProvider, AtcSetupScreen (+26 more)
 
 ### Community 44 - "Brand Guidelines v1.0"
 Cohesion: 0.05
@@ -510,24 +507,24 @@ Cohesion: 0.17
 Nodes (12): Commands, Conventions, Dependency constraints, learned the hard way, Development, Generated assets, Running on a device, Setup, Test layout (+4 more)
 
 ### Community 47 - "main.dart"
-Cohesion: 0.13
-Nodes (17): app/board_lifecycle.dart, app/lights/lights_providers.dart, app/providers.dart, app/screens/splash_screen.dart, app/theme.dart, boardLifecycleProvider, ledSchedulerProvider, build (+9 more)
+Cohesion: 0.14
+Nodes (15): app/board_lifecycle.dart, app/lights/lights_providers.dart, app/providers.dart, app/screens/splash_screen.dart, app/theme.dart, boardLifecycleProvider, ledSchedulerProvider, build (+7 more)
 
 ### Community 48 - "Data model"
 Cohesion: 0.18
 Nodes (11): `DartEvents` — every dart, Data model, `Games` — one leg, `GameSeats` — who sat where, `Matches` — a run of legs, Migrations, `Players`, Reading it back (+3 more)
 
 ### Community 49 - "../providers.dart"
-Cohesion: 0.09
-Nodes (20): CustomPainter, detail, enabled, label, _LanguageChoice, onChanged, _SoundToggle, value (+12 more)
+Cohesion: 0.15
+Nodes (12): CustomPainter, build, _ChalkMark, createState, initState, paint, _proceed, shouldRepaint (+4 more)
 
 ### Community 50 - "app_localizations_en.dart"
 Cohesion: 0.01
-Nodes (202): addPlayerFieldLabel, aimLabel, aroundTheClockLabel, atcSetupTitle, atcVariantAnyPart, atcVariantDoublesOnly, atcVariantMasters, autoConnectDetail (+194 more)
+Nodes (204): app_localizations.dart, addPlayerFieldLabel, aroundTheClockLabel, atcSetupTitle, atcVariantAnyPart, atcVariantDoublesOnly, atcVariantMasters, autoConnectDetail (+196 more)
 
-### Community 51 - "scoreboard.dart"
+### Community 51 - "bulling_setup_screen.dart"
 Cohesion: 0.07
-Nodes (28): Alignment, Color get, double?, accent, alignment, build, caption, colour (+20 more)
+Nodes (25): AppLocalizations get, BuildContext, ../../domain/bulling/bulling_variant.dart, l10n/app_localizations.dart, l10n, L10nContext, _addPlayer, _bullseyeValue (+17 more)
 
 ### Community 52 - "DateTime"
 Cohesion: 0.22
@@ -542,16 +539,16 @@ Cohesion: 0.15
 Nodes (13): Connection lifecycle, Decoding, Effect frames: 16 bytes, Frame assembly, Hardware day (2026-09-04) — resolved, In one paragraph, LED control, Playing without a board (+5 more)
 
 ### Community 55 - "return"
-Cohesion: 0.15
-Nodes (12): atc_controller.dart, bulling_controller.dart, after, before, sounds, soundsForAtc, after, before (+4 more)
+Cohesion: 0.10
+Nodes (19): ../atc_controller.dart, ../bulling_controller.dart, ../../domain/x01/thrown_dart.dart, after, before, sounds, soundsForAtc, after (+11 more)
 
-### Community 56 - "select_game_mode_screen.dart"
-Cohesion: 0.08
-Nodes (24): Color, color, _ComingSoonGlyph, _ComingSoonTile, createState, _Dot, mode, _ModeGlyph (+16 more)
+### Community 56 - "main_menu_screen.dart"
+Cohesion: 0.04
+Nodes (45): atc_setup_screen.dart, bulling_game_screen.dart, bulling_setup_screen.dart, Color, ../../domain/game_mode.dart, game_screen.dart, IconData, icon (+37 more)
 
 ### Community 57 - "training_setup_screen.dart"
-Cohesion: 0.13
-Nodes (13): ../domain/training/training_drill.dart, ../../domain/x01/game_config.dart, build, createState, _drill, _DrillChoice, label, onTap (+5 more)
+Cohesion: 0.10
+Nodes (18): ../domain/training/training_drill.dart, build, createState, _drill, _DrillChoice, _Eyebrow, label, onTap (+10 more)
 
 ### Community 58 - "Design"
 Cohesion: 0.06
@@ -570,8 +567,8 @@ Cohesion: 0.25
 Nodes (8): Hardware day (2026-09-04) — done, Non-dart frames, See also, The GranBoard 132, The matrix, The segment table, What is confirmed, and what is not, What kind of device it is
 
 ### Community 62 - "atc_leg_state.dart"
-Cohesion: 0.09
-Nodes (21): AtcTurn? get, AtcTurn, config, currentPlayerId, currentPlayerIndex, currentStopFor, currentTurnDarts, darts (+13 more)
+Cohesion: 0.06
+Nodes (36): atc_config.dart, atc_leg_state.dart, atc_stop.dart, AtcTurn? get, int?, CurrentGameId, AtcLegState, AtcTurn (+28 more)
 
 ### Community 63 - "Chalk"
 Cohesion: 0.25
@@ -586,12 +583,12 @@ Cohesion: 0.06
 Nodes (35): 1. Visual Communication First, 2. Minimal Text Integration, 3. Expert Craftsmanship, 4. Systematic Patterns, Analog Meditation, Approach, Canvas Boundaries, Canvas Design System (+27 more)
 
 ### Community 67 - "search_stack"
-Cohesion: 0.10
-Nodes (10): _exact_stack_identifier(), _project_row(), Resolve a standalone API identifier even when its BM25 IDF is low., Search stack-specific guidelines, search_stack(), _valid_max_results(), _rows(), TestNativeDesktopStackFreshness (+2 more)
+Cohesion: 0.11
+Nodes (6): Search stack-specific guidelines, search_stack(), _rows(), TestNativeDesktopStackFreshness, _rows(), TestWebStackFreshness
 
-### Community 68 - "mode_layout_test.dart"
-Cohesion: 0.08
-Nodes (25): package:fluttergran/app/widgets/aim_card.dart, package:fluttergran/app/widgets/scoreboard.dart, _atc, board, build, _bulling, container, database (+17 more)
+### Community 68 - "DesignSystemGenerator"
+Cohesion: 0.15
+Nodes (7): DesignSystemGenerator, Generates design system recommendations from aggregated searches., Load reasoning rules from CSV., Select best matching result based on priority keywords., TestReasoningMatch, The exact reproduction from issue #428., TestEndToEndCoherence
 
 ### Community 69 - "worker.md"
 Cohesion: 0.50
@@ -607,18 +604,18 @@ Nodes (32): 1. Mobile-First Design, 2. Consistent Breakpoint Usage, 3. Test at B
 
 ### Community 74 - "package:fluttergran/domain/segment.dart"
 Cohesion: 0.04
-Nodes (64): dart:io, ThrownDart, X01RuleDartChecks, package:fluttergran/data/board/granboard_segment_map.dart, package:fluttergran/domain/atc/atc_leg_state.dart, package:fluttergran/domain/bulling/bulling_leg_state.dart, package:fluttergran/domain/checkout/checkout_search.dart, package:fluttergran/domain/checkout/checkout_table.dart (+56 more)
+Nodes (59): ThrownDart, X01RuleDartChecks, package:fluttergran/data/board/granboard_segment_map.dart, package:fluttergran/domain/atc/atc_leg_state.dart, package:fluttergran/domain/atc/atc_reducer.dart, package:fluttergran/domain/bulling/bulling_leg_state.dart, package:fluttergran/domain/bulling/bulling_reducer.dart, package:fluttergran/domain/game_mode.dart (+51 more)
 
-### Community 81 - "aim_card.dart"
-Cohesion: 0.08
-Nodes (22): ../../domain/atc/atc_stop.dart, ../../domain/atc/atc_variant.dart, ../../domain/segment.dart, Aim, AimCard, aimCardKey, aimsFor, bed (+14 more)
+### Community 81 - "dart"
+Cohesion: 0.07
+Nodes (31): ../../domain/segment.dart, dart, _BoardScoringAlone, _confirmLeave, _DartSlot, leg, _LegWon, live (+23 more)
 
 ### Community 82 - "mode_sounds_test.dart"
-Cohesion: 0.04
-Nodes (57): AssertionError, package:fluttergran/app/audio/atc_sound.dart, package:fluttergran/app/audio/bulling_sound.dart, package:fluttergran/app/lights/led_cue.dart, package:fluttergran/app/lights/led_reactions.dart, package:fluttergran/domain/atc/atc_config.dart, package:fluttergran/domain/atc/atc_reducer.dart, package:fluttergran/domain/atc/atc_stop.dart (+49 more)
+Cohesion: 0.06
+Nodes (40): AssertionError, package:fluttergran/app/audio/atc_sound.dart, package:fluttergran/app/audio/bulling_sound.dart, package:fluttergran/app/lights/led_cue.dart, package:fluttergran/app/lights/led_reactions.dart, package:fluttergran/domain/atc/atc_config.dart, package:fluttergran/domain/atc/atc_stop.dart, package:fluttergran/domain/atc/atc_variant.dart (+32 more)
 
 ### Community 83 - "currentGameIdProvider"
-Cohesion: 0.10
+Cohesion: 0.11
 Nodes (52): ConsumerWidget, AtcController, build, _persist, build, BullingController, _persist, build (+44 more)
 
 ### Community 84 - "dart"
@@ -626,36 +623,36 @@ Cohesion: 0.06
 Nodes (34): dart, big, _brandGreen, bust, command, connected, _flashFor, _forestGreen (+26 more)
 
 ### Community 85 - "free_practice_state.dart"
-Cohesion: 0.15
-Nodes (12): currentTurnDarts, darts, dartsThrown, foldFreePractice, FreePracticeState, FreePracticeTurn, initialFreePracticeState, oneEightyCount (+4 more)
+Cohesion: 0.14
+Nodes (13): currentTurnDarts, darts, dartsThrown, foldFreePractice, FreePracticeState, FreePracticeTurn, initialFreePracticeState, oneEightyCount (+5 more)
 
 ### Community 86 - "dart"
 Cohesion: 0.08
-Nodes (25): game_controller.dart, dart, after, all, atcRing, before, bullingRing, checkoutRing (+17 more)
+Nodes (26): ../audio/sound_controller.dart, ../game_controller.dart, dart, after, all, atcRing, before, bullingRing (+18 more)
 
-### Community 87 - "DesignSystemGenerator"
-Cohesion: 0.12
-Nodes (7): DesignSystemGenerator, Generates design system recommendations from aggregated searches., Load reasoning rules from CSV., TestReasoningMatch, read_rows(), TestLandingAndStackContract, TestReasoningContract
+### Community 87 - "read_rows"
+Cohesion: 0.11
+Nodes (7): read_rows(), split_values(), style_identities(), TestGeneratedCatalogContract, TestLandingAndStackContract, TestReasoningContract, TestStyleIdentityContract
 
 ### Community 88 - "Around the Clock — design"
 Cohesion: 0.20
 Nodes (9): Around the Clock — design, Domain (`lib/domain/atc/`), Out of scope for this pass, Persistence, Rules, precisely, Stats (`lib/domain/stats/atc_stats.dart`, `part of 'mode_stats.dart'`), Summary, Testing (+1 more)
 
-### Community 89 - "aim_strip.dart"
-Cohesion: 0.07
-Nodes (27): aim_strip.dart, ../../domain/checkout/checkout_search.dart, EdgeInsetsGeometry?, AimStrip, alternatives, build, caption, chips (+19 more)
+### Community 89 - "checkout_card.dart"
+Cohesion: 0.12
+Nodes (15): ../../domain/checkout/checkout_search.dart, EdgeInsetsGeometry?, _alternates, build, CheckoutCard, checkoutCardKey, checkoutNextDartKey, _DartChip (+7 more)
 
 ### Community 90 - "responsive_layout_test.dart"
-Cohesion: 0.11
-Nodes (18): board, build, container, database, dispose, frames, main, openAt (+10 more)
+Cohesion: 0.05
+Nodes (36): package:fluttergran/app/screens/game_screen.dart, package:fluttergran/domain/x01/match_state.dart, board, checkout, container, d, database, dispose (+28 more)
 
 ### Community 91 - "Typography Specifications"
 Cohesion: 0.06
 Nodes (30): Accessibility, Base System, Best Practices, Clean & Modern, Common Font Pairings, Contrast Requirements, CSS Implementation, Editorial (+22 more)
 
 ### Community 92 - "package:flutter/material.dart"
-Cohesion: 0.10
-Nodes (22): IconData get, ../l10n_extensions.dart, icon, overview, RulesTopic, RulesTopicPresentation, title, build (+14 more)
+Cohesion: 0.11
+Nodes (20): IconData get, ../l10n_extensions.dart, icon, overview, RulesTopic, RulesTopicPresentation, title, build (+12 more)
 
 ### Community 93 - "Logo Usage Rules"
 Cohesion: 0.07
@@ -683,11 +680,11 @@ Nodes (23): get_context(), is_allowed_exception(), is_allowed_rgba(), is_inside_
 
 ### Community 99 - "scripts/core.py"
 Cohesion: 0.12
-Nodes (25): _contains_phrase(), _domain_keywords(), _file_signature(), _get_bm25(), _load_csv(), _load_csv_snapshot(), _load_product_keywords(), _load_rows_or_empty() (+17 more)
+Nodes (26): _contains_phrase(), _domain_keywords(), _file_signature(), _get_bm25(), _load_csv(), _load_csv_snapshot(), _load_product_keywords(), _load_rows_or_empty() (+18 more)
 
 ### Community 100 - "search"
-Cohesion: 0.12
-Nodes (7): Resolve a deprecated in-domain alias, or expose a cross-domain redirect., Main search function with auto-domain detection, search(), _style_search_destination(), TestSearchDomains, read_rows(), TestStyleTaxonomy
+Cohesion: 0.11
+Nodes (9): _exact_stack_identifier(), Resolve a deprecated in-domain alias, or expose a cross-domain redirect., Main search function with auto-domain detection, Resolve a standalone API identifier even when its BM25 IDF is low., search(), _style_search_destination(), TestSearchDomains, read_rows() (+1 more)
 
 ### Community 101 - "Asset Approval Checklist"
 Cohesion: 0.08
@@ -710,8 +707,8 @@ Cohesion: 0.12
 Nodes (19): BM25, detect_domain(), _load_csv(), Load CSV and return list of dicts, Core search function using BM25, Auto-detect the most relevant domain from query, Main search function with auto-domain detection, Search across all domains and combine results (+11 more)
 
 ### Community 106 - "x01_setup_screen.dart"
-Cohesion: 0.05
-Nodes (39): atc_game_screen.dart, bulling_game_screen.dart, ../../domain/atc/atc_config.dart, ../../domain/bulling/bulling_config.dart, ../../domain/bulling/bulling_variant.dart, game_screen.dart, atcVariantLabel, build (+31 more)
+Cohesion: 0.08
+Nodes (23): ../../domain/x01/x01_rules.dart, _addPlayer, createState, dispose, _Eyebrow, _headToHead, _inRule, l10n (+15 more)
 
 ### Community 107 - "States and Variants"
 Cohesion: 0.08
@@ -726,8 +723,8 @@ Cohesion: 0.08
 Nodes (23): Art Direction Styles (Reuse from Banner), Color & Contrast, Design Best Practices, HTML Design Rules, HTML Template Structure, Option A: Chrome Headless CLI (Recommended — zero dependencies), Option B: chrome-devtools skill, Option C: Playwright script (+15 more)
 
 ### Community 110 - "design_system.py"
-Cohesion: 0.12
-Nodes (22): ansi_ljust(), _detect_page_type(), format_ascii_box(), format_master_md(), format_page_override_md(), _generate_intelligent_overrides(), hex_to_ansi(), persist_design_system() (+14 more)
+Cohesion: 0.09
+Nodes (27): _contrast_ratio(), _derive_dark_palette(), _detect_page_type(), format_markdown(), format_master_md(), format_page_override_md(), _generate_intelligent_overrides(), persist_design_system() (+19 more)
 
 ### Community 111 - "Design System"
 Cohesion: 0.09
@@ -761,9 +758,9 @@ Nodes (19): Base Color Presets, Best Practices, Color Customization, Color Forma
 Cohesion: 0.11
 Nodes (10): Generate Tailwind CSS configuration files., Add full color palette (50-950 shades) for a base color. Args: name: Color name…, TailwindConfigGenerator, Test adding colors multiple times., Test adding custom fonts., Test generating TypeScript configuration., Test initialization with different frameworks., Test generating complete JavaScript configuration. (+2 more)
 
-### Community 119 - "match_controller.dart"
-Cohesion: 0.13
-Nodes (14): ../../domain/x01/match_state.dart, build, config, decidedLegs, leave, legSettled, matchId, MatchSession (+6 more)
+### Community 119 - "dart:async"
+Cohesion: 0.11
+Nodes (18): dart:async, ../../domain/x01/game_config.dart, ../../domain/x01/match_state.dart, build, config, decidedLegs, leave, matchId (+10 more)
 
 ### Community 120 - "Asset Organization Guide"
 Cohesion: 0.11
@@ -778,8 +775,8 @@ Cohesion: 0.11
 Nodes (18): 1. Wordmark (Logotype), 2. Lettermark (Monogram), 3. Pictorial Mark (Brand Mark), 4. Abstract Mark, 5. Mascot, 6. Emblem, 7. Combination Mark, Aesthetic Styles (+10 more)
 
 ### Community 123 - "search"
-Cohesion: 0.23
-Nodes (13): detect_domain(), get_cip_brief(), Auto-detect the most relevant domain from query, Main search function with auto-domain detection, Search across all domains and combine results, Generate a comprehensive CIP brief for a brand, search(), search_all() (+5 more)
+Cohesion: 0.18
+Nodes (17): detect_domain(), get_cip_brief(), _load_csv(), Load CSV and return list of dicts, Core search function using BM25, Auto-detect the most relevant domain from query, Main search function with auto-domain detection, Search across all domains and combine results (+9 more)
 
 ### Community 124 - "color"
 Cohesion: 0.11
@@ -834,8 +831,8 @@ Cohesion: 0.17
 Nodes (8): main(), Add all available shadcn/ui components. Args: overwrite: If True, overwrite…, List installed components. Returns: Tuple of (success, message with component…, Check if shadcn is initialized in project. Returns: True if components.json…, Get list of already installed components. Returns: List of installed component…, Read shadcn version from project package.json; fall back to a pinned default., Add shadcn/ui components. Args: components: List of component names to add…, Tests for shadcn_add.py
 
 ### Community 137 - "BM25"
-Cohesion: 0.19
-Nodes (7): BM25, BM25 ranking algorithm for text search, Lowercase, normalize synonyms, split, remove punctuation, filter stopwords, Build BM25 index from documents, Suggest complete public identities so a retry can bypass score thresholds., _suggest_identities(), TestTokenizer
+Cohesion: 0.13
+Nodes (9): BM25, BM25 ranking algorithm for text search, Lowercase, normalize synonyms, split, remove punctuation, filter stopwords, Build BM25 index from documents, Score all documents against query, Suggest complete public identities so a retry can bypass score thresholds., _suggest_identities(), TestBm25CoreBehavior (+1 more)
 
 ### Community 139 - "CIP Design Reference"
 Cohesion: 0.13
@@ -866,8 +863,8 @@ Cohesion: 0.23
 Nodes (3): detect_domain(), Auto-detect the most relevant domain from query. Matches are weighted by…, TestDomainDetection
 
 ### Community 146 - "_select_palette_for_mode"
-Cohesion: 0.22
-Nodes (7): _contrast_ratio(), _derive_dark_palette(), WCAG contrast ratio for two hex colors, or None if either is invalid., Keep product brand tokens while deriving accessible dark surfaces., Pick the highest-ranked palette matching the resolved mode. Only the dark case…, _select_palette_for_mode(), TestPaletteSelection
+Cohesion: 0.39
+Nodes (3): Pick the highest-ranked palette matching the resolved mode. Only the dark case…, _select_palette_for_mode(), TestPaletteSelection
 
 ### Community 147 - "Banner Design - Multi-Format Creative Banner System"
 Cohesion: 0.14
@@ -902,8 +899,8 @@ Cohesion: 0.14
 Nodes (13): Animation Tokens, Base Layer, Button Example, Component Classes, CSS Variables Setup, Dark Mode Toggle, HSL Format Benefits, shadcn/ui Alignment (+5 more)
 
 ### Community 155 - "radius"
-Cohesion: 0.18
-Nodes (15): $type, $value, sm, $type, $value, primitive, radius, shadow (+7 more)
+Cohesion: 0.19
+Nodes (14): $type, $value, $type, $value, $type, $value, primitive, radius (+6 more)
 
 ### Community 156 - "Layout Patterns"
 Cohesion: 0.14
@@ -913,9 +910,9 @@ Nodes (13): Card Styles, Component Variants, CSS Structures, Feature Grid (3 col
 Cohesion: 0.17
 Nodes (7): Handle shadcn/ui component installation., Initialize installer. Args: project_root: Project root directory (default:…, ShadcnInstaller, Test adding components that are already installed., Test component addition when npx is not found., Test initialization with default project root., Test getting installed components when none exist.
 
-### Community 158 - "test_data_contracts.py"
-Cohesion: 0.12
-Nodes (11): apply_decision_rules(), _object_without_duplicates(), parse_decision_rules(), Return deterministic mutations and an audit trail; never execute data., Parse the canonical condition -> action-array representation., _validate_action(), split_values(), style_identities() (+3 more)
+### Community 158 - "parse_decision_rules"
+Cohesion: 0.19
+Nodes (8): Find matching reasoning rule for a category., Apply reasoning rules to search results., apply_decision_rules(), _object_without_duplicates(), parse_decision_rules(), Return deterministic mutations and an audit trail; never execute data., Parse the canonical condition -> action-array representation., _validate_action()
 
 ### Community 159 - "update.md"
 Cohesion: 0.15
@@ -934,8 +931,8 @@ Cohesion: 0.15
 Nodes (12): component, $type, $value, dark, semantic, $schema, $type, $value (+4 more)
 
 ### Community 163 - ".generate"
-Cohesion: 0.14
-Nodes (8): Execute searches across multiple domains., Find matching reasoning rule for a category., Apply reasoning rules to search results., Select best matching result based on priority keywords., Extract results list from search result dict., Generate complete design system recommendation. variance/motion/density are…, Bucket a 1-10 dial value into its tier config. Returns None if value is None., _resolve_dial()
+Cohesion: 0.25
+Nodes (5): Execute searches across multiple domains., Extract results list from search result dict., Generate complete design system recommendation. variance/motion/density are…, Bucket a 1-10 dial value into its tier config. Returns None if value is None., _resolve_dial()
 
 ### Community 164 - "Primitive Tokens"
 Cohesion: 0.17
@@ -957,9 +954,9 @@ Nodes (7): Tests for tailwind_config_gen.py, Reduce a generated TS/JS config to 
 Cohesion: 0.20
 Nodes (6): Generate configuration file content. Returns: Configuration file as string, Generate TypeScript configuration., Generate JavaScript configuration., Format plugins array for config. Validates each plugin name against a strict…, Add indentation to JSON string., Write configuration to file. Returns: Tuple of (success, message)
 
-### Community 169 - "int?"
-Cohesion: 0.14
-Nodes (13): game_config.dart, int?, leg_state.dart, CurrentGameId, foldLeg, initialLegState, opened, playerIndex (+5 more)
+### Community 169 - "leg_reducer.dart"
+Cohesion: 0.15
+Nodes (12): game_config.dart, leg_state.dart, foldLeg, initialLegState, opened, playerIndex, remaining, turnDarts (+4 more)
 
 ### Community 170 - "Core Visual Elements"
 Cohesion: 0.18
@@ -1025,17 +1022,17 @@ Nodes (4): Initialize generator. Args: typescript: If True, generate .ts config,
 Cohesion: 0.22
 Nodes (3): read_rows(), TestTextLayoutDataContracts, TestTextLayoutRetrieval
 
-### Community 187 - "../theme.dart"
-Cohesion: 0.08
-Nodes (22): ringColours, build, label, onTap, SelectableTile, selected, build, busted (+14 more)
+### Community 187 - "settings_screen.dart"
+Cohesion: 0.17
+Nodes (11): detail, enabled, _Eyebrow, label, _LanguageChoice, onChanged, _SoundToggle, text (+3 more)
 
 ### Community 188 - "sync-brand-to-tokens.cjs"
 Cohesion: 0.33
 Nodes (8): adjustBrightness(), { execFileSync }, extractColorsFromMarkdown(), fs, generateColorScale(), main(), path, updateDesignTokens()
 
 ### Community 189 - "BM25"
-Cohesion: 0.21
-Nodes (9): BM25, _load_csv(), Load CSV and return list of dicts, Core search function using BM25, BM25 ranking algorithm for text search, Lowercase, split, remove punctuation, filter short words, Build BM25 index from documents, Score all documents against query (+1 more)
+Cohesion: 0.20
+Nodes (6): BM25, BM25 ranking algorithm for text search, Lowercase, split, remove punctuation, filter short words, Build BM25 index from documents, Score all documents against query, TestDiagnosticsContracts
 
 ### Community 190 - "test_validate_tokens.py"
 Cohesion: 0.38
@@ -1043,7 +1040,7 @@ Nodes (6): Regression tests for validate-tokens.cjs. The validator used to skip 
 
 ### Community 191 - "game_controller.dart"
 Cohesion: 0.05
-Nodes (43): ../../domain/x01/leg_reducer.dart, ../../domain/x01/leg_state.dart, acknowledgedTurns, addDart, awaitingTurnConfirm, confirmTurn, endTurn, GameSession (+35 more)
+Nodes (45): ../data/db/game_repository.dart, ../../domain/board_event.dart, ../domain/training/free_practice_state.dart, ../../domain/x01/leg_reducer.dart, ../../domain/x01/leg_state.dart, granboard_segment_map.dart, acknowledgedTurns, addDart (+37 more)
 
 ### Community 192 - "render-html.py"
 Cohesion: 0.36
@@ -1078,8 +1075,8 @@ Cohesion: 0.33
 Nodes (5): References (Knowledge Base), Routing, Slides, Subcommands, When to Use
 
 ### Community 200 - "atc_controller.dart"
-Cohesion: 0.11
-Nodes (17): ../../domain/atc/atc_reducer.dart, acknowledgedTurns, addDart, AtcSession, awaitingTurnConfirm, confirmTurn, endTurn, handleBoardEvent (+9 more)
+Cohesion: 0.07
+Nodes (27): dart:math, ../../domain/atc/atc_config.dart, ../../domain/atc/atc_leg_state.dart, ../../domain/atc/atc_reducer.dart, acknowledgedTurns, addDart, AtcSession, awaitingTurnConfirm (+19 more)
 
 ### Community 201 - "Pre-Delivery Checklist"
 Cohesion: 0.33
@@ -1093,9 +1090,9 @@ Nodes (6): Available Domains, Available Stacks, How to Use This Skill, Output Fo
 Cohesion: 0.40
 Nodes (4): Brand Guidelines Template, Document Structure, Extractable Fields, Usage
 
-### Community 204 - "test_core.py"
-Cohesion: 0.12
-Nodes (9): format_markdown(), generate_design_system(), Format design system as markdown., Main entry point for design system generation. Args: query: Search query (e.g.,…, format_output(), Format results for Claude consumption (token-optimized), TestBm25CoreBehavior, TestDiagnosticsContracts (+1 more)
+### Community 204 - "generate_design_system"
+Cohesion: 0.25
+Nodes (5): generate_design_system(), Main entry point for design system generation. Args: query: Search query (e.g.,…, format_output(), Format results for Claude consumption (token-optimized), TestPersistence
 
 ### Community 205 - "radius"
 Cohesion: 0.60
@@ -1103,7 +1100,7 @@ Nodes (5): radius, radius, radius, $type, $value
 
 ### Community 206 - "bulling_controller.dart"
 Cohesion: 0.11
-Nodes (17): ../data/db/game_repository.dart, acknowledgedTurns, addDart, awaitingTurnConfirm, BullingSession, confirmTurn, endTurn, handleBoardEvent (+9 more)
+Nodes (18): ../../domain/bulling/bulling_config.dart, ../../domain/bulling/bulling_leg_state.dart, ../../domain/bulling/bulling_reducer.dart, acknowledgedTurns, addDart, awaitingTurnConfirm, BullingSession, confirmTurn (+10 more)
 
 ### Community 207 - "game_config.dart"
 Cohesion: 0.10
@@ -1117,17 +1114,17 @@ Nodes (5): Common Rules for Professional UI, Icons & Visual Elements, Interactio
 Cohesion: 0.40
 Nodes (5): Example Workflow, Step 1: Analyze Requirements, Step 2: Generate Design System, Step 3: Supplement with Detailed Searches (as needed), Step 4: Stack Guidelines
 
-### Community 210 - "setup_screens_test.dart"
-Cohesion: 0.09
-Nodes (22): package:fluttergran/app/screens/atc_setup_screen.dart, package:fluttergran/app/screens/bulling_setup_screen.dart, package:fluttergran/app/screens/select_game_mode_screen.dart, package:fluttergran/app/widgets/player_picker.dart, board, container, database, main (+14 more)
+### Community 210 - "atc_setup_screen.dart"
+Cohesion: 0.08
+Nodes (22): atc_game_screen.dart, ../../domain/atc/atc_variant.dart, _addPlayer, atcVariantLabel, createState, dispose, _Eyebrow, l10n (+14 more)
 
 ### Community 211 - "known_board_store.dart"
-Cohesion: 0.38
-Nodes (6): deviceId, KnownBoardStore, MemoryKnownBoardStore, NoKnownBoardStore, read, write
+Cohesion: 0.31
+Nodes (8): KnownBoardController, deviceId, KnownBoardStore, MemoryKnownBoardStore, NoKnownBoardStore, read, write, String?
 
 ### Community 212 - "segment.dart"
-Cohesion: 0.15
-Nodes (12): all, hashCode, innerBull, isDouble, label, multiplier, number, operator (+4 more)
+Cohesion: 0.07
+Nodes (26): bool get, int get, points, three, all, hashCode, innerBull, isDouble (+18 more)
 
 ### Community 213 - "Tips for Better Results"
 Cohesion: 0.50
@@ -1142,12 +1139,12 @@ Cohesion: 0.29
 Nodes (6): Candidate game modes, Feature ideas (not yet built), How a mode fits the existing architecture, Process note, Quality-of-life, Stats / data features
 
 ### Community 218 - "bulling_reducer.dart"
-Cohesion: 0.15
-Nodes (12): bulling_config.dart, bulling_leg_state.dart, foldBulling, initialBullingLegState, playerIndex, pointsFor, score, turnDarts (+4 more)
+Cohesion: 0.17
+Nodes (11): bulling_config.dart, bulling_leg_state.dart, foldBulling, initialBullingLegState, playerIndex, pointsFor, score, turnDarts (+3 more)
 
-### Community 219 - "game_layout.dart"
-Cohesion: 0.10
-Nodes (20): board_connection_button.dart, aim, build, child, confirm, _confirmLeave, GameLayout, gameOver (+12 more)
+### Community 219 - "format_ascii_box"
+Cohesion: 0.25
+Nodes (8): ansi_ljust(), format_ascii_box(), hex_to_ansi(), Convert hex color to ANSI True Color swatch (██) with fallback., Like str.ljust but accounts for zero-width ANSI escape sequences., Create a Unicode section separator: ├─── NAME ───...┤, Format design system as Unicode box with ANSI color swatches., section_header()
 
 ### Community 220 - "$type"
 Cohesion: 0.60
@@ -1177,17 +1174,17 @@ Nodes (4): $type, $value, md, md
 Cohesion: 0.67
 Nodes (3): $type, $value, 16
 
-### Community 227 - "main_menu_screen.dart"
-Cohesion: 0.11
-Nodes (17): ../../domain/game_mode.dart, IconData, icon, label, _MenuRow, _modeName, names, onResume (+9 more)
+### Community 227 - "ModeStats"
+Cohesion: 0.50
+Nodes (4): AtcStats, BullingStats, X01Stats, ModeStats
 
 ### Community 230 - "AppLocalizations"
 Cohesion: 0.40
 Nodes (6): AppLocalizations, _AppLocalizationsDelegate, AppLocalizationsDe, AppLocalizationsEn, of, LocalizationsDelegate
 
 ### Community 231 - "_palette_is_dark"
-Cohesion: 0.18
-Nodes (7): _palette_is_dark(), WCAG relative luminance of a #RRGGBB string, or None if unparseable., True when a colors.csv row's Background is a dark surface., _relative_luminance(), The exact reproduction from issue #428., TestEndToEndCoherence, TestLuminance
+Cohesion: 0.31
+Nodes (5): _palette_is_dark(), WCAG relative luminance of a #RRGGBB string, or None if unparseable., True when a colors.csv row's Background is a dark surface., _relative_luminance(), TestLuminance
 
 ### Community 232 - "board_lifecycle.dart"
 Cohesion: 0.11
@@ -1197,21 +1194,21 @@ Nodes (17): ../../data/board/board_source.dart, GlobalKey, BoardToast, boardToas
 Cohesion: 0.33
 Nodes (5): Known gap — not done, Rules screens: overview vs detail, Still to do before this is “finished”, Verified, What changed
 
-### Community 234 - "atc_reducer.dart"
-Cohesion: 0.15
-Nodes (12): atc_config.dart, atc_leg_state.dart, atc_stop.dart, foldAroundTheClock, initialAtcLegState, playerIndex, stopIndex, turnDarts (+4 more)
+### Community 234 - "sm"
+Cohesion: 0.60
+Nodes (5): sm, sm, sm, $type, $value
 
-### Community 235 - "bool get"
-Cohesion: 0.20
-Nodes (9): bool get, hashCode, isDouble, label, miss, operator, segment, toString (+1 more)
+### Community 235 - "2"
+Cohesion: 0.67
+Nodes (3): $type, $value, 2
 
 ### Community 236 - "xl"
 Cohesion: 0.67
 Nodes (4): xl, xl, $type, $value
 
-### Community 237 - "Map"
-Cohesion: 0.25
-Nodes (7): ../../domain/board_event.dart, granboard_segment_map.dart, _base, decode, knows, SegmentCodec, Map
+### Community 237 - "widget_test.dart"
+Cohesion: 0.14
+Nodes (13): package:fluttergran/main.dart, closeApp, database, launch, main, openX01Setup, popRoute, pump (+5 more)
 
 ### Community 238 - "lights_providers.dart"
 Cohesion: 0.17
@@ -1226,8 +1223,8 @@ Cohesion: 0.67
 Nodes (3): destructive, $type, $value
 
 ### Community 245 - "_normalize"
-Cohesion: 0.25
-Nodes (9): _exact_match_diagnostic(), _legacy_successor_guidance(), _normalize(), Apply longest-first synonym substitution at token boundaries., Whether a stack query explicitly targets an older framework generation., Choose one coherent applicability generation for stack retrieval., Prefer the explicit successor row for a brand-new app on legacy-only stacks., _stack_query_requests_legacy() (+1 more)
+Cohesion: 0.14
+Nodes (15): _exact_match_diagnostic(), _exact_row_identity(), _legacy_successor_guidance(), _normalize(), Apply longest-first synonym substitution at token boundaries., Return non-empty public identities from ordinary and alias fields., Resolve an explicit style identity without opening generic variant ranking., Return one row whose stable public identity exactly matches the query. (+7 more)
 
 ### Community 246 - "The app layer"
 Cohesion: 0.33
@@ -1245,17 +1242,17 @@ Nodes (3): primary-foreground, $type, $value
 Cohesion: 0.67
 Nodes (3): secondary-foreground, $type, $value
 
-### Community 254 - "int get"
-Cohesion: 0.12
-Nodes (14): bulling_variant.dart, int get, BullingConfigController, BullingConfig, bullseyeValue, offeredTargets, playerIds, target (+6 more)
+### Community 254 - "bulling_config.dart"
+Cohesion: 0.22
+Nodes (8): bulling_variant.dart, bullseyeValue, offeredTargets, playerIds, target, BullseyeValue, static const List, ../x01/game_config.dart
 
-### Community 257 - "test_design_system_mode.py"
-Cohesion: 0.15
-Nodes (10): _filter_anti_patterns_for_mode(), _query_wants_dark(), True when a styles.csv row describes itself as dark-first., True when the query explicitly asks for a dark theme., Resolve the mode the rest of the output has to agree with., Drop "avoid dark mode" advice once dark mode is the resolved answer., _resolve_color_mode(), _style_is_dark_primary() (+2 more)
+### Community 257 - "_filter_anti_patterns_for_mode"
+Cohesion: 0.43
+Nodes (3): _filter_anti_patterns_for_mode(), Drop "avoid dark mode" advice once dark mode is the resolved answer., TestAntiPatternGating
 
-### Community 266 - "reconnect_delay_test.dart"
-Cohesion: 0.12
-Nodes (15): dart:math, package:fluttergran/app/widgets/board_widget.dart, package:fluttergran/data/board/ble_board_source.dart, angle, at, hit, main, radius (+7 more)
+### Community 266 - "board_geometry_test.dart"
+Cohesion: 0.29
+Nodes (6): package:fluttergran/app/widgets/board_widget.dart, angle, at, hit, main, radius
 
 ### Community 272 - "TrainingGameScreen"
 Cohesion: 0.53
@@ -1269,45 +1266,29 @@ Nodes (4): AudioplayersPlatformInterface, Error, Log, _FakeAudioPlatform
 Cohesion: 0.50
 Nodes (4): GlobalAudioplayersPlatformInterface, GlobalError, GlobalLog, _FakeGlobalAudioPlatform
 
-### Community 275 - "_row_identities"
-Cohesion: 0.33
-Nodes (6): _exact_row_identity(), Return non-empty public identities from ordinary and alias fields., Resolve an explicit style identity without opening generic variant ranking., Return one row whose stable public identity exactly matches the query., _row_identities(), _style_identity()
-
-### Community 276 - "none"
+### Community 275 - "6"
 Cohesion: 0.67
-Nodes (4): $type, $value, none, none
-
-### Community 278 - "BoolSetting"
-Cohesion: 0.50
-Nodes (4): BoolSetting, _LightsOff, _LightsOff, _LightsOff
-
-### Community 279 - "1"
-Cohesion: 0.67
-Nodes (3): $type, $value, 1
-
-### Community 280 - "3"
-Cohesion: 0.67
-Nodes (3): $type, $value, 3
+Nodes (3): $type, $value, 6
 
 ## Knowledge Gaps
-- **3318 isolated node(s):** `XCTest`, `leg`, `acknowledgedTurns`, `awaitingTurnConfirm`, `pendingTurn` (+3313 more)
+- **3239 isolated node(s):** `XCTest`, `leg`, `acknowledgedTurns`, `awaitingTurnConfirm`, `pendingTurn` (+3234 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **34 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **35 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `AppDatabase` connect `migration_test.dart` to `database.dart`, `mode_layout_test.dart`, `providers.dart`, `atc_widget_test.dart`, `end_screen_test.dart`, `game_repository.dart`, `mode_sounds_test.dart`, `setup_screens_test.dart`, `package:flutter_riverpod/flutter_riverpod.dart`, `persistence_test.dart`, `responsive_layout_test.dart`, `main_menu_screen_test.dart`?**
-  _High betweenness centrality (0.024) - this node is a cross-community bridge._
-- **Why does `dart` connect `dart` to `game_screen.dart`, `lights_providers.dart`, `return`, `aim_strip.dart`, `game_controller.dart`?**
+- **Why does `dart` connect `dart` to `checkout_card.dart`, `game_controller.dart`, `lights_providers.dart`, `return`?**
   _High betweenness centrality (0.022) - this node is a cross-community bridge._
-- **Why does `search()` connect `search` to `search_stack`, `scripts/core.py`, `.generate`, `validate_data.py`, `BM25`, `test_core.py`, `design_system.py`, `detect_domain`, `_row_identities`, `_normalize`, `test_text_layout_resilience.py`?**
-  _High betweenness centrality (0.017) - this node is a cross-community bridge._
+- **Why does `AppDatabase` connect `migration_test.dart` to `database.dart`, `providers.dart`, `atc_widget_test.dart`, `game_repository.dart`, `widget_test.dart`, `mode_sounds_test.dart`, `package:flutter_riverpod/flutter_riverpod.dart`, `persistence_test.dart`, `responsive_layout_test.dart`, `roster_screen_test.dart`?**
+  _High betweenness centrality (0.019) - this node is a cross-community bridge._
+- **Why does `search()` connect `search` to `scripts/core.py`, `.generate`, `validate_data.py`, `BM25`, `generate_design_system`, `design_system.py`, `detect_domain`, `_normalize`, `test_text_layout_resilience.py`, `BM25`?**
+  _High betweenness centrality (0.016) - this node is a cross-community bridge._
 - **Are the 2 inferred relationships involving `TailwindConfigGenerator` (e.g. with `TestGeneratedConfigIsValidJs` and `TestTailwindConfigGenerator`) actually correct?**
   _`TailwindConfigGenerator` has 2 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 16 inferred relationships involving `DesignSystemGenerator` (e.g. with `TestBm25CoreBehavior` and `TestDiagnosticsContracts`) actually correct?**
+  _`DesignSystemGenerator` has 16 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `XCTest`, `leg`, `acknowledgedTurns` to the rest of the system?**
-  _3318 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _3239 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `database.dart` be split into smaller, more focused modules?**
   _Cohesion score 0.017241379310344827 - nodes in this community are weakly interconnected._
-- **Should `theme.dart` be split into smaller, more focused modules?**
-  _Cohesion score 0.02631578947368421 - nodes in this community are weakly interconnected._
