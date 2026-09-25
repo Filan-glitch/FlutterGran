@@ -9,20 +9,20 @@ import '../../domain/x01/thrown_dart.dart';
 import '../../domain/x01/x01_rules.dart';
 import '../../l10n/app_localizations.dart';
 import '../audio/sound_controller.dart' show maximumTurn;
-import '../game_controller.dart';
 import '../l10n_extensions.dart';
 import '../lights/lights_providers.dart';
 import '../providers.dart';
-import '../theme.dart';
 import '../widgets/checkout_card.dart';
 import '../widgets/dart_keypad.dart';
+import '../widgets/game_layout.dart';
+import '../widgets/game_over_card.dart';
+import '../widgets/outcome_panel.dart';
+import '../widgets/scoreboard.dart';
+import '../widgets/turn_ledger.dart';
+import '../widgets/turn_result.dart';
 
 /// The block of per-player figures on the match card.
 const Key matchFiguresKey = Key('match-figures');
-
-/// Falls back to a seat label for a player who has since been deleted.
-String nameFor(BuildContext context, Map<int, String> names, int playerId) =>
-    names[playerId] ?? context.l10n.playerFallbackName(playerId);
 
 class GameScreen extends ConsumerWidget {
   const GameScreen({super.key});
@@ -32,7 +32,10 @@ class GameScreen extends ConsumerWidget {
     final session = ref.watch(gameProvider);
     final controller = ref.read(gameProvider.notifier);
     final names = ref.watch(playerNamesProvider);
+    final match = ref.watch(matchStateProvider);
     final leg = session.leg;
+    final l10n = context.l10n;
+    final hero = isHeroDevice(context);
 
     // Nothing is read from it. Watching is what keeps the sound controller
     // alive for as long as a leg is on screen, and its own listener on the game
@@ -47,897 +50,151 @@ class GameScreen extends ConsumerWidget {
               .watch(checkoutTableProvider(leg.config.outRule))
               .routesFor(leg.currentRemaining, leg.dartsLeftThisTurn);
 
-    // A leg with darts in it is worth confirming before leaving; a fresh or
-    // finished one is not, and gets out of the way with the platform's own
-    // back gesture intact.
-    final confirmBeforeLeaving = leg.darts.isNotEmpty && !leg.isFinished;
-
-    return PopScope(
-      canPop: !confirmBeforeLeaving,
-      onPopInvokedWithResult: (didPop, _) async {
-        if (didPop) return;
-        if (!await _confirmLeave(context)) return;
-
-        // Stop board input being scored into a leg nobody is watching, and
-        // stop writing to it. The row itself is left alone, unfinished and
-        // ready to resume.
-        controller.leave();
-        ref.read(matchProvider.notifier).leave();
-        ref.read(currentGameIdProvider.notifier).set(null);
-        if (context.mounted) Navigator.of(context).pop();
-      },
-      child: _build(context, ref, session, controller, names, leg, routes),
-    );
-  }
-
-  /// Asks before leaving, and says plainly that nothing is being thrown away.
-  ///
-  /// This is a "we are keeping it" confirmation, not a warning. Telling someone
-  /// they are about to lose a leg when they are not would teach them to fear
-  /// the back button.
-  Future<bool> _confirmLeave(BuildContext context) async {
-    final l10n = context.l10n;
-    final leave = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.leaveLegTitle),
-        content: Text(
-          l10n.leaveLegBody,
-          style: Type.body.copyWith(color: Palette.chalkDim),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.stayButton),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.leaveButton),
-          ),
-        ],
-      ),
-    );
-    return leave ?? false;
-  }
-
-  Widget _build(
-    BuildContext context,
-    WidgetRef ref,
-    GameSession session,
-    GameController controller,
-    Map<int, String> names,
-    LegState leg,
-    List<CheckoutRoute> routes,
-  ) {
-    final match = ref.watch(matchStateProvider);
-
     // Only a real match says so. A best of one is the single leg the app has
     // always played, and labelling it would be noise.
     final format = match != null && match.config.isMultiLeg
         ? ' · ${match.config.formatLabel}'
         : '';
 
-    // Shortest side, not the local width a LayoutBuilder would give: this is
-    // "how big is the device", the same question typeScaleFor answers, and
-    // the two are meant to move together - the device that earns bigger type
-    // earns the hero layout with it.
-    final hero = MediaQuery.sizeOf(context).shortestSide >= heroLayout;
+    final pending = session.pendingTurn;
+    final ledgerDarts = pending?.darts ?? leg.currentTurnDarts;
 
-    final boardConnected = ref.watch(boardConnectionProvider).isConnected;
-    final manualOverride = ref.watch(keypadOverrideProvider);
-
-    // The keypad is the fallback path: it disappears the moment a real board
-    // can be trusted to score for itself, and comes back the moment someone
-    // says otherwise, board present or not.
-    final keypadVisible = !boardConnected || manualOverride;
-    final l10n = context.l10n;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          '${leg.config.startScore} · '
-          '${leg.config.inRule.abbreviation}/${leg.config.outRule.abbreviation}'
-          '$format',
+    return LeaveGuard(
+      confirm: leg.darts.isNotEmpty && !leg.isFinished,
+      // Stop board input being scored into a leg nobody is watching, and stop
+      // writing to it. The row itself is left alone, unfinished and ready to
+      // resume.
+      onLeave: () {
+        controller.leave();
+        ref.read(matchProvider.notifier).leave();
+        ref.read(currentGameIdProvider.notifier).set(null);
+      },
+      child: Scaffold(
+        appBar: GameAppBar(
+          title:
+              '${leg.config.startScore} · '
+              '${leg.config.inRule.abbreviation}/'
+              '${leg.config.outRule.abbreviation}$format',
+          onUndo: leg.darts.isEmpty ? null : controller.undo,
         ),
-        actions: [
-          if (boardConnected)
-            IconButton(
-              key: const Key('keypad-override-toggle'),
-              onPressed: () =>
-                  ref.read(keypadOverrideProvider.notifier).toggle(),
-              icon: Icon(
-                manualOverride ? Icons.videogame_asset : Icons.dialpad,
-              ),
-              tooltip: manualOverride
-                  ? l10n.hideManualEntryTooltip
-                  : l10n.enterScoreByHandTooltip,
+        body: SafeArea(
+          child: GameLayout(
+            scoreboard: (expand) => Scoreboard(
+              seats: _seats(context, leg, names, match),
+              hero: hero,
+              expand: expand,
             ),
-          IconButton(
-            onPressed: leg.darts.isEmpty ? null : controller.undo,
-            icon: const Icon(Icons.undo),
-            tooltip: l10n.undoLastDartTooltip,
-          ),
-          const SizedBox(width: Gap.xs),
-        ],
-      ),
-      body: SafeArea(
-        // The match card is stacked over the board rather than pushed as a
-        // route: a leg ends where it was played, and the scoreboard behind the
-        // card is what makes it read as the end of a game instead of a
-        // different screen.
-        child: Stack(
-          key: const Key('game-body'),
-          children: [
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final board = [
-                  _Scoreboard(leg: leg, names: names, match: match, hero: hero),
-                  const Divider(),
-                  _TurnLedger(session: session, names: names),
-                ];
-
-                // Nothing to key in, and nothing coming from a keypad that
-                // isn't there: a board doing its own scoring has no use for
-                // the half of the screen the keypad would otherwise reserve.
-                // Give that space to the players instead of an idle
-                // placeholder standing in for a control nobody can use.
-                final boardScoringAlone =
-                    !keypadVisible &&
-                    !session.awaitingTurnConfirm &&
-                    !leg.isFinished;
-                if (boardScoringAlone) {
-                  return Column(
-                    children: [
-                      CheckoutCard(
-                        routes: routes,
-                        remaining: leg.currentRemaining,
-                        dartsLeft: leg.dartsLeftThisTurn,
-                        hero: hero,
-                      ),
-                      Expanded(
-                        child: _Scoreboard(
-                          leg: leg,
-                          names: names,
-                          match: match,
-                          hero: hero,
-                          expand: true,
-                        ),
-                      ),
-                      const Divider(),
-                      _TurnLedger(session: session, names: names),
-                    ],
-                  );
-                }
-
-                // Whatever is asking for a decision right now: the keypad, the
-                // turn being confirmed, or the leg that has just ended. It is
-                // the same widget either way round - only where it sits moves.
-                final Widget play;
-                if (hero && session.awaitingTurnConfirm) {
-                  // The full-screen overlay below covers this slot entirely
-                  // (or, if the match just ended too, `_MatchWon` does) - so
-                  // there is nothing here worth spending a `_TurnConfirm`'s
-                  // layout and paint on every frame it is invisible.
-                  play = const SizedBox.shrink();
-                } else if (session.awaitingTurnConfirm) {
-                  play = _TurnConfirm(
-                    turn: session.pendingTurn!,
-                    leg: leg,
-                    names: names,
-                    onConfirm: controller.confirmTurn,
-                    onUndo: controller.undo,
-                  );
-                } else if (leg.isFinished) {
-                  play = _LegWon(
-                    leg: leg,
-                    names: names,
-                    match: match,
-                    onNextLeg: ref.read(matchProvider.notifier).startNextLeg,
-                  );
-                } else {
-                  play = Column(
-                    children: [
-                      CheckoutCard(
-                        routes: routes,
-                        remaining: leg.currentRemaining,
-                        dartsLeft: leg.dartsLeftThisTurn,
-                        hero: hero,
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(
-                            Gap.md,
-                            Gap.sm,
-                            Gap.md,
-                            Gap.md,
-                          ),
-                          child: DartKeypad(
-                            onDart: (segment) =>
-                                controller.addDart(ThrownDart(segment)),
-                            onMiss: () =>
-                                controller.addDart(const ThrownDart.miss()),
-                            highlight: routes.isEmpty
-                                ? const {}
-                                : routes.first.darts.toSet(),
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                }
-
-                // Side by side once there is width for it. Stacked, the score
-                // and the keypad are both squeezed into a height neither has;
-                // beside each other they each get a whole half and nothing has
-                // to shrink - which is the point, because the size of the score
-                // is what makes it readable from the oche.
-                if (constraints.maxWidth >= wideLayout) {
-                  return Row(
-                    children: [
-                      Expanded(
-                        child: SingleChildScrollView(
-                          child: Column(children: board),
-                        ),
-                      ),
-                      const VerticalDivider(width: 1),
-                      Expanded(child: play),
-                    ],
-                  );
-                }
-
-                return Column(
-                  children: [
-                    ...board,
-                    const Divider(),
-                    Expanded(child: play),
-                  ],
-                );
-              },
+            ledger: TurnLedger(
+              darts: ledgerDarts,
+              total:
+                  '${pending?.scored ?? ledgerDarts.fold<int>(0, (sum, dart) => sum + dart.value)}',
+              struck: pending?.busted ?? false,
             ),
-            // On the tablet a turn result is the whole screen, not a panel
-            // sharing it - the score everyone was just watching goes away
-            // for a moment, on purpose, for the number that came off the
-            // board. Skipped when the match just ended too: `_MatchWon`
-            // below takes over instead, and its own 95%-opaque card is
-            // meant to show the scoreboard through it, not this.
-            if (hero &&
-                session.awaitingTurnConfirm &&
-                !(match != null && match.isFinished))
-              Positioned.fill(
-                child: ColoredBox(
-                  key: const Key('turn-result-overlay'),
-                  color: Palette.ground,
-                  child: _TurnConfirm(
-                    turn: session.pendingTurn!,
-                    leg: leg,
-                    names: names,
+            aim: CheckoutCard(
+              routes: routes,
+              remaining: leg.currentRemaining,
+              dartsLeft: leg.dartsLeftThisTurn,
+              hero: hero,
+            ),
+            keypad: DartKeypad(
+              onDart: (segment) => controller.addDart(ThrownDart(segment)),
+              onMiss: () => controller.addDart(const ThrownDart.miss()),
+              highlight: routes.isEmpty ? const {} : routes.first.darts.toSet(),
+            ),
+            turnResult: pending == null
+                ? null
+                : TurnResultPanel(
+                    name: nameFor(context, names, pending.playerId),
+                    darts: pending.darts,
+                    figure: pending.busted
+                        ? l10n.bustLabel
+                        : '${pending.scored}',
+                    caption: l10n.scoreArrow(
+                      pending.scoreBefore,
+                      pending.scoreAfter,
+                    ),
+                    busted: pending.busted,
+                    // The same total the spoken commentary already fanfares -
+                    // one place decides what counts as the maximum, not two.
+                    celebrate: !pending.busted && pending.scored == maximumTurn,
+                    finishing: leg.isFinished,
                     onConfirm: controller.confirmTurn,
                     onUndo: controller.undo,
                   ),
-                ),
-              ),
-            if (match != null && match.isFinished)
-              Positioned.fill(
-                child: _MatchWon(match: match, names: names),
-              ),
-          ],
+            outcome: leg.isFinished
+                ? _legWon(context, ref, l10n, leg, names, match)
+                : null,
+            gameOver: match != null && match.isFinished
+                ? _MatchWon(match: match, names: names)
+                : null,
+          ),
         ),
       ),
     );
   }
-}
 
-/// Lays its child out at the height it is given, and scrolls it when that is
-/// not enough.
-///
-/// The panels that end a turn or a leg are built around [Spacer]s, which need a
-/// bounded height, and are also the first thing to overflow on a phone lying on
-/// its side. This gives them the height when there is height, and a scroll when
-/// there is not, rather than making them choose one for both cases.
-class _FitOrScroll extends StatelessWidget {
-  const _FitOrScroll({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) => SingleChildScrollView(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(minHeight: constraints.maxHeight),
-          child: IntrinsicHeight(child: child),
-        ),
-      ),
-    );
-  }
-}
-
-/// Players side by side, split by a hairline, as on a chalk scoreboard.
-///
-/// Only the player at the oche is lit: their column carries the pale rule and
-/// chalk-white numerals, everyone else recedes. At throwing distance that is
-/// the fastest way to answer "whose turn, and what do they need".
-class _Scoreboard extends StatelessWidget {
-  const _Scoreboard({
-    required this.leg,
-    required this.names,
-    required this.match,
-    required this.hero,
-    this.expand = false,
-  });
-
-  final LegState leg;
-  final Map<int, String> names;
-
-  /// The match behind the leg, or null when there is not one worth showing.
-  final MatchState? match;
-
-  /// Whether the device earns the per-player card treatment. See [heroLayout].
-  final bool hero;
-
-  /// Whether this is the only thing sharing the screen with the checkout
-  /// panel - a real board scoring for itself, nothing keyed in by hand to
-  /// stack a keypad's height against. Every player gets a card as tall as
-  /// the height that would otherwise sit empty under it, instead of one
-  /// sized to its own content and stranded above blank space.
-  final bool expand;
-
-  @override
-  Widget build(BuildContext context) {
-    final players = leg.config.playerIds;
-
+  List<SeatView> _seats(
+    BuildContext context,
+    LegState leg,
+    Map<int, String> names,
+    MatchState? match,
+  ) {
+    final l10n = context.l10n;
     // A best of one has nothing to tally: the leg on screen is the whole
     // match, and a row of zeroes would only crowd the scores.
-    final legsWon = match != null && match!.config.isMultiLeg
-        ? match!.legsWon
+    final legsWon = match != null && match.config.isMultiLeg
+        ? match.legsWon
         : null;
 
-    if (hero) {
-      final row = Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          for (var seat = 0; seat < players.length; seat++) ...[
-            if (seat > 0) const SizedBox(width: Gap.md),
-            Expanded(
-              child: _HeroPlayerCard(
-                name: nameFor(context, names, players[seat]),
-                remaining: leg.remaining[players[seat]]!,
-                average: leg.averageFor(players[seat]),
-                live: players[seat] == leg.currentPlayerId && !leg.isFinished,
-                won: leg.winnerId == players[seat],
-                legsWon: legsWon?[players[seat]],
-              ),
-            ),
-          ],
-        ],
-      );
-
-      return Padding(
-        key: const Key('hero-scoreboard'),
-        padding: const EdgeInsets.symmetric(
-          horizontal: Gap.md,
-          vertical: Gap.md,
+    return [
+      for (final id in leg.config.playerIds)
+        SeatView(
+          name: nameFor(context, names, id),
+          count: leg.remaining[id]!,
+          caption: leg.averageFor(id)?.toStringAsFixed(1) ?? '—',
+          heroCaption: switch (leg.averageFor(id)) {
+            null => l10n.avgDash,
+            final average => l10n.avgValue(average.toStringAsFixed(1)),
+          },
+          tally: legsWon == null ? null : l10n.legsCount(legsWon[id] ?? 0),
+          tallyLit: (legsWon?[id] ?? 0) > 0,
+          live: id == leg.currentPlayerId && !leg.isFinished,
+          won: leg.winnerId == id,
         ),
-        // `IntrinsicHeight` sizes the row to what the cards need on their
-        // own, which is exactly wrong when there is height on offer and
-        // nothing else asking for it: without it, a card in a `Row` this
-        // tall stretches to fill whatever its `Expanded` parent gives it.
-        child: expand ? row : IntrinsicHeight(child: row),
-      );
-    }
-
-    final row = Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        for (var seat = 0; seat < players.length; seat++) ...[
-          if (seat > 0) const VerticalDivider(width: 1),
-          Expanded(
-            child: _PlayerColumn(
-              name: nameFor(context, names, players[seat]),
-              remaining: leg.remaining[players[seat]]!,
-              average: leg.averageFor(players[seat]),
-              live: players[seat] == leg.currentPlayerId && !leg.isFinished,
-              won: leg.winnerId == players[seat],
-              legsWon: legsWon?[players[seat]],
-            ),
-          ),
-        ],
-      ],
-    );
-
-    return Padding(
-      padding: const EdgeInsets.only(top: Gap.sm, bottom: Gap.lg),
-      child: expand ? row : IntrinsicHeight(child: row),
-    );
+    ];
   }
-}
 
-/// A player's score as its own card, for a device far enough away to read as
-/// a piece of furniture rather than a phone: real borders instead of a
-/// hairline, room for the average and leg tally to sit beside the name rather
-/// than stacked under the score.
-///
-/// Carries the same fields and the same "only the thrower is lit" rule as
-/// [_PlayerColumn] - this is that idea with more room to say it in, not a
-/// different one.
-class _HeroPlayerCard extends StatelessWidget {
-  const _HeroPlayerCard({
-    required this.name,
-    required this.remaining,
-    required this.average,
-    required this.live,
-    required this.won,
-    required this.legsWon,
-  });
-
-  final String name;
-  final int remaining;
-  final double? average;
-  final bool live;
-  final bool won;
-  final int? legsWon;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final accent = won ? Palette.trebleBed : Palette.live;
-    final lit = live || won;
-
-    return AnimatedContainer(
-      duration: Motion.scale(Motion.base),
-      curve: Motion.enter,
-      padding: const EdgeInsets.all(Gap.lg),
-      decoration: BoxDecoration(
-        color: lit ? Palette.raised : Palette.sunk,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: lit ? accent : Palette.edge, width: 2),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: AnimatedDefaultTextStyle(
-                  duration: Motion.scale(Motion.base),
-                  curve: Motion.enter,
-                  style: Type.title.copyWith(
-                    color: lit ? Palette.chalk : Palette.chalkDim,
-                  ),
-                  child: Text(
-                    name.toUpperCase(),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ),
-              if (legsWon != null)
-                Text(
-                  l10n.legsCount(legsWon!),
-                  // Chalk, not `accent`: this is a match tally, not this
-                  // leg's live state, and `Palette.live` is spent only on
-                  // state, per its own doc - the same rule `_PlayerColumn`
-                  // follows for the identical figure.
-                  style: Type.eyebrow.copyWith(
-                    color: legsWon! > 0 ? Palette.chalk : Palette.chalkDim,
-                  ),
-                ),
-            ],
-          ),
-          // `Expanded` + `SizedBox.expand` rather than `Spacer` + a
-          // size-to-content number: given real height (the card stretched to
-          // fill an otherwise-empty screen), this is what lets the digits
-          // grow to fill it instead of sitting at their normal size with
-          // blank space beneath them. `FittedBox` only fills a box it is
-          // given *tight* constraints for - `Expanded` alone only makes the
-          // height tight, so `expand` forces the width tight too, or the box
-          // (and the number in it) stays exactly its own natural size.
-          Expanded(
-            child: SizedBox.expand(
-              child: FittedBox(
-                fit: BoxFit.contain,
-                alignment: Alignment.centerLeft,
-                child: AnimatedFigure(
-                  value: remaining,
-                  style: Type.score.copyWith(
-                    color: lit ? Palette.chalk : Palette.chalkDim,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: Gap.xs),
-          Text(
-            average == null
-                ? l10n.avgDash
-                : l10n.avgValue(average!.toStringAsFixed(1)),
-            style: Type.label.copyWith(color: Palette.chalkDim),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PlayerColumn extends StatelessWidget {
-  const _PlayerColumn({
-    required this.name,
-    required this.remaining,
-    required this.average,
-    required this.live,
-    required this.won,
-    required this.legsWon,
-  });
-
-  final String name;
-  final int remaining;
-  final double? average;
-  final bool live;
-  final bool won;
-
-  /// Legs taken in the match so far, or null outside a multi-leg match.
-  final int? legsWon;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final accent = won ? Palette.trebleBed : Palette.live;
-    final lit = live || won;
-
-    return Column(
-      children: [
-        // The rule above the name is the only thing marking the throw. It is
-        // three pixels tall and it is enough, because nothing else on the
-        // screen is this pale.
-        AnimatedContainer(
-          duration: Motion.scale(Motion.base),
-          curve: Motion.enter,
-          height: 3,
-          margin: const EdgeInsets.symmetric(horizontal: Gap.lg),
-          color: lit ? accent : Colors.transparent,
-        ),
-        const SizedBox(height: Gap.md),
-        AnimatedDefaultTextStyle(
-          duration: Motion.scale(Motion.base),
-          curve: Motion.enter,
-          style: Type.eyebrow.copyWith(color: lit ? accent : Palette.chalkDim),
-          child: Text(
-            name.toUpperCase(),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        const SizedBox(height: Gap.sm),
-        Expanded(
-          child: SizedBox.expand(
-            child: FittedBox(
-              fit: BoxFit.contain,
-              child: AnimatedFigure(
-                value: remaining,
-                style: Type.score.copyWith(
-                  color: lit ? Palette.chalk : Palette.chalkDim,
-                ),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: Gap.xs),
-        Text(
-          average == null ? '—' : average!.toStringAsFixed(1),
-          style: Type.label.copyWith(color: Palette.chalkDim),
-        ),
-        // The leg tally sits under the average rather than beside the name:
-        // it is what the match hangs on, but it is not what you look up to
-        // check mid-turn, so it goes last.
-        if (legsWon != null) ...[
-          const SizedBox(height: Gap.sm),
-          Text(
-            l10n.legsCount(legsWon!),
-            style: Type.eyebrow.copyWith(
-              color: legsWon! > 0 ? Palette.chalk : Palette.chalkDim,
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-/// The turn in progress, written out dart by dart with a running total.
-///
-/// This is the chalk line a scorer keeps beside the board: three marks and what
-/// they add up to. When a turn busts the marks are struck through in red, which
-/// is exactly how it is scored on a board, and is legible at a glance from the
-/// oche in a way that a word never is.
-class _TurnLedger extends StatelessWidget {
-  const _TurnLedger({required this.session, required this.names});
-
-  final GameSession session;
-  final Map<int, String> names;
-
-  @override
-  Widget build(BuildContext context) {
-    final pending = session.pendingTurn;
-    final darts = pending?.darts ?? session.leg.currentTurnDarts;
-    final busted = pending?.busted ?? false;
-    final total =
-        pending?.scored ?? darts.fold<int>(0, (sum, dart) => sum + dart.value);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: Gap.md, vertical: Gap.md),
-      child: Row(
-        children: [
-          for (var i = 0; i < dartsPerTurn; i++) ...[
-            if (i > 0) const SizedBox(width: Gap.sm),
-            Expanded(
-              child: _DartSlot(
-                dart: i < darts.length ? darts[i] : null,
-                struck: busted,
-              ),
-            ),
-          ],
-          const SizedBox(width: Gap.lg),
-          ConstrainedBox(
-            // Room for 180 at the current type size, and no more: the slots
-            // beside it are what should take the rest of the row.
-            constraints: const BoxConstraints(minWidth: 72),
-            child: Text(
-              busted ? context.l10n.bustLabel : '$total',
-              textAlign: TextAlign.right,
-              style: busted
-                  ? Type.notation.copyWith(color: Palette.doubleBed)
-                  : Type.scoreSmall.copyWith(
-                      color: darts.isEmpty ? Palette.chalkDim : Palette.live,
-                    ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _DartSlot extends StatelessWidget {
-  const _DartSlot({required this.dart, required this.struck});
-
-  final ThrownDart? dart;
-  final bool struck;
-
-  @override
-  Widget build(BuildContext context) {
-    final empty = dart == null;
-
-    return Container(
-      // A floor rather than a height: the notation inside it grows with the
-      // platform's text size and with the viewport, and a box that could not
-      // follow it would clip the dart it is there to show.
-      constraints: const BoxConstraints(minHeight: 40),
-      padding: const EdgeInsets.symmetric(vertical: Gap.xs),
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: empty ? Palette.sunk : Palette.raised,
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: Palette.edge),
-      ),
-      child: Text(
-        empty ? '·' : dart!.label,
-        style: Type.notation.copyWith(
-          color: empty
-              ? Palette.chalkDim
-              : struck
-              ? Palette.doubleBed
-              : Palette.chalk,
-          decoration: struck ? TextDecoration.lineThrough : null,
-          decorationColor: Palette.doubleBed,
-          decorationThickness: 2,
-        ),
-      ),
-    );
-  }
-}
-
-/// Held after every turn, in place of the keypad rather than over it.
-///
-/// Taking the keys away is the point: it makes a stray tap impossible while
-/// darts are being pulled out of the board, which is when they happen.
-class _TurnConfirm extends StatelessWidget {
-  const _TurnConfirm({
-    required this.turn,
-    required this.leg,
-    required this.names,
-    required this.onConfirm,
-    required this.onUndo,
-  });
-
-  final Turn turn;
-  final LegState leg;
-  final Map<int, String> names;
-  final VoidCallback onConfirm;
-  final VoidCallback onUndo;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    // This is always either the phone's inline panel or the tablet's
-    // full-screen takeover, never both from the same call site - the two
-    // never overlap, so the device is enough to tell which one this is.
-    final hero = MediaQuery.sizeOf(context).shortestSide >= heroLayout;
-    final dartsThrown = turn.darts.map((dart) => dart.label).join('  ·  ');
-    // The same total the spoken commentary already fanfares - one place
-    // decides what counts as the maximum, not two.
-    final maximum = !turn.busted && turn.scored == maximumTurn;
-
-    Widget score = Text(
-      turn.busted ? l10n.bustLabel : '${turn.scored}',
-      style: (hero ? Type.scoreHero : Type.score).copyWith(
-        color: turn.busted ? Palette.doubleBed : Palette.chalk,
-      ),
-    );
-    // A pop rather than a shake for a bust: the number that is wrong gets a
-    // beat of emphasis before it settles into red, same idea as the
-    // celebration below, opposite reason.
-    if (turn.busted) score = EntrancePop(minScale: 1.12, child: score);
-    if (maximum) {
-      score = Pulse(
-        min: 0.85,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: Palette.live.withValues(alpha: 0.55),
-                blurRadius: 48,
-                spreadRadius: 8,
-              ),
-            ],
-          ),
-          child: score,
-        ),
-      );
-    }
-
-    return _FitOrScroll(
-      child: Padding(
-        padding: const EdgeInsets.all(Gap.xl),
-        child: EntrancePop(
-          child: Column(
-            children: [
-              const Spacer(),
-              Text(
-                nameFor(context, names, turn.playerId).toUpperCase(),
-                style: hero
-                    ? Type.title.copyWith(
-                        color: Palette.chalkDim,
-                        letterSpacing: 2,
-                      )
-                    : Type.eyebrow.copyWith(color: Palette.chalkDim),
-              ),
-              if (hero && dartsThrown.isNotEmpty) ...[
-                const SizedBox(height: Gap.sm),
-                Text(
-                  dartsThrown,
-                  style: Type.title.copyWith(color: Palette.chalkDim),
-                ),
-              ],
-              const SizedBox(height: Gap.md),
-              score,
-              const SizedBox(height: Gap.sm),
-              Text(
-                l10n.scoreArrow(turn.scoreBefore, turn.scoreAfter),
-                style: (hero ? Type.scoreSmall : Type.label).copyWith(
-                  color: Palette.chalkDim,
-                ),
-              ),
-              const Spacer(),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: onUndo,
-                      child: Text(l10n.wrongButton),
-                    ),
-                  ),
-                  const SizedBox(width: Gap.md),
-                  Expanded(
-                    flex: 2,
-                    child: FilledButton(
-                      onPressed: onConfirm,
-                      child: Text(
-                        leg.isFinished
-                            ? l10n.finishButton
-                            : l10n.nextPlayerButton,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: Gap.md),
-              Text(
-                l10n.orPressBoardButton,
-                style: Type.label.copyWith(color: Palette.chalkDim),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// The end of a leg, in the space the keypad has just given up.
-///
-/// A leg inside a running match is a checkpoint rather than an ending, so this
-/// stays small and says only what the next thing to do is. The match ending is
-/// [_MatchWon]'s job, over the top of this one.
-class _LegWon extends StatelessWidget {
-  const _LegWon({
-    required this.leg,
-    required this.names,
-    required this.match,
-    required this.onNextLeg,
-  });
-
-  final LegState leg;
-  final Map<int, String> names;
-
-  /// The match this leg belonged to, or null for a leg played outside one -
-  /// which is every leg the app stored before matches existed.
-  final MatchState? match;
-
-  final VoidCallback onNextLeg;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
+  /// The end of a leg, in the space the keypad has just given up.
+  ///
+  /// A leg inside a running match is a checkpoint rather than an ending, so
+  /// this stays small and says only what the next thing to do is. The match
+  /// ending is [_MatchWon]'s job, over the top of this one.
+  Widget _legWon(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    LegState leg,
+    Map<int, String> names,
+    MatchState? match,
+  ) {
     final winner = leg.winnerId!;
-    final match = this.match;
     final running = match != null && !match.isFinished;
 
-    return _FitOrScroll(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(Gap.xl, Gap.xl, Gap.xl, Gap.lg),
-        child: EntrancePop(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                l10n.legWonLabel,
-                style: Type.eyebrow.copyWith(color: Palette.trebleBed),
-              ),
-              const SizedBox(height: Gap.md),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  nameFor(context, names, winner).toUpperCase(),
-                  style: Type.score.copyWith(color: Palette.chalk),
-                ),
-              ),
-              const SizedBox(height: Gap.lg),
-              Text(
-                l10n.legWonStatsX01(
-                  leg.dartsThrownBy(winner),
-                  leg.averageFor(winner)?.toStringAsFixed(1) ?? '—',
-                ),
-                style: Type.label.copyWith(color: Palette.chalkDim),
-              ),
-              if (running) ...[
-                const Spacer(),
-                Text(
-                  _standing(l10n, match),
-                  style: Type.eyebrow.copyWith(color: Palette.chalkDim),
-                ),
-                const SizedBox(height: Gap.md),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton(
-                    onPressed: onNextLeg,
-                    child: Text(l10n.throwLegNumber(match.nextLegNumber + 1)),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
+    return OutcomePanel(
+      eyebrow: l10n.legWonLabel,
+      headline: nameFor(context, names, winner).toUpperCase(),
+      detail: l10n.legWonStatsX01(
+        leg.dartsThrownBy(winner),
+        leg.averageFor(winner)?.toStringAsFixed(1) ?? '—',
       ),
+      footer: running ? _standing(l10n, match) : null,
+      primary: running
+          ? (
+              label: l10n.throwLegNumber(match.nextLegNumber + 1),
+              onPressed: ref.read(matchProvider.notifier).startNextLeg,
+              key: null,
+            )
+          : null,
     );
   }
 
@@ -986,166 +243,62 @@ class _MatchWon extends ConsumerWidget {
       _ => null,
     };
 
-    final players = match.config.playerIds;
     final winner = match.winnerId!;
 
-    return ColoredBox(
-      // Not quite opaque: the scoreboard reads through it, which is what says
-      // this happened here rather than somewhere else.
-      color: Palette.ground.withValues(alpha: 0.95),
-      child: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(Gap.xl),
-          child: EntrancePop(
-            child: Column(
-              children: [
-                Text(
-                  l10n.matchWonLabel,
-                  style: Type.eyebrow.copyWith(color: Palette.live),
-                ),
-                const SizedBox(height: Gap.md),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    nameFor(context, names, winner).toUpperCase(),
-                    style: Type.score.copyWith(color: Palette.chalk),
-                  ),
-                ),
-                const SizedBox(height: Gap.sm),
-                Text(
-                  [
-                    for (final id in players) '${match.legsWon[id] ?? 0}',
-                  ].join(' – '),
-                  style: Type.scoreSmall.copyWith(color: Palette.chalkDim),
-                ),
-                const SizedBox(height: Gap.xl),
-                IntrinsicHeight(
-                  // Named so a test can ask what this block says without
-                  // catching the scoreboard showing the same numbers behind it.
-                  key: matchFiguresKey,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      for (var seat = 0; seat < players.length; seat++) ...[
-                        if (seat > 0) const VerticalDivider(width: 1),
-                        Expanded(
-                          child: _MatchFigures(
-                            name: nameFor(context, names, players[seat]),
-                            stats: legs == null
-                                ? null
-                                : computeX01Stats(players[seat], legs),
-                            won: players[seat] == winner,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                if (decided.hasError) ...[
-                  const SizedBox(height: Gap.md),
-                  Text(
-                    l10n.earlierLegsCouldNotBeRead,
-                    style: Type.eyebrow.copyWith(color: Palette.doubleBed),
-                  ),
-                ],
-                const SizedBox(height: Gap.xl),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton(
-                    onPressed: ref.read(matchProvider.notifier).rematch,
-                    child: Text(l10n.rematchButton),
-                  ),
-                ),
-                const SizedBox(height: Gap.sm),
-                SizedBox(
-                  width: double.infinity,
-                  child: TextButton(
-                    onPressed: () {
-                      // The same wind-down as leaving a leg, minus the question:
-                      // there is nothing unfinished left to keep.
-                      ref.read(gameProvider.notifier).leave();
-                      ref.read(matchProvider.notifier).leave();
-                      ref.read(currentGameIdProvider.notifier).set(null);
-                      Navigator.of(context).pop();
-                    },
-                    child: Text(l10n.backToSetupButton),
-                  ),
-                ),
-              ],
-            ),
+    return GameOverCard(
+      eyebrow: l10n.matchWonLabel,
+      winnerName: nameFor(context, names, winner),
+      subtitle: [
+        for (final id in match.config.playerIds) '${match.legsWon[id] ?? 0}',
+      ].join(' – '),
+      figuresKey: matchFiguresKey,
+      columns: [
+        for (final id in match.config.playerIds)
+          _figures(
+            l10n,
+            nameFor(context, names, id),
+            legs == null ? null : computeX01Stats(id, legs),
+            won: id == winner,
           ),
-        ),
+      ],
+      error: decided.hasError ? l10n.earlierLegsCouldNotBeRead : null,
+      primary: (
+        label: l10n.rematchButton,
+        onPressed: ref.read(matchProvider.notifier).rematch,
+        key: null,
       ),
-    );
-  }
-}
-
-/// One player's match, as a column of figures under their name.
-class _MatchFigures extends StatelessWidget {
-  const _MatchFigures({
-    required this.name,
-    required this.stats,
-    required this.won,
-  });
-
-  final String name;
-
-  /// Null while the match's legs are still being read, and if they cannot be.
-  /// The rows keep their places and show nothing, so the card neither jumps nor
-  /// claims a total it has not got.
-  final X01Stats? stats;
-
-  final bool won;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: Gap.md),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            name.toUpperCase(),
-            style: Type.eyebrow.copyWith(
-              color: won ? Palette.chalk : Palette.chalkDim,
-            ),
-          ),
-          const SizedBox(height: Gap.md),
-          _Figure(l10n.figureAverage, _decimal(stats?.average)),
-          _Figure(l10n.figureFirstNine, _decimal(stats?.firstNineAverage)),
-          _Figure(l10n.figure180s, _whole(stats?.turnsOf180)),
-          _Figure(l10n.figureBestOut, _whole(stats?.bestCheckout)),
-          _Figure(l10n.figureBestLeg, _whole(stats?.fewestDartsToWin)),
-        ],
-      ),
+      onExit: () {
+        // The same wind-down as leaving a leg, minus the question: there is
+        // nothing unfinished left to keep.
+        ref.read(gameProvider.notifier).leave();
+        ref.read(matchProvider.notifier).leave();
+        ref.read(currentGameIdProvider.notifier).set(null);
+        Navigator.of(context).pop();
+      },
     );
   }
 
-  static String _decimal(double? value) => value?.toStringAsFixed(1) ?? '—';
+  /// One player's match. Null [stats] while the match's legs are still being
+  /// read, and if they cannot be.
+  static FigureColumn _figures(
+    AppLocalizations l10n,
+    String name,
+    X01Stats? stats, {
+    required bool won,
+  }) {
+    String decimal(double? value) => value?.toStringAsFixed(1) ?? '—';
+    String whole(int? value) => value?.toString() ?? '—';
 
-  static String _whole(int? value) => value?.toString() ?? '—';
-}
-
-/// A label and its number, on one line, in the statistics screen's idiom.
-class _Figure extends StatelessWidget {
-  const _Figure(this.label, this.value);
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: Gap.sm),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: Type.label.copyWith(color: Palette.chalkDim)),
-          const SizedBox(width: Gap.sm),
-          Text(value, style: Type.data.copyWith(color: Palette.chalk)),
-        ],
-      ),
+    return (
+      name: name,
+      won: won,
+      figures: [
+        (label: l10n.figureAverage, value: decimal(stats?.average)),
+        (label: l10n.figureFirstNine, value: decimal(stats?.firstNineAverage)),
+        (label: l10n.figure180s, value: whole(stats?.turnsOf180)),
+        (label: l10n.figureBestOut, value: whole(stats?.bestCheckout)),
+        (label: l10n.figureBestLeg, value: whole(stats?.fewestDartsToWin)),
+      ],
     );
   }
 }

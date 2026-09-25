@@ -177,7 +177,10 @@ class _BoardPainter extends CustomPainter {
 
       void wedge(Ring ring, double inner, double outer, Color colour) {
         final path = _sector(centre, inner * radius, outer * radius, start);
-        canvas.drawPath(path, Paint()..color = _shade(Segment(number, ring), colour));
+        canvas.drawPath(
+          path,
+          Paint()..color = _shade(Segment(number, ring), colour),
+        );
         canvas.drawPath(path, wire);
         if (highlight.contains(Segment(number, ring))) {
           canvas.drawPath(
@@ -253,15 +256,14 @@ class _BoardPainter extends CustomPainter {
   Path _sector(Offset centre, double inner, double outer, double start) {
     const sweep = BoardGeometry.wedgeSweep;
     return Path()
-      ..moveTo(
-        centre.dx + inner * cos(start),
-        centre.dy + inner * sin(start),
+      ..moveTo(centre.dx + inner * cos(start), centre.dy + inner * sin(start))
+      ..lineTo(centre.dx + outer * cos(start), centre.dy + outer * sin(start))
+      ..arcTo(
+        Rect.fromCircle(center: centre, radius: outer),
+        start,
+        sweep,
+        false,
       )
-      ..lineTo(
-        centre.dx + outer * cos(start),
-        centre.dy + outer * sin(start),
-      )
-      ..arcTo(Rect.fromCircle(center: centre, radius: outer), start, sweep, false)
       ..lineTo(
         centre.dx + inner * cos(start + sweep),
         centre.dy + inner * sin(start + sweep),

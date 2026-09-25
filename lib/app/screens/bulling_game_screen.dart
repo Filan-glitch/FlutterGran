@@ -13,7 +13,6 @@ import '../providers.dart';
 import '../theme.dart';
 import '../widgets/dart_keypad.dart';
 import 'bulling_setup_screen.dart' show bullseyeValueLabel;
-import 'game_screen.dart' show nameFor;
 
 /// Plays a leg of Bulling.
 ///

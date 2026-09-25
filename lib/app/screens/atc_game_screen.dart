@@ -14,7 +14,6 @@ import '../providers.dart';
 import '../theme.dart';
 import '../widgets/dart_keypad.dart';
 import 'atc_setup_screen.dart' show atcVariantLabel;
-import 'game_screen.dart' show nameFor;
 
 /// Plays a leg of Around the Clock.
 ///
