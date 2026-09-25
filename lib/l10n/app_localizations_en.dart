@@ -58,11 +58,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noPlayersYet => 'No players yet. Add the first one above.';
 
   @override
-  String removePlayerTooltip(String name) {
-    return 'Remove $name';
-  }
-
-  @override
   String get pickAtLeastOnePlayer => 'PICK AT LEAST ONE PLAYER';
 
   @override

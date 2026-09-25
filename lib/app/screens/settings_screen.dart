@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../l10n_extensions.dart';
 import '../providers.dart';
 import '../theme.dart';
-import '../widgets/selectable_tile.dart';
+import '../widgets/setup_controls.dart';
 
 /// App-wide preferences, away from any one game's setup.
 ///
@@ -26,7 +26,7 @@ class SettingsScreen extends ConsumerWidget {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.sm, Gap.lg, Gap.lg),
             children: [
-              _Eyebrow(l10n.soundSectionTitle),
+              SectionLabel(l10n.soundSectionTitle),
               const SizedBox(height: Gap.sm),
               _SoundToggle(
                 label: l10n.cuesAndCommentaryLabel,
@@ -46,7 +46,7 @@ class SettingsScreen extends ConsumerWidget {
                 onChanged: ref.read(speechEnabledProvider.notifier).set,
               ),
               const SizedBox(height: Gap.lg),
-              _Eyebrow(l10n.boardLightsSectionTitle),
+              SectionLabel(l10n.boardLightsSectionTitle),
               const SizedBox(height: Gap.sm),
               _SoundToggle(
                 label: l10n.boardLightsLabel,
@@ -80,7 +80,7 @@ class SettingsScreen extends ConsumerWidget {
                   onChanged: ref.read(provider.notifier).set,
                 ),
               const SizedBox(height: Gap.lg),
-              _Eyebrow(l10n.languageSectionTitle),
+              SectionLabel(l10n.languageSectionTitle),
               const SizedBox(height: Gap.sm),
               _LanguageChoice(
                 value: ref.watch(localeProvider),
@@ -94,9 +94,8 @@ class SettingsScreen extends ConsumerWidget {
   }
 }
 
-/// System / English / German, in the setup screens' segmented-tile idiom
-/// (`x01_setup_screen.dart`'s `_RuleChoice`) rather than a stock
-/// `DropdownButton` or `RadioListTile`.
+/// System / English / German, in the setup screens' [ChoiceRow] rather than a
+/// stock `DropdownButton` or `RadioListTile`.
 class _LanguageChoice extends StatelessWidget {
   const _LanguageChoice({required this.value, required this.onChanged});
 
@@ -113,33 +112,13 @@ class _LanguageChoice extends StatelessWidget {
       const Locale('de'): l10n.languageGermanOption,
     };
 
-    return Row(
-      children: [
-        for (final entry in options.entries) ...[
-          if (entry.key != options.keys.first) const SizedBox(width: Gap.sm),
-          Expanded(
-            child: SelectableTile(
-              label: entry.value,
-              selected: entry.key == value,
-              onTap: () => onChanged(entry.key),
-            ),
-          ),
-        ],
-      ],
+    return ChoiceRow<Locale?>(
+      values: options.keys.toList(),
+      selected: value,
+      label: (locale) => options[locale]!,
+      onSelected: onChanged,
     );
   }
-}
-
-class _Eyebrow extends StatelessWidget {
-  const _Eyebrow(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) => Text(
-    text.toUpperCase(),
-    style: Type.eyebrow.copyWith(color: Palette.chalkDim),
-  );
 }
 
 /// One remembered switch, in the setup screen's idiom rather than Material's.

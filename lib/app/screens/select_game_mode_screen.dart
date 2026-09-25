@@ -191,7 +191,7 @@ class _Dot extends StatelessWidget {
 
 /// One game mode, tappable only if [GameModeDescriptor.isAvailable].
 ///
-/// Same tile chrome as `_ScoreChoice`/`_tile` in `x01_setup_screen.dart`:
+/// Same tile chrome as the setup screens' choices (`setup_controls.dart`):
 /// `Material` + a 4px rounded border + `InkWell`, coloured and bordered by
 /// state rather than by a bespoke widget per screen. Stateful only to track
 /// the press-down scale below - the same short, sharper feedback

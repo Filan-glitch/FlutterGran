@@ -23,10 +23,6 @@
     "placeholders": { "error": { "type": "String" } }
   },
   "noPlayersYet": "No players yet. Add the first one above.",
-  "removePlayerTooltip": "Remove {name}",
-  "@removePlayerTooltip": {
-    "placeholders": { "name": { "type": "String" } }
-  },
   "pickAtLeastOnePlayer": "PICK AT LEAST ONE PLAYER",
   "startLeg": "START LEG",
   "startBestOf": "START BEST OF {legs}",

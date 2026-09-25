@@ -17,7 +17,6 @@
   "addPlayerFieldLabel": "Spieler hinzufügen",
   "couldNotLoadPlayers": "Spieler konnten nicht geladen werden: {error}",
   "noPlayersYet": "Noch keine Spieler. Füge oben den ersten hinzu.",
-  "removePlayerTooltip": "{name} entfernen",
   "pickAtLeastOnePlayer": "MINDESTENS EINEN SPIELER WÄHLEN",
   "startLeg": "LEG STARTEN",
   "startBestOf": "BEST OF {legs} STARTEN",

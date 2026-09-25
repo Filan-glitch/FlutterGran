@@ -188,12 +188,6 @@ abstract class AppLocalizations {
   /// **'No players yet. Add the first one above.'**
   String get noPlayersYet;
 
-  /// No description provided for @removePlayerTooltip.
-  ///
-  /// In en, this message translates to:
-  /// **'Remove {name}'**
-  String removePlayerTooltip(String name);
-
   /// No description provided for @pickAtLeastOnePlayer.
   ///
   /// In en, this message translates to:
