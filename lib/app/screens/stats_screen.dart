@@ -11,6 +11,7 @@ import '../l10n_extensions.dart';
 import '../providers.dart';
 import '../theme.dart';
 import '../widgets/board_widget.dart';
+import '../widgets/setup_controls.dart';
 import 'x01_setup_screen.dart' show x01OutRuleLabel;
 
 /// A player's record across every leg they have played.
@@ -104,7 +105,7 @@ class _Body extends ConsumerWidget {
           if (hasX01) ...[
             // A mode label above its section, so a second mode's section reads
             // as a distinct record rather than more rows appended to this one.
-            _Eyebrow(l10n.x01Label),
+            SectionLabel(l10n.x01Label),
             const SizedBox(height: Gap.sm),
             // The three-dart average is the number a darts player quotes when
             // asked how they play, so it is the headline and everything else
@@ -187,7 +188,7 @@ class _Body extends ConsumerWidget {
           ],
           if (hasAtc) ...[
             if (hasX01) const SizedBox(height: Gap.xl),
-            _Eyebrow(l10n.aroundTheClockLabel),
+            SectionLabel(l10n.aroundTheClockLabel),
             const SizedBox(height: Gap.sm),
             _Headline(
               value: _percent(atc.hitRate),
@@ -222,7 +223,7 @@ class _Body extends ConsumerWidget {
           ],
           if (hasBulling) ...[
             if (hasX01 || hasAtc) const SizedBox(height: Gap.xl),
-            _Eyebrow(l10n.bullingLabel),
+            SectionLabel(l10n.bullingLabel),
             const SizedBox(height: Gap.sm),
             _Headline(
               value: _percent(bulling.hitRate),
@@ -308,21 +309,6 @@ class _Body extends ConsumerWidget {
       value == null ? '—' : '${(value * 100).toStringAsFixed(0)}%';
 
   static String _optional(int? value) => value == null ? '—' : '$value';
-}
-
-/// A small tracked-caps label marking which mode's section follows, matching
-/// the idiom used for field labels on the setup screen
-/// (`x01_setup_screen.dart`'s `_Eyebrow`).
-class _Eyebrow extends StatelessWidget {
-  const _Eyebrow(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) => Text(
-    text.toUpperCase(),
-    style: Type.eyebrow.copyWith(color: Palette.chalkDim),
-  );
 }
 
 class _Headline extends StatelessWidget {

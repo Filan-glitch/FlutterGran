@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      # lib/data/db/database.g.dart is committed; fail if it is stale.
+      - name: Generated drift code is up to date
+        run: |
+          dart run build_runner build --delete-conflicting-outputs
+          git diff --exit-code -- '*.g.dart'
+
+      - run: flutter analyze
+
+      # Pure-Dart layers, no Flutter (also enforces the domain layering rule).
+      - name: Test domain and data
+        run: dart test test/domain test/data
+
+      - name: Test everything
+        run: flutter test --coverage
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/lcov.info
+          if-no-files-found: ignore
+
+  build-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: check
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+      - run: flutter build apk --debug

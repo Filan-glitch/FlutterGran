@@ -30,10 +30,14 @@ class SelectableTile extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: Gap.md),
+          padding: const EdgeInsets.symmetric(
+            horizontal: Gap.sm,
+            vertical: Gap.md,
+          ),
           child: Center(
             child: Text(
               label.toUpperCase(),
+              textAlign: TextAlign.center,
               style: Type.label.copyWith(
                 color: selected ? Palette.ground : Palette.chalkDim,
               ),

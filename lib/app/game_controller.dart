@@ -100,10 +100,7 @@ class GameController extends Notifier<GameSession> {
     final thrownBy = state.leg.currentPlayerId;
 
     final leg = foldLeg(state.leg.config, [...state.leg.darts, dart]);
-    state = GameSession(
-      leg: leg,
-      acknowledgedTurns: state.acknowledgedTurns,
-    );
+    state = GameSession(leg: leg, acknowledgedTurns: state.acknowledgedTurns);
     _tellTheMatch(leg);
 
     _persist((repository, gameId) async {

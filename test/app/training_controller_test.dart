@@ -98,6 +98,19 @@ void main() {
       final s = session() as FreePracticeSession;
       expect(s.practice.dartsThrown, 0);
     });
+
+    test('board darts are ignored while the keypad is pulled up', () async {
+      container.read(keypadOverrideProvider.notifier).set(true);
+      board.hit(const Segment(20, Ring.triple));
+      await settle();
+      expect((session() as FreePracticeSession).practice.dartsThrown, 0);
+
+      container.read(keypadOverrideProvider.notifier).set(false);
+      clock.advance();
+      board.hit(const Segment(20, Ring.triple));
+      await settle();
+      expect((session() as FreePracticeSession).practice.dartsThrown, 1);
+    });
   });
 
   group('checkout practice', () {

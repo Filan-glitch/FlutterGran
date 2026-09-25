@@ -52,10 +52,7 @@ class AtcController extends Notifier<AtcSession> {
       _manualOverrideOpen = next;
     });
 
-    return AtcSession(
-      leg: initialAtcLegState(config),
-      acknowledgedTurns: 0,
-    );
+    return AtcSession(leg: initialAtcLegState(config), acknowledgedTurns: 0);
   }
 
   void handleBoardEvent(BoardEvent event) {

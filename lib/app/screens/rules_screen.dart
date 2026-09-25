@@ -36,10 +36,8 @@ class RulesScreen extends StatelessWidget {
   }
 }
 
-/// One mode's picker row. A separate copy of `main_menu_screen.dart`'s
-/// `_MenuRow` chrome rather than a shared widget, matching this file's own
-/// prior precedent (see the old `_Eyebrow`'s doc comment) of each screen
-/// keeping its own copy of small look-alike widgets.
+/// One mode's picker row, in the same chrome as `main_menu_screen.dart`'s
+/// `_MenuRow`.
 class _RulesTopicRow extends StatelessWidget {
   const _RulesTopicRow({required this.topic});
 

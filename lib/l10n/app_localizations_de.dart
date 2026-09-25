@@ -58,11 +58,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get noPlayersYet => 'Noch keine Spieler. Füge oben den ersten hinzu.';
 
   @override
-  String removePlayerTooltip(String name) {
-    return '$name entfernen';
-  }
-
-  @override
   String get pickAtLeastOnePlayer => 'MINDESTENS EINEN SPIELER WÄHLEN';
 
   @override
@@ -524,7 +519,7 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String scoreArrow(int before, int after) {
+  String scoreArrow(String before, String after) {
     return '$before → $after';
   }
 
@@ -534,28 +529,29 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get throwWhenReady => 'WERFEN, WENN BEREIT';
+  String get aimLabel => 'ZIEL';
 
   @override
-  String stopsClearedLabel(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count STATIONEN FREIGESPIELT',
-      one: '1 STATION FREIGESPIELT',
-      zero: 'NICHTS FREIGESPIELT',
-    );
-    return '$_temp0';
-  }
+  String get remainingLabel => 'REST';
 
   @override
-  String nowOnStop(String stop) {
-    return 'jetzt auf $stop';
-  }
+  String get figureHitRate => 'TREFFERQUOTE';
+
+  @override
+  String get figureReached => 'ERREICHT';
+
+  @override
+  String get figurePoints => 'PUNKTE';
 
   @override
   String dartsCount(int count) {
-    return '$count Darts';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Darts',
+      one: '1 Dart',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -569,28 +565,6 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String ofTarget(int target) {
     return 'von $target';
-  }
-
-  @override
-  String turnScoredLabel(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count PUNKTE ERZIELT',
-      one: '1 PUNKT ERZIELT',
-      zero: 'NICHTS GEPUNKTET',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String nowOnScore(int score) {
-    return 'jetzt bei $score';
-  }
-
-  @override
-  String legWonStatsBulling(int points, int darts) {
-    return '$points Punkte · $darts Darts';
   }
 
   @override

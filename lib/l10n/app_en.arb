@@ -23,10 +23,6 @@
     "placeholders": { "error": { "type": "String" } }
   },
   "noPlayersYet": "No players yet. Add the first one above.",
-  "removePlayerTooltip": "Remove {name}",
-  "@removePlayerTooltip": {
-    "placeholders": { "name": { "type": "String" } }
-  },
   "pickAtLeastOnePlayer": "PICK AT LEAST ONE PLAYER",
   "startLeg": "START LEG",
   "startBestOf": "START BEST OF {legs}",
@@ -217,23 +213,19 @@
   },
   "scoreArrow": "{before} → {after}",
   "@scoreArrow": {
-    "placeholders": { "before": { "type": "int" }, "after": { "type": "int" } }
+    "placeholders": { "before": { "type": "String" }, "after": { "type": "String" } }
   },
   "legWonStatsX01": "{darts} darts · {average} average",
   "@legWonStatsX01": {
     "placeholders": { "darts": { "type": "int" }, "average": { "type": "String" } }
   },
+  "aimLabel": "AIM",
+  "remainingLabel": "REMAINING",
+  "figureHitRate": "HIT RATE",
+  "figureReached": "REACHED",
+  "figurePoints": "POINTS",
 
-  "throwWhenReady": "THROW WHEN READY",
-  "stopsClearedLabel": "{count, plural, =0{NOTHING CLEARED} =1{1 STOP CLEARED} other{{count} STOPS CLEARED}}",
-  "@stopsClearedLabel": {
-    "placeholders": { "count": { "type": "int" } }
-  },
-  "nowOnStop": "now on {stop}",
-  "@nowOnStop": {
-    "placeholders": { "stop": { "type": "String" } }
-  },
-  "dartsCount": "{count} darts",
+  "dartsCount": "{count, plural, =1{1 dart} other{{count} darts}}",
   "@dartsCount": {
     "placeholders": { "count": { "type": "int" } }
   },
@@ -246,18 +238,6 @@
   "ofTarget": "of {target}",
   "@ofTarget": {
     "placeholders": { "target": { "type": "int" } }
-  },
-  "turnScoredLabel": "{count, plural, =0{NOTHING SCORED} =1{1 POINT SCORED} other{{count} POINTS SCORED}}",
-  "@turnScoredLabel": {
-    "placeholders": { "count": { "type": "int" } }
-  },
-  "nowOnScore": "now on {score}",
-  "@nowOnScore": {
-    "placeholders": { "score": { "type": "int" } }
-  },
-  "legWonStatsBulling": "{points} points · {darts} darts",
-  "@legWonStatsBulling": {
-    "placeholders": { "points": { "type": "int" }, "darts": { "type": "int" } }
   },
 
   "statisticsTitle": "STATISTICS",

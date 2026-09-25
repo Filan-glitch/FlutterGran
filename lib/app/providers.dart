@@ -166,15 +166,13 @@ class KeypadOverrideController extends Notifier<bool> {
   void set(bool value) => state = value;
 }
 
-final keypadOverrideProvider =
-    NotifierProvider<KeypadOverrideController, bool>(
-      KeypadOverrideController.new,
-    );
+final keypadOverrideProvider = NotifierProvider<KeypadOverrideController, bool>(
+  KeypadOverrideController.new,
+);
 
 class GameConfigController extends Notifier<GameConfig> {
   @override
-  GameConfig build() =>
-      GameConfig(startScore: 501, playerIds: const [1, 2]);
+  GameConfig build() => GameConfig(startScore: 501, playerIds: const [1, 2]);
 
   void update(GameConfig config) => state = config;
 
@@ -236,18 +234,16 @@ final bullingConfigProvider =
       BullingConfigController.new,
     );
 
-final bullingGameProvider =
-    NotifierProvider<BullingController, BullingSession>(
-      BullingController.new,
-    );
+final bullingGameProvider = NotifierProvider<BullingController, BullingSession>(
+  BullingController.new,
+);
 
 /// The training session on screen. Never fed by [gameRepositoryProvider] and
 /// never sets [currentGameIdProvider] - see [TrainingController] for why that
 /// is the whole persistence story.
-final trainingProvider =
-    NotifierProvider<TrainingController, TrainingSession>(
-      TrainingController.new,
-    );
+final trainingProvider = NotifierProvider<TrainingController, TrainingSession>(
+  TrainingController.new,
+);
 
 final matchProvider = NotifierProvider<MatchController, MatchSession?>(
   MatchController.new,
@@ -330,30 +326,33 @@ final allBullingLegsProvider = StreamProvider<List<BullingLegState>>(
 ///
 /// See [computePlayerStats] for why the grouping happens here rather than
 /// inside the domain function.
-final playerStatsProvider =
-    Provider.family<Map<GameMode, ModeStats>, int>((ref, playerId) {
-      return computePlayerStats(
-        playerId,
-        x01Legs: ref.watch(allLegsProvider).value ?? const [],
-        x01Matches: ref.watch(allMatchesProvider).value ?? const [],
-        atcLegs: ref.watch(allAtcLegsProvider).value ?? const [],
-        bullingLegs: ref.watch(allBullingLegsProvider).value ?? const [],
-      );
-    });
+final playerStatsProvider = Provider.family<Map<GameMode, ModeStats>, int>((
+  ref,
+  playerId,
+) {
+  return computePlayerStats(
+    playerId,
+    x01Legs: ref.watch(allLegsProvider).value ?? const [],
+    x01Matches: ref.watch(allMatchesProvider).value ?? const [],
+    atcLegs: ref.watch(allAtcLegsProvider).value ?? const [],
+    bullingLegs: ref.watch(allBullingLegsProvider).value ?? const [],
+  );
+});
 
 /// Where a player's darts have landed, for the accuracy heatmap.
 ///
 /// Every dart ever thrown counts here regardless of mode - the underlying
 /// query has no `gameMode` filter of its own - so this depends on both leg
 /// streams purely to know when to refresh, not to change what it reads.
-final segmentCountsProvider = FutureProvider.family<Map<Segment, int>, int>(
-  (ref, playerId) {
-    ref.watch(allLegsProvider);
-    ref.watch(allAtcLegsProvider);
-    ref.watch(allBullingLegsProvider);
-    return ref.watch(gameRepositoryProvider).segmentCounts(playerId);
-  },
-);
+final segmentCountsProvider = FutureProvider.family<Map<Segment, int>, int>((
+  ref,
+  playerId,
+) {
+  ref.watch(allLegsProvider);
+  ref.watch(allAtcLegsProvider);
+  ref.watch(allBullingLegsProvider);
+  return ref.watch(gameRepositoryProvider).segmentCounts(playerId);
+});
 
 /// A leg that was left unfinished, ready to be picked back up.
 ///
@@ -585,11 +584,7 @@ final localeProvider = NotifierProvider<LocaleSetting, Locale?>(
 );
 
 /// The x01 setup screen's remembered defaults: whatever was picked last time.
-typedef X01Defaults = ({
-  int startScore,
-  X01InRule inRule,
-  X01OutRule outRule,
-});
+typedef X01Defaults = ({int startScore, X01InRule inRule, X01OutRule outRule});
 
 /// Persists the last-used x01 start score and in/out rules, the same way
 /// [BoolSetting] persists a switch - shared_preferences, corrected a frame

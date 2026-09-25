@@ -58,11 +58,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noPlayersYet => 'No players yet. Add the first one above.';
 
   @override
-  String removePlayerTooltip(String name) {
-    return 'Remove $name';
-  }
-
-  @override
   String get pickAtLeastOnePlayer => 'PICK AT LEAST ONE PLAYER';
 
   @override
@@ -518,7 +513,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String scoreArrow(int before, int after) {
+  String scoreArrow(String before, String after) {
     return '$before → $after';
   }
 
@@ -528,28 +523,29 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get throwWhenReady => 'THROW WHEN READY';
+  String get aimLabel => 'AIM';
 
   @override
-  String stopsClearedLabel(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count STOPS CLEARED',
-      one: '1 STOP CLEARED',
-      zero: 'NOTHING CLEARED',
-    );
-    return '$_temp0';
-  }
+  String get remainingLabel => 'REMAINING';
 
   @override
-  String nowOnStop(String stop) {
-    return 'now on $stop';
-  }
+  String get figureHitRate => 'HIT RATE';
+
+  @override
+  String get figureReached => 'REACHED';
+
+  @override
+  String get figurePoints => 'POINTS';
 
   @override
   String dartsCount(int count) {
-    return '$count darts';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count darts',
+      one: '1 dart',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -563,28 +559,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String ofTarget(int target) {
     return 'of $target';
-  }
-
-  @override
-  String turnScoredLabel(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count POINTS SCORED',
-      one: '1 POINT SCORED',
-      zero: 'NOTHING SCORED',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String nowOnScore(int score) {
-    return 'now on $score';
-  }
-
-  @override
-  String legWonStatsBulling(int points, int darts) {
-    return '$points points · $darts darts';
   }
 
   @override

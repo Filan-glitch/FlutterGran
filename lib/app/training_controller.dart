@@ -67,10 +67,20 @@ class TrainingController extends Notifier<TrainingSession> {
   /// nobody is looking at.
   bool _live = false;
 
+  /// Whether the keypad has been pulled up over a connected board. Mirrors
+  /// `GameController`: while it is open the board's own frames are ignored, so
+  /// a dart keyed in by hand cannot also score from the board.
+  bool _manualOverrideOpen = false;
+
   @override
   TrainingSession build() {
     final events = ref.watch(boardEventsProvider).listen(_handleBoardEvent);
     ref.onDispose(events.cancel);
+
+    _manualOverrideOpen = ref.read(keypadOverrideProvider);
+    ref.listen(keypadOverrideProvider, (previous, next) {
+      _manualOverrideOpen = next;
+    });
 
     return FreePracticeSession(initialFreePracticeState());
   }
@@ -80,8 +90,10 @@ class TrainingController extends Notifier<TrainingSession> {
 
     switch (event) {
       case DartHit(:final segment):
+        if (_manualOverrideOpen) return;
         addDart(ThrownDart(segment));
       case BoardMiss():
+        if (_manualOverrideOpen) return;
         addDart(const ThrownDart.miss());
       case ButtonPress():
       case UnknownFrame():
@@ -168,7 +180,10 @@ class TrainingController extends Notifier<TrainingSession> {
   ///
   /// No-op for free practice, which has no finished state to reset from.
   void throwAgain() {
-    if (state case CheckoutPracticeSession(:final leg, :final checkoutsCompleted)) {
+    if (state case CheckoutPracticeSession(
+      :final leg,
+      :final checkoutsCompleted,
+    )) {
       state = CheckoutPracticeSession(
         leg: initialLegState(leg.config),
         checkoutsCompleted: checkoutsCompleted,

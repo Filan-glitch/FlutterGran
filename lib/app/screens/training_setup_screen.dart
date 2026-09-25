@@ -9,6 +9,7 @@ import '../rules_topic.dart';
 import '../theme.dart';
 import '../widgets/board_connection_button.dart';
 import '../widgets/rules_button.dart';
+import '../widgets/setup_controls.dart';
 import 'training_game_screen.dart';
 
 /// Picks a drill and, for checkout practice, a start score - then opens a
@@ -54,10 +55,11 @@ class _TrainingSetupScreenState extends ConsumerState<TrainingSetupScreen> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.sm, Gap.lg, Gap.lg),
             children: [
-              _Eyebrow(l10n.drillLabel),
+              SectionLabel(l10n.drillLabel),
               const SizedBox(height: Gap.md),
               Column(
                 key: const Key('drill-column'),
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _DrillChoice(
                     label: l10n.freePracticeLabel,
@@ -78,60 +80,31 @@ class _TrainingSetupScreenState extends ConsumerState<TrainingSetupScreen> {
               ),
               if (_drill == TrainingDrill.checkoutPractice) ...[
                 const SizedBox(height: Gap.xl),
-                _Eyebrow(l10n.startScoreLabel),
+                SectionLabel(l10n.startScoreLabel),
                 const SizedBox(height: Gap.md),
-                Row(
+                NumeralChoiceRow<int>(
                   key: const Key('training-start-score-row'),
-                  children: [
-                    for (final score in GameConfig.offeredStartScores) ...[
-                      if (score != GameConfig.offeredStartScores.first)
-                        const SizedBox(width: Gap.sm),
-                      Expanded(
-                        child: _ScoreChoice(
-                          score: score,
-                          selected: score == _startScore,
-                          onTap: () => setState(() => _startScore = score),
-                        ),
-                      ),
-                    ],
-                  ],
+                  values: GameConfig.offeredStartScores,
+                  selected: _startScore,
+                  label: (score) => '$score',
+                  onSelected: (score) => setState(() => _startScore = score),
                 ),
               ],
             ],
           ),
         ),
       ),
-      bottomNavigationBar: CenteredContent(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(Gap.lg, 0, Gap.lg, Gap.lg),
-          child: SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              key: const Key('start-training-button'),
-              onPressed: _start,
-              child: Text(l10n.startButton),
-            ),
-          ),
-        ),
+      bottomNavigationBar: StartBar(
+        buttonKey: const Key('start-training-button'),
+        onPressed: _start,
+        label: l10n.startButton,
       ),
     );
   }
 }
 
-class _Eyebrow extends StatelessWidget {
-  const _Eyebrow(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) => Text(
-    text.toUpperCase(),
-    style: Type.eyebrow.copyWith(color: Palette.chalkDim),
-  );
-}
-
 /// One drill choice, as a full-width tile with a tagline underneath - the
-/// same idiom `BullingSetupScreen`'s `_VariantChoice` uses, with room for the
+/// same fill-when-selected idiom as `SelectableTile`, with room for the
 /// second line a bare label wouldn't have.
 class _DrillChoice extends StatelessWidget {
   const _DrillChoice({
@@ -180,46 +153,6 @@ class _DrillChoice extends StatelessWidget {
                 ),
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// One number in a row of them - the same idiom `X01SetupScreen`'s
-/// `_ScoreChoice` uses for the start score.
-class _ScoreChoice extends StatelessWidget {
-  const _ScoreChoice({
-    required this.score,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final int score;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: selected ? Palette.chalk : Palette.raised,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(4),
-        side: BorderSide(color: selected ? Palette.chalk : Palette.edge),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: Gap.md),
-          child: Center(
-            child: Text(
-              '$score',
-              style: Type.scoreSmall.copyWith(
-                color: selected ? Palette.ground : Palette.chalkDim,
-              ),
-            ),
           ),
         ),
       ),

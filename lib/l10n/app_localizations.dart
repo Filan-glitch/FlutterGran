@@ -188,12 +188,6 @@ abstract class AppLocalizations {
   /// **'No players yet. Add the first one above.'**
   String get noPlayersYet;
 
-  /// No description provided for @removePlayerTooltip.
-  ///
-  /// In en, this message translates to:
-  /// **'Remove {name}'**
-  String removePlayerTooltip(String name);
-
   /// No description provided for @pickAtLeastOnePlayer.
   ///
   /// In en, this message translates to:
@@ -984,7 +978,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{before} → {after}'**
-  String scoreArrow(int before, int after);
+  String scoreArrow(String before, String after);
 
   /// No description provided for @legWonStatsX01.
   ///
@@ -992,28 +986,40 @@ abstract class AppLocalizations {
   /// **'{darts} darts · {average} average'**
   String legWonStatsX01(int darts, String average);
 
-  /// No description provided for @throwWhenReady.
+  /// No description provided for @aimLabel.
   ///
   /// In en, this message translates to:
-  /// **'THROW WHEN READY'**
-  String get throwWhenReady;
+  /// **'AIM'**
+  String get aimLabel;
 
-  /// No description provided for @stopsClearedLabel.
+  /// No description provided for @remainingLabel.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =0{NOTHING CLEARED} =1{1 STOP CLEARED} other{{count} STOPS CLEARED}}'**
-  String stopsClearedLabel(int count);
+  /// **'REMAINING'**
+  String get remainingLabel;
 
-  /// No description provided for @nowOnStop.
+  /// No description provided for @figureHitRate.
   ///
   /// In en, this message translates to:
-  /// **'now on {stop}'**
-  String nowOnStop(String stop);
+  /// **'HIT RATE'**
+  String get figureHitRate;
+
+  /// No description provided for @figureReached.
+  ///
+  /// In en, this message translates to:
+  /// **'REACHED'**
+  String get figureReached;
+
+  /// No description provided for @figurePoints.
+  ///
+  /// In en, this message translates to:
+  /// **'POINTS'**
+  String get figurePoints;
 
   /// No description provided for @dartsCount.
   ///
   /// In en, this message translates to:
-  /// **'{count} darts'**
+  /// **'{count, plural, =1{1 dart} other{{count} darts}}'**
   String dartsCount(int count);
 
   /// No description provided for @playAgainButton.
@@ -1033,24 +1039,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'of {target}'**
   String ofTarget(int target);
-
-  /// No description provided for @turnScoredLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =0{NOTHING SCORED} =1{1 POINT SCORED} other{{count} POINTS SCORED}}'**
-  String turnScoredLabel(int count);
-
-  /// No description provided for @nowOnScore.
-  ///
-  /// In en, this message translates to:
-  /// **'now on {score}'**
-  String nowOnScore(int score);
-
-  /// No description provided for @legWonStatsBulling.
-  ///
-  /// In en, this message translates to:
-  /// **'{points} points · {darts} darts'**
-  String legWonStatsBulling(int points, int darts);
 
   /// No description provided for @statisticsTitle.
   ///

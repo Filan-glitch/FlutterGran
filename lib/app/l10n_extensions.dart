@@ -11,3 +11,7 @@ import '../l10n/app_localizations.dart';
 extension L10nContext on BuildContext {
   AppLocalizations get l10n => AppLocalizations.of(this)!;
 }
+
+/// Falls back to a seat label for a player who has since been deleted.
+String nameFor(BuildContext context, Map<int, String> names, int playerId) =>
+    names[playerId] ?? context.l10n.playerFallbackName(playerId);

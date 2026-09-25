@@ -168,8 +168,11 @@ SplashScreen                                  (MaterialApp's home)
   --pushReplacement--> MainMenuScreen
        [RESUME <leg>]  (shown only while a leg is in progress)
        PLAY       --> SelectGameModeScreen
-                          --> X01SetupScreen   (the only enabled tile today)
-                                 --> GameScreen
+                          --> X01SetupScreen     --> GameScreen
+                          --> AtcSetupScreen     --> AtcGameScreen
+                          --> BullingSetupScreen --> BullingGameScreen
+       TRAINING   --> TrainingSetupScreen --> TrainingGameScreen
+       RULES      --> RulesScreen --> RulesDetailScreen
        STATISTICS --> StatsScreen
        ROSTER     --> RosterScreen
        SETTINGS   --> SettingsScreen
@@ -185,11 +188,12 @@ correctly.
 The roster is deliberately its own screen, reachable only from the main
 menu, with no mode of its own - the same board is played by different
 people under different modes, so player management has no business being
-owned by any one mode's setup screen. `X01SetupScreen` still lets you
-*select* players from the roster inline (add-in-place is still there too,
-for now - see `x01_setup_screen.dart`), but renaming and freely deleting
-a player (their darts and seat cascade with them - see
-`GameRepository.removePlayer`) live only in `RosterScreen`. A tap on
+owned by any one mode's setup screen. Every setup screen picks players
+through the same `PlayerPicker` (`lib/app/widgets/player_picker.dart`):
+tap to seat or unseat, and a name typed in is added and seated in one go.
+It never deletes anyone. Renaming and deleting a player (their darts and
+seat cascade with them - see `GameRepository.removePlayer`) live only in
+`RosterScreen`. A tap on
 delete hides the player at once behind a 4-second UNDO snackbar, and the
 real delete runs when that closes - through a repository captured up front,
 so it lands even if the roster was left meanwhile. The snackbar sets
@@ -280,21 +284,43 @@ shortest side rather than a `LayoutBuilder`'s local width — the same question
   (800dp shortest side at its shipped display size; see the doc comment on
   `heroLayout` for the `adb shell wm size`/`wm density` numbers), a real
   tablet's threshold rather than a round guess. At or above it: the
-  scoreboard becomes per-player hero cards (`_HeroPlayerCard`) instead of a
-  thin row, a turn's result becomes a full-screen takeover
-  (`Positioned.fill` in the same `Stack` `_MatchWon` already used) instead of
-  sharing the play slot, and the checkout card (`CheckoutCard`, one chip per
-  dart of the route) is drawn at its larger `hero` scale. `_Scaled` in `main.dart` also locks the app to
+  scoreboard becomes per-player hero cards instead of a thin row, a turn's
+  result becomes a full-screen takeover (`Positioned.fill` in the same
+  `Stack` the game-over card uses) instead of sharing the play slot, and the
+  aim strip (the checkout card, or Around the Clock's aim card) is drawn at
+  its larger `hero` scale. `_Scaled` in `main.dart` also locks the app to
   landscape at this threshold — a scoreboard on a stand is mounted once, not
   rotated screen to screen.
 
 `typeScaleFor(size)` grows type on large viewports, keyed to the shortest
 side and applied once around the whole app in `main.dart` on top of the
 platform's own text setting; its top tier lines up with `heroLayout`. The
-panels built around `Spacer`s are wrapped in `_FitOrScroll`, which gives them
+panels built around `Spacer`s are wrapped in `FitOrScroll`, which gives them
 the height when there is height and a scroll when there is not.
 
-Setup and statistics are both one column of controls sized for a phone.
+Every game screen - x01, Around the Clock, Bulling and both training drills -
+is laid out by one `GameLayout` (`lib/app/widgets/game_layout.dart`) and
+differs only in what it puts in the slots:
+
+| Slot | Widget | x01 | Around the Clock | Bulling | Training |
+| --- | --- | --- | --- | --- | --- |
+| seats | `Scoreboard` of `SeatView`s | remaining | stop needed + 22-tick rail | points + rail to target | remaining / session figures |
+| aim | `AimStrip` | `CheckoutCard` | `AimCard` | - | `CheckoutCard` |
+| ledger | `TurnLedger` | turn total, struck on a bust | `+n` stops | `+n` points | turn total |
+| turn result | `TurnResultPanel` | score, `before → after` | `+n`, stop → stop | `+n`, score → score | - |
+| outcome | `OutcomePanel` | leg won mid-match | - | - | checked out |
+| game over | `GameOverCard` | match won | leg won | leg won | - |
+
+`GameAppBar` gives every one of them the same actions (board light, keypad
+toggle while a board is connected, undo), and `LeaveGuard` the same
+"we are keeping it" question before leaving a leg with darts in it. A
+game that needs something new asks `GameLayout` for a slot rather than
+growing its own arrangement.
+
+Setup and statistics are both one column of controls sized for a phone,
+built from the same pieces (`lib/app/widgets/setup_controls.dart`):
+`SectionLabel`, `NumeralChoiceRow` for numbers (a start score, a target),
+`ChoiceRow` for named options as equal-width tiles, and `StartBar`.
 `CenteredContent` (`lib/app/theme.dart`) caps that column at
 `formContentWidth` (640) and centers it, so a tablet's extra width becomes
 margin rather than a stretched, sparse form — invisible on any screen
@@ -306,9 +332,9 @@ narrower than the cap.
 calls `addDart` directly regardless of what is feeding the board. Once a real
 board is actually connected (`boardConnectionProvider`'s
 `BoardConnectionState.connected`), the keypad hides itself: the board is
-trusted to score for itself, and a corner toggle on `game_screen` (labelled
-Manual/Bluetooth mode) brings the keypad back for a hand-entered correction.
-While that override is open, `GameController` suppresses board-driven
+trusted to score for itself, and a corner toggle in every game's app bar
+(`GameAppBar`) brings the keypad back for a hand-entered correction. While
+that override is open, every mode's controller suppresses board-driven
 `DartHit`/`BoardMiss` events (`keypadOverrideProvider`, checked in
 `handleBoardEvent`) so the same dart cannot score twice, once from the tap and
 once from the board's own frame. `ButtonPress` (`BTN@`) is never suppressed —

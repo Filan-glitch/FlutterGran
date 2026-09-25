@@ -3,18 +3,17 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/db/database.dart';
 import '../../domain/x01/game_config.dart';
 import '../../domain/x01/match_state.dart';
 import '../../domain/x01/x01_rules.dart';
-import '../../l10n/app_localizations.dart';
 import '../l10n_extensions.dart';
 import '../providers.dart';
 import '../rules_topic.dart';
 import '../theme.dart';
 import '../widgets/board_connection_button.dart';
+import '../widgets/player_picker.dart';
 import '../widgets/rules_button.dart';
-import '../widgets/selectable_tile.dart';
+import '../widgets/setup_controls.dart';
 import 'game_screen.dart';
 
 /// How each in/out rule reads on the setup chip and the stats screen's
@@ -56,10 +55,8 @@ class X01SetupScreen extends ConsumerStatefulWidget {
 }
 
 class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
-  final TextEditingController _newPlayer = TextEditingController();
-
   /// Selected players, in the order they were tapped - which is throwing order.
-  final List<int> _seats = [];
+  List<int> _seats = const [];
 
   int _startScore = 501;
   X01InRule _inRule = X01InRule.straight;
@@ -89,23 +86,6 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
     _startScore = defaults.startScore;
     _inRule = defaults.inRule;
     _outRule = defaults.outRule;
-  }
-
-  @override
-  void dispose() {
-    _newPlayer.dispose();
-    super.dispose();
-  }
-
-  Future<void> _addPlayer() async {
-    final name = _newPlayer.text.trim();
-    if (name.isEmpty) return;
-
-    final player = await ref.read(gameRepositoryProvider).addPlayer(name);
-    _newPlayer.clear();
-    if (_seats.length < GameConfig.maxPlayers) {
-      setState(() => _seats.add(player.id));
-    }
   }
 
   Future<void> _start() async {
@@ -140,7 +120,6 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final players = ref.watch(playersProvider);
 
     // The disk read behind x01DefaultsProvider resolves a frame after
     // initState's synchronous fallback. Apply it if it lands - unless the
@@ -171,26 +150,17 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
             children: [
               // The start score set as a scoreboard number rather than a form
               // field: it is the number everyone is about to count down from.
-              _Eyebrow(l10n.startScoreLabel),
+              SectionLabel(l10n.startScoreLabel),
               const SizedBox(height: Gap.md),
-              Row(
+              NumeralChoiceRow<int>(
                 key: const Key('start-score-row'),
-                children: [
-                  for (final score in GameConfig.offeredStartScores) ...[
-                    if (score != GameConfig.offeredStartScores.first)
-                      const SizedBox(width: Gap.sm),
-                    Expanded(
-                      child: _ScoreChoice(
-                        score: score,
-                        selected: score == _startScore,
-                        onTap: () => setState(() {
-                          _startScore = score;
-                          _userEditedRules = true;
-                        }),
-                      ),
-                    ),
-                  ],
-                ],
+                values: GameConfig.offeredStartScores,
+                selected: _startScore,
+                label: (score) => '$score',
+                onSelected: (score) => setState(() {
+                  _startScore = score;
+                  _userEditedRules = true;
+                }),
               ),
               const SizedBox(height: Gap.lg),
               // Directly under the start score and styled identically, because
@@ -201,280 +171,59 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
               // need reach - three players can take one each - so the same choice
               // is named for the target it really sets. The stored format does
               // not change with the wording.
-              _Eyebrow(_headToHead ? l10n.bestOfLabel : l10n.firstToLabel),
+              SectionLabel(_headToHead ? l10n.bestOfLabel : l10n.firstToLabel),
               const SizedBox(height: Gap.md),
-              Row(
-                children: [
-                  for (final legs in offeredLegsToPlay) ...[
-                    if (legs != offeredLegsToPlay.first)
-                      const SizedBox(width: Gap.sm),
-                    Expanded(
-                      child: _ScoreChoice(
-                        score: _headToHead ? legs : legsToWinFor(legs),
-                        selected: legs == _legsToPlay,
-                        onTap: () => setState(() => _legsToPlay = legs),
-                      ),
-                    ),
-                  ],
-                ],
+              NumeralChoiceRow<int>(
+                values: offeredLegsToPlay,
+                selected: _legsToPlay,
+                label: (legs) => '${_headToHead ? legs : legsToWinFor(legs)}',
+                onSelected: (legs) => setState(() => _legsToPlay = legs),
               ),
               const SizedBox(height: Gap.lg),
-              _Eyebrow(l10n.inRuleLabel),
+              SectionLabel(l10n.inRuleLabel),
               const SizedBox(height: Gap.md),
-              Row(
+              ChoiceRow<X01InRule>(
                 key: const Key('in-rule-row'),
-                children: [
-                  for (final rule in X01InRule.values) ...[
-                    if (rule != X01InRule.values.first)
-                      const SizedBox(width: Gap.sm),
-                    Expanded(
-                      child: SelectableTile(
-                        key: Key('in-rule-${rule.name}'),
-                        label: x01InRuleLabel(context, rule),
-                        selected: rule == _inRule,
-                        onTap: () => setState(() {
-                          _inRule = rule;
-                          _userEditedRules = true;
-                        }),
-                      ),
-                    ),
-                  ],
-                ],
+                values: X01InRule.values,
+                selected: _inRule,
+                label: (rule) => x01InRuleLabel(context, rule),
+                tileKey: (rule) => Key('in-rule-${rule.name}'),
+                onSelected: (rule) => setState(() {
+                  _inRule = rule;
+                  _userEditedRules = true;
+                }),
               ),
               const SizedBox(height: Gap.lg),
-              _Eyebrow(l10n.outRuleLabel),
+              SectionLabel(l10n.outRuleLabel),
               const SizedBox(height: Gap.md),
-              Row(
+              ChoiceRow<X01OutRule>(
                 key: const Key('out-rule-row'),
-                children: [
-                  for (final rule in X01OutRule.values) ...[
-                    if (rule != X01OutRule.values.first)
-                      const SizedBox(width: Gap.sm),
-                    Expanded(
-                      child: SelectableTile(
-                        key: Key('out-rule-${rule.name}'),
-                        label: x01OutRuleLabel(context, rule),
-                        selected: rule == _outRule,
-                        onTap: () => setState(() {
-                          _outRule = rule;
-                          _userEditedRules = true;
-                        }),
-                      ),
-                    ),
-                  ],
-                ],
+                values: X01OutRule.values,
+                selected: _outRule,
+                label: (rule) => x01OutRuleLabel(context, rule),
+                tileKey: (rule) => Key('out-rule-${rule.name}'),
+                onSelected: (rule) => setState(() {
+                  _outRule = rule;
+                  _userEditedRules = true;
+                }),
               ),
               const SizedBox(height: Gap.xl),
-              Row(
-                children: [
-                  _Eyebrow(l10n.playersLabel),
-                  const SizedBox(width: Gap.md),
-                  Expanded(
-                    child: Text(
-                      _seats.isEmpty
-                          ? l10n.tapToAddPlayers
-                          : l10n.seatsOfMax(
-                              _seats.length,
-                              GameConfig.maxPlayers,
-                            ),
-                      textAlign: TextAlign.right,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Type.label.copyWith(color: Palette.chalkDim),
-                    ),
-                  ),
-                ],
+              PlayerPicker(
+                seats: _seats,
+                onChanged: (seats) => setState(() => _seats = seats),
               ),
-              const SizedBox(height: Gap.md),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _newPlayer,
-                      style: Type.body.copyWith(color: Palette.chalk),
-                      cursorColor: Palette.live,
-                      decoration: InputDecoration(
-                        labelText: l10n.addPlayerFieldLabel,
-                      ),
-                      textInputAction: TextInputAction.done,
-                      onSubmitted: (_) => _addPlayer(),
-                    ),
-                  ),
-                  const SizedBox(width: Gap.sm),
-                  SizedBox(
-                    height: 46,
-                    width: 46,
-                    child: FilledButton(
-                      onPressed: _addPlayer,
-                      style: FilledButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                      child: const Icon(Icons.add, size: 22),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: Gap.md),
-              switch (players) {
-                AsyncError(:final error) => Text(
-                  l10n.couldNotLoadPlayers('$error'),
-                  style: Type.body.copyWith(color: Palette.doubleBed),
-                ),
-                AsyncData(:final value) when value.isEmpty => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: Gap.xl),
-                  child: Text(
-                    l10n.noPlayersYet,
-                    style: Type.body.copyWith(color: Palette.chalkDim),
-                  ),
-                ),
-                AsyncData(:final value) => Column(
-                  children: [for (final player in value) _tile(player, l10n)],
-                ),
-                // Deliberately blank rather than a spinner: this is a local
-                // query that resolves in a frame, and a flash of spinner is
-                // worse than nothing.
-                _ => const SizedBox.shrink(),
-              },
             ],
           ),
         ),
       ),
-      bottomNavigationBar: CenteredContent(
-        child: Padding(
-          key: const Key('start-button-padding'),
-          padding: const EdgeInsets.fromLTRB(Gap.lg, 0, Gap.lg, Gap.lg),
-          child: SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              key: const Key('start-leg-button'),
-              onPressed: _seats.isEmpty ? null : _start,
-              child: Text(
-                _seats.isEmpty
-                    ? l10n.pickAtLeastOnePlayer
-                    : _legsToPlay == 1
-                    ? l10n.startLeg
-                    : l10n.startBestOf(_legsToPlay),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _tile(Player player, AppLocalizations l10n) {
-    final seat = _seats.indexOf(player.id);
-    final selected = seat >= 0;
-    final full = _seats.length >= GameConfig.maxPlayers;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: Gap.sm),
-      child: Material(
-        color: selected ? Palette.raised : Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(4),
-          side: BorderSide(color: selected ? Palette.live : Palette.edge),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: selected
-              ? () => setState(() => _seats.remove(player.id))
-              : full
-              ? null
-              : () => setState(() => _seats.add(player.id)),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: Gap.md,
-              vertical: Gap.md,
-            ),
-            child: Row(
-              children: [
-                // The seat number is the throwing order, so it only appears
-                // once a player actually has one.
-                SizedBox(
-                  width: 26,
-                  child: Text(
-                    selected ? '${seat + 1}' : '',
-                    style: Type.notation.copyWith(color: Palette.live),
-                  ),
-                ),
-                Expanded(
-                  child: Text(
-                    player.name,
-                    style: Type.body.copyWith(
-                      color: selected ? Palette.chalk : Palette.chalkDim,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close, size: 18),
-                  tooltip: l10n.removePlayerTooltip(player.name),
-                  onPressed: () async {
-                    setState(() => _seats.remove(player.id));
-                    await ref
-                        .read(gameRepositoryProvider)
-                        .removePlayer(player.id);
-                  },
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _Eyebrow extends StatelessWidget {
-  const _Eyebrow(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) => Text(
-    text.toUpperCase(),
-    style: Type.eyebrow.copyWith(color: Palette.chalkDim),
-  );
-}
-
-/// One number in a row of them, set as a scoreboard numeral rather than a form
-/// control. Used for both halves of the format: the start score and the best-of.
-class _ScoreChoice extends StatelessWidget {
-  const _ScoreChoice({
-    required this.score,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final int score;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: selected ? Palette.chalk : Palette.raised,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(4),
-        side: BorderSide(color: selected ? Palette.chalk : Palette.edge),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: Gap.md),
-          child: Center(
-            child: Text(
-              '$score',
-              style: Type.scoreSmall.copyWith(
-                color: selected ? Palette.ground : Palette.chalkDim,
-              ),
-            ),
-          ),
-        ),
+      bottomNavigationBar: StartBar(
+        buttonKey: const Key('start-leg-button'),
+        onPressed: _seats.isEmpty ? null : _start,
+        label: _seats.isEmpty
+            ? l10n.pickAtLeastOnePlayer
+            : _legsToPlay == 1
+            ? l10n.startLeg
+            : l10n.startBestOf(_legsToPlay),
       ),
     );
   }
