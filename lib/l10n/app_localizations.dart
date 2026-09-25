@@ -984,13 +984,43 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{before} → {after}'**
-  String scoreArrow(int before, int after);
+  String scoreArrow(String before, String after);
 
   /// No description provided for @legWonStatsX01.
   ///
   /// In en, this message translates to:
   /// **'{darts} darts · {average} average'**
   String legWonStatsX01(int darts, String average);
+
+  /// No description provided for @aimLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'AIM'**
+  String get aimLabel;
+
+  /// No description provided for @remainingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'REMAINING'**
+  String get remainingLabel;
+
+  /// No description provided for @figureHitRate.
+  ///
+  /// In en, this message translates to:
+  /// **'HIT RATE'**
+  String get figureHitRate;
+
+  /// No description provided for @figureReached.
+  ///
+  /// In en, this message translates to:
+  /// **'REACHED'**
+  String get figureReached;
+
+  /// No description provided for @figurePoints.
+  ///
+  /// In en, this message translates to:
+  /// **'POINTS'**
+  String get figurePoints;
 
   /// No description provided for @throwWhenReady.
   ///

@@ -518,7 +518,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String scoreArrow(int before, int after) {
+  String scoreArrow(String before, String after) {
     return '$before → $after';
   }
 
@@ -526,6 +526,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String legWonStatsX01(int darts, String average) {
     return '$darts darts · $average average';
   }
+
+  @override
+  String get aimLabel => 'AIM';
+
+  @override
+  String get remainingLabel => 'REMAINING';
+
+  @override
+  String get figureHitRate => 'HIT RATE';
+
+  @override
+  String get figureReached => 'REACHED';
+
+  @override
+  String get figurePoints => 'POINTS';
 
   @override
   String get throwWhenReady => 'THROW WHEN READY';

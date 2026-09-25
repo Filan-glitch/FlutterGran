@@ -217,12 +217,17 @@
   },
   "scoreArrow": "{before} → {after}",
   "@scoreArrow": {
-    "placeholders": { "before": { "type": "int" }, "after": { "type": "int" } }
+    "placeholders": { "before": { "type": "String" }, "after": { "type": "String" } }
   },
   "legWonStatsX01": "{darts} darts · {average} average",
   "@legWonStatsX01": {
     "placeholders": { "darts": { "type": "int" }, "average": { "type": "String" } }
   },
+  "aimLabel": "AIM",
+  "remainingLabel": "REMAINING",
+  "figureHitRate": "HIT RATE",
+  "figureReached": "REACHED",
+  "figurePoints": "POINTS",
 
   "throwWhenReady": "THROW WHEN READY",
   "stopsClearedLabel": "{count, plural, =0{NOTHING CLEARED} =1{1 STOP CLEARED} other{{count} STOPS CLEARED}}",

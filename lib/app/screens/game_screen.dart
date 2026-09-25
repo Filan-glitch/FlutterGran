@@ -110,8 +110,8 @@ class GameScreen extends ConsumerWidget {
                         ? l10n.bustLabel
                         : '${pending.scored}',
                     caption: l10n.scoreArrow(
-                      pending.scoreBefore,
-                      pending.scoreAfter,
+                      '${pending.scoreBefore}',
+                      '${pending.scoreAfter}',
                     ),
                     busted: pending.busted,
                     // The same total the spoken commentary already fanfares -
