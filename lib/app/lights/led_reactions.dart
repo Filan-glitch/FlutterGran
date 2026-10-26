@@ -6,6 +6,7 @@ import '../atc_controller.dart';
 import '../audio/sound_controller.dart' show maximumTurn;
 import '../bulling_controller.dart';
 import '../game_controller.dart';
+import '../higher_lower_controller.dart';
 import '../training_controller.dart';
 import 'led_cue.dart';
 
@@ -99,6 +100,42 @@ List<LedCue> ledCuesForBulling(BullingSession? previous, BullingSession next) {
     sameDarts: before.darts.length == after.darts.length,
     finished: after.isFinished,
     players: after.config.playerIds.length,
+  )) {
+    return [NextThrower(after.currentPlayerIndex)];
+  }
+
+  if (before.isFinished && after.darts.isEmpty) return const [GameOn()];
+  return const [];
+}
+
+/// Higher/Lower: every dart that lands flashes, a turn that puts its player
+/// out is a bust, and the turn that leaves one player standing celebrates
+/// them - not the player who threw it.
+List<LedCue> ledCuesForHigherLower(
+  HigherLowerSession? previous,
+  HigherLowerSession next,
+) {
+  if (previous == null) return const [];
+  final before = previous.leg;
+  final after = next.leg;
+
+  if (after.darts.length == before.darts.length + 1) {
+    if (after.winnerId case final winner? when !before.isFinished) {
+      return [MatchWon(after.config.playerIds.indexOf(winner))];
+    }
+    if (after.turns.length == before.turns.length + 1 &&
+        !after.turns.last.survived) {
+      return const [TurnBusted()];
+    }
+    return [_dartCue(after.darts.last, seat: before.currentPlayerIndex)];
+  }
+
+  if (_turnConfirmed(
+    wasAwaiting: previous.awaitingTurnConfirm,
+    isAwaiting: next.awaitingTurnConfirm,
+    sameDarts: before.darts.length == after.darts.length,
+    finished: after.isFinished,
+    players: after.activePlayerIds.length,
   )) {
     return [NextThrower(after.currentPlayerIndex)];
   }
@@ -223,3 +260,7 @@ RingPaint bullingRing(BullingSession session) {
   }
   return RingPaint.all(RingColor.turquoise);
 }
+
+/// The resting ring for Higher/Lower: dark. There is no bed to aim for -
+/// any total over the higher value or under the lower one will do.
+RingPaint higherLowerRing(HigherLowerSession session) => RingPaint.off;
