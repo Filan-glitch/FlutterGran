@@ -413,62 +413,410 @@ abstract class AppLocalizations {
   /// No description provided for @rulesX01Objective.
   ///
   /// In en, this message translates to:
-  /// **'Race to exactly zero. Each player starts at the chosen score — 301, 501, or 701 — and works it down with three darts a turn.'**
+  /// **'Start on 301, 501 or 701 and race to exactly zero, three darts a turn.'**
   String get rulesX01Objective;
-
-  /// No description provided for @rulesX01InRule.
-  ///
-  /// In en, this message translates to:
-  /// **'In rule sets what starts your scoring: Straight — any dart counts right away. Double — darts before your first double score nothing; that double both opens your score and counts. Master — a double or a triple opens it.'**
-  String get rulesX01InRule;
-
-  /// No description provided for @rulesX01OutRule.
-  ///
-  /// In en, this message translates to:
-  /// **'Out rule sets what can finish a leg: Straight — any dart can take you out on exactly zero. Double — only a double finishes. Master — a double or a triple finishes. Overshooting zero, landing on it without a qualifying finish, or leaving exactly 1 under double or master out all bust the turn — your score resets to what it was when the turn began.'**
-  String get rulesX01OutRule;
-
-  /// No description provided for @rulesX01Format.
-  ///
-  /// In en, this message translates to:
-  /// **'A match is played over several legs — best of 1, 3, 5, or 7. With two players it\'s first to more than half; with three or four it\'s simply first to that many legs, since a majority isn\'t guaranteed to fall within them.'**
-  String get rulesX01Format;
 
   /// No description provided for @rulesAtcObjective.
   ///
   /// In en, this message translates to:
-  /// **'Clear 22 stops in order — 1 through 20, then the outer bull, then the bullseye. First to clear them all wins.'**
+  /// **'Hit 1 to 20 in order, then the outer bull, then the bullseye. First all the way round wins.'**
   String get rulesAtcObjective;
-
-  /// No description provided for @rulesAtcVariant.
-  ///
-  /// In en, this message translates to:
-  /// **'Variant sets what clears a numbered stop (the two bull stops are unaffected): Any part — single, double, or triple all count. Masters — double or triple only. Doubles only — double only.'**
-  String get rulesAtcVariant;
 
   /// No description provided for @rulesBullingObjective.
   ///
   /// In en, this message translates to:
-  /// **'First to reach or pass the target score — 21, 31, or 41 — by hitting bulls wins. The outer bull is worth 1 point; the inner bull (bullseye) is worth 2 or 3, set at setup. Everything else scores nothing.'**
+  /// **'Only bulls score. First to reach the target wins.'**
   String get rulesBullingObjective;
 
-  /// No description provided for @rulesBullingValue.
+  /// No description provided for @rulesTrainingObjective.
   ///
   /// In en, this message translates to:
-  /// **'A leg ends the moment a player reaches target, even mid-turn — any darts thrown after that in the same turn don\'t count.'**
-  String get rulesBullingValue;
+  /// **'Just you and the board. No opponent, no pressure - pick a drill and throw.'**
+  String get rulesTrainingObjective;
 
-  /// No description provided for @rulesTrainingFreePractice.
+  /// No description provided for @rulesFactStart.
   ///
   /// In en, this message translates to:
-  /// **'Free practice — no target or win condition. Just throw; the session tracks your total, best turn, 180 count, and three-dart average.'**
-  String get rulesTrainingFreePractice;
+  /// **'START'**
+  String get rulesFactStart;
 
-  /// No description provided for @rulesTrainingCheckoutPractice.
+  /// No description provided for @rulesFactPlayers.
   ///
   /// In en, this message translates to:
-  /// **'Checkout practice — pick a start score and practice finishing it under double-out, the same rule as an X01 leg, with the checkout suggestion shown throughout.'**
-  String get rulesTrainingCheckoutPractice;
+  /// **'PLAYERS'**
+  String get rulesFactPlayers;
+
+  /// No description provided for @rulesFactPlayer.
+  ///
+  /// In en, this message translates to:
+  /// **'PLAYER'**
+  String get rulesFactPlayer;
+
+  /// No description provided for @rulesFactDarts.
+  ///
+  /// In en, this message translates to:
+  /// **'DARTS A TURN'**
+  String get rulesFactDarts;
+
+  /// No description provided for @rulesFactStops.
+  ///
+  /// In en, this message translates to:
+  /// **'STOPS'**
+  String get rulesFactStops;
+
+  /// No description provided for @rulesFactTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'TARGET'**
+  String get rulesFactTarget;
+
+  /// No description provided for @rulesFactDrills.
+  ///
+  /// In en, this message translates to:
+  /// **'DRILLS'**
+  String get rulesFactDrills;
+
+  /// No description provided for @rulesSectionIn.
+  ///
+  /// In en, this message translates to:
+  /// **'IN RULE'**
+  String get rulesSectionIn;
+
+  /// No description provided for @rulesSectionOut.
+  ///
+  /// In en, this message translates to:
+  /// **'OUT RULE'**
+  String get rulesSectionOut;
+
+  /// No description provided for @rulesSectionBust.
+  ///
+  /// In en, this message translates to:
+  /// **'BUST'**
+  String get rulesSectionBust;
+
+  /// No description provided for @rulesSectionFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'MATCH FORMAT'**
+  String get rulesSectionFormat;
+
+  /// No description provided for @rulesSectionRoute.
+  ///
+  /// In en, this message translates to:
+  /// **'THE ROUTE'**
+  String get rulesSectionRoute;
+
+  /// No description provided for @rulesSectionVariant.
+  ///
+  /// In en, this message translates to:
+  /// **'VARIANT'**
+  String get rulesSectionVariant;
+
+  /// No description provided for @rulesSectionScoring.
+  ///
+  /// In en, this message translates to:
+  /// **'SCORING'**
+  String get rulesSectionScoring;
+
+  /// No description provided for @rulesSectionDrills.
+  ///
+  /// In en, this message translates to:
+  /// **'DRILLS'**
+  String get rulesSectionDrills;
+
+  /// No description provided for @rulesSectionExamples.
+  ///
+  /// In en, this message translates to:
+  /// **'EXAMPLES'**
+  String get rulesSectionExamples;
+
+  /// No description provided for @rulesLegendIn.
+  ///
+  /// In en, this message translates to:
+  /// **'LIT SEGMENTS OPEN YOUR SCORE'**
+  String get rulesLegendIn;
+
+  /// No description provided for @rulesLegendOut.
+  ///
+  /// In en, this message translates to:
+  /// **'LIT SEGMENTS CAN FINISH A LEG'**
+  String get rulesLegendOut;
+
+  /// No description provided for @rulesLegendAtc.
+  ///
+  /// In en, this message translates to:
+  /// **'LIT SEGMENTS CLEAR STOP 20'**
+  String get rulesLegendAtc;
+
+  /// No description provided for @rulesLegendBulling.
+  ///
+  /// In en, this message translates to:
+  /// **'ONLY THE LIT BULLS SCORE'**
+  String get rulesLegendBulling;
+
+  /// No description provided for @rulesLegendCheckout.
+  ///
+  /// In en, this message translates to:
+  /// **'LIT SEGMENTS CAN FINISH'**
+  String get rulesLegendCheckout;
+
+  /// No description provided for @rulesInStraight.
+  ///
+  /// In en, this message translates to:
+  /// **'Every dart counts, right from the first throw.'**
+  String get rulesInStraight;
+
+  /// No description provided for @rulesInDouble.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing counts until you hit a double. That double opens your score and counts too.'**
+  String get rulesInDouble;
+
+  /// No description provided for @rulesInMaster.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing counts until you hit a double or a triple. That dart opens your score and counts too.'**
+  String get rulesInMaster;
+
+  /// No description provided for @rulesOutStraight.
+  ///
+  /// In en, this message translates to:
+  /// **'Any dart that lands you on exactly zero wins the leg.'**
+  String get rulesOutStraight;
+
+  /// No description provided for @rulesOutDouble.
+  ///
+  /// In en, this message translates to:
+  /// **'Only a double - or the bullseye - can take you to zero.'**
+  String get rulesOutDouble;
+
+  /// No description provided for @rulesOutMaster.
+  ///
+  /// In en, this message translates to:
+  /// **'A double, a triple or the bullseye can take you to zero.'**
+  String get rulesOutMaster;
+
+  /// No description provided for @rulesBustTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A TURN BUSTS WHEN'**
+  String get rulesBustTitle;
+
+  /// No description provided for @rulesBustOvershoot.
+  ///
+  /// In en, this message translates to:
+  /// **'You score more than you have left.'**
+  String get rulesBustOvershoot;
+
+  /// No description provided for @rulesBustNoFinish.
+  ///
+  /// In en, this message translates to:
+  /// **'You reach zero, but not with a dart the out rule allows.'**
+  String get rulesBustNoFinish;
+
+  /// No description provided for @rulesBustOneLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'You leave exactly 1 under double or master out - no dart can finish that.'**
+  String get rulesBustOneLeft;
+
+  /// No description provided for @rulesBustReset.
+  ///
+  /// In en, this message translates to:
+  /// **'The rest of the turn is lost and your score goes back to where the turn started.'**
+  String get rulesBustReset;
+
+  /// No description provided for @rulesFormatBestOf.
+  ///
+  /// In en, this message translates to:
+  /// **'BEST OF'**
+  String get rulesFormatBestOf;
+
+  /// No description provided for @rulesFormatFirstTo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{First to 1 leg} other{First to {count} legs}}'**
+  String rulesFormatFirstTo(int count);
+
+  /// No description provided for @rulesFormatGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'With 3 or 4 players nobody is guaranteed a majority, so the match runs on until someone gets there.'**
+  String get rulesFormatGroup;
+
+  /// No description provided for @rulesAtcRouteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'One stop at a time: hit your number to move on to the next one.'**
+  String get rulesAtcRouteHint;
+
+  /// No description provided for @rulesAtcAnyPart.
+  ///
+  /// In en, this message translates to:
+  /// **'Single, double or triple - any part of the number counts.'**
+  String get rulesAtcAnyPart;
+
+  /// No description provided for @rulesAtcMasters.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the double or the triple of the number counts.'**
+  String get rulesAtcMasters;
+
+  /// No description provided for @rulesAtcDoublesOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the double of the number counts.'**
+  String get rulesAtcDoublesOnly;
+
+  /// No description provided for @rulesAtcBullsNote.
+  ///
+  /// In en, this message translates to:
+  /// **'The two bull stops always need just that bull, whatever the variant.'**
+  String get rulesAtcBullsNote;
+
+  /// No description provided for @rulesBullseyeTwo.
+  ///
+  /// In en, this message translates to:
+  /// **'The bullseye is worth 2. Steady legs, more darts.'**
+  String get rulesBullseyeTwo;
+
+  /// No description provided for @rulesBullseyeThree.
+  ///
+  /// In en, this message translates to:
+  /// **'The bullseye is worth 3. One great dart can swing the leg.'**
+  String get rulesBullseyeThree;
+
+  /// No description provided for @rulesBullingOuterBull.
+  ///
+  /// In en, this message translates to:
+  /// **'OUTER BULL'**
+  String get rulesBullingOuterBull;
+
+  /// No description provided for @rulesBullingBullseye.
+  ///
+  /// In en, this message translates to:
+  /// **'BULLSEYE'**
+  String get rulesBullingBullseye;
+
+  /// No description provided for @rulesBullingEverythingElse.
+  ///
+  /// In en, this message translates to:
+  /// **'EVERYTHING ELSE'**
+  String get rulesBullingEverythingElse;
+
+  /// No description provided for @rulesBullingInstantTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'INSTANT WIN'**
+  String get rulesBullingInstantTitle;
+
+  /// No description provided for @rulesBullingInstant.
+  ///
+  /// In en, this message translates to:
+  /// **'The leg ends the moment you reach the target, even mid-turn. Darts after that don\'t count.'**
+  String get rulesBullingInstant;
+
+  /// No description provided for @rulesBullingNoBust.
+  ///
+  /// In en, this message translates to:
+  /// **'Going past the target is fine - there is no bust in bulling.'**
+  String get rulesBullingNoBust;
+
+  /// No description provided for @rulesTrainingFreeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'No target and no win condition. Throw and watch your numbers.'**
+  String get rulesTrainingFreeBody;
+
+  /// No description provided for @rulesTrainingCheckoutBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a start score and finish it under double out, the same rule as an X01 leg. The checkout route stays on screen the whole way.'**
+  String get rulesTrainingCheckoutBody;
+
+  /// No description provided for @rulesStatTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'TOTAL'**
+  String get rulesStatTotal;
+
+  /// No description provided for @rulesOutcomeCheckout.
+  ///
+  /// In en, this message translates to:
+  /// **'GAME SHOT'**
+  String get rulesOutcomeCheckout;
+
+  /// No description provided for @rulesOutcomeNextStop.
+  ///
+  /// In en, this message translates to:
+  /// **'NEXT STOP'**
+  String get rulesOutcomeNextStop;
+
+  /// No description provided for @rulesOutcomeWin.
+  ///
+  /// In en, this message translates to:
+  /// **'LEG WON'**
+  String get rulesOutcomeWin;
+
+  /// No description provided for @rulesExampleLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{remaining} LEFT'**
+  String rulesExampleLeft(int remaining);
+
+  /// No description provided for @rulesExampleDoubleOut.
+  ///
+  /// In en, this message translates to:
+  /// **'DOUBLE OUT'**
+  String get rulesExampleDoubleOut;
+
+  /// No description provided for @rulesExampleCheckoutNote.
+  ///
+  /// In en, this message translates to:
+  /// **'D20 is a double: straight to zero.'**
+  String get rulesExampleCheckoutNote;
+
+  /// No description provided for @rulesExampleNoDoubleNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Zero - but the last dart was a single, so it doesn\'t count.'**
+  String get rulesExampleNoDoubleNote;
+
+  /// No description provided for @rulesExampleOvershootNote.
+  ///
+  /// In en, this message translates to:
+  /// **'34 is more than 32. Back to 32 for the next turn.'**
+  String get rulesExampleOvershootNote;
+
+  /// No description provided for @rulesExampleAtcOn.
+  ///
+  /// In en, this message translates to:
+  /// **'ON {stop} · {variant}'**
+  String rulesExampleAtcOn(String stop, String variant);
+
+  /// No description provided for @rulesExampleAtcNote.
+  ///
+  /// In en, this message translates to:
+  /// **'The single doesn\'t clear 5 under Masters. The triple does.'**
+  String get rulesExampleAtcNote;
+
+  /// No description provided for @rulesExampleBulling.
+  ///
+  /// In en, this message translates to:
+  /// **'{score} OF {target}'**
+  String rulesExampleBulling(int score, int target);
+
+  /// No description provided for @rulesExampleBullingNote.
+  ///
+  /// In en, this message translates to:
+  /// **'The bullseye takes you past 21 - the third dart is never thrown.'**
+  String get rulesExampleBullingNote;
+
+  /// No description provided for @rulesBoardSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Dartboard with the segments that count lit up'**
+  String get rulesBoardSemantics;
 
   /// No description provided for @rulesX01Title.
   ///
@@ -1331,14 +1679,74 @@ abstract class AppLocalizations {
   /// No description provided for @rulesHigherLowerObjective.
   ///
   /// In en, this message translates to:
-  /// **'Two values are on the board: higher, starting at 45, and lower, starting at 26. Each turn, throw three darts and score strictly more than higher or strictly less than lower. Do it and that value becomes your total. Fail — or land exactly on either value — and you\'re out for the rest of the leg. The last player standing wins.'**
+  /// **'Score more than the higher value or less than the lower one, three darts a turn. Last one standing wins.'**
   String get rulesHigherLowerObjective;
 
-  /// No description provided for @rulesHigherLowerSpecial.
+  /// No description provided for @rulesSectionTurn.
   ///
   /// In en, this message translates to:
-  /// **'Every dart has to land: a miss puts you out on the spot, and so does ending your turn early with the board button. Treble 1 counts as 0 — the only way under 3.'**
-  String get rulesHigherLowerSpecial;
+  /// **'THE TURN'**
+  String get rulesSectionTurn;
+
+  /// No description provided for @rulesHigherLowerTurnHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Beat higher and your total becomes the new higher value. Beat lower and it becomes the new lower value. Both carry over to the next player.'**
+  String get rulesHigherLowerTurnHint;
+
+  /// No description provided for @rulesHigherLowerOutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'YOU\'RE OUT WHEN'**
+  String get rulesHigherLowerOutTitle;
+
+  /// No description provided for @rulesHigherLowerOutBetween.
+  ///
+  /// In en, this message translates to:
+  /// **'Your total is neither more than higher nor less than lower. Hitting either value exactly counts as neither.'**
+  String get rulesHigherLowerOutBetween;
+
+  /// No description provided for @rulesHigherLowerOutMiss.
+  ///
+  /// In en, this message translates to:
+  /// **'A dart misses the board. The turn ends right there.'**
+  String get rulesHigherLowerOutMiss;
+
+  /// No description provided for @rulesHigherLowerOutButton.
+  ///
+  /// In en, this message translates to:
+  /// **'You end the turn early with the board button. That counts as a miss.'**
+  String get rulesHigherLowerOutButton;
+
+  /// No description provided for @rulesHigherLowerOutFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'You sit out the rest of the leg. The last player standing wins it.'**
+  String get rulesHigherLowerOutFooter;
+
+  /// No description provided for @rulesHigherLowerTrebleOne.
+  ///
+  /// In en, this message translates to:
+  /// **'Treble 1 counts as 0 - the only way under 3.'**
+  String get rulesHigherLowerTrebleOne;
+
+  /// No description provided for @rulesExampleHigherLower.
+  ///
+  /// In en, this message translates to:
+  /// **'HIGHER {higher} · LOWER {lower}'**
+  String rulesExampleHigherLower(int higher, int lower);
+
+  /// No description provided for @rulesExampleHigherNote.
+  ///
+  /// In en, this message translates to:
+  /// **'66 is more than 45, so higher is 66 now.'**
+  String get rulesExampleHigherNote;
+
+  /// No description provided for @rulesExampleTieNote.
+  ///
+  /// In en, this message translates to:
+  /// **'26 is not less than 26, and not more than 45 either. Out.'**
+  String get rulesExampleTieNote;
 
   /// No description provided for @higherLabel.
   ///

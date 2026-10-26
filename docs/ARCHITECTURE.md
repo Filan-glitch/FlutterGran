@@ -172,11 +172,14 @@ SplashScreen                                  (MaterialApp's home)
                           --> AtcSetupScreen     --> AtcGameScreen
                           --> BullingSetupScreen --> BullingGameScreen
        TRAINING   --> TrainingSetupScreen --> TrainingGameScreen
-       RULES      --> RulesScreen --> RulesDetailScreen
+       RULES      --> RulesScreen --> RulesDetailScreen  (phone/tablet; desktop: in place)
        STATISTICS --> StatsScreen
        ROSTER     --> RosterScreen
        SETTINGS   --> SettingsScreen
 ```
+
+Each setup screen's info button pushes `RulesDetailScreen` for its own mode
+directly. The rules section's design is in `docs/RULES_SCREENS.md`.
 
 `SplashScreen` waits on `max(700ms, resumableLegProvider's first value)`
 before replacing itself - not for show, but so `MainMenuScreen` never

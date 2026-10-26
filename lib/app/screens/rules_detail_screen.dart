@@ -3,15 +3,24 @@ import 'package:flutter/material.dart';
 import '../l10n_extensions.dart';
 import '../rules_topic.dart';
 import '../theme.dart';
+import '../widgets/game_layout.dart' show isHeroDevice;
+import '../widgets/rules/rules_body.dart';
 
-/// The detailed rules for exactly one [RulesTopic] - what a setup screen's
-/// info button opens now that it no longer has to open the same page every
-/// other mode's setup screen does too.
+/// How wide a rules page may get on a device with the hero treatment: wide
+/// enough to set a board beside its options and two examples side by side,
+/// not so wide a line of explanation runs the length of a tablet. Scaled with
+/// the type on a desktop, like every [CenteredContent] cap.
+double rulesContentWidth(BuildContext context) {
+  if (!isHeroDevice(context)) return formContentWidth;
+  return isDesktop ? 760 : 1100;
+}
+
+/// The rules for exactly one [RulesTopic], as a [RulesBody] page.
 ///
 /// Reached from two places: a setup screen's `RulesButton`, already knowing
-/// which mode it's for, and the overview `RulesScreen`, after a tap picks
-/// one. Either way the content is the same - the split is scope, not
-/// audience.
+/// which mode it's for, and the overview `RulesScreen` on a phone or tablet,
+/// after a tap picks one. The desktop overview shows the same [RulesBody] in
+/// a pane of its own instead of pushing this.
 class RulesDetailScreen extends StatelessWidget {
   const RulesDetailScreen({super.key, required this.topic});
 
@@ -19,56 +28,14 @@ class RulesDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
-
     return Scaffold(
-      appBar: AppBar(title: Text(topic.title(l10n))),
+      appBar: AppBar(title: Text(topic.title(context.l10n))),
       body: SafeArea(
         child: CenteredContent(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.sm, Gap.lg, Gap.lg),
-            children: switch (topic) {
-              RulesTopic.x01 => [
-                _RuleParagraph(l10n.rulesX01Objective),
-                _RuleParagraph(l10n.rulesX01InRule),
-                _RuleParagraph(l10n.rulesX01OutRule),
-                _RuleParagraph(l10n.rulesX01Format),
-              ],
-              RulesTopic.aroundTheClock => [
-                _RuleParagraph(l10n.rulesAtcObjective),
-                _RuleParagraph(l10n.rulesAtcVariant),
-              ],
-              RulesTopic.bulling => [
-                _RuleParagraph(l10n.rulesBullingObjective),
-                _RuleParagraph(l10n.rulesBullingValue),
-              ],
-              RulesTopic.higherLower => [
-                _RuleParagraph(l10n.rulesHigherLowerObjective),
-                _RuleParagraph(l10n.rulesHigherLowerSpecial),
-              ],
-              RulesTopic.training => [
-                _RuleParagraph(l10n.rulesTrainingFreePractice),
-                _RuleParagraph(l10n.rulesTrainingCheckoutPractice),
-              ],
-            },
-          ),
+          maxWidth: rulesContentWidth(context),
+          child: RulesBody(topic: topic),
         ),
       ),
     );
   }
-}
-
-/// One block of explanatory copy. Moved from the old monolithic
-/// `RulesScreen`, which no longer needs it - a detail page's `AppBar`
-/// already names the mode, so no `_Eyebrow` heading is needed here too.
-class _RuleParagraph extends StatelessWidget {
-  const _RuleParagraph(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: Gap.sm),
-    child: Text(text, style: Type.body.copyWith(color: Palette.chalk)),
-  );
 }
