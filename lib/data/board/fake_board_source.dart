@@ -185,6 +185,5 @@ class FakeBoardSource implements BoardSource {
 
   /// Sends the greeting glued to the front of a hit, as happens when the board
   /// is thrown at immediately after connecting.
-  void emitGreetingGluedTo(String body) =>
-      emitRaw('$greeting$body@'.codeUnits);
+  void emitGreetingGluedTo(String body) => emitRaw('$greeting$body@'.codeUnits);
 }

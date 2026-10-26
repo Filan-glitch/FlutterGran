@@ -49,13 +49,14 @@ const List<Ring> _ringOrder = [
 ];
 
 /// Frame body to board segment, for a standard board.
-final Map<String, Segment> granboardSegmentMap = Map<String, Segment>.unmodifiable({
-  for (final entry in wedgeCodes.entries)
-    for (var ring = 0; ring < _ringOrder.length; ring++)
-      entry.value[ring]: Segment(entry.key, _ringOrder[ring]),
-  outerBullCode: Segment.outerBull,
-  innerBullCode: Segment.innerBull,
-});
+final Map<String, Segment> granboardSegmentMap =
+    Map<String, Segment>.unmodifiable({
+      for (final entry in wedgeCodes.entries)
+        for (var ring = 0; ring < _ringOrder.length; ring++)
+          entry.value[ring]: Segment(entry.key, _ringOrder[ring]),
+      outerBullCode: Segment.outerBull,
+      innerBullCode: Segment.innerBull,
+    });
 
 /// Matrix slots that exist in the hardware but carry no segment.
 ///
