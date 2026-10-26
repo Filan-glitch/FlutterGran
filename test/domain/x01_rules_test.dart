@@ -6,37 +6,22 @@ import 'package:test/test.dart';
 void main() {
   group('X01InRule.opens', () {
     test('straight-in opens on anything, including a single', () {
-      expect(
-        X01InRule.straight.opens(const Segment(5, Ring.outerSingle)),
-        isTrue,
-      );
+      expect(X01InRule.straight.opens(const Segment(5, Ring.outerSingle)), isTrue);
     });
 
     test('double-in opens only on a double or the inner bull', () {
-      expect(
-        X01InRule.double.opens(const Segment(20, Ring.doubleRing)),
-        isTrue,
-      );
+      expect(X01InRule.double.opens(const Segment(20, Ring.doubleRing)), isTrue);
       expect(X01InRule.double.opens(Segment.innerBull), isTrue);
       expect(X01InRule.double.opens(const Segment(20, Ring.triple)), isFalse);
-      expect(
-        X01InRule.double.opens(const Segment(20, Ring.outerSingle)),
-        isFalse,
-      );
+      expect(X01InRule.double.opens(const Segment(20, Ring.outerSingle)), isFalse);
       expect(X01InRule.double.opens(Segment.outerBull), isFalse);
     });
 
     test('master-in opens on a double, a triple, or the inner bull', () {
-      expect(
-        X01InRule.master.opens(const Segment(20, Ring.doubleRing)),
-        isTrue,
-      );
+      expect(X01InRule.master.opens(const Segment(20, Ring.doubleRing)), isTrue);
       expect(X01InRule.master.opens(const Segment(20, Ring.triple)), isTrue);
       expect(X01InRule.master.opens(Segment.innerBull), isTrue);
-      expect(
-        X01InRule.master.opens(const Segment(20, Ring.outerSingle)),
-        isFalse,
-      );
+      expect(X01InRule.master.opens(const Segment(20, Ring.outerSingle)), isFalse);
       expect(X01InRule.master.opens(Segment.outerBull), isFalse);
     });
   });
@@ -50,32 +35,17 @@ void main() {
     });
 
     test('double-out checks out only on a double or the inner bull', () {
-      expect(
-        X01OutRule.double.checksOut(const Segment(20, Ring.doubleRing)),
-        isTrue,
-      );
+      expect(X01OutRule.double.checksOut(const Segment(20, Ring.doubleRing)), isTrue);
       expect(X01OutRule.double.checksOut(Segment.innerBull), isTrue);
-      expect(
-        X01OutRule.double.checksOut(const Segment(20, Ring.triple)),
-        isFalse,
-      );
+      expect(X01OutRule.double.checksOut(const Segment(20, Ring.triple)), isFalse);
       expect(X01OutRule.double.checksOut(Segment.outerBull), isFalse);
     });
 
     test('master-out checks out on a double, a triple, or the inner bull', () {
-      expect(
-        X01OutRule.master.checksOut(const Segment(20, Ring.doubleRing)),
-        isTrue,
-      );
-      expect(
-        X01OutRule.master.checksOut(const Segment(19, Ring.triple)),
-        isTrue,
-      );
+      expect(X01OutRule.master.checksOut(const Segment(20, Ring.doubleRing)), isTrue);
+      expect(X01OutRule.master.checksOut(const Segment(19, Ring.triple)), isTrue);
       expect(X01OutRule.master.checksOut(Segment.innerBull), isTrue);
-      expect(
-        X01OutRule.master.checksOut(const Segment(20, Ring.outerSingle)),
-        isFalse,
-      );
+      expect(X01OutRule.master.checksOut(const Segment(20, Ring.outerSingle)), isFalse);
       expect(X01OutRule.master.checksOut(Segment.outerBull), isFalse);
     });
   });

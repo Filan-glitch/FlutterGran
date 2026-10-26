@@ -53,9 +53,7 @@ void main() {
     });
 
     test('the highest scoring area is the triple 20', () {
-      final best = Segment.all
-          .map((s) => s.value)
-          .reduce((a, b) => a > b ? a : b);
+      final best = Segment.all.map((s) => s.value).reduce((a, b) => a > b ? a : b);
       expect(best, 60);
     });
   });

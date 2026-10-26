@@ -47,10 +47,7 @@ void main() {
 
     test('anything off a bull is worth nothing', () {
       expect(pointsFor(const Segment(20, Ring.triple), BullseyeValue.three), 0);
-      expect(
-        pointsFor(const Segment(1, Ring.doubleRing), BullseyeValue.three),
-        0,
-      );
+      expect(pointsFor(const Segment(1, Ring.doubleRing), BullseyeValue.three), 0);
       expect(pointsFor(null, BullseyeValue.three), 0);
     });
   });
@@ -104,7 +101,10 @@ void main() {
     });
 
     test('darts logged after the win cannot change the result', () {
-      final state = foldBulling(config(target: 1), [sbull, sbull, sbull]);
+      final state = foldBulling(
+        config(target: 1),
+        [sbull, sbull, sbull],
+      );
       expect(state.winnerId, 1);
       expect(
         state.turns.single.darts,

@@ -62,6 +62,20 @@ void main() {
     expect(find.textContaining('Clear 22 stops in order'), findsNothing);
   });
 
+  testWidgets('Higher/Lower shows only its own rules', (tester) async {
+    await pump(tester, RulesTopic.higherLower);
+
+    expect(find.text('HIGHER / LOWER RULES'), findsOneWidget);
+    expect(
+      find.textContaining('The last player standing wins'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Treble 1 counts as 0'), findsOneWidget);
+
+    expect(find.textContaining('Race to exactly zero'), findsNothing);
+    expect(find.textContaining('hitting bulls wins'), findsNothing);
+  });
+
   testWidgets('Training shows only its own rules', (tester) async {
     await pump(tester, RulesTopic.training);
 

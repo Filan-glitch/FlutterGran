@@ -201,8 +201,7 @@ void main() {
                 expect(
                   outRule.checksOut(candidate.finish),
                   isTrue,
-                  reason:
-                      '$candidate finishes on a segment that cannot '
+                  reason: '$candidate finishes on a segment that cannot '
                       'check out under $outRule',
                 );
                 expect(candidate.darts.length, lessThanOrEqualTo(dartsLeft));
@@ -219,7 +218,10 @@ void main() {
     }
 
     test('straight-out can finish from 1, unlike double or master', () {
-      expect(findCheckouts(1, 1, outRule: X01OutRule.straight), isNotEmpty);
+      expect(
+        findCheckouts(1, 1, outRule: X01OutRule.straight),
+        isNotEmpty,
+      );
       expect(findCheckouts(1, 1, outRule: X01OutRule.double), isEmpty);
       expect(findCheckouts(1, 1, outRule: X01OutRule.master), isEmpty);
     });
@@ -231,8 +233,14 @@ void main() {
     });
 
     test('180 is the highest master/straight finish, via three triples', () {
-      expect(findCheckouts(180, 3, outRule: X01OutRule.master), isNotEmpty);
-      expect(findCheckouts(181, 3, outRule: X01OutRule.master), isEmpty);
+      expect(
+        findCheckouts(180, 3, outRule: X01OutRule.master),
+        isNotEmpty,
+      );
+      expect(
+        findCheckouts(181, 3, outRule: X01OutRule.master),
+        isEmpty,
+      );
     });
   });
 

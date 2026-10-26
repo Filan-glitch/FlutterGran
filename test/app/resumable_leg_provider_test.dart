@@ -9,6 +9,7 @@ import 'package:fluttergran/domain/atc/atc_config.dart';
 import 'package:fluttergran/domain/atc/atc_variant.dart';
 import 'package:fluttergran/domain/bulling/bulling_config.dart';
 import 'package:fluttergran/domain/bulling/bulling_variant.dart';
+import 'package:fluttergran/domain/higher_lower/higher_lower_config.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/game_config.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
@@ -105,6 +106,25 @@ void main() {
     expect(resumable, isA<ResumableBullingLeg>());
     expect(resumable!.gameId, gameId);
     expect((resumable as ResumableBullingLeg).leg.scoreFor(finn.id), 1);
+  });
+
+  test('a Higher/Lower leg round-trips as ResumableHigherLowerLeg', () async {
+    final finn = await repository.addPlayer('Finn');
+    final ada = await repository.addPlayer('Ada');
+    final gameId = await repository.startHigherLowerGame(
+      HigherLowerConfig(playerIds: [finn.id, ada.id]),
+    );
+    await repository.appendDart(
+      gameId: gameId,
+      ordinal: 0,
+      playerId: finn.id,
+      dart: const ThrownDart(Segment(20, Ring.triple)),
+    );
+
+    final resumable = await readResumable();
+    expect(resumable, isA<ResumableHigherLowerLeg>());
+    expect(resumable!.gameId, gameId);
+    expect((resumable as ResumableHigherLowerLeg).leg.runningTotal, 60);
   });
 
   test('nothing in progress resolves to null', () async {

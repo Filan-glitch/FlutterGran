@@ -305,7 +305,10 @@ class BleBoardSource implements BoardSource {
         androidUsesFineLocation: false,
       );
 
-      return await found.future.timeout(scanTimeout, onTimeout: () => null);
+      return await found.future.timeout(
+        scanTimeout,
+        onTimeout: () => null,
+      );
     } finally {
       _scan = null;
       await subscription.cancel();

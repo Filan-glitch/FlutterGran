@@ -6,11 +6,14 @@ import 'package:fluttergran/app/audio/sound_controller.dart';
 import 'package:fluttergran/app/providers.dart';
 import 'package:fluttergran/app/screens/atc_game_screen.dart';
 import 'package:fluttergran/app/screens/bulling_game_screen.dart';
+import 'package:fluttergran/app/screens/higher_lower_game_screen.dart';
 import 'package:fluttergran/app/screens/training_game_screen.dart';
 import 'package:fluttergran/app/theme.dart';
 import 'package:fluttergran/app/widgets/aim_card.dart';
+import 'package:fluttergran/app/widgets/bounds_card.dart';
 import 'package:fluttergran/app/widgets/dart_keypad.dart';
 import 'package:fluttergran/app/widgets/scoreboard.dart';
+import 'package:fluttergran/app/widgets/turn_ledger.dart';
 import 'package:fluttergran/data/board/fake_board_source.dart';
 import 'package:fluttergran/data/db/database.dart';
 import 'package:fluttergran/data/db/game_repository.dart';
@@ -19,6 +22,7 @@ import 'package:fluttergran/domain/atc/atc_stop.dart';
 import 'package:fluttergran/domain/atc/atc_variant.dart';
 import 'package:fluttergran/domain/bulling/bulling_config.dart';
 import 'package:fluttergran/domain/bulling/bulling_variant.dart';
+import 'package:fluttergran/domain/higher_lower/higher_lower_config.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/training/training_drill.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
@@ -70,6 +74,7 @@ typedef _Mode = ({
   bool Function(ProviderContainer) awaiting,
   bool Function(ProviderContainer) finished,
   ThrownDart scoring,
+  String scoringLedger,
   String playAgain,
 });
 
@@ -93,6 +98,7 @@ final _atc = (
   finished: (ProviderContainer c) => c.read(atcGameProvider).leg.isFinished,
   // Stop 1 under "any part".
   scoring: const ThrownDart(Segment(1, Ring.outerSingle)),
+  scoringLedger: '+1',
   playAgain: 'atc-play-again',
 );
 
@@ -119,7 +125,32 @@ final _bulling = (
       c.read(bullingGameProvider).awaitingTurnConfirm,
   finished: (ProviderContainer c) => c.read(bullingGameProvider).leg.isFinished,
   scoring: const ThrownDart(Segment.outerBull),
+  scoringLedger: '+1',
   playAgain: 'bulling-play-again',
+);
+
+final _higherLower = (
+  name: 'Higher/Lower',
+  screen: const HigherLowerGameScreen(),
+  start:
+      (ProviderContainer container, GameRepository repo, List<int> ids) async {
+        final config = HigherLowerConfig(playerIds: ids);
+        final gameId = await repo.startHigherLowerGame(config);
+        container.read(higherLowerConfigProvider.notifier).update(config);
+        container.read(currentGameIdProvider.notifier).set(gameId);
+        container.read(higherLowerGameProvider.notifier).restart(config);
+      },
+  throwDart: (ProviderContainer c, ThrownDart dart) =>
+      c.read(higherLowerGameProvider.notifier).addDart(dart),
+  confirm: (ProviderContainer c) =>
+      c.read(higherLowerGameProvider.notifier).confirmTurn(),
+  awaiting: (ProviderContainer c) =>
+      c.read(higherLowerGameProvider).awaitingTurnConfirm,
+  finished: (ProviderContainer c) =>
+      c.read(higherLowerGameProvider).leg.isFinished,
+  scoring: const ThrownDart(Segment(20, Ring.triple)),
+  scoringLedger: '60',
+  playAgain: 'higher-lower-play-again',
 );
 
 void main() {
@@ -215,7 +246,7 @@ void main() {
 
   Rect where(WidgetTester tester, Finder finder) => tester.getRect(finder);
 
-  for (final mode in [_atc, _bulling]) {
+  for (final mode in [_atc, _bulling, _higherLower]) {
     group(mode.name, () {
       group('fits the screen it is played on', () {
         for (final (name, size) in const [
@@ -309,7 +340,13 @@ void main() {
         mode.throwDart(container, mode.scoring);
         await frames(tester);
 
-        expect(find.text('+1'), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(TurnLedger),
+            matching: find.text(mode.scoringLedger),
+          ),
+          findsOneWidget,
+        );
       });
 
       testWidgets('the game over card plays again or goes back', (
@@ -380,6 +417,15 @@ void main() {
     expect(find.byKey(aimCardKey), findsOneWidget);
   });
 
+  testWidgets('the Higher/Lower values are on while a turn is open', (
+    tester,
+  ) async {
+    await openAt(tester, _higherLower, phonePortrait);
+    expect(find.byKey(boundsCardKey), findsOneWidget);
+    expect(find.text('> 45'), findsOneWidget);
+    expect(find.text('< 26'), findsOneWidget);
+  });
+
   group('training', () {
     for (final drill in TrainingDrill.values) {
       for (final (name, size) in const [
@@ -441,10 +487,14 @@ void main() {
 }
 
 /// A dart that moves the current thrower on: the stop they need for Around
-/// the Clock, a bullseye for Bulling.
+/// the Clock, a bullseye for Bulling, a treble 20 for Higher/Lower - three of
+/// those beat any higher value but 180.
 ThrownDart _nextScoring(_Mode mode, ProviderContainer container) {
   if (mode.name == _bulling.name) {
     return const ThrownDart(Segment.innerBull);
+  }
+  if (mode.name == _higherLower.name) {
+    return const ThrownDart(Segment(20, Ring.triple));
   }
   final leg = container.read(atcGameProvider).leg;
   final stop = leg.currentStopFor(leg.currentPlayerId);

@@ -30,8 +30,7 @@ class AtcTurn {
   int get stopsCleared => stopAfter - stopBefore;
 
   @override
-  String toString() =>
-      'AtcTurn(p$playerId, ${darts.join(' ')}, '
+  String toString() => 'AtcTurn(p$playerId, ${darts.join(' ')}, '
       '$stopBefore->$stopAfter)';
 }
 

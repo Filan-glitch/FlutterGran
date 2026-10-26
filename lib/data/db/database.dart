@@ -17,7 +17,8 @@ part 'database.g.dart';
 class Players extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text().withLength(min: 1, max: 40)();
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get createdAt =>
+      dateTime().withDefault(currentDateAndTime)();
 }
 
 /// A run of legs played to a best-of, won by whoever takes more than half.
@@ -34,7 +35,8 @@ class Matches extends Table {
   /// Kept only as a frozen legacy mirror of [outRule] (`true` for
   /// `X01OutRule.double`), written on every insert so it never drifts out of
   /// step. Nothing but the schema-8 migration reads it back.
-  BoolColumn get doubleOut => boolean().withDefault(const Constant(true))();
+  BoolColumn get doubleOut =>
+      boolean().withDefault(const Constant(true))();
 
   /// What it takes to open a leg. Stored by name, like [DartEvents.ring].
   TextColumn get inRule =>
@@ -54,7 +56,8 @@ class Matches extends Table {
   TextColumn get gameMode =>
       textEnum<GameMode>().withDefault(const Constant('x01'))();
 
-  DateTimeColumn get startedAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get startedAt =>
+      dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get finishedAt => dateTime().nullable()();
   IntColumn get winnerPlayerId =>
       integer().nullable().references(Players, #id)();
@@ -81,15 +84,17 @@ class Games extends Table {
       boolean().nullable().withDefault(const Constant(true))();
 
   /// What it takes to open a leg. Null for a mode with no in-rule.
-  TextColumn get inRule => textEnum<X01InRule>().nullable().withDefault(
-    const Constant('straight'),
-  )();
+  TextColumn get inRule => textEnum<X01InRule>()
+      .nullable()
+      .withDefault(const Constant('straight'))();
 
   /// What it takes to finish a leg. Null for a mode with no out-rule.
-  TextColumn get outRule =>
-      textEnum<X01OutRule>().nullable().withDefault(const Constant('double'))();
+  TextColumn get outRule => textEnum<X01OutRule>()
+      .nullable()
+      .withDefault(const Constant('double'))();
 
-  IntColumn get matchId => integer().nullable().references(Matches, #id)();
+  IntColumn get matchId =>
+      integer().nullable().references(Matches, #id)();
 
   /// Position in the match, from zero. Null for a leg outside a match.
   ///
@@ -104,7 +109,8 @@ class Games extends Table {
   TextColumn get gameMode =>
       textEnum<GameMode>().withDefault(const Constant('x01'))();
 
-  DateTimeColumn get startedAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get startedAt =>
+      dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get finishedAt => dateTime().nullable()();
   IntColumn get winnerPlayerId =>
       integer().nullable().references(Players, #id)();
@@ -147,7 +153,8 @@ class DartEvents extends Table {
 
   IntColumn get value => integer()();
 
-  DateTimeColumn get thrownAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get thrownAt =>
+      dateTime().withDefault(currentDateAndTime)();
 
   @override
   List<Set<Column<Object>>> get uniqueKeys => [
@@ -188,15 +195,7 @@ class BullingGames extends Table {
 }
 
 @DriftDatabase(
-  tables: [
-    Players,
-    Matches,
-    Games,
-    GameSeats,
-    DartEvents,
-    AtcGames,
-    BullingGames,
-  ],
+  tables: [Players, Matches, Games, GameSeats, DartEvents, AtcGames, BullingGames],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
