@@ -50,7 +50,9 @@ them. Never hand-edit `version:` in `pubspec.yaml`, `CHANGELOG.md` or
 three, and `tool/ci/check_version.sh` fails a release whose pubspec disagrees
 with its tag. `build.yml` is the one build definition, called by `ci.yml`
 (debug) and `release.yml` (release); the Flutter version is pinned in both
-`build.yml` and `ci.yml`.
+`build.yml` and `ci.yml`. Pin every action to a full commit SHA with a
+`# vX.Y.Z` comment, never a tag; the signing key lives only in the
+`sign-android` job, which must stay free of third-party actions.
 
 ## Layering rule
 

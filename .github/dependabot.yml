@@ -1,0 +1,16 @@
+# Keeps the commit-SHA pins in .github/workflows current. Every action is
+# pinned to a full SHA, not a tag, because a tag can be moved to different code
+# and the release workflow handles the signing key; the `# vX.Y.Z` comment
+# beside each pin is what Dependabot reads and rewrites.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ['*']
+    # ci: so an action bump never cuts a release on its own.
+    commit-message:
+      prefix: ci

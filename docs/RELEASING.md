@@ -20,7 +20,11 @@ bumps a version or writes a changelog by hand.
       - `chalk-X.Y.Z-android-arm64-v8a.apk`, `-armeabi-v7a.apk`, `-x86_64.apk`
         (one per ABI) and `chalk-X.Y.Z-android.apk` (universal);
       - `chalk-X.Y.Z-windows-x64.zip` (the whole app folder, with the Visual
-        C++ runtime DLLs beside `fluttergran.exe`);
+        C++ runtime DLLs beside `fluttergran.exe`).
+
+      The APKs are built with the debug key and re-signed with the release
+      key by `apksigner` in a separate `sign-android` job, which runs no
+      third-party action, so the key is never on a runner that ran one;
    3. writes `SHA256SUMS.txt`, adds a build provenance attestation for every
       file, and uploads them all;
    4. appends download, verification and build details to the notes
@@ -72,8 +76,8 @@ Add four repository secrets (Settings → Secrets and variables → Actions):
 | `ANDROID_KEY_ALIAS` | `chalk` |
 | `ANDROID_KEY_PASSWORD` | the key password |
 
-Locally, a release build signs with the same key if `android/key.properties`
-exists (it is gitignored):
+CI signs with `apksigner`, not Gradle. Locally, a release build signs with
+the same key if `android/key.properties` exists (it is gitignored):
 
 ```properties
 storeFile=/absolute/path/to/chalk-release.jks
@@ -101,6 +105,13 @@ checks, add a fine-grained personal access token as `RELEASE_PLEASE_TOKEN`
 sha256sum --check --ignore-missing SHA256SUMS.txt
 gh attestation verify chalk-X.Y.Z-android.apk --repo Filan-glitch/FlutterGran
 ```
+
+## Pinned actions
+
+Every action in `.github/workflows` is pinned to a full commit SHA with its
+version in a comment (`@<sha> # v2.23.0`), not to a tag a publisher could move
+to different code. Dependabot (`.github/dependabot.yml`) opens a weekly `ci:`
+PR to move the pins; review a third-party action's diff before merging it.
 
 ## Changing the toolchain
 

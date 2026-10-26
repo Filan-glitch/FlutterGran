@@ -6,10 +6,10 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-// Release signing, from android/key.properties when it exists. CI writes that
-// file from repository secrets for a release build; locally it is absent and
-// gitignored, and a release build falls back to the debug key so
-// `flutter run --release` keeps working. See docs/RELEASING.md.
+// Release signing for local builds, from android/key.properties when it exists
+// (gitignored). Without it a release build falls back to the debug key, so
+// `flutter run --release` keeps working. CI never writes this file: it signs
+// release APKs afterwards, in a job of its own. See docs/RELEASING.md.
 val keystoreProperties = Properties().apply {
     val file = rootProject.file("key.properties")
     if (file.exists()) file.inputStream().use { load(it) }
