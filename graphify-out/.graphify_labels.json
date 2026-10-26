@@ -30,7 +30,6 @@
   "53": "Architecture",
   "54": "The board protocol",
   "55": "return",
-  "57": "training_setup_screen.dart",
   "60": "fluttergran",
   "61": "The GranBoard 132",
   "62": "atc_leg_state.dart",
@@ -39,7 +38,6 @@
   "65": "README.md",
   "68": "mode_layout_test.dart",
   "69": "worker.md",
-  "72": "MainActivity",
   "76": "android/build.gradle.kts",
   "77": "settings.gradle.kts",
   "80": "Random",
@@ -60,7 +58,6 @@
   "230": "AppLocalizations",
   "238": "lights_providers.dart",
   "252": "BoardConnectionController",
-  "272": "TrainingGameScreen",
   "273": "_FakeAudioPlatform",
   "274": "_FakeGlobalAudioPlatform",
   "277": "_FakeAudioCache"
