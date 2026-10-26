@@ -12,11 +12,12 @@ structured - one sentence per option, not one paragraph per rule.
   - phone: a column of cards (glyph, name, tagline); a tap pushes
     `RulesDetailScreen`, the glyph flying into its header (`Hero`, tag
     `rulesGlyphTag`).
-  - tablet: four tall posters across (two by two when narrower), with the
-    mode's numbers at the foot. Same tap, same flight.
+  - tablet: tall posters, all across when they fit and two rows when they
+    do not, with the mode's numbers at the foot. Same tap, same flight.
+    Five topics do not fit across a Tab S6 Lite, so it shows three over two.
   - desktop window with the hero treatment: master-detail - the cards as a
     rail, the selected mode's `RulesBody` in a pane beside it, switching in
-    place. Below `desktopHeroLayout` it falls back to the phone list.
+    place. The rail scrolls once the cards outgrow a short window. Below `desktopHeroLayout` it falls back to the phone list.
 - **`RulesDetailScreen(topic)`** - one mode's `RulesBody` under an `AppBar`.
   Pushed from the overview on phone/tablet and from each setup screen's
   `RulesButton`. `rulesContentWidth` widens its `CenteredContent` cap on hero
@@ -24,7 +25,7 @@ structured - one sentence per option, not one paragraph per rule.
 
 `RulesTopic` (`lib/app/rules_topic.dart`) is not `GameMode`: training has a
 rules page but no engine. It carries the name (read from `gameModeRegistry`
-for the three modes), objective, tagline and facts (start scores, stops,
+for the playable modes), objective, tagline and facts (start scores, stops,
 targets - read off the same domain constants the setup screens offer).
 
 ## Building blocks - `lib/app/widgets/rules/`
@@ -58,4 +59,4 @@ them by hand if a rule they show changes.
   English and German.
 - `test/app/rules_detail_screen_test.dart` - each topic's sections, explorer
   taps against the domain predicates, the match-format pips, Bulling's
-  points table.
+  points table, Higher/Lower's out rules and worked examples.

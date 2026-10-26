@@ -65,8 +65,13 @@ to `Matche`.
 | `startScore`, `doubleOut` | |
 | `matchId` | **nullable**, references `Matches` |
 | `legNumber` | **nullable**, position in the match from zero |
-| `gameMode` | stored by name, like `DartEvents.ring`. Every leg ever played is `x01` |
+| `gameMode` | stored by name, like `DartEvents.ring`: `x01`, `aroundTheClock`, `bulling` or `higherLower`. Rows from before schema v5 are `x01` |
 | `startedAt`, `finishedAt`, `winnerPlayerId` | |
+
+Around the Clock and Bulling keep their own per-leg settings in a sibling
+table keyed by `gameId` (`AtcGames`, `BullingGames`). Higher/Lower has none:
+every leg opens on the same two values, so its seats are its whole config, and
+adding it needed no schema change.
 
 A "game" in the database is a **leg**. `matchId` and `legNumber` are nullable
 because they have to be: every leg stored before matches existed is a real leg
