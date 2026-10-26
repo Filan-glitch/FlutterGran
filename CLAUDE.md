@@ -23,6 +23,27 @@ dart run build_runner build --delete-conflicting-outputs   # drift codegen
 `test/domain` and `test/data` run under plain `dart test` because neither layer
 imports Flutter. `test/app` needs `flutter test`.
 
+## Parallel work: one worktree per worker
+
+Several agent sessions often work on this repo at once. They must never share
+a checkout: a `git checkout` in one session moves HEAD under every other
+session in the same directory, so commits land on the wrong branch (once,
+a whole feature landed on local `main`) and one session's `dart format` or
+codegen output turns up in another's diff. So every feature gets its own
+branch **and its own worktree**, made before the first edit:
+
+```
+git worktree add ../FlutterGran-<topic> -b feat/<topic> origin/main
+```
+
+or a subagent started with `isolation: "worktree"`. Work, test and commit
+only inside it; leave the main checkout on `main` and never switch it. Remove
+the worktree (`git worktree remove`) once its PR is merged. Branches that
+touch the same files - the `.arb` files and `graphify-out/` almost always
+conflict - are merged one at a time: merge `main` into the next branch,
+union the `.arb` keys, rerun `flutter gen-l10n` and `graphify update .`,
+and let CI pass before merging it.
+
 ## Windows
 
 Added 2026-10-26 (Flutter 3.47). Only builds on Windows; CI's `build / windows`
