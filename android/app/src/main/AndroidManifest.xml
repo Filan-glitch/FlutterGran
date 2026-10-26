@@ -7,6 +7,17 @@
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
                      android:usesPermissionFlags="neverForLocation" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <!--
+      The update check: GitHub's API for the latest release, then the APK
+      itself. Debug builds always had INTERNET (src/debug adds it for the
+      Flutter tool); release builds need it declared here.
+    -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!--
+      Lets Chalk hand a downloaded update to the system installer. Android
+      still asks the player once, in Settings, before it lets any app use it.
+    -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <application
         android:label="Chalk"
@@ -34,6 +45,20 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!--
+          Shares a downloaded update with the system installer as a content://
+          URI. Scoped to cache/updates/ by res/xml/update_paths.xml, and named
+          in MainActivity.kt.
+        -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.updates"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/update_paths" />
+        </provider>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

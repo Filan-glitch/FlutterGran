@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -5,6 +7,8 @@ import '../../domain/game_mode.dart';
 import '../l10n_extensions.dart';
 import '../providers.dart';
 import '../theme.dart';
+import '../update/update_controller.dart';
+import '../widgets/update_card.dart';
 import 'atc_game_screen.dart';
 import 'atc_setup_screen.dart';
 import 'bulling_game_screen.dart';
@@ -105,7 +109,7 @@ class MainMenuScreen extends ConsumerWidget {
     return Scaffold(
       body: SafeArea(
         child: CenteredContent(
-          child: Padding(
+          child: _FitOrScroll(
             padding: const EdgeInsets.all(Gap.lg),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -120,6 +124,18 @@ class MainMenuScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: Gap.xxl),
+                // Above the resume card: a release is news, a leg in
+                // progress is already known. Empty while there is none.
+                if (ref.watch(updateProvider).release != null &&
+                    !ref.watch(updateCardDismissedProvider)) ...[
+                  UpdateCard(
+                    compact: true,
+                    onDismiss: ref
+                        .read(updateCardDismissedProvider.notifier)
+                        .dismiss,
+                  ),
+                  const SizedBox(height: Gap.xl),
+                ],
                 if (resumable != null) ...[
                   StaggeredEntry(
                     index: 0,
@@ -215,6 +231,30 @@ class MainMenuScreen extends ConsumerWidget {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Centres the menu when it fits and scrolls it when it does not: a phone on
+/// its side, or the update and resume cards both up on a short screen.
+class _FitOrScroll extends StatelessWidget {
+  const _FitOrScroll({required this.padding, required this.child});
+
+  final EdgeInsets padding;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        padding: padding,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: math.max(0, constraints.maxHeight - padding.vertical),
+          ),
+          child: child,
         ),
       ),
     );

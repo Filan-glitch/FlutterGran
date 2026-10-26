@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The one directory the installer may read: where UpdatePlatform.downloadDirectory
+  (lib/app/update/update_platform.dart) puts a downloaded APK.
+-->
+<paths>
+    <cache-path name="updates" path="updates/" />
+</paths>

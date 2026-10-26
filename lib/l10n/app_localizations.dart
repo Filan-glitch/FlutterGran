@@ -1651,6 +1651,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'DONE'**
   String get doneButton;
+
+  /// No description provided for @updatesSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Updates'**
+  String get updatesSectionTitle;
+
+  /// No description provided for @updateCurrentVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version}'**
+  String updateCurrentVersion(String version);
+
+  /// No description provided for @updateAutoCheckLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Check for updates'**
+  String get updateAutoCheckLabel;
+
+  /// No description provided for @updateAutoCheckDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Asks GitHub for a newer release when the app starts'**
+  String get updateAutoCheckDetail;
+
+  /// No description provided for @updateCheckNowButton.
+  ///
+  /// In en, this message translates to:
+  /// **'CHECK NOW'**
+  String get updateCheckNowButton;
+
+  /// No description provided for @updateCheckingStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking…'**
+  String get updateCheckingStatus;
+
+  /// No description provided for @updateUpToDateStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Chalk is up to date'**
+  String get updateUpToDateStatus;
+
+  /// No description provided for @updateCheckFailedStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t reach GitHub'**
+  String get updateCheckFailedStatus;
+
+  /// No description provided for @updateAvailableEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'UPDATE'**
+  String get updateAvailableEyebrow;
+
+  /// No description provided for @updateAvailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chalk {version} is available'**
+  String updateAvailableTitle(String version);
+
+  /// No description provided for @updateAndroidDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads and installs it, keeping every game played'**
+  String get updateAndroidDetail;
+
+  /// No description provided for @updateWindowsDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens the release page to download it'**
+  String get updateWindowsDetail;
+
+  /// No description provided for @updateInstallButton.
+  ///
+  /// In en, this message translates to:
+  /// **'UPDATE'**
+  String get updateInstallButton;
+
+  /// No description provided for @updateDownloadButton.
+  ///
+  /// In en, this message translates to:
+  /// **'DOWNLOAD'**
+  String get updateDownloadButton;
+
+  /// No description provided for @updateDownloadingStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading…'**
+  String get updateDownloadingStatus;
+
+  /// No description provided for @updateInstallingStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish in the installer Android opened'**
+  String get updateInstallingStatus;
+
+  /// No description provided for @updatePermissionStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow Chalk to install apps, then come back'**
+  String get updatePermissionStatus;
+
+  /// No description provided for @updateDownloadFailedStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Download failed'**
+  String get updateDownloadFailedStatus;
+
+  /// No description provided for @updateInstallFailedStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t start the update'**
+  String get updateInstallFailedStatus;
+
+  /// No description provided for @updateRetryButton.
+  ///
+  /// In en, this message translates to:
+  /// **'TRY AGAIN'**
+  String get updateRetryButton;
+
+  /// No description provided for @updateDismissTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss'**
+  String get updateDismissTooltip;
 }
 
 class _AppLocalizationsDelegate
