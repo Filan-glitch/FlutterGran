@@ -180,43 +180,250 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rulesX01Objective =>
-      'Race to exactly zero. Each player starts at the chosen score — 301, 501, or 701 — and works it down with three darts a turn.';
-
-  @override
-  String get rulesX01InRule =>
-      'In rule sets what starts your scoring: Straight — any dart counts right away. Double — darts before your first double score nothing; that double both opens your score and counts. Master — a double or a triple opens it.';
-
-  @override
-  String get rulesX01OutRule =>
-      'Out rule sets what can finish a leg: Straight — any dart can take you out on exactly zero. Double — only a double finishes. Master — a double or a triple finishes. Overshooting zero, landing on it without a qualifying finish, or leaving exactly 1 under double or master out all bust the turn — your score resets to what it was when the turn began.';
-
-  @override
-  String get rulesX01Format =>
-      'A match is played over several legs — best of 1, 3, 5, or 7. With two players it\'s first to more than half; with three or four it\'s simply first to that many legs, since a majority isn\'t guaranteed to fall within them.';
+      'Start on 301, 501 or 701 and race to exactly zero, three darts a turn.';
 
   @override
   String get rulesAtcObjective =>
-      'Clear 22 stops in order — 1 through 20, then the outer bull, then the bullseye. First to clear them all wins.';
-
-  @override
-  String get rulesAtcVariant =>
-      'Variant sets what clears a numbered stop (the two bull stops are unaffected): Any part — single, double, or triple all count. Masters — double or triple only. Doubles only — double only.';
+      'Hit 1 to 20 in order, then the outer bull, then the bullseye. First all the way round wins.';
 
   @override
   String get rulesBullingObjective =>
-      'First to reach or pass the target score — 21, 31, or 41 — by hitting bulls wins. The outer bull is worth 1 point; the inner bull (bullseye) is worth 2 or 3, set at setup. Everything else scores nothing.';
+      'Only bulls score. First to reach the target wins.';
 
   @override
-  String get rulesBullingValue =>
-      'A leg ends the moment a player reaches target, even mid-turn — any darts thrown after that in the same turn don\'t count.';
+  String get rulesTrainingObjective =>
+      'Just you and the board. No opponent, no pressure - pick a drill and throw.';
 
   @override
-  String get rulesTrainingFreePractice =>
-      'Free practice — no target or win condition. Just throw; the session tracks your total, best turn, 180 count, and three-dart average.';
+  String get rulesFactStart => 'START';
 
   @override
-  String get rulesTrainingCheckoutPractice =>
-      'Checkout practice — pick a start score and practice finishing it under double-out, the same rule as an X01 leg, with the checkout suggestion shown throughout.';
+  String get rulesFactPlayers => 'PLAYERS';
+
+  @override
+  String get rulesFactPlayer => 'PLAYER';
+
+  @override
+  String get rulesFactDarts => 'DARTS A TURN';
+
+  @override
+  String get rulesFactStops => 'STOPS';
+
+  @override
+  String get rulesFactTarget => 'TARGET';
+
+  @override
+  String get rulesFactDrills => 'DRILLS';
+
+  @override
+  String get rulesSectionIn => 'IN RULE';
+
+  @override
+  String get rulesSectionOut => 'OUT RULE';
+
+  @override
+  String get rulesSectionBust => 'BUST';
+
+  @override
+  String get rulesSectionFormat => 'MATCH FORMAT';
+
+  @override
+  String get rulesSectionRoute => 'THE ROUTE';
+
+  @override
+  String get rulesSectionVariant => 'VARIANT';
+
+  @override
+  String get rulesSectionScoring => 'SCORING';
+
+  @override
+  String get rulesSectionDrills => 'DRILLS';
+
+  @override
+  String get rulesSectionExamples => 'EXAMPLES';
+
+  @override
+  String get rulesLegendIn => 'LIT SEGMENTS OPEN YOUR SCORE';
+
+  @override
+  String get rulesLegendOut => 'LIT SEGMENTS CAN FINISH A LEG';
+
+  @override
+  String get rulesLegendAtc => 'LIT SEGMENTS CLEAR STOP 20';
+
+  @override
+  String get rulesLegendBulling => 'ONLY THE LIT BULLS SCORE';
+
+  @override
+  String get rulesLegendCheckout => 'LIT SEGMENTS CAN FINISH';
+
+  @override
+  String get rulesInStraight =>
+      'Every dart counts, right from the first throw.';
+
+  @override
+  String get rulesInDouble =>
+      'Nothing counts until you hit a double. That double opens your score and counts too.';
+
+  @override
+  String get rulesInMaster =>
+      'Nothing counts until you hit a double or a triple. That dart opens your score and counts too.';
+
+  @override
+  String get rulesOutStraight =>
+      'Any dart that lands you on exactly zero wins the leg.';
+
+  @override
+  String get rulesOutDouble =>
+      'Only a double - or the bullseye - can take you to zero.';
+
+  @override
+  String get rulesOutMaster =>
+      'A double, a triple or the bullseye can take you to zero.';
+
+  @override
+  String get rulesBustTitle => 'A TURN BUSTS WHEN';
+
+  @override
+  String get rulesBustOvershoot => 'You score more than you have left.';
+
+  @override
+  String get rulesBustNoFinish =>
+      'You reach zero, but not with a dart the out rule allows.';
+
+  @override
+  String get rulesBustOneLeft =>
+      'You leave exactly 1 under double or master out - no dart can finish that.';
+
+  @override
+  String get rulesBustReset =>
+      'The rest of the turn is lost and your score goes back to where the turn started.';
+
+  @override
+  String get rulesFormatBestOf => 'BEST OF';
+
+  @override
+  String rulesFormatFirstTo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'First to $count legs',
+      one: 'First to 1 leg',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get rulesFormatGroup =>
+      'With 3 or 4 players nobody is guaranteed a majority, so the match runs on until someone gets there.';
+
+  @override
+  String get rulesAtcRouteHint =>
+      'One stop at a time: hit your number to move on to the next one.';
+
+  @override
+  String get rulesAtcAnyPart =>
+      'Single, double or triple - any part of the number counts.';
+
+  @override
+  String get rulesAtcMasters =>
+      'Only the double or the triple of the number counts.';
+
+  @override
+  String get rulesAtcDoublesOnly => 'Only the double of the number counts.';
+
+  @override
+  String get rulesAtcBullsNote =>
+      'The two bull stops always need just that bull, whatever the variant.';
+
+  @override
+  String get rulesBullseyeTwo =>
+      'The bullseye is worth 2. Steady legs, more darts.';
+
+  @override
+  String get rulesBullseyeThree =>
+      'The bullseye is worth 3. One great dart can swing the leg.';
+
+  @override
+  String get rulesBullingOuterBull => 'OUTER BULL';
+
+  @override
+  String get rulesBullingBullseye => 'BULLSEYE';
+
+  @override
+  String get rulesBullingEverythingElse => 'EVERYTHING ELSE';
+
+  @override
+  String get rulesBullingInstantTitle => 'INSTANT WIN';
+
+  @override
+  String get rulesBullingInstant =>
+      'The leg ends the moment you reach the target, even mid-turn. Darts after that don\'t count.';
+
+  @override
+  String get rulesBullingNoBust =>
+      'Going past the target is fine - there is no bust in bulling.';
+
+  @override
+  String get rulesTrainingFreeBody =>
+      'No target and no win condition. Throw and watch your numbers.';
+
+  @override
+  String get rulesTrainingCheckoutBody =>
+      'Pick a start score and finish it under double out, the same rule as an X01 leg. The checkout route stays on screen the whole way.';
+
+  @override
+  String get rulesStatTotal => 'TOTAL';
+
+  @override
+  String get rulesOutcomeCheckout => 'GAME SHOT';
+
+  @override
+  String get rulesOutcomeNextStop => 'NEXT STOP';
+
+  @override
+  String get rulesOutcomeWin => 'LEG WON';
+
+  @override
+  String rulesExampleLeft(int remaining) {
+    return '$remaining LEFT';
+  }
+
+  @override
+  String get rulesExampleDoubleOut => 'DOUBLE OUT';
+
+  @override
+  String get rulesExampleCheckoutNote => 'D20 is a double: straight to zero.';
+
+  @override
+  String get rulesExampleNoDoubleNote =>
+      'Zero - but the last dart was a single, so it doesn\'t count.';
+
+  @override
+  String get rulesExampleOvershootNote =>
+      '34 is more than 32. Back to 32 for the next turn.';
+
+  @override
+  String rulesExampleAtcOn(String stop, String variant) {
+    return 'ON $stop · $variant';
+  }
+
+  @override
+  String get rulesExampleAtcNote =>
+      'The single doesn\'t clear 5 under Masters. The triple does.';
+
+  @override
+  String rulesExampleBulling(int score, int target) {
+    return '$score OF $target';
+  }
+
+  @override
+  String get rulesExampleBullingNote =>
+      'The bullseye takes you past 21 - the third dart is never thrown.';
+
+  @override
+  String get rulesBoardSemantics =>
+      'Dartboard with the segments that count lit up';
 
   @override
   String get rulesX01Title => 'X01 RULES';

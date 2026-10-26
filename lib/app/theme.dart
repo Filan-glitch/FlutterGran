@@ -414,9 +414,18 @@ const double formContentWidth = 640;
 /// - a phone screen is already narrower than the cap, so this is invisible on
 /// every device the app shipped for before a tablet.
 class CenteredContent extends StatelessWidget {
-  const CenteredContent({super.key, required this.child});
+  const CenteredContent({
+    super.key,
+    required this.child,
+    this.maxWidth = formContentWidth,
+  });
 
   final Widget child;
+
+  /// The cap, for a screen that is not form-shaped and has a use for more
+  /// room on a big screen - a rules page laying a board beside its options.
+  /// Scaled on a desktop the same way [formContentWidth] is.
+  final double maxWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -430,8 +439,8 @@ class CenteredContent extends StatelessWidget {
     // avoids both: no positioning render object in the way of the probe, and
     // a width that is never asked to exceed what is actually there.
     final cap = isDesktop
-        ? formContentWidth * typeScaleFor(MediaQuery.sizeOf(context))
-        : formContentWidth;
+        ? maxWidth * typeScaleFor(MediaQuery.sizeOf(context))
+        : maxWidth;
 
     return LayoutBuilder(
       builder: (context, constraints) {

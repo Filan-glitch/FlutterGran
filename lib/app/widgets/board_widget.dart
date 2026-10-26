@@ -66,6 +66,7 @@ class BoardWidget extends StatelessWidget {
     this.highlight = const {},
     this.heat = const {},
     this.showNumbers = true,
+    this.dimUnheated = 0,
   });
 
   /// Called with the segment under the tap.
@@ -81,6 +82,12 @@ class BoardWidget extends StatelessWidget {
   final Map<Segment, double> heat;
 
   final bool showNumbers;
+
+  /// How far, from 0 to 1, every segment *not* in [heat] fades into the
+  /// background - a spotlight on the heated ones. A rules page uses it so
+  /// the segments a rule allows stand out from a board that is otherwise
+  /// all bed colours; zero leaves the board as it is.
+  final double dimUnheated;
 
   @override
   Widget build(BuildContext context) {
@@ -120,6 +127,8 @@ class BoardWidget extends StatelessWidget {
                   highlight: highlight,
                   heat: heat,
                   showNumbers: showNumbers,
+                  dimUnheated: dimUnheated,
+                  dimColour: Theme.of(context).colorScheme.surface,
                   highlightColour: Theme.of(context).colorScheme.primary,
                   numberColour: Theme.of(context).colorScheme.onSurface,
                 ),
@@ -138,6 +147,8 @@ class _BoardPainter extends CustomPainter {
     required this.highlight,
     required this.heat,
     required this.showNumbers,
+    required this.dimUnheated,
+    required this.dimColour,
     required this.highlightColour,
     required this.numberColour,
   });
@@ -146,6 +157,8 @@ class _BoardPainter extends CustomPainter {
   final Set<Segment> highlight;
   final Map<Segment, double> heat;
   final bool showNumbers;
+  final double dimUnheated;
+  final Color dimColour;
   final Color highlightColour;
   final Color numberColour;
 
@@ -246,11 +259,16 @@ class _BoardPainter extends CustomPainter {
     }
   }
 
-  /// Blends a segment's base colour towards the heat colour by its intensity.
+  /// Blends a segment's base colour towards the heat colour by its intensity,
+  /// and anything cooler than full heat towards the background by
+  /// [dimUnheated].
   Color _shade(Segment segment, Color base) {
-    final intensity = heat[segment];
-    if (intensity == null || intensity <= 0) return base;
-    return Color.lerp(base, highlightColour, intensity.clamp(0, 1)) ?? base;
+    final intensity = (heat[segment] ?? 0).clamp(0.0, 1.0);
+    final dimmed = dimUnheated <= 0
+        ? base
+        : Color.lerp(base, dimColour, dimUnheated * (1 - intensity)) ?? base;
+    if (intensity <= 0) return dimmed;
+    return Color.lerp(dimmed, highlightColour, intensity) ?? dimmed;
   }
 
   Path _sector(Offset centre, double inner, double outer, double start) {
@@ -306,5 +324,6 @@ class _BoardPainter extends CustomPainter {
       old.highlight != highlight ||
       old.heat != heat ||
       old.showNumbers != showNumbers ||
+      old.dimUnheated != dimUnheated ||
       old.highlightColour != highlightColour;
 }

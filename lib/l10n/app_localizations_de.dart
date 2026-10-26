@@ -180,43 +180,248 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get rulesX01Objective =>
-      'Ziel ist es, exakt auf null zu kommen. Jeder Spieler startet bei der gewählten Punktzahl – 301, 501 oder 701 – und spielt sie mit drei Darts pro Aufnahme herunter.';
-
-  @override
-  String get rulesX01InRule =>
-      'Die In-Regel legt fest, wodurch das Punkten beginnt: Straight – jeder Dart zählt sofort. Double – Darts vor deinem ersten Doppel zählen nicht; dieses Doppel eröffnet die Punktzahl und zählt zugleich. Master – ein Doppel oder ein Triple eröffnet sie.';
-
-  @override
-  String get rulesX01OutRule =>
-      'Die Out-Regel legt fest, womit ein Leg beendet werden kann: Straight – jeder Dart kann bei exakt null beenden. Double – nur ein Doppel beendet das Leg. Master – ein Doppel oder ein Triple beendet es. Über null hinauszuwerfen, ohne gültiges Finish auf null zu landen, oder bei Double- bzw. Master-out genau 1 übrig zu lassen, gilt jeweils als Bust – die Punktzahl wird auf den Stand vor der Aufnahme zurückgesetzt.';
-
-  @override
-  String get rulesX01Format =>
-      'Ein Match wird über mehrere Legs gespielt – Best of 1, 3, 5 oder 7. Bei zwei Spielern gewinnt, wer mehr als die Hälfte holt; bei drei oder vier zählt einfach, wer zuerst die genannte Anzahl erreicht, da eine Mehrheit dabei nicht garantiert ist.';
+      'Start bei 301, 501 oder 701 – und dann exakt auf null, drei Darts pro Aufnahme.';
 
   @override
   String get rulesAtcObjective =>
-      '22 Stationen der Reihe nach freispielen – 1 bis 20, dann der äußere Bull, dann das Bullseye. Wer zuerst alle freispielt, gewinnt.';
-
-  @override
-  String get rulesAtcVariant =>
-      'Die Variante legt fest, was eine nummerierte Station freispielt (die beiden Bull-Stationen sind davon nicht betroffen): Beliebiges Feld – Einfach, Doppel oder Triple zählen alle. Masters – nur Doppel oder Triple. Nur Doppel – nur ein Doppel zählt.';
+      'Triff 1 bis 20 der Reihe nach, dann den äußeren Bull, dann das Bullseye. Wer zuerst einmal herum ist, gewinnt.';
 
   @override
   String get rulesBullingObjective =>
-      'Wer zuerst die Zielpunktzahl – 21, 31 oder 41 – erreicht oder überschreitet, gewinnt, indem er Bulls trifft. Der äußere Bull zählt 1 Punkt, der innere Bull (Bullseye) zählt 2 oder 3, je nach Einstellung. Alles andere zählt nichts.';
+      'Nur Bulls zählen. Wer zuerst das Ziel erreicht, gewinnt.';
 
   @override
-  String get rulesBullingValue =>
-      'Ein Leg endet in dem Moment, in dem das Ziel erreicht wird – auch mitten in einer Aufnahme. Darts, die danach in derselben Aufnahme geworfen werden, zählen nicht mehr.';
+  String get rulesTrainingObjective =>
+      'Nur du und die Scheibe. Kein Gegner, kein Druck – Übung wählen und werfen.';
 
   @override
-  String get rulesTrainingFreePractice =>
-      'Freies Training – kein Ziel, keine Gewinnbedingung. Einfach werfen; die Sitzung erfasst Gesamtpunktzahl, beste Aufnahme, Anzahl der 180er und den Drei-Darts-Schnitt.';
+  String get rulesFactStart => 'START';
 
   @override
-  String get rulesTrainingCheckoutPractice =>
-      'Checkout-Training – eine Startpunktzahl wählen und das Finish unter Double-out üben, nach derselben Regel wie ein X01-Leg, mit durchgehend angezeigtem Checkout-Vorschlag.';
+  String get rulesFactPlayers => 'SPIELER';
+
+  @override
+  String get rulesFactPlayer => 'SPIELER';
+
+  @override
+  String get rulesFactDarts => 'DARTS PRO AUFNAHME';
+
+  @override
+  String get rulesFactStops => 'STATIONEN';
+
+  @override
+  String get rulesFactTarget => 'ZIEL';
+
+  @override
+  String get rulesFactDrills => 'ÜBUNGEN';
+
+  @override
+  String get rulesSectionIn => 'IN-REGEL';
+
+  @override
+  String get rulesSectionOut => 'OUT-REGEL';
+
+  @override
+  String get rulesSectionBust => 'BUST';
+
+  @override
+  String get rulesSectionFormat => 'MATCH-FORMAT';
+
+  @override
+  String get rulesSectionRoute => 'DIE STRECKE';
+
+  @override
+  String get rulesSectionVariant => 'VARIANTE';
+
+  @override
+  String get rulesSectionScoring => 'PUNKTE';
+
+  @override
+  String get rulesSectionDrills => 'ÜBUNGEN';
+
+  @override
+  String get rulesSectionExamples => 'BEISPIELE';
+
+  @override
+  String get rulesLegendIn => 'LEUCHTENDE FELDER ERÖFFNEN';
+
+  @override
+  String get rulesLegendOut => 'LEUCHTENDE FELDER BEENDEN EIN LEG';
+
+  @override
+  String get rulesLegendAtc => 'LEUCHTENDE FELDER SPIELEN DIE 20 FREI';
+
+  @override
+  String get rulesLegendBulling => 'NUR DIE LEUCHTENDEN BULLS ZÄHLEN';
+
+  @override
+  String get rulesLegendCheckout => 'LEUCHTENDE FELDER BEENDEN';
+
+  @override
+  String get rulesInStraight => 'Jeder Dart zählt, schon ab dem ersten Wurf.';
+
+  @override
+  String get rulesInDouble =>
+      'Nichts zählt, bis du ein Doppel triffst. Dieses Doppel eröffnet deine Punktzahl und zählt mit.';
+
+  @override
+  String get rulesInMaster =>
+      'Nichts zählt, bis du ein Doppel oder Triple triffst. Dieser Dart eröffnet deine Punktzahl und zählt mit.';
+
+  @override
+  String get rulesOutStraight =>
+      'Jeder Dart, der dich exakt auf null bringt, gewinnt das Leg.';
+
+  @override
+  String get rulesOutDouble =>
+      'Nur ein Doppel – oder das Bullseye – bringt dich auf null.';
+
+  @override
+  String get rulesOutMaster =>
+      'Ein Doppel, ein Triple oder das Bullseye bringt dich auf null.';
+
+  @override
+  String get rulesBustTitle => 'EINE AUFNAHME IST BUST, WENN';
+
+  @override
+  String get rulesBustOvershoot => 'du mehr wirfst, als du noch übrig hast.';
+
+  @override
+  String get rulesBustNoFinish =>
+      'du null erreichst, aber nicht mit einem Dart, den die Out-Regel erlaubt.';
+
+  @override
+  String get rulesBustOneLeft =>
+      'bei Double- oder Master-out genau 1 übrig bleibt – das kann kein Dart beenden.';
+
+  @override
+  String get rulesBustReset =>
+      'Der Rest der Aufnahme verfällt, und deine Punktzahl springt auf den Stand vor der Aufnahme zurück.';
+
+  @override
+  String get rulesFormatBestOf => 'BEST OF';
+
+  @override
+  String rulesFormatFirstTo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Wer zuerst $count Legs holt',
+      one: 'Wer zuerst 1 Leg holt',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get rulesFormatGroup =>
+      'Bei 3 oder 4 Spielern ist keine Mehrheit garantiert – das Match läuft weiter, bis jemand so weit ist.';
+
+  @override
+  String get rulesAtcRouteHint =>
+      'Eine Station nach der anderen: Triff deine Zahl, um zur nächsten weiterzuziehen.';
+
+  @override
+  String get rulesAtcAnyPart =>
+      'Einfach, Doppel oder Triple – jedes Feld der Zahl zählt.';
+
+  @override
+  String get rulesAtcMasters => 'Nur Doppel oder Triple der Zahl zählen.';
+
+  @override
+  String get rulesAtcDoublesOnly => 'Nur das Doppel der Zahl zählt.';
+
+  @override
+  String get rulesAtcBullsNote =>
+      'Die beiden Bull-Stationen brauchen immer genau diesen Bull, egal welche Variante.';
+
+  @override
+  String get rulesBullseyeTwo =>
+      'Das Bullseye zählt 2. Ruhige Legs, mehr Darts.';
+
+  @override
+  String get rulesBullseyeThree =>
+      'Das Bullseye zählt 3. Ein starker Dart kann das Leg drehen.';
+
+  @override
+  String get rulesBullingOuterBull => 'ÄUSSERER BULL';
+
+  @override
+  String get rulesBullingBullseye => 'BULLSEYE';
+
+  @override
+  String get rulesBullingEverythingElse => 'ALLES ANDERE';
+
+  @override
+  String get rulesBullingInstantTitle => 'SOFORT GEWONNEN';
+
+  @override
+  String get rulesBullingInstant =>
+      'Das Leg endet in dem Moment, in dem du das Ziel erreichst – auch mitten in der Aufnahme. Darts danach zählen nicht.';
+
+  @override
+  String get rulesBullingNoBust =>
+      'Über das Ziel hinaus ist kein Problem – beim Bulling gibt es keinen Bust.';
+
+  @override
+  String get rulesTrainingFreeBody =>
+      'Kein Ziel und keine Gewinnbedingung. Werfen und die eigenen Zahlen im Blick behalten.';
+
+  @override
+  String get rulesTrainingCheckoutBody =>
+      'Startpunktzahl wählen und unter Double-out beenden, nach derselben Regel wie ein X01-Leg. Der Checkout-Weg bleibt die ganze Zeit sichtbar.';
+
+  @override
+  String get rulesStatTotal => 'GESAMT';
+
+  @override
+  String get rulesOutcomeCheckout => 'GAME SHOT';
+
+  @override
+  String get rulesOutcomeNextStop => 'NÄCHSTE STATION';
+
+  @override
+  String get rulesOutcomeWin => 'LEG GEWONNEN';
+
+  @override
+  String rulesExampleLeft(int remaining) {
+    return 'NOCH $remaining';
+  }
+
+  @override
+  String get rulesExampleDoubleOut => 'DOUBLE-OUT';
+
+  @override
+  String get rulesExampleCheckoutNote => 'D20 ist ein Doppel: direkt auf null.';
+
+  @override
+  String get rulesExampleNoDoubleNote =>
+      'Null – aber der letzte Dart war ein Einfach, also zählt es nicht.';
+
+  @override
+  String get rulesExampleOvershootNote =>
+      '34 ist mehr als 32. Zurück auf 32 für die nächste Aufnahme.';
+
+  @override
+  String rulesExampleAtcOn(String stop, String variant) {
+    return 'AUF $stop · $variant';
+  }
+
+  @override
+  String get rulesExampleAtcNote =>
+      'Bei Masters spielt das Einfach die 5 nicht frei. Das Triple schon.';
+
+  @override
+  String rulesExampleBulling(int score, int target) {
+    return '$score VON $target';
+  }
+
+  @override
+  String get rulesExampleBullingNote =>
+      'Das Bullseye bringt dich über 21 – der dritte Dart wird nie geworfen.';
+
+  @override
+  String get rulesBoardSemantics =>
+      'Dartscheibe, auf der die zählenden Felder leuchten';
 
   @override
   String get rulesX01Title => 'X01 REGELN';
