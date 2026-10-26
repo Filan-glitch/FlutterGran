@@ -308,5 +308,44 @@
     "placeholders": { "count": { "type": "int" } }
   },
   "throwAgainButton": "THROW AGAIN",
-  "doneButton": "DONE"
+  "doneButton": "DONE",
+  "pickAtLeastTwoPlayers": "PICK AT LEAST TWO PLAYERS",
+  "higherLowerSetupTitle": "HIGHER / LOWER SETUP",
+  "rulesHigherLowerTitle": "HIGHER / LOWER RULES",
+  "rulesHigherLowerOverview": "Beat the higher score or duck the lower one, or you're out",
+  "rulesHigherLowerObjective": "Two values are on the board: higher, starting at 45, and lower, starting at 26. Each turn, throw three darts and score strictly more than higher or strictly less than lower. Do it and that value becomes your total. Fail — or land exactly on either value — and you're out for the rest of the leg. The last player standing wins.",
+  "rulesHigherLowerSpecial": "Every dart has to land: a miss puts you out on the spot, and so does ending your turn early with the board button. Treble 1 counts as 0 — the only way under 3.",
+  "higherLabel": "HIGHER",
+  "lowerLabel": "LOWER",
+  "eliminatedLabel": "OUT",
+  "turnTotalLabel": "TURN",
+  "survivedCaption": "survived",
+  "higherArrow": "HIGHER {before} → {after}",
+  "@higherArrow": {
+    "placeholders": { "before": { "type": "int" }, "after": { "type": "int" } }
+  },
+  "lowerArrow": "LOWER {before} → {after}",
+  "@lowerArrow": {
+    "placeholders": { "before": { "type": "int" }, "after": { "type": "int" } }
+  },
+  "missedOut": "MISSED · OUT",
+  "betweenOut": "NOT OVER {higher}, NOT UNDER {lower} · OUT",
+  "@betweenOut": {
+    "placeholders": { "higher": { "type": "int" }, "lower": { "type": "int" } }
+  },
+  "lastStandingLabel": "LAST ONE STANDING",
+  "figureTurns": "TURNS",
+  "higherLowerLabel": "HIGHER / LOWER",
+  "survivalRateLabel": "Survival rate",
+  "xOfYTurns": "{x} of {y} turns",
+  "@xOfYTurns": {
+    "placeholders": { "x": { "type": "int" }, "y": { "type": "int" } }
+  },
+  "higherCallsRow": "Went higher",
+  "lowerCallsRow": "Went lower",
+  "longestRunRow": "Longest run",
+  "turnsCount": "{count, plural, =1{1 turn} other{{count} turns}}",
+  "@turnsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  }
 }

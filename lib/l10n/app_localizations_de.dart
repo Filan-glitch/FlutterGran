@@ -730,4 +730,95 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get doneButton => 'FERTIG';
+
+  @override
+  String get pickAtLeastTwoPlayers => 'MINDESTENS ZWEI SPIELER WÄHLEN';
+
+  @override
+  String get higherLowerSetupTitle => 'HIGHER / LOWER EINRICHTUNG';
+
+  @override
+  String get rulesHigherLowerTitle => 'HIGHER / LOWER REGELN';
+
+  @override
+  String get rulesHigherLowerOverview =>
+      'Über den oberen Wert oder unter den unteren, sonst raus';
+
+  @override
+  String get rulesHigherLowerObjective =>
+      'Zwei Werte stehen an der Tafel: oben, Start bei 45, und unten, Start bei 26. In jeder Aufnahme wirfst du drei Darts und musst echt mehr als den oberen oder echt weniger als den unteren Wert erzielen. Gelingt das, wird dieser Wert zu deiner Summe. Gelingt es nicht – oder triffst du einen Wert genau –, bist du für den Rest des Legs raus. Wer als Letzter übrig ist, gewinnt.';
+
+  @override
+  String get rulesHigherLowerSpecial =>
+      'Jeder Dart muss treffen: Ein Fehlwurf bedeutet sofort raus, ebenso ein vorzeitiges Ende der Aufnahme per Board-Taste. Triple 1 zählt 0 – der einzige Weg unter 3.';
+
+  @override
+  String get higherLabel => 'HÖHER';
+
+  @override
+  String get lowerLabel => 'TIEFER';
+
+  @override
+  String get eliminatedLabel => 'RAUS';
+
+  @override
+  String get turnTotalLabel => 'AUFNAHME';
+
+  @override
+  String get survivedCaption => 'überstanden';
+
+  @override
+  String higherArrow(int before, int after) {
+    return 'HÖHER $before → $after';
+  }
+
+  @override
+  String lowerArrow(int before, int after) {
+    return 'TIEFER $before → $after';
+  }
+
+  @override
+  String get missedOut => 'DANEBEN · RAUS';
+
+  @override
+  String betweenOut(int higher, int lower) {
+    return 'NICHT ÜBER $higher, NICHT UNTER $lower · RAUS';
+  }
+
+  @override
+  String get lastStandingLabel => 'ALS LETZTER ÜBRIG';
+
+  @override
+  String get figureTurns => 'AUFNAHMEN';
+
+  @override
+  String get higherLowerLabel => 'HIGHER / LOWER';
+
+  @override
+  String get survivalRateLabel => 'Überlebensquote';
+
+  @override
+  String xOfYTurns(int x, int y) {
+    return '$x von $y Aufnahmen';
+  }
+
+  @override
+  String get higherCallsRow => 'Höher gegangen';
+
+  @override
+  String get lowerCallsRow => 'Tiefer gegangen';
+
+  @override
+  String get longestRunRow => 'Längste Serie';
+
+  @override
+  String turnsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Aufnahmen',
+      one: '1 Aufnahme',
+    );
+    return '$_temp0';
+  }
 }

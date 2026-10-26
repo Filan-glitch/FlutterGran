@@ -5,6 +5,7 @@ import '../l10n_extensions.dart';
 import '../theme.dart';
 import 'atc_setup_screen.dart';
 import 'bulling_setup_screen.dart';
+import 'higher_lower_setup_screen.dart';
 import 'x01_setup_screen.dart';
 
 /// Which setup screen a mode's tile opens. Presentation-layer routing - the
@@ -13,12 +14,13 @@ Widget _setupScreenFor(GameMode mode) => switch (mode) {
   GameMode.x01 => const X01SetupScreen(),
   GameMode.aroundTheClock => const AtcSetupScreen(),
   GameMode.bulling => const BullingSetupScreen(),
+  GameMode.higherLower => const HigherLowerSetupScreen(),
 };
 
 /// Lets a player choose which game to set up next.
 ///
-/// Renders one tile per [gameModeRegistry] entry - X01, Around the Clock and
-/// Bulling today - plus a trailing tile that just signals more modes are
+/// Renders one tile per [gameModeRegistry] entry - X01, Around the Clock,
+/// Bulling and Higher/Lower today - plus a trailing tile that just signals more modes are
 /// coming, without naming one: whatever comes next isn't built yet, so naming
 /// a specific mode here would be a promise this pass has no business making.
 ///
@@ -92,6 +94,8 @@ class SelectGameModeScreen extends StatelessWidget {
 ///  - Around the Clock adds a bright dot riding the rim - the numbers are
 ///    played in order, all the way around.
 ///  - Bulling fills the centre solid - the whole game is aiming for the bull.
+///  - Higher/Lower puts a dot at the top and the bottom of the rim - over the
+///    higher value or under the lower one.
 ///
 /// Plain widgets (stacked circles, one dot placed with [Align]), not a
 /// `CustomPainter` - the app draws nothing on a canvas anywhere else, and
@@ -127,6 +131,16 @@ class _ModeGlyph extends StatelessWidget {
               alignment: Alignment(0.8, -0.8),
               child: _Dot(color: Palette.trebleBed),
             ),
+          if (mode == GameMode.higherLower) ...const [
+            Align(
+              alignment: Alignment.topCenter,
+              child: _Dot(color: Palette.trebleBed),
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: _Dot(color: Palette.trebleBed),
+            ),
+          ],
         ],
       ),
     );

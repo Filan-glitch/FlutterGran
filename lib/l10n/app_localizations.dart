@@ -1303,6 +1303,150 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'DONE'**
   String get doneButton;
+
+  /// No description provided for @pickAtLeastTwoPlayers.
+  ///
+  /// In en, this message translates to:
+  /// **'PICK AT LEAST TWO PLAYERS'**
+  String get pickAtLeastTwoPlayers;
+
+  /// No description provided for @higherLowerSetupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'HIGHER / LOWER SETUP'**
+  String get higherLowerSetupTitle;
+
+  /// No description provided for @rulesHigherLowerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'HIGHER / LOWER RULES'**
+  String get rulesHigherLowerTitle;
+
+  /// No description provided for @rulesHigherLowerOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Beat the higher score or duck the lower one, or you\'re out'**
+  String get rulesHigherLowerOverview;
+
+  /// No description provided for @rulesHigherLowerObjective.
+  ///
+  /// In en, this message translates to:
+  /// **'Two values are on the board: higher, starting at 45, and lower, starting at 26. Each turn, throw three darts and score strictly more than higher or strictly less than lower. Do it and that value becomes your total. Fail — or land exactly on either value — and you\'re out for the rest of the leg. The last player standing wins.'**
+  String get rulesHigherLowerObjective;
+
+  /// No description provided for @rulesHigherLowerSpecial.
+  ///
+  /// In en, this message translates to:
+  /// **'Every dart has to land: a miss puts you out on the spot, and so does ending your turn early with the board button. Treble 1 counts as 0 — the only way under 3.'**
+  String get rulesHigherLowerSpecial;
+
+  /// No description provided for @higherLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'HIGHER'**
+  String get higherLabel;
+
+  /// No description provided for @lowerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'LOWER'**
+  String get lowerLabel;
+
+  /// No description provided for @eliminatedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'OUT'**
+  String get eliminatedLabel;
+
+  /// No description provided for @turnTotalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'TURN'**
+  String get turnTotalLabel;
+
+  /// No description provided for @survivedCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'survived'**
+  String get survivedCaption;
+
+  /// No description provided for @higherArrow.
+  ///
+  /// In en, this message translates to:
+  /// **'HIGHER {before} → {after}'**
+  String higherArrow(int before, int after);
+
+  /// No description provided for @lowerArrow.
+  ///
+  /// In en, this message translates to:
+  /// **'LOWER {before} → {after}'**
+  String lowerArrow(int before, int after);
+
+  /// No description provided for @missedOut.
+  ///
+  /// In en, this message translates to:
+  /// **'MISSED · OUT'**
+  String get missedOut;
+
+  /// No description provided for @betweenOut.
+  ///
+  /// In en, this message translates to:
+  /// **'NOT OVER {higher}, NOT UNDER {lower} · OUT'**
+  String betweenOut(int higher, int lower);
+
+  /// No description provided for @lastStandingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'LAST ONE STANDING'**
+  String get lastStandingLabel;
+
+  /// No description provided for @figureTurns.
+  ///
+  /// In en, this message translates to:
+  /// **'TURNS'**
+  String get figureTurns;
+
+  /// No description provided for @higherLowerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'HIGHER / LOWER'**
+  String get higherLowerLabel;
+
+  /// No description provided for @survivalRateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Survival rate'**
+  String get survivalRateLabel;
+
+  /// No description provided for @xOfYTurns.
+  ///
+  /// In en, this message translates to:
+  /// **'{x} of {y} turns'**
+  String xOfYTurns(int x, int y);
+
+  /// No description provided for @higherCallsRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Went higher'**
+  String get higherCallsRow;
+
+  /// No description provided for @lowerCallsRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Went lower'**
+  String get lowerCallsRow;
+
+  /// No description provided for @longestRunRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Longest run'**
+  String get longestRunRow;
+
+  /// No description provided for @turnsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 turn} other{{count} turns}}'**
+  String turnsCount(int count);
 }
 
 class _AppLocalizationsDelegate

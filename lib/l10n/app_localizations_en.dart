@@ -722,4 +722,95 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get doneButton => 'DONE';
+
+  @override
+  String get pickAtLeastTwoPlayers => 'PICK AT LEAST TWO PLAYERS';
+
+  @override
+  String get higherLowerSetupTitle => 'HIGHER / LOWER SETUP';
+
+  @override
+  String get rulesHigherLowerTitle => 'HIGHER / LOWER RULES';
+
+  @override
+  String get rulesHigherLowerOverview =>
+      'Beat the higher score or duck the lower one, or you\'re out';
+
+  @override
+  String get rulesHigherLowerObjective =>
+      'Two values are on the board: higher, starting at 45, and lower, starting at 26. Each turn, throw three darts and score strictly more than higher or strictly less than lower. Do it and that value becomes your total. Fail — or land exactly on either value — and you\'re out for the rest of the leg. The last player standing wins.';
+
+  @override
+  String get rulesHigherLowerSpecial =>
+      'Every dart has to land: a miss puts you out on the spot, and so does ending your turn early with the board button. Treble 1 counts as 0 — the only way under 3.';
+
+  @override
+  String get higherLabel => 'HIGHER';
+
+  @override
+  String get lowerLabel => 'LOWER';
+
+  @override
+  String get eliminatedLabel => 'OUT';
+
+  @override
+  String get turnTotalLabel => 'TURN';
+
+  @override
+  String get survivedCaption => 'survived';
+
+  @override
+  String higherArrow(int before, int after) {
+    return 'HIGHER $before → $after';
+  }
+
+  @override
+  String lowerArrow(int before, int after) {
+    return 'LOWER $before → $after';
+  }
+
+  @override
+  String get missedOut => 'MISSED · OUT';
+
+  @override
+  String betweenOut(int higher, int lower) {
+    return 'NOT OVER $higher, NOT UNDER $lower · OUT';
+  }
+
+  @override
+  String get lastStandingLabel => 'LAST ONE STANDING';
+
+  @override
+  String get figureTurns => 'TURNS';
+
+  @override
+  String get higherLowerLabel => 'HIGHER / LOWER';
+
+  @override
+  String get survivalRateLabel => 'Survival rate';
+
+  @override
+  String xOfYTurns(int x, int y) {
+    return '$x of $y turns';
+  }
+
+  @override
+  String get higherCallsRow => 'Went higher';
+
+  @override
+  String get lowerCallsRow => 'Went lower';
+
+  @override
+  String get longestRunRow => 'Longest run';
+
+  @override
+  String turnsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count turns',
+      one: '1 turn',
+    );
+    return '$_temp0';
+  }
 }

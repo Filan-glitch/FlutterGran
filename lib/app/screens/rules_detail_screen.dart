@@ -42,6 +42,10 @@ class RulesDetailScreen extends StatelessWidget {
                 _RuleParagraph(l10n.rulesBullingObjective),
                 _RuleParagraph(l10n.rulesBullingValue),
               ],
+              RulesTopic.higherLower => [
+                _RuleParagraph(l10n.rulesHigherLowerObjective),
+                _RuleParagraph(l10n.rulesHigherLowerSpecial),
+              ],
               RulesTopic.training => [
                 _RuleParagraph(l10n.rulesTrainingFreePractice),
                 _RuleParagraph(l10n.rulesTrainingCheckoutPractice),

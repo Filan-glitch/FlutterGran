@@ -10,7 +10,7 @@ import '../l10n/app_localizations.dart';
 /// [GameMode] - but it does need a rules page, so this is its own small
 /// enum rather than a stretch of that one. It also carries [IconData], which
 /// keeps it out of `lib/domain/`.
-enum RulesTopic { x01, aroundTheClock, bulling, training }
+enum RulesTopic { x01, aroundTheClock, bulling, higherLower, training }
 
 extension RulesTopicPresentation on RulesTopic {
   /// Reuses `Icons.fitness_center` for training - the same icon the main
@@ -19,6 +19,7 @@ extension RulesTopicPresentation on RulesTopic {
     RulesTopic.x01 => Icons.exposure_zero,
     RulesTopic.aroundTheClock => Icons.schedule,
     RulesTopic.bulling => Icons.adjust,
+    RulesTopic.higherLower => Icons.swap_vert,
     RulesTopic.training => Icons.fitness_center,
   };
 
@@ -27,6 +28,7 @@ extension RulesTopicPresentation on RulesTopic {
     RulesTopic.x01 => l10n.rulesX01Title,
     RulesTopic.aroundTheClock => l10n.rulesAtcTitle,
     RulesTopic.bulling => l10n.rulesBullingTitle,
+    RulesTopic.higherLower => l10n.rulesHigherLowerTitle,
     RulesTopic.training => l10n.rulesTrainingTitle,
   };
 
@@ -35,6 +37,7 @@ extension RulesTopicPresentation on RulesTopic {
     RulesTopic.x01 => l10n.rulesX01Overview,
     RulesTopic.aroundTheClock => l10n.rulesAtcOverview,
     RulesTopic.bulling => l10n.rulesBullingOverview,
+    RulesTopic.higherLower => l10n.rulesHigherLowerOverview,
     RulesTopic.training => l10n.rulesTrainingOverview,
   };
 }
