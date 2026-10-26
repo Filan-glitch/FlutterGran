@@ -17,10 +17,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: subosito/flutter-action@v2
         with:
+          # Same pin as build.yml.
+          flutter-version: 3.47.8
           channel: stable
           cache: true
 
@@ -41,45 +43,17 @@ jobs:
       - name: Test everything
         run: flutter test --coverage
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: coverage
           path: coverage/lcov.info
           if-no-files-found: ignore
 
-  build-apk:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+  # A debug APK and a debug Windows build, from the same workflow the
+  # releases use. The Windows half is the only place the C++ runner and the
+  # plugins' native Windows code get compiled before a release.
+  build:
     needs: check
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          cache: true
-
-      - run: flutter pub get
-      - run: flutter build apk --debug
-
-  # Nothing above compiles the Windows runner: the C++ in windows/runner and
-  # the plugins' native Windows halves only build on Windows.
-  build-windows:
-    runs-on: windows-latest
-    timeout-minutes: 30
-    needs: check
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          cache: true
-
-      - run: flutter pub get
-      - run: flutter build windows --debug
+    uses: ./.github/workflows/build.yml
+    with:
+      mode: debug
