@@ -1,8 +1,8 @@
 {
   "android/app/build.gradle.kts": {
-    "mtime": 1793005499.211682,
-    "seen": 1793007051.5193267,
-    "ast_hash": "637294b6979e8ae3eb104f376ef3f18b",
+    "mtime": 1793007863.5837338,
+    "seen": 1793008189.5743015,
+    "ast_hash": "d9172d149d02e3e9158cd6bfe5ab6ef9",
     "semantic_hash": ""
   },
   "android/app/src/main/kotlin/de/bot/filan/fluttergran/MainActivity.kt": {
@@ -462,15 +462,15 @@
     "semantic_hash": ""
   },
   "CLAUDE.md": {
-    "mtime": 1793006736.845201,
-    "seen": 1793007051.5197675,
-    "ast_hash": "dbc92a4f901bb06286b3197ec366f515",
+    "mtime": 1793008170.328785,
+    "seen": 1793008189.5745485,
+    "ast_hash": "b701245e75b9b248962216dc026de33c",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1793006721.7328506,
-    "seen": 1793007051.5197706,
-    "ast_hash": "8aa0a9ccf2ea9b0c8b736b9a9ea5ff8e",
+    "mtime": 1793008164.2462227,
+    "seen": 1793008189.5745497,
+    "ast_hash": "d4387bf2f9ed4be8dd19dc8492257641",
     "semantic_hash": ""
   },
   "analysis_options.yaml": {
@@ -516,9 +516,9 @@
     "semantic_hash": ""
   },
   "docs/DEVELOPMENT.md": {
-    "mtime": 1793006721.733044,
-    "seen": 1793007051.519793,
-    "ast_hash": "1c4622d0577e75dbc98e2960e4ae53f3",
+    "mtime": 1793008170.3305326,
+    "seen": 1793008189.5745597,
+    "ast_hash": "61979a12243431f87f049b7a573669cd",
     "semantic_hash": ""
   },
   "docs/HARDWARE.md": {
@@ -2052,20 +2052,20 @@
     "semantic_hash": ""
   },
   "lib/l10n/app_localizations.dart": {
-    "mtime": 1793006918.762988,
-    "seen": 1793007051.5195844,
+    "mtime": 1793008011.0125096,
+    "seen": 1793008189.574441,
     "ast_hash": "8459b0651d5c042412754c7835d747ab",
     "semantic_hash": ""
   },
   "lib/l10n/app_localizations_de.dart": {
-    "mtime": 1793006918.749985,
-    "seen": 1793007051.5195868,
+    "mtime": 1793008010.9965093,
+    "seen": 1793008189.5744421,
     "ast_hash": "abfa6d59ccab083868c5ae88dcee5ce3",
     "semantic_hash": ""
   },
   "lib/l10n/app_localizations_en.dart": {
-    "mtime": 1793006918.7559865,
-    "seen": 1793007051.5195894,
+    "mtime": 1793008011.0035095,
+    "seen": 1793008189.5744433,
     "ast_hash": "fda3b973472703a3edbf404109dc531a",
     "semantic_hash": ""
   },
@@ -2298,9 +2298,9 @@
     "semantic_hash": ""
   },
   ".github/workflows/ci.yml": {
-    "mtime": 1793006685.2401803,
-    "seen": 1793007051.519765,
-    "ast_hash": "100dbc476119723163b1c3b4b318377a",
+    "mtime": 1793007904.1985428,
+    "seen": 1793008189.5745456,
+    "ast_hash": "dbcc728cf44ae4178b2c96f88fa1f8ee",
     "semantic_hash": ""
   },
   "windows/flutter/generated_plugin_registrant.cc": {
@@ -2379,6 +2379,48 @@
     "mtime": 1793005005.5014055,
     "seen": 1793007051.5198183,
     "ast_hash": "e99a99b5cc82a168fc557eb23b8d5a96",
+    "semantic_hash": ""
+  },
+  ".release-please-manifest.json": {
+    "mtime": 1793007934.4885554,
+    "seen": 1793008189.5742943,
+    "ast_hash": "31a542588d2346c67e1ba53283396e01",
+    "semantic_hash": ""
+  },
+  "release-please-config.json": {
+    "mtime": 1793007934.487213,
+    "seen": 1793008189.5744457,
+    "ast_hash": "966709038d1fc185ea1c2a2f10aaa152",
+    "semantic_hash": ""
+  },
+  "tool/ci/check_version.sh": {
+    "mtime": 1793007897.9966466,
+    "seen": 1793008189.574525,
+    "ast_hash": "170095aff4cb08a40c27864aaf509f2f",
+    "semantic_hash": ""
+  },
+  "tool/ci/release_notes.sh": {
+    "mtime": 1793007949.440151,
+    "seen": 1793008189.5745263,
+    "ast_hash": "a7996d08d942b14492d882cec427e597",
+    "semantic_hash": ""
+  },
+  ".github/workflows/build.yml": {
+    "mtime": 1793007959.3631315,
+    "seen": 1793008189.5745442,
+    "ast_hash": "68de272f81a4dc7e88588a9ed378e935",
+    "semantic_hash": ""
+  },
+  ".github/workflows/release.yml": {
+    "mtime": 1793007985.089246,
+    "seen": 1793008189.5745466,
+    "ast_hash": "158dab415a0fea29529c8ee087427ddd",
+    "semantic_hash": ""
+  },
+  "docs/RELEASING.md": {
+    "mtime": 1793008154.592257,
+    "seen": 1793008189.574563,
+    "ast_hash": "eeadf3103bb3ecf8d8d6f19bb038def8",
     "semantic_hash": ""
   }
 }
