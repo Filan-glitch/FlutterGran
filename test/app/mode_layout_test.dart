@@ -29,6 +29,13 @@ const phoneLandscape = Size(923, 411);
 const tablet = Size(834, 1194);
 const tabS6Lite = Size(1333, 800);
 
+/// Maximised Windows windows: see responsive_layout_test.dart.
+const desktopWindows = [
+  ('the smallest window', Size(960, 600)),
+  ('a laptop', Size(1280, 641)),
+  ('a monitor', Size(1920, 1009)),
+];
+
 /// Silent, so nothing goes looking for an audio plugin.
 class _MutePlayer implements SoundPlayer {
   @override
@@ -235,6 +242,27 @@ void main() {
         }
       });
 
+      group('fits a desktop window', () {
+        for (final (name, size) in desktopWindows) {
+          testWidgets('mid-turn and with a turn held, on $name', (
+            tester,
+          ) async {
+            await openAt(tester, mode, size);
+            expect(tester.takeException(), isNull);
+            expect(find.byKey(const Key('hero-scoreboard')), findsOneWidget);
+
+            mode.throwDart(container, mode.scoring);
+            await frames(tester);
+            expect(tester.takeException(), isNull);
+
+            mode.throwDart(container, const ThrownDart.miss());
+            mode.throwDart(container, const ThrownDart.miss());
+            await frames(tester);
+            expect(tester.takeException(), isNull);
+          }, variant: TargetPlatformVariant.only(TargetPlatform.windows));
+        }
+      });
+
       testWidgets('a phone on its side puts the keypad beside the score', (
         tester,
       ) async {
@@ -369,6 +397,21 @@ void main() {
           await frames(tester);
           expect(tester.takeException(), isNull);
         });
+      }
+    }
+
+    for (final drill in TrainingDrill.values) {
+      for (final (name, size) in desktopWindows) {
+        testWidgets('${drill.name} fits $name', (tester) async {
+          await trainAt(tester, drill, size);
+          expect(tester.takeException(), isNull);
+
+          container.read(trainingProvider.notifier)
+            ..addDart(const ThrownDart(Segment(20, Ring.triple)))
+            ..addDart(const ThrownDart(Segment(20, Ring.triple)));
+          await frames(tester);
+          expect(tester.takeException(), isNull);
+        }, variant: TargetPlatformVariant.only(TargetPlatform.windows));
       }
     }
 

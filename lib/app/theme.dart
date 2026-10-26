@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 /// Visual language for the app.
@@ -318,6 +319,50 @@ const double wideLayout = 600;
 /// gets the phone treatment.
 const double heroLayout = 780;
 
+/// Whether the app is running in a desktop window rather than on a device
+/// held in the hand or stood on a table.
+///
+/// A desktop window is the opposite shape to a tablet's problem: there is
+/// width to spare and never enough height, since a laptop is landscape, the
+/// title bar and the taskbar both come out of what is left, and the window
+/// can be any size its owner drags it to. So it is sized by its window, not
+/// by the screen it happens to be on - see [isHeroSize] and [typeScaleFor].
+bool get isDesktop => switch (defaultTargetPlatform) {
+  TargetPlatform.windows ||
+  TargetPlatform.linux ||
+  TargetPlatform.macOS => true,
+  TargetPlatform.android ||
+  TargetPlatform.iOS ||
+  TargetPlatform.fuchsia => false,
+};
+
+/// The smallest desktop window that gets the hero treatment.
+///
+/// [heroLayout] asks for 780 on the shortest side, which a laptop window
+/// almost never has: a 1080p panel at the 150% scaling Windows defaults it to
+/// is 1280x720 logical before the title bar and taskbar take theirs, leaving
+/// about 640. It is still a big screen read from the oche, and the hero cards
+/// fit it with room to spare once the width is there to put them side by
+/// side.
+///
+/// Set a little under the 960x600 floor the Windows runner puts on the
+/// window (`windows/runner/flutter_window.cpp`), so the smallest window it
+/// allows is always in, whatever fractional scaling does to the last pixel. A
+/// desktop below this is one without that floor, made deliberately small,
+/// and gets the arrangement that fits it.
+const Size desktopHeroLayout = Size(900, 580);
+
+/// Whether a viewport of [size] earns the hero treatment. See [heroLayout].
+///
+/// [desktop] defaults to [isDesktop]; tests pass it to ask about a platform
+/// they are not running on.
+bool isHeroSize(Size size, {bool? desktop}) {
+  if (size.shortestSide >= heroLayout) return true;
+  return (desktop ?? isDesktop) &&
+      size.width >= desktopHeroLayout.width &&
+      size.height >= desktopHeroLayout.height;
+}
+
 /// How much larger type should be on a viewport of [size].
 ///
 /// The sizes in [Type] are chosen for a phone at arm's length. A tablet is not
@@ -327,8 +372,22 @@ const double heroLayout = 780;
 /// rather than which way up it is being held. The top tier lines up with
 /// [heroLayout]: the device that earns the hero layout earns the hero type
 /// scale with it.
-double typeScaleFor(Size size) {
+///
+/// A desktop window is keyed to the same shortest side - its height, in
+/// practice, and the dimension that runs out first - but on tiers of its own:
+/// one more at the bottom, so a laptop's 640-high window gets bigger type
+/// along with the hero layout [desktopHeroLayout] gives it, and one more at
+/// the top for a full-height window on a desktop monitor at 100% scaling,
+/// where a logical pixel is physically the smallest it gets on any screen
+/// this app runs on.
+double typeScaleFor(Size size, {bool? desktop}) {
   final short = size.shortestSide;
+  if (desktop ?? isDesktop) {
+    if (short >= 1000) return 1.75;
+    if (short >= heroLayout) return 1.5;
+    if (short >= desktopHeroLayout.height) return 1.25;
+    return 1;
+  }
   if (short >= heroLayout) return 1.5;
   if (short >= 700) return 1.25;
   return 1;
@@ -343,6 +402,11 @@ double typeScaleFor(Size size) {
 /// 640 keeps a column a hand can still take in at a glance; the rest of the
 /// width becomes margin, which is what a form on a big screen is supposed to
 /// do with the room it does not need.
+///
+/// On a desktop the column grows with [typeScaleFor] instead, so it holds as
+/// many words a line as it does on a tablet: there the type tiers run higher
+/// against a window that is always wide, and a fixed 640 would wrap
+/// 1.75-sized labels into a phone-width strip down the middle of a monitor.
 const double formContentWidth = 640;
 
 /// Wraps a form-shaped screen's body so it caps at [formContentWidth] and
@@ -365,13 +429,15 @@ class CenteredContent extends StatelessWidget {
     // the real available width and turning it directly into inset padding
     // avoids both: no positioning render object in the way of the probe, and
     // a width that is never asked to exceed what is actually there.
+    final cap = isDesktop
+        ? formContentWidth * typeScaleFor(MediaQuery.sizeOf(context))
+        : formContentWidth;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final available = constraints.maxWidth;
         final bounded = constraints.hasBoundedWidth;
-        final width = bounded && available < formContentWidth
-            ? available
-            : formContentWidth;
+        final width = bounded && available < cap ? available : cap;
         final inset = bounded ? (available - width) / 2 : 0.0;
 
         return Padding(
@@ -535,7 +601,16 @@ const ColorScheme _scheme = ColorScheme(
 );
 
 ThemeData buildTheme() {
-  final base = ThemeData(colorScheme: _scheme, useMaterial3: true);
+  final base = ThemeData(
+    colorScheme: _scheme,
+    useMaterial3: true,
+    // Touch-sized controls on every platform. Flutter's defaults shrink both
+    // on desktop, for a mouse and a dense window of controls; this app is a
+    // scoreboard read from across a room, often on a touchscreen laptop, and
+    // a smaller button on the biggest screen it runs on would be backwards.
+    visualDensity: VisualDensity.standard,
+    materialTapTargetSize: MaterialTapTargetSize.padded,
+  );
 
   return base.copyWith(
     scaffoldBackgroundColor: Palette.ground,

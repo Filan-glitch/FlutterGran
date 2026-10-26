@@ -6,14 +6,19 @@ import '../providers.dart';
 import '../theme.dart';
 import 'board_connection_button.dart';
 
-/// Whether this device earns the hero treatment. See [heroLayout].
+/// Whether this device earns the hero treatment. See [isHeroSize].
 ///
-/// Shortest side, not the local width a `LayoutBuilder` would give: this is
-/// "how big is the device", the same question [typeScaleFor] answers, and the
-/// two are meant to move together - the device that earns bigger type earns
-/// the hero layout with it.
+/// The whole viewport, not the local width a `LayoutBuilder` would give: this
+/// is "how big is the device", the same question [typeScaleFor] answers, and
+/// the two are meant to move together - the device that earns bigger type
+/// earns the hero layout with it.
 bool isHeroDevice(BuildContext context) =>
-    MediaQuery.sizeOf(context).shortestSide >= heroLayout;
+    isHeroSize(MediaQuery.sizeOf(context));
+
+/// Window width from which a desktop gives the score three fifths of the
+/// screen rather than half. Below it, two fifths of the window is too narrow
+/// for a three-dart checkout to sit above the keypad.
+const double _desktopScoreShareWidth = 1200;
 
 /// Whether darts are being keyed in by hand right now.
 ///
@@ -143,6 +148,33 @@ class GameLayout extends ConsumerWidget {
             // - which is the point, because the size of the score is what
             // makes it readable from the oche.
             if (constraints.maxWidth >= wideLayout) {
+              // A desktop window is wide and short, so beside the keypad the
+              // seat cards sized to their content float mid-height in a half
+              // that is mostly empty. There they take the whole height
+              // instead, the way they already do with the keypad gone - and
+              // once the window is wide enough that half of it would make
+              // every key the size of a hand, the score takes the bigger
+              // share. A mouse does not need a 170px key.
+              if (hero && isDesktop) {
+                final wide = constraints.maxWidth >= _desktopScoreShareWidth;
+                return Row(
+                  children: [
+                    Expanded(
+                      flex: wide ? 3 : 1,
+                      child: Column(
+                        children: [
+                          Expanded(child: scoreboard(true)),
+                          const Divider(),
+                          ledger,
+                        ],
+                      ),
+                    ),
+                    const VerticalDivider(width: 1),
+                    Expanded(flex: wide ? 2 : 1, child: play),
+                  ],
+                );
+              }
+
               return Row(
                 children: [
                   Expanded(

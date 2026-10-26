@@ -141,6 +141,22 @@ advertises its service UUID, the scan can filter by service and declare
 Android 12+ therefore never prompts for location — which matters, because a
 darts scorer asking for your location is a reasonable thing to refuse.
 
+### Windows
+
+None to declare. A desktop app may use Bluetooth LE without asking, through
+`flutter_blue_plus_winrt` (the federated Windows half of `flutter_blue_plus`,
+pulled in automatically). Three things behave differently:
+
+- **The scan is not filtered natively.** The WinRT backend reports every
+  advertisement it sees and ignores `withServices`. Nothing changes as a
+  result, because `_findBoard` already checks each result for the service UUID
+  or the `GRANBOARD` name itself rather than trusting the filter.
+- **Bluetooth cannot be switched on from the app.** `turnOnBluetooth()` is
+  Android-only and returns `false` elsewhere; on Windows it is the Bluetooth
+  toggle in Settings.
+- **The PC needs Bluetooth 4.0 (LE).** Most laptops have it built in; on a
+  desktop PC that has none, a USB dongle works.
+
 ## Licensing note
 
 `flutter_blue_plus` is **not open source**. The connect call passes

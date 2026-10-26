@@ -34,12 +34,12 @@ class SelectGameModeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // Device-based, not container-based: the same breakpoints
     // `game_screen.dart` uses for its own hero/wide thresholds, so a tablet
-    // gets more columns even though `CenteredContent` below caps the actual
-    // rendering width on the very widest screens.
-    final shortestSide = MediaQuery.sizeOf(context).shortestSide;
-    final columns = shortestSide >= heroLayout
+    // or a desktop window gets more columns even though `CenteredContent`
+    // below caps the actual rendering width on the very widest screens.
+    final size = MediaQuery.sizeOf(context);
+    final columns = isHeroSize(size)
         ? 3
-        : shortestSide >= wideLayout
+        : size.shortestSide >= wideLayout
         ? 2
         : 1;
 

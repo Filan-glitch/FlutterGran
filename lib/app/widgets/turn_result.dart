@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../domain/x01/thrown_dart.dart';
 import '../l10n_extensions.dart';
 import '../theme.dart';
+import 'game_layout.dart';
 
 /// Lays its child out at the height it is given, and scrolls it when that is
 /// not enough.
@@ -79,7 +80,7 @@ class TurnResultPanel extends StatelessWidget {
     // This is always either the phone's inline panel or the tablet's
     // full-screen takeover, never both from the same call site - the two
     // never overlap, so the device is enough to tell which one this is.
-    final hero = MediaQuery.sizeOf(context).shortestSide >= heroLayout;
+    final hero = isHeroDevice(context);
     final dartsThrown = darts.map((dart) => dart.label).join('  ·  ');
 
     Widget score = Text(

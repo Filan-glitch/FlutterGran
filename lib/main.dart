@@ -88,9 +88,11 @@ class _ScaledState extends State<_Scaled> {
     // A phone rotates freely; a tablet on a stand does not, because it is
     // mounted for a room to read, not held. Keyed to the same shortestSide
     // threshold as the hero layout - the device that gets the big cards and
-    // the full-screen result is the device that stops moving.
+    // the full-screen result is the device that stops moving. A desktop
+    // window has no orientation to lock, only a size its owner chooses, so it
+    // is never asked about one.
     final wantsLandscape = media.size.shortestSide >= heroLayout;
-    if (_lockedToLandscape != wantsLandscape) {
+    if (!isDesktop && _lockedToLandscape != wantsLandscape) {
       _lockedToLandscape = wantsLandscape;
       // Deferred past this frame: SystemChrome is a platform call, and has no
       // business happening mid-build.

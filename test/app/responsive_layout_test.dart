@@ -29,6 +29,15 @@ const tablet = Size(834, 1194); // a 10-inch tablet, upright
 /// people never touch.
 const tabS6Lite = Size(1333, 800);
 
+/// Desktop windows, maximised, as Flutter measures them on Windows: the
+/// screen in logical pixels less the taskbar and the title bar.
+const laptop = Size(1280, 641); // a 1080p laptop at 150% scaling
+const monitor = Size(1920, 1009); // a 1080p monitor at 100%
+const smallestWindow = Size(960, 600); // the floor the Windows runner allows
+
+/// Runs a test as the Windows build would see it.
+final windows = TargetPlatformVariant.only(TargetPlatform.windows);
+
 /// Silent, so nothing goes looking for an audio plugin.
 class _MutePlayer implements SoundPlayer {
   @override
@@ -477,6 +486,94 @@ void main() {
         expect(withoutKeypad.height, greaterThan(withKeypad.height * 1.5));
       },
     );
+  });
+
+  group('a desktop window', () {
+    test('earns the hero treatment by width, not by shortest side', () {
+      // A laptop window is nowhere near heroLayout tall...
+      expect(laptop.shortestSide, lessThan(heroLayout));
+      expect(isHeroSize(laptop, desktop: true), isTrue);
+      expect(isHeroSize(smallestWindow, desktop: true), isTrue);
+      // ...and the same shape on a handheld is a phone on its side.
+      expect(isHeroSize(laptop, desktop: false), isFalse);
+      // Dragged down to something genuinely small, it gets what fits.
+      expect(isHeroSize(const Size(700, 500), desktop: true), isFalse);
+    });
+
+    test('grows type by its height, a tier further at each end', () {
+      expect(typeScaleFor(smallestWindow, desktop: true), 1.25);
+      expect(typeScaleFor(laptop, desktop: true), 1.25);
+      expect(typeScaleFor(const Size(1536, 793), desktop: true), 1.5);
+      expect(typeScaleFor(monitor, desktop: true), 1.75);
+      expect(typeScaleFor(const Size(700, 500), desktop: true), 1);
+      // The handheld tiers are untouched.
+      expect(typeScaleFor(laptop, desktop: false), 1);
+      expect(typeScaleFor(tabS6Lite, desktop: false), 1.5);
+    });
+
+    for (final (name, size) in const [
+      ('the smallest window', smallestWindow),
+      ('a laptop', laptop),
+      ('a monitor', monitor),
+    ]) {
+      testWidgets('nothing overflows on $name', (tester) async {
+        await openAt(tester, size, startScore: 121);
+        expect(tester.takeException(), isNull);
+        expect(find.byKey(checkoutNextDartKey), findsOneWidget);
+        expect(find.text('MISS'), findsOneWidget);
+
+        await board.connect();
+        await frames(tester);
+        expect(tester.takeException(), isNull);
+      }, variant: windows);
+
+      testWidgets('a turn result takes over $name', (tester) async {
+        await openAt(tester, size);
+
+        final controller = container.read(gameProvider.notifier);
+        for (var i = 0; i < 3; i++) {
+          controller.addDart(t(20));
+        }
+        await frames(tester);
+
+        expect(tester.takeException(), isNull);
+        expect(find.byKey(const Key('turn-result-overlay')), findsOneWidget);
+      }, variant: windows);
+    }
+
+    testWidgets('a laptop gets the hero scoreboard', (tester) async {
+      await openAt(tester, laptop);
+      expect(find.byKey(const Key('hero-scoreboard')), findsOneWidget);
+    }, variant: windows);
+
+    testWidgets('the seats fill the height beside the keypad', (tester) async {
+      await openAt(tester, laptop);
+
+      final body = where(tester, find.byKey(const Key('game-body')));
+      final seats = where(tester, find.byKey(const Key('hero-scoreboard')));
+      expect(find.byType(DartKeypad), findsOneWidget);
+      // Everything under them is the ledger, one row of chips.
+      expect(seats.height, greaterThan(body.height * 0.7));
+    }, variant: windows);
+
+    testWidgets('a wide window gives the score the bigger share', (
+      tester,
+    ) async {
+      await openAt(tester, monitor);
+
+      final seats = where(tester, find.byKey(const Key('hero-scoreboard')));
+      final keypad = where(tester, find.byType(DartKeypad));
+      expect(seats.width, greaterThan(keypad.width * 1.3));
+    }, variant: windows);
+
+    testWidgets('the smallest window splits it evenly', (tester) async {
+      await openAt(tester, smallestWindow, startScore: 121);
+
+      // Two fifths of 944 would squeeze a three-dart checkout.
+      final body = where(tester, find.byKey(const Key('game-body')));
+      final keypad = where(tester, find.byType(DartKeypad));
+      expect(keypad.width, greaterThan(body.width * 0.4));
+    }, variant: windows);
   });
 }
 

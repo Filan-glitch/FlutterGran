@@ -1,6 +1,7 @@
 # fluttergran
 
-Flutter companion app for a **GranBoard 132** Bluetooth electronic dartboard.
+Flutter companion app for a **GranBoard 132** Bluetooth electronic dartboard,
+for **Android and Windows**.
 x01 (301/501/701, single/double/master in and out) for up to 4 players, best of 1/3/5/7
 legs, live checkout suggestions, spoken commentary and sound cues, reactions on
 the board's LED ring, and per-player statistics across every dart ever thrown.
@@ -21,6 +22,23 @@ dart run build_runner build --delete-conflicting-outputs   # drift codegen
 
 `test/domain` and `test/data` run under plain `dart test` because neither layer
 imports Flutter. `test/app` needs `flutter test`.
+
+## Windows
+
+Added 2026-10-26 (Flutter 3.47). Only builds on Windows; CI's `build-windows`
+job is the compile check from Linux. The desktop layout is the tablet's hero
+treatment re-keyed for a wide, short window: `isDesktop`, `desktopHeroLayout`,
+`isHeroSize` and the desktop tiers of `typeScaleFor` in `lib/app/theme.dart`.
+Call sites ask `isHeroDevice(context)`, never `shortestSide >= heroLayout`
+directly, or a laptop window falls back to the phone layout. The runner
+(`windows/runner/flutter_window.cpp`) opens maximised and floors the client
+area at 960x600, kept just above `desktopHeroLayout` (900x580) — change one,
+check the other. Tests run Windows behaviour with
+`variant: TargetPlatformVariant.only(TargetPlatform.windows)`. The database
+sits in `%APPDATA%\<CompanyName>\<ProductName>` from `Runner.rc`, so renaming
+either string orphans it. Ogg audio needs the Web Media Extensions codec
+(absent on Windows N editions). Details: `docs/DEVELOPMENT.md`, "Running on
+Windows".
 
 ## Layering rule
 

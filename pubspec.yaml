@@ -19,7 +19,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.12.2
+  sdk: ^3.13.7
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -37,15 +37,12 @@ dependencies:
   # dev_dependencies.
   flutter_localizations:
     sdk: flutter
-  intl: ^0.20.2
+  intl: ^0.20.3
 
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.8
-  flutter_riverpod: ^3.4.2
-  drift: ^2.34.3
+  flutter_riverpod: ^3.4.3
+  drift: ^2.35.3
   drift_flutter: ^0.3.1
-  flutter_blue_plus: ^2.3.11
+  flutter_blue_plus: ^2.3.14
   path_provider: ^2.1.6
   # MIT. Two players are kept open at once - see lib/app/audio/sound_player.dart
   # - because the cues need PlayerMode.lowLatency and the commentary does not.
@@ -54,7 +51,7 @@ dependencies:
   # database is the history of every dart thrown; a preference is neither
   # history nor relational, and a table for two booleans would cost a schema
   # migration - see the note on soundEnabledProvider in lib/app/providers.dart.
-  shared_preferences: ^2.5.5
+  shared_preferences: ^2.5.6
 
 dev_dependencies:
   flutter_test:
@@ -66,9 +63,9 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
-  build_runner: ^2.15.1
-  drift_dev: ^2.34.0
-  test: ^1.31.0
+  build_runner: ^2.16.1
+  drift_dev: ^2.35.2
+  test: ^1.31.1
   audioplayers_platform_interface: ^7.2.0
 
 # For information on the generic Dart part of this file, see the
