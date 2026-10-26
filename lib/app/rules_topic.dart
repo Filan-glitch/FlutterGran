@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../domain/atc/atc_stop.dart';
 import '../domain/bulling/bulling_config.dart';
 import '../domain/game_mode.dart';
+import '../domain/higher_lower/higher_lower_config.dart';
 import '../domain/training/training_drill.dart';
 import '../domain/x01/game_config.dart';
 import '../l10n/app_localizations.dart';
@@ -19,6 +20,7 @@ enum RulesTopic {
   x01,
   aroundTheClock,
   bulling,
+  higherLower,
   training;
 
   /// The rules page for a playable [GameMode].
@@ -26,6 +28,7 @@ enum RulesTopic {
     GameMode.x01 => RulesTopic.x01,
     GameMode.aroundTheClock => RulesTopic.aroundTheClock,
     GameMode.bulling => RulesTopic.bulling,
+    GameMode.higherLower => RulesTopic.higherLower,
   };
 }
 
@@ -40,16 +43,18 @@ extension RulesTopicPresentation on RulesTopic {
     RulesTopic.x01 => Icons.exposure_zero,
     RulesTopic.aroundTheClock => Icons.schedule,
     RulesTopic.bulling => Icons.adjust,
+    RulesTopic.higherLower => Icons.swap_vert,
     RulesTopic.training => Icons.fitness_center,
   };
 
   /// The mode's name, as the mode-select tile shows it - read from
-  /// [gameModeRegistry] for the three playable modes, so a rules page never
+  /// [gameModeRegistry] for the playable modes, so a rules page never
   /// names its game differently from picking it does.
   String displayName(AppLocalizations l10n) => switch (this) {
     RulesTopic.x01 => _registryName(GameMode.x01),
     RulesTopic.aroundTheClock => _registryName(GameMode.aroundTheClock),
     RulesTopic.bulling => _registryName(GameMode.bulling),
+    RulesTopic.higherLower => _registryName(GameMode.higherLower),
     RulesTopic.training => l10n.trainingMenuLabel.toUpperCase(),
   };
 
@@ -62,6 +67,7 @@ extension RulesTopicPresentation on RulesTopic {
     RulesTopic.x01 => l10n.rulesX01Objective,
     RulesTopic.aroundTheClock => l10n.rulesAtcObjective,
     RulesTopic.bulling => l10n.rulesBullingObjective,
+    RulesTopic.higherLower => l10n.rulesHigherLowerObjective,
     RulesTopic.training => l10n.rulesTrainingObjective,
   };
 
@@ -93,6 +99,19 @@ extension RulesTopicPresentation on RulesTopic {
         ),
         players,
       ],
+      RulesTopic.higherLower => [
+        (
+          figure:
+              '${HigherLowerConfig.startHigher} · '
+              '${HigherLowerConfig.startLower}',
+          label: l10n.rulesFactStart,
+        ),
+        (
+          figure: '${HigherLowerConfig.minPlayers}–${GameConfig.maxPlayers}',
+          label: l10n.rulesFactPlayers,
+        ),
+        (figure: '3', label: l10n.rulesFactDarts),
+      ],
       RulesTopic.training => [
         (figure: '1', label: l10n.rulesFactPlayer),
         (figure: '${TrainingDrill.values.length}', label: l10n.rulesFactDrills),
@@ -105,6 +124,7 @@ extension RulesTopicPresentation on RulesTopic {
     RulesTopic.x01 => l10n.rulesX01Title,
     RulesTopic.aroundTheClock => l10n.rulesAtcTitle,
     RulesTopic.bulling => l10n.rulesBullingTitle,
+    RulesTopic.higherLower => l10n.rulesHigherLowerTitle,
     RulesTopic.training => l10n.rulesTrainingTitle,
   };
 
@@ -113,6 +133,7 @@ extension RulesTopicPresentation on RulesTopic {
     RulesTopic.x01 => l10n.rulesX01Overview,
     RulesTopic.aroundTheClock => l10n.rulesAtcOverview,
     RulesTopic.bulling => l10n.rulesBullingOverview,
+    RulesTopic.higherLower => l10n.rulesHigherLowerOverview,
     RulesTopic.training => l10n.rulesTrainingOverview,
   };
 }

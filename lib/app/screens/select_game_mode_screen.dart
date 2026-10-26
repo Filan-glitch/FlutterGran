@@ -7,6 +7,7 @@ import '../theme.dart';
 import '../widgets/mode_glyph.dart';
 import 'atc_setup_screen.dart';
 import 'bulling_setup_screen.dart';
+import 'higher_lower_setup_screen.dart';
 import 'x01_setup_screen.dart';
 
 /// Which setup screen a mode's tile opens. Presentation-layer routing - the
@@ -15,13 +16,14 @@ Widget _setupScreenFor(GameMode mode) => switch (mode) {
   GameMode.x01 => const X01SetupScreen(),
   GameMode.aroundTheClock => const AtcSetupScreen(),
   GameMode.bulling => const BullingSetupScreen(),
+  GameMode.higherLower => const HigherLowerSetupScreen(),
 };
 
 /// Lets a player choose which game to set up next.
 ///
-/// Renders one tile per [gameModeRegistry] entry - X01, Around the Clock and
-/// Bulling today - plus a trailing tile that just signals more modes are
-/// coming, without naming one: whatever comes next isn't built yet, so naming
+/// Renders one tile per [gameModeRegistry] entry - X01, Around the Clock,
+/// Bulling and Higher/Lower today - plus a trailing tile that just signals
+/// more modes are coming, without naming one: whatever comes next isn't built yet, so naming
 /// a specific mode here would be a promise this pass has no business making.
 ///
 /// [modes] defaults to the real registry and exists as a constructor

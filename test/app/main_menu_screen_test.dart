@@ -7,6 +7,7 @@ import 'package:fluttergran/app/screens/atc_game_screen.dart';
 import 'package:fluttergran/app/screens/bulling_game_screen.dart';
 import 'package:fluttergran/app/screens/bulling_setup_screen.dart'
     show bullseyeValueLabel;
+import 'package:fluttergran/app/screens/higher_lower_game_screen.dart';
 import 'package:fluttergran/app/screens/main_menu_screen.dart';
 import 'package:fluttergran/app/screens/roster_screen.dart';
 import 'package:fluttergran/app/screens/rules_screen.dart';
@@ -23,6 +24,7 @@ import 'package:fluttergran/domain/atc/atc_variant.dart';
 import 'package:fluttergran/domain/bulling/bulling_config.dart';
 import 'package:fluttergran/domain/bulling/bulling_variant.dart';
 import 'package:fluttergran/domain/game_mode.dart';
+import 'package:fluttergran/domain/higher_lower/higher_lower_config.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/game_config.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
@@ -258,6 +260,57 @@ void main() {
 
       expect(container.read(currentGameIdProvider), gameId);
       expect(find.byType(BullingGameScreen), findsOneWidget);
+    });
+  });
+
+  group('a Higher/Lower leg', () {
+    Future<int> seed() async {
+      final finn = await repository.addPlayer('Finn');
+      final ada = await repository.addPlayer('Ada');
+      final gameId = await repository.startHigherLowerGame(
+        HigherLowerConfig(playerIds: [finn.id, ada.id]),
+      );
+      // Finn goes higher with 60 + 60 + 1, and Ada is one dart into their
+      // turn - still open, so still resumable.
+      for (final (ordinal, playerId, dart) in [
+        (0, finn.id, const ThrownDart(Segment(20, Ring.triple))),
+        (1, finn.id, const ThrownDart(Segment(20, Ring.triple))),
+        (2, finn.id, const ThrownDart(Segment(1, Ring.outerSingle))),
+        (3, ada.id, const ThrownDart(Segment(5, Ring.outerSingle))),
+      ]) {
+        await repository.appendDart(
+          gameId: gameId,
+          ordinal: ordinal,
+          playerId: playerId,
+          dart: dart,
+        );
+      }
+      return gameId;
+    }
+
+    testWidgets('shows the resume card with both values', (tester) async {
+      await seed();
+      await pump(tester);
+
+      expect(find.byKey(const Key('menu-resume-banner')), findsOneWidget);
+      expect(
+        find.text('${_modeName(GameMode.higherLower)} · 121 · 26'),
+        findsOneWidget,
+      );
+      expect(find.text('FINN'), findsOneWidget);
+      expect(find.text('ADA'), findsOneWidget);
+    });
+
+    testWidgets('resume loads it into HigherLowerGameScreen', (tester) async {
+      final gameId = await seed();
+
+      await pump(tester);
+      await tester.tap(find.byKey(const Key('menu-resume-banner')));
+      await frames(tester);
+
+      expect(container.read(currentGameIdProvider), gameId);
+      expect(find.byType(HigherLowerGameScreen), findsOneWidget);
+      expect(container.read(higherLowerGameProvider).leg.higher, 121);
     });
   });
 

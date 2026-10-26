@@ -14,6 +14,7 @@ import 'atc_setup_screen.dart';
 import 'bulling_game_screen.dart';
 import 'bulling_setup_screen.dart' show bullseyeValueLabel;
 import 'game_screen.dart';
+import 'higher_lower_game_screen.dart';
 import 'roster_screen.dart';
 import 'rules_screen.dart';
 import 'select_game_mode_screen.dart';
@@ -89,6 +90,22 @@ class MainMenuScreen extends ConsumerWidget {
         await Navigator.of(context).push(
           MaterialPageRoute<void>(
             builder: (context) => const BullingGameScreen(),
+          ),
+        );
+      case ResumableHigherLowerLeg(:final gameId):
+        final repository = ref.read(gameRepositoryProvider);
+        final config = await repository.loadHigherLowerConfig(gameId);
+        if (config == null || !context.mounted) return;
+        final darts = await repository.loadLog(gameId);
+        if (!context.mounted) return;
+
+        ref.read(higherLowerConfigProvider.notifier).update(config);
+        ref.read(currentGameIdProvider.notifier).set(gameId);
+        ref.read(higherLowerGameProvider.notifier).resume(config, darts);
+
+        await Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (context) => const HigherLowerGameScreen(),
           ),
         );
     }
@@ -379,6 +396,17 @@ class _ResumeBanner extends StatelessWidget {
         leg.currentPlayerId,
         <int, String>{
           for (final id in leg.config.playerIds) id: '${leg.scoreFor(id)}',
+        },
+      ),
+      ResumableHigherLowerLeg(:final leg) => (
+        '${_modeName(GameMode.higherLower)} · ${leg.higher} · ${leg.lower}',
+        leg.config.playerIds,
+        leg.currentPlayerId,
+        <int, String>{
+          for (final id in leg.config.playerIds)
+            id: leg.isOut(id)
+                ? l10n.eliminatedLabel
+                : '${leg.turnsSurvivedBy(id)}',
         },
       ),
     };

@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/app/atc_controller.dart';
 import 'package:fluttergran/app/bulling_controller.dart';
 import 'package:fluttergran/app/game_controller.dart';
+import 'package:fluttergran/app/higher_lower_controller.dart';
 import 'package:fluttergran/app/lights/led_cue.dart';
 import 'package:fluttergran/app/lights/led_reactions.dart';
 import 'package:fluttergran/app/training_controller.dart';
@@ -13,6 +14,8 @@ import 'package:fluttergran/domain/bulling/bulling_config.dart';
 import 'package:fluttergran/domain/bulling/bulling_reducer.dart';
 import 'package:fluttergran/domain/bulling/bulling_variant.dart';
 import 'package:fluttergran/domain/checkout/checkout_table.dart';
+import 'package:fluttergran/domain/higher_lower/higher_lower_config.dart';
+import 'package:fluttergran/domain/higher_lower/higher_lower_reducer.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/training/free_practice_state.dart';
 import 'package:fluttergran/domain/x01/game_config.dart';
@@ -221,6 +224,54 @@ void main() {
 
     test('the ring is turquoise all round while play is live', () {
       expect(bullingRing(bulling([])), RingPaint.all(RingColor.turquoise));
+    });
+  });
+
+  group('higher/lower', () {
+    final cfg = HigherLowerConfig(playerIds: const [1, 2, 3]);
+    HigherLowerSession higherLower(List<ThrownDart> darts, {int? acked}) {
+      final leg = foldHigherLower(cfg, darts);
+      return HigherLowerSession(
+        leg: leg,
+        acknowledgedTurns: acked ?? leg.turns.length,
+      );
+    }
+
+    List<LedCue> throwing(List<ThrownDart> darts) {
+      final before = higherLower(darts.sublist(0, darts.length - 1));
+      return ledCuesForHigherLower(
+        before,
+        higherLower(darts, acked: before.leg.turns.length),
+      );
+    }
+
+    test('a dart that lands flashes, a miss is a bust', () {
+      expect(throwing([t(20)]), [
+        const DartLanded(Segment(20, Ring.triple), seat: 0),
+      ]);
+      expect(throwing([t(20), miss]), [const TurnBusted()]);
+    });
+
+    test('a turn between the values is a bust, one outside them is not', () {
+      expect(throwing([s(10), s(10), s(10)]), [const TurnBusted()]);
+      expect(throwing([t(20), s(1), s(1)]), [
+        const DartLanded(Segment(1, Ring.outerSingle), seat: 0),
+      ]);
+    });
+
+    test('the last one standing is celebrated, whoever threw last', () {
+      expect(throwing([miss, miss]), [const MatchWon(2)]);
+    });
+
+    test('confirming hands over to the next player still in', () {
+      final out = higherLower([miss], acked: 0);
+      expect(ledCuesForHigherLower(out, higherLower([miss])), [
+        const NextThrower(1),
+      ]);
+    });
+
+    test('the ring stays dark', () {
+      expect(higherLowerRing(higherLower([])), RingPaint.off);
     });
   });
 

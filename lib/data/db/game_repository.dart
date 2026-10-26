@@ -7,6 +7,9 @@ import '../../domain/bulling/bulling_config.dart';
 import '../../domain/bulling/bulling_leg_state.dart';
 import '../../domain/bulling/bulling_reducer.dart';
 import '../../domain/game_mode.dart';
+import '../../domain/higher_lower/higher_lower_config.dart';
+import '../../domain/higher_lower/higher_lower_leg_state.dart';
+import '../../domain/higher_lower/higher_lower_reducer.dart';
 import '../../domain/segment.dart';
 import '../../domain/x01/game_config.dart';
 import '../../domain/x01/leg_reducer.dart';
@@ -36,6 +39,10 @@ class GameRepository {
   /// The stored form of [GameMode.bulling], for filtering `gameMode`
   /// columns.
   static final String _bulling = GameMode.bulling.name;
+
+  /// The stored form of [GameMode.higherLower], for filtering `gameMode`
+  /// columns.
+  static final String _higherLower = GameMode.higherLower.name;
 
   // Players
 
@@ -643,6 +650,59 @@ class GameRepository {
               final config = await loadBullingConfig(game.id);
               if (config == null) continue;
               legs.add(foldBulling(config, await loadLog(game.id)));
+            }
+            return legs;
+          });
+
+  // Higher/Lower
+
+  /// Creates a Higher/Lower leg and seats its players.
+  ///
+  /// The only mode with no config row of its own: every leg opens on the
+  /// same two values, so the seats are the whole configuration.
+  Future<int> startHigherLowerGame(HigherLowerConfig config) {
+    return db.transaction(() async {
+      final gameId = await db
+          .into(db.games)
+          .insert(
+            GamesCompanion.insert(
+              startScore: const Value.absent(),
+              doubleOut: const Value(null),
+              inRule: const Value(null),
+              outRule: const Value(null),
+              gameMode: const Value(GameMode.higherLower),
+            ),
+          );
+
+      await _seatPlayers(gameId, config.playerIds);
+      return gameId;
+    });
+  }
+
+  /// Rebuilds the configuration a Higher/Lower leg was played under.
+  ///
+  /// Null when the leg has fewer seats than the mode needs - the same
+  /// "half-written row" contract [loadConfig] documents.
+  Future<HigherLowerConfig?> loadHigherLowerConfig(int gameId) async {
+    final seats = await _seatsOf(gameId);
+    if (seats.length < HigherLowerConfig.minPlayers) return null;
+    return HigherLowerConfig(playerIds: seats);
+  }
+
+  /// Every stored Higher/Lower leg, replayed. Refreshes itself when a game
+  /// changes.
+  ///
+  /// A sibling to [watchAllBullingLegs], for the same reason that one is a
+  /// sibling to [watchAllLegs].
+  Stream<List<HigherLowerLegState>> watchAllHigherLowerLegs() =>
+      (db.select(db.games)..where((g) => g.gameMode.equals(_higherLower)))
+          .watch()
+          .asyncMap((games) async {
+            final legs = <HigherLowerLegState>[];
+            for (final game in games) {
+              final config = await loadHigherLowerConfig(game.id);
+              if (config == null) continue;
+              legs.add(foldHigherLower(config, await loadLog(game.id)));
             }
             return legs;
           });

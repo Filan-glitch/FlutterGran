@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../domain/atc/atc_stop.dart';
 import '../../../domain/atc/atc_variant.dart';
 import '../../../domain/bulling/bulling_variant.dart';
+import '../../../domain/higher_lower/higher_lower_config.dart';
 import '../../../domain/segment.dart';
 import '../../../domain/x01/match_state.dart';
 import '../../../domain/x01/x01_rules.dart';
@@ -56,6 +57,7 @@ class RulesBody extends StatelessWidget {
             RulesTopic.x01 => _x01(context, l10n, wide),
             RulesTopic.aroundTheClock => _aroundTheClock(context, l10n),
             RulesTopic.bulling => _bulling(context, l10n),
+            RulesTopic.higherLower => _higherLower(l10n, wide),
             RulesTopic.training => _training(l10n, wide),
           },
         ];
@@ -295,6 +297,89 @@ class RulesBody extends StatelessWidget {
       ),
     ),
   ];
+
+  List<Widget> _higherLower(AppLocalizations l10n, bool wide) {
+    final caption = l10n.rulesExampleHigherLower(
+      HigherLowerConfig.startHigher,
+      HigherLowerConfig.startLower,
+    );
+    return [
+      _Section(
+        title: l10n.rulesSectionTurn,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              l10n.rulesHigherLowerTurnHint,
+              style: Type.body.copyWith(color: Palette.chalk),
+            ),
+            const SizedBox(height: Gap.lg),
+            _Note(l10n.rulesHigherLowerTrebleOne),
+          ],
+        ),
+      ),
+      RuleCallout(
+        tone: CalloutTone.bust,
+        title: l10n.rulesHigherLowerOutTitle,
+        points: [
+          l10n.rulesHigherLowerOutBetween,
+          l10n.rulesHigherLowerOutMiss,
+          l10n.rulesHigherLowerOutButton,
+        ],
+        footer: l10n.rulesHigherLowerOutFooter,
+      ),
+      _Section(
+        title: l10n.rulesSectionExamples,
+        child: _Pair(
+          wide: wide,
+          first: WorkedExample(
+            caption: caption,
+            start: '0',
+            darts: const [
+              (segment: Segment(20, Ring.triple), after: '60', counts: true),
+              (
+                segment: Segment(5, Ring.outerSingle),
+                after: '65',
+                counts: true,
+              ),
+              (
+                segment: Segment(1, Ring.outerSingle),
+                after: '66',
+                counts: true,
+              ),
+            ],
+            outcome: ExampleOutcome.good,
+            outcomeLabel: l10n.higherLabel,
+            note: l10n.rulesExampleHigherNote,
+          ),
+          second: WorkedExample(
+            caption: caption,
+            start: '0',
+            darts: const [
+              (
+                segment: Segment(10, Ring.outerSingle),
+                after: '10',
+                counts: true,
+              ),
+              (
+                segment: Segment(10, Ring.outerSingle),
+                after: '20',
+                counts: true,
+              ),
+              (
+                segment: Segment(6, Ring.outerSingle),
+                after: '26',
+                counts: true,
+              ),
+            ],
+            outcome: ExampleOutcome.bust,
+            outcomeLabel: l10n.eliminatedLabel,
+            note: l10n.rulesExampleTieNote,
+          ),
+        ),
+      ),
+    ];
+  }
 
   List<Widget> _training(AppLocalizations l10n, bool wide) => [
     _Section(

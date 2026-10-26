@@ -5,6 +5,8 @@ for **Android and Windows**.
 x01 (301/501/701, single/double/master in and out) for up to 4 players, best of 1/3/5/7
 legs, live checkout suggestions, spoken commentary and sound cues, reactions on
 the board's LED ring, and per-player statistics across every dart ever thrown.
+Also Around the Clock, Bulling, Higher/Lower (elimination: beat the higher or
+lower value each turn) and solo training.
 
 MVP finished 2026-09-07 — real hardware connects and scores correctly, and the
 five post-MVP features (multi-leg matches, sound, app icon, end screen,

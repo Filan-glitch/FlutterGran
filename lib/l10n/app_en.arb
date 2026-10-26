@@ -379,6 +379,58 @@
   },
   "throwAgainButton": "THROW AGAIN",
   "doneButton": "DONE",
+  "pickAtLeastTwoPlayers": "PICK AT LEAST TWO PLAYERS",
+  "higherLowerSetupTitle": "HIGHER / LOWER SETUP",
+  "rulesHigherLowerTitle": "HIGHER / LOWER RULES",
+  "rulesHigherLowerOverview": "Beat the higher score or duck the lower one, or you're out",
+  "rulesHigherLowerObjective": "Score more than the higher value or less than the lower one, three darts a turn. Last one standing wins.",
+  "rulesSectionTurn": "THE TURN",
+  "rulesHigherLowerTurnHint": "Beat higher and your total becomes the new higher value. Beat lower and it becomes the new lower value. Both carry over to the next player.",
+  "rulesHigherLowerOutTitle": "YOU'RE OUT WHEN",
+  "rulesHigherLowerOutBetween": "Your total is neither more than higher nor less than lower. Hitting either value exactly counts as neither.",
+  "rulesHigherLowerOutMiss": "A dart misses the board. The turn ends right there.",
+  "rulesHigherLowerOutButton": "You end the turn early with the board button. That counts as a miss.",
+  "rulesHigherLowerOutFooter": "You sit out the rest of the leg. The last player standing wins it.",
+  "rulesHigherLowerTrebleOne": "Treble 1 counts as 0 - the only way under 3.",
+  "rulesExampleHigherLower": "HIGHER {higher} · LOWER {lower}",
+  "@rulesExampleHigherLower": {
+    "placeholders": { "higher": { "type": "int" }, "lower": { "type": "int" } }
+  },
+  "rulesExampleHigherNote": "66 is more than 45, so higher is 66 now.",
+  "rulesExampleTieNote": "26 is not less than 26, and not more than 45 either. Out.",
+  "higherLabel": "HIGHER",
+  "lowerLabel": "LOWER",
+  "eliminatedLabel": "OUT",
+  "turnTotalLabel": "TURN",
+  "survivedCaption": "survived",
+  "higherArrow": "HIGHER {before} → {after}",
+  "@higherArrow": {
+    "placeholders": { "before": { "type": "int" }, "after": { "type": "int" } }
+  },
+  "lowerArrow": "LOWER {before} → {after}",
+  "@lowerArrow": {
+    "placeholders": { "before": { "type": "int" }, "after": { "type": "int" } }
+  },
+  "missedOut": "MISSED · OUT",
+  "betweenOut": "NOT OVER {higher}, NOT UNDER {lower} · OUT",
+  "@betweenOut": {
+    "placeholders": { "higher": { "type": "int" }, "lower": { "type": "int" } }
+  },
+  "lastStandingLabel": "LAST ONE STANDING",
+  "figureTurns": "TURNS",
+  "higherLowerLabel": "HIGHER / LOWER",
+  "survivalRateLabel": "Survival rate",
+  "xOfYTurns": "{x} of {y} turns",
+  "@xOfYTurns": {
+    "placeholders": { "x": { "type": "int" }, "y": { "type": "int" } }
+  },
+  "higherCallsRow": "Went higher",
+  "lowerCallsRow": "Went lower",
+  "longestRunRow": "Longest run",
+  "turnsCount": "{count, plural, =1{1 turn} other{{count} turns}}",
+  "@turnsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
 
   "updatesSectionTitle": "Updates",
   "updateCurrentVersion": "Version {version}",

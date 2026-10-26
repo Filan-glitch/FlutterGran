@@ -204,6 +204,26 @@ void main() {
     expect(find.text('THE ROUTE'), findsNothing);
   });
 
+  testWidgets('Higher/Lower says who goes out, and shows both outcomes', (
+    tester,
+  ) async {
+    await pump(tester, RulesTopic.higherLower);
+
+    expect(find.text('HIGHER / LOWER RULES'), findsOneWidget);
+    expect(find.text('45 · 26'), findsOneWidget);
+    expect(find.text('2–4'), findsOneWidget);
+
+    await reveal(tester, find.text("YOU'RE OUT WHEN"));
+    expect(find.textContaining('Hitting either value exactly'), findsOneWidget);
+    expect(find.textContaining('Treble 1 counts as 0'), findsOneWidget);
+
+    await reveal(tester, find.textContaining('not less than 26'));
+    expect(find.textContaining('higher is 66 now'), findsOneWidget);
+
+    expect(find.text('IN RULE'), findsNothing);
+    expect(find.text('THE ROUTE'), findsNothing);
+  });
+
   testWidgets('Training shows both drills', (tester) async {
     await pump(tester, RulesTopic.training);
 

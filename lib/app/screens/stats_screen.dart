@@ -83,6 +83,7 @@ class _Body extends ConsumerWidget {
     final x01 = statsByMode[GameMode.x01] as X01Stats?;
     final atc = statsByMode[GameMode.aroundTheClock] as AtcStats?;
     final bulling = statsByMode[GameMode.bulling] as BullingStats?;
+    final higherLower = statsByMode[GameMode.higherLower] as HigherLowerStats?;
     final counts =
         ref.watch(segmentCountsProvider(playerId)).value ??
         const <Segment, int>{};
@@ -90,8 +91,9 @@ class _Body extends ConsumerWidget {
     final hasX01 = x01 != null && x01.legsPlayed > 0;
     final hasAtc = atc != null && atc.legsPlayed > 0;
     final hasBulling = bulling != null && bulling.legsPlayed > 0;
+    final hasHigherLower = higherLower != null && higherLower.legsPlayed > 0;
 
-    if (!hasX01 && !hasAtc && !hasBulling) {
+    if (!hasX01 && !hasAtc && !hasBulling && !hasHigherLower) {
       return _Empty(
         headline: l10n.noLegsYetHeadline,
         detail: l10n.noLegsYetDetail,
@@ -253,6 +255,42 @@ class _Body extends ConsumerWidget {
                 _Row(l10n.pointsScoredRow, '${bulling.pointsScored}'),
                 _Row(l10n.outerBullHitsRow, '${bulling.outerBullHits}'),
                 _Row(l10n.bullseyeHitsRow, '${bulling.innerBullHits}'),
+              ],
+            ),
+          ],
+          if (hasHigherLower) ...[
+            if (hasX01 || hasAtc || hasBulling) const SizedBox(height: Gap.xl),
+            SectionLabel(l10n.higherLowerLabel),
+            const SizedBox(height: Gap.sm),
+            _Headline(
+              value: _percent(higherLower.survivalRate),
+              label: l10n.survivalRateLabel,
+              detail: l10n.xOfYTurns(
+                higherLower.turnsSurvived,
+                higherLower.turnsPlayed,
+              ),
+            ),
+            const SizedBox(height: Gap.xl),
+            _Section(
+              title: l10n.legsSectionTitle,
+              rows: [
+                _Row(
+                  l10n.wonLabel,
+                  l10n.wonRatio(higherLower.legsWon, higherLower.legsPlayed),
+                ),
+                _Row(l10n.winRateLabel, _percent(higherLower.winRate)),
+                _Row(
+                  l10n.longestRunRow,
+                  l10n.turnsCount(higherLower.longestRun),
+                ),
+              ],
+            ),
+            _Section(
+              title: l10n.scoringSectionTitle,
+              rows: [
+                _Row(l10n.higherCallsRow, '${higherLower.higherCalls}'),
+                _Row(l10n.lowerCallsRow, '${higherLower.lowerCalls}'),
+                _Row(l10n.statDarts, '${higherLower.dartsThrown}'),
               ],
             ),
           ],

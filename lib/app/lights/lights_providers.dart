@@ -145,6 +145,18 @@ final bullingLightsProvider = Provider.autoDispose<void>((ref) {
   );
 });
 
+final higherLowerLightsProvider = Provider.autoDispose<void>((ref) {
+  _drive(
+    ref,
+    ring: () => higherLowerRing(ref.read(higherLowerGameProvider)),
+    opening: ref.read(higherLowerGameProvider).leg.darts.isEmpty,
+    listen: (perform) => ref.listen(
+      higherLowerGameProvider,
+      (previous, next) => perform(ledCuesForHigherLower(previous, next)),
+    ),
+  );
+});
+
 final trainingLightsProvider = Provider.autoDispose<void>((ref) {
   RingPaint ring() => switch (ref.read(trainingProvider)) {
     CheckoutPracticeSession(:final leg) => x01Ring(

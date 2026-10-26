@@ -3,6 +3,7 @@ import '../atc/atc_stop.dart';
 import '../bulling/bulling_leg_state.dart';
 import '../bulling/bulling_reducer.dart';
 import '../game_mode.dart';
+import '../higher_lower/higher_lower_leg_state.dart';
 import '../segment.dart';
 import '../x01/leg_state.dart';
 import '../x01/match_state.dart';
@@ -39,11 +40,13 @@ Map<GameMode, ModeStats> computePlayerStats(
   Iterable<MatchState> x01Matches = const [],
   Iterable<AtcLegState> atcLegs = const [],
   Iterable<BullingLegState> bullingLegs = const [],
+  Iterable<HigherLowerLegState> higherLowerLegs = const [],
 }) {
   return {
     GameMode.x01: computeX01Stats(playerId, x01Legs, matches: x01Matches),
     GameMode.aroundTheClock: computeAtcStats(playerId, atcLegs),
     GameMode.bulling: computeBullingStats(playerId, bullingLegs),
+    GameMode.higherLower: computeHigherLowerStats(playerId, higherLowerLegs),
   };
 }
 
@@ -298,5 +301,60 @@ BullingStats computeBullingStats(int playerId, Iterable<BullingLegState> legs) {
     outerBullHits: outerBullHits,
     innerBullHits: innerBullHits,
     fewestDartsToWin: fewestDartsToWin,
+  );
+}
+
+/// Aggregates a player's Higher/Lower record across any number of replayed
+/// legs.
+///
+/// Takes folded [HigherLowerLegState]s for the same reason the other modes'
+/// calculators do: every number here agrees with what was shown during play
+/// by construction.
+HigherLowerStats computeHigherLowerStats(
+  int playerId,
+  Iterable<HigherLowerLegState> legs,
+) {
+  var legsPlayed = 0;
+  var legsWon = 0;
+  var turnsPlayed = 0;
+  var turnsSurvived = 0;
+  var higherCalls = 0;
+  var lowerCalls = 0;
+  var dartsThrown = 0;
+  var longestRun = 0;
+
+  for (final leg in legs) {
+    if (!leg.config.playerIds.contains(playerId)) continue;
+    legsPlayed++;
+    if (leg.winnerId == playerId) legsWon++;
+
+    for (final turn in leg.turns) {
+      if (turn.playerId != playerId) continue;
+      turnsPlayed++;
+      dartsThrown += turn.darts.length;
+      switch (turn.outcome) {
+        case HigherLowerOutcome.higher:
+          higherCalls++;
+        case HigherLowerOutcome.lower:
+          lowerCalls++;
+        case HigherLowerOutcome.missed || HigherLowerOutcome.between:
+          break;
+      }
+    }
+
+    final survived = leg.turnsSurvivedBy(playerId);
+    turnsSurvived += survived;
+    if (survived > longestRun) longestRun = survived;
+  }
+
+  return HigherLowerStats(
+    legsPlayed: legsPlayed,
+    legsWon: legsWon,
+    turnsPlayed: turnsPlayed,
+    turnsSurvived: turnsSurvived,
+    higherCalls: higherCalls,
+    lowerCalls: lowerCalls,
+    dartsThrown: dartsThrown,
+    longestRun: longestRun,
   );
 }

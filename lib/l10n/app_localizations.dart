@@ -1652,6 +1652,210 @@ abstract class AppLocalizations {
   /// **'DONE'**
   String get doneButton;
 
+  /// No description provided for @pickAtLeastTwoPlayers.
+  ///
+  /// In en, this message translates to:
+  /// **'PICK AT LEAST TWO PLAYERS'**
+  String get pickAtLeastTwoPlayers;
+
+  /// No description provided for @higherLowerSetupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'HIGHER / LOWER SETUP'**
+  String get higherLowerSetupTitle;
+
+  /// No description provided for @rulesHigherLowerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'HIGHER / LOWER RULES'**
+  String get rulesHigherLowerTitle;
+
+  /// No description provided for @rulesHigherLowerOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Beat the higher score or duck the lower one, or you\'re out'**
+  String get rulesHigherLowerOverview;
+
+  /// No description provided for @rulesHigherLowerObjective.
+  ///
+  /// In en, this message translates to:
+  /// **'Score more than the higher value or less than the lower one, three darts a turn. Last one standing wins.'**
+  String get rulesHigherLowerObjective;
+
+  /// No description provided for @rulesSectionTurn.
+  ///
+  /// In en, this message translates to:
+  /// **'THE TURN'**
+  String get rulesSectionTurn;
+
+  /// No description provided for @rulesHigherLowerTurnHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Beat higher and your total becomes the new higher value. Beat lower and it becomes the new lower value. Both carry over to the next player.'**
+  String get rulesHigherLowerTurnHint;
+
+  /// No description provided for @rulesHigherLowerOutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'YOU\'RE OUT WHEN'**
+  String get rulesHigherLowerOutTitle;
+
+  /// No description provided for @rulesHigherLowerOutBetween.
+  ///
+  /// In en, this message translates to:
+  /// **'Your total is neither more than higher nor less than lower. Hitting either value exactly counts as neither.'**
+  String get rulesHigherLowerOutBetween;
+
+  /// No description provided for @rulesHigherLowerOutMiss.
+  ///
+  /// In en, this message translates to:
+  /// **'A dart misses the board. The turn ends right there.'**
+  String get rulesHigherLowerOutMiss;
+
+  /// No description provided for @rulesHigherLowerOutButton.
+  ///
+  /// In en, this message translates to:
+  /// **'You end the turn early with the board button. That counts as a miss.'**
+  String get rulesHigherLowerOutButton;
+
+  /// No description provided for @rulesHigherLowerOutFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'You sit out the rest of the leg. The last player standing wins it.'**
+  String get rulesHigherLowerOutFooter;
+
+  /// No description provided for @rulesHigherLowerTrebleOne.
+  ///
+  /// In en, this message translates to:
+  /// **'Treble 1 counts as 0 - the only way under 3.'**
+  String get rulesHigherLowerTrebleOne;
+
+  /// No description provided for @rulesExampleHigherLower.
+  ///
+  /// In en, this message translates to:
+  /// **'HIGHER {higher} · LOWER {lower}'**
+  String rulesExampleHigherLower(int higher, int lower);
+
+  /// No description provided for @rulesExampleHigherNote.
+  ///
+  /// In en, this message translates to:
+  /// **'66 is more than 45, so higher is 66 now.'**
+  String get rulesExampleHigherNote;
+
+  /// No description provided for @rulesExampleTieNote.
+  ///
+  /// In en, this message translates to:
+  /// **'26 is not less than 26, and not more than 45 either. Out.'**
+  String get rulesExampleTieNote;
+
+  /// No description provided for @higherLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'HIGHER'**
+  String get higherLabel;
+
+  /// No description provided for @lowerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'LOWER'**
+  String get lowerLabel;
+
+  /// No description provided for @eliminatedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'OUT'**
+  String get eliminatedLabel;
+
+  /// No description provided for @turnTotalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'TURN'**
+  String get turnTotalLabel;
+
+  /// No description provided for @survivedCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'survived'**
+  String get survivedCaption;
+
+  /// No description provided for @higherArrow.
+  ///
+  /// In en, this message translates to:
+  /// **'HIGHER {before} → {after}'**
+  String higherArrow(int before, int after);
+
+  /// No description provided for @lowerArrow.
+  ///
+  /// In en, this message translates to:
+  /// **'LOWER {before} → {after}'**
+  String lowerArrow(int before, int after);
+
+  /// No description provided for @missedOut.
+  ///
+  /// In en, this message translates to:
+  /// **'MISSED · OUT'**
+  String get missedOut;
+
+  /// No description provided for @betweenOut.
+  ///
+  /// In en, this message translates to:
+  /// **'NOT OVER {higher}, NOT UNDER {lower} · OUT'**
+  String betweenOut(int higher, int lower);
+
+  /// No description provided for @lastStandingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'LAST ONE STANDING'**
+  String get lastStandingLabel;
+
+  /// No description provided for @figureTurns.
+  ///
+  /// In en, this message translates to:
+  /// **'TURNS'**
+  String get figureTurns;
+
+  /// No description provided for @higherLowerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'HIGHER / LOWER'**
+  String get higherLowerLabel;
+
+  /// No description provided for @survivalRateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Survival rate'**
+  String get survivalRateLabel;
+
+  /// No description provided for @xOfYTurns.
+  ///
+  /// In en, this message translates to:
+  /// **'{x} of {y} turns'**
+  String xOfYTurns(int x, int y);
+
+  /// No description provided for @higherCallsRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Went higher'**
+  String get higherCallsRow;
+
+  /// No description provided for @lowerCallsRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Went lower'**
+  String get lowerCallsRow;
+
+  /// No description provided for @longestRunRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Longest run'**
+  String get longestRunRow;
+
+  /// No description provided for @turnsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 turn} other{{count} turns}}'**
+  String turnsCount(int count);
+
   /// No description provided for @updatesSectionTitle.
   ///
   /// In en, this message translates to:

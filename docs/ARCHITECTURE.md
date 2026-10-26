@@ -116,6 +116,14 @@ actually threads through today is storage and statistics:
   same way: one block per entry in the map, nothing rendered for a mode
   with nothing in it.
 
+Higher/Lower (`lib/domain/higher_lower/`) is the elimination mode: every turn
+must total more than the higher value or less than the lower one (45 and 26 to
+start), and each success moves that value to the total. A miss, or a total that
+does neither, puts the player out, and the last one standing wins.
+`foldHigherLower` keeps the same shape as the other folds: a pure function of
+the dart log, so undo brings an eliminated player back for free. It is the one
+mode without a config table, because its seats are its whole configuration.
+
 ### Checkouts
 
 `findCheckouts(score, dartsLeft, {limit})`
@@ -171,6 +179,7 @@ SplashScreen                                  (MaterialApp's home)
                           --> X01SetupScreen     --> GameScreen
                           --> AtcSetupScreen     --> AtcGameScreen
                           --> BullingSetupScreen --> BullingGameScreen
+                          --> HigherLowerSetupScreen --> HigherLowerGameScreen
        TRAINING   --> TrainingSetupScreen --> TrainingGameScreen
        RULES      --> RulesScreen --> RulesDetailScreen  (phone/tablet; desktop: in place)
        STATISTICS --> StatsScreen
@@ -221,10 +230,12 @@ resume, an undo, the start of the next leg — plays nothing. Resuming a stored
 leg would otherwise read out the total of a turn thrown yesterday.
 
 Every mode has its own mapping of the same shape - `soundsForAtc`,
-`soundsForBulling`, `soundsForTraining` - and its own provider that the game
-screen watches to keep alive. x01 alone speaks turn totals, busts and 180s;
+`soundsForBulling`, `soundsForHigherLower`, `soundsForTraining` - and its own
+provider that the game screen watches to keep alive. x01 alone speaks 180s;
 the others click every dart, call game on, say "no score" for an empty turn
-(Bulling reads its points out) and play the checkout for a win.
+(Bulling reads its points out) and play the checkout for a win. Higher/Lower
+reads out the total of a turn that stays in and plays a bust for one that goes
+out.
 
 Two players are held open. Cues run on `PlayerMode.lowLatency` (a SoundPool of
 decoded PCM on Android) because a click that lags is worse than no click;
@@ -251,7 +262,7 @@ state (now)           ──▶ x01Ring / atcRing / … ──▶ resting RingPa
   one-dart guard as `soundsFor`. Undo and resume light nothing.
   - It also works out the **resting ring**: the checkout route (next dart yellow,
     the rest orange), the Around the Clock target, or turquoise all round for
-    bulling.
+    bulling. Higher/Lower has no bed to aim at, so its ring stays dark.
 - **`led_cue.dart`** is *what* happened. **`led_theme.dart`** is *how it looks*:
   every colour, op, speed and hold time lives there. Seat colours are chosen so
   the RGB effects and the 8-colour ring palette agree.
@@ -323,18 +334,19 @@ the same treatment:
 panels built around `Spacer`s are wrapped in `FitOrScroll`, which gives them
 the height when there is height and a scroll when there is not.
 
-Every game screen - x01, Around the Clock, Bulling and both training drills -
+Every game screen - x01, Around the Clock, Bulling, Higher/Lower and both
+training drills -
 is laid out by one `GameLayout` (`lib/app/widgets/game_layout.dart`) and
 differs only in what it puts in the slots:
 
-| Slot | Widget | x01 | Around the Clock | Bulling | Training |
-| --- | --- | --- | --- | --- | --- |
-| seats | `Scoreboard` of `SeatView`s | remaining | stop needed + 22-tick rail | points + rail to target | remaining / session figures |
-| aim | `AimStrip` | `CheckoutCard` | `AimCard` | - | `CheckoutCard` |
-| ledger | `TurnLedger` | turn total, struck on a bust | `+n` stops | `+n` points | turn total |
-| turn result | `TurnResultPanel` | score, `before → after` | `+n`, stop → stop | `+n`, score → score | - |
-| outcome | `OutcomePanel` | leg won mid-match | - | - | checked out |
-| game over | `GameOverCard` | match won | leg won | leg won | - |
+| Slot | Widget | x01 | Around the Clock | Bulling | Higher/Lower | Training |
+| --- | --- | --- | --- | --- | --- | --- |
+| seats | `Scoreboard` of `SeatView`s | remaining | stop needed + 22-tick rail | points + rail to target | turns survived, or OUT | remaining / session figures |
+| aim | `AimStrip` | `CheckoutCard` | `AimCard` | - | `BoundsCard` (higher and lower) | `CheckoutCard` |
+| ledger | `TurnLedger` | turn total, struck on a bust | `+n` stops | `+n` points | turn total | turn total |
+| turn result | `TurnResultPanel` | score, `before → after` | `+n`, stop → stop | `+n`, score → score | total, `HIGHER 45 → 60` or why out | - |
+| outcome | `OutcomePanel` | leg won mid-match | - | - | - | checked out |
+| game over | `GameOverCard` | match won | leg won | leg won | last one standing | - |
 
 `GameAppBar` gives every one of them the same actions (board light, keypad
 toggle while a board is connected, undo), and `LeaveGuard` the same

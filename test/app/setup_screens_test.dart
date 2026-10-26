@@ -6,6 +6,7 @@ import 'package:fluttergran/app/audio/sound_controller.dart';
 import 'package:fluttergran/app/providers.dart';
 import 'package:fluttergran/app/screens/atc_setup_screen.dart';
 import 'package:fluttergran/app/screens/bulling_setup_screen.dart';
+import 'package:fluttergran/app/screens/higher_lower_setup_screen.dart';
 import 'package:fluttergran/app/screens/x01_setup_screen.dart';
 import 'package:fluttergran/app/theme.dart';
 import 'package:fluttergran/app/widgets/player_picker.dart';
@@ -101,6 +102,7 @@ void main() {
     ('x01', X01SetupScreen()),
     ('Around the Clock', AtcSetupScreen()),
     ('Bulling', BullingSetupScreen()),
+    ('Higher/Lower', HigherLowerSetupScreen()),
   ]) {
     group('$name setup', () {
       testWidgets('a player row seats and unseats, and deletes nobody', (
@@ -183,5 +185,28 @@ void main() {
     final config = container.read(bullingGameProvider).leg.config;
     expect(config.bullseyeValue, BullseyeValue.three);
     expect(config.target, 41);
+  });
+
+  testWidgets('Higher/Lower needs two players to start', (tester) async {
+    final finn = await repository.addPlayer('Finn');
+    final ada = await repository.addPlayer('Ada');
+    await pump(tester, const HigherLowerSetupScreen());
+
+    await tester.tap(find.text('Finn'));
+    await frames(tester);
+    expect(find.text('PICK AT LEAST TWO PLAYERS'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('start-leg-button')));
+    await frames(tester);
+    expect(find.byType(HigherLowerSetupScreen), findsOneWidget);
+
+    await tester.tap(find.text('Ada'));
+    await frames(tester);
+    await tester.tap(find.byKey(const Key('start-leg-button')));
+    await frames(tester);
+
+    expect(container.read(higherLowerGameProvider).leg.config.playerIds, [
+      finn.id,
+      ada.id,
+    ]);
   });
 }

@@ -4,6 +4,7 @@ import '../x01/x01_rules.dart';
 
 part 'atc_stats.dart';
 part 'bulling_stats.dart';
+part 'higher_lower_stats.dart';
 part 'x01_stats.dart';
 
 /// A player's record in one game mode.

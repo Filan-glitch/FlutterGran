@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/app/providers.dart';
 import 'package:fluttergran/app/screens/atc_setup_screen.dart';
 import 'package:fluttergran/app/screens/bulling_setup_screen.dart';
+import 'package:fluttergran/app/screens/higher_lower_setup_screen.dart';
 import 'package:fluttergran/app/screens/select_game_mode_screen.dart';
 import 'package:fluttergran/app/screens/x01_setup_screen.dart';
 import 'package:fluttergran/app/theme.dart';
@@ -103,10 +104,28 @@ void main() {
     expect(find.byType(BullingSetupScreen), findsOneWidget);
   });
 
+  testWidgets('the Higher/Lower tile navigates to its setup screen', (
+    tester,
+  ) async {
+    await pumpScreen(tester);
+    // The grid builds lazily: the later tiles are only there once scrolled to.
+    await tester.scrollUntilVisible(find.text('HIGHER / LOWER'), 200);
+    await tester.pumpAndSettle();
+
+    expect(find.text('45 · 26'), findsOneWidget);
+
+    await tester.tap(find.text('HIGHER / LOWER'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(HigherLowerSetupScreen), findsOneWidget);
+  });
+
   testWidgets('the trailing tile names no specific unbuilt mode', (
     tester,
   ) async {
     await pumpScreen(tester);
+    await tester.scrollUntilVisible(find.text('MORE MODES COMING'), 200);
+    await tester.pumpAndSettle();
 
     expect(find.text('MORE MODES COMING'), findsOneWidget);
   });

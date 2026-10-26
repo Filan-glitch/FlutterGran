@@ -931,6 +931,136 @@ class AppLocalizationsEn extends AppLocalizations {
   String get doneButton => 'DONE';
 
   @override
+  String get pickAtLeastTwoPlayers => 'PICK AT LEAST TWO PLAYERS';
+
+  @override
+  String get higherLowerSetupTitle => 'HIGHER / LOWER SETUP';
+
+  @override
+  String get rulesHigherLowerTitle => 'HIGHER / LOWER RULES';
+
+  @override
+  String get rulesHigherLowerOverview =>
+      'Beat the higher score or duck the lower one, or you\'re out';
+
+  @override
+  String get rulesHigherLowerObjective =>
+      'Score more than the higher value or less than the lower one, three darts a turn. Last one standing wins.';
+
+  @override
+  String get rulesSectionTurn => 'THE TURN';
+
+  @override
+  String get rulesHigherLowerTurnHint =>
+      'Beat higher and your total becomes the new higher value. Beat lower and it becomes the new lower value. Both carry over to the next player.';
+
+  @override
+  String get rulesHigherLowerOutTitle => 'YOU\'RE OUT WHEN';
+
+  @override
+  String get rulesHigherLowerOutBetween =>
+      'Your total is neither more than higher nor less than lower. Hitting either value exactly counts as neither.';
+
+  @override
+  String get rulesHigherLowerOutMiss =>
+      'A dart misses the board. The turn ends right there.';
+
+  @override
+  String get rulesHigherLowerOutButton =>
+      'You end the turn early with the board button. That counts as a miss.';
+
+  @override
+  String get rulesHigherLowerOutFooter =>
+      'You sit out the rest of the leg. The last player standing wins it.';
+
+  @override
+  String get rulesHigherLowerTrebleOne =>
+      'Treble 1 counts as 0 - the only way under 3.';
+
+  @override
+  String rulesExampleHigherLower(int higher, int lower) {
+    return 'HIGHER $higher · LOWER $lower';
+  }
+
+  @override
+  String get rulesExampleHigherNote =>
+      '66 is more than 45, so higher is 66 now.';
+
+  @override
+  String get rulesExampleTieNote =>
+      '26 is not less than 26, and not more than 45 either. Out.';
+
+  @override
+  String get higherLabel => 'HIGHER';
+
+  @override
+  String get lowerLabel => 'LOWER';
+
+  @override
+  String get eliminatedLabel => 'OUT';
+
+  @override
+  String get turnTotalLabel => 'TURN';
+
+  @override
+  String get survivedCaption => 'survived';
+
+  @override
+  String higherArrow(int before, int after) {
+    return 'HIGHER $before → $after';
+  }
+
+  @override
+  String lowerArrow(int before, int after) {
+    return 'LOWER $before → $after';
+  }
+
+  @override
+  String get missedOut => 'MISSED · OUT';
+
+  @override
+  String betweenOut(int higher, int lower) {
+    return 'NOT OVER $higher, NOT UNDER $lower · OUT';
+  }
+
+  @override
+  String get lastStandingLabel => 'LAST ONE STANDING';
+
+  @override
+  String get figureTurns => 'TURNS';
+
+  @override
+  String get higherLowerLabel => 'HIGHER / LOWER';
+
+  @override
+  String get survivalRateLabel => 'Survival rate';
+
+  @override
+  String xOfYTurns(int x, int y) {
+    return '$x of $y turns';
+  }
+
+  @override
+  String get higherCallsRow => 'Went higher';
+
+  @override
+  String get lowerCallsRow => 'Went lower';
+
+  @override
+  String get longestRunRow => 'Longest run';
+
+  @override
+  String turnsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count turns',
+      one: '1 turn',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get updatesSectionTitle => 'Updates';
 
   @override

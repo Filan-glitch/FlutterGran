@@ -937,6 +937,136 @@ class AppLocalizationsDe extends AppLocalizations {
   String get doneButton => 'FERTIG';
 
   @override
+  String get pickAtLeastTwoPlayers => 'MINDESTENS ZWEI SPIELER WÄHLEN';
+
+  @override
+  String get higherLowerSetupTitle => 'HIGHER / LOWER EINRICHTUNG';
+
+  @override
+  String get rulesHigherLowerTitle => 'HIGHER / LOWER REGELN';
+
+  @override
+  String get rulesHigherLowerOverview =>
+      'Über den oberen Wert oder unter den unteren, sonst raus';
+
+  @override
+  String get rulesHigherLowerObjective =>
+      'Mehr als den oberen oder weniger als den unteren Wert werfen, drei Darts pro Aufnahme. Wer als Letzter übrig ist, gewinnt.';
+
+  @override
+  String get rulesSectionTurn => 'DIE AUFNAHME';
+
+  @override
+  String get rulesHigherLowerTurnHint =>
+      'Liegst du über dem oberen Wert, wird deine Summe der neue obere Wert. Liegst du unter dem unteren, der neue untere. Beide gelten für den nächsten Spieler weiter.';
+
+  @override
+  String get rulesHigherLowerOutTitle => 'DU BIST RAUS, WENN';
+
+  @override
+  String get rulesHigherLowerOutBetween =>
+      'Deine Summe weder über dem oberen noch unter dem unteren Wert liegt. Genau einen der Werte zu treffen zählt als keins von beiden.';
+
+  @override
+  String get rulesHigherLowerOutMiss =>
+      'Ein Dart das Board verfehlt. Die Aufnahme endet sofort.';
+
+  @override
+  String get rulesHigherLowerOutButton =>
+      'Du die Aufnahme per Board-Taste vorzeitig beendest. Das zählt als Fehlwurf.';
+
+  @override
+  String get rulesHigherLowerOutFooter =>
+      'Du setzt den Rest des Legs aus. Wer als Letzter übrig ist, gewinnt es.';
+
+  @override
+  String get rulesHigherLowerTrebleOne =>
+      'Triple 1 zählt 0 - der einzige Weg unter 3.';
+
+  @override
+  String rulesExampleHigherLower(int higher, int lower) {
+    return 'HÖHER $higher · TIEFER $lower';
+  }
+
+  @override
+  String get rulesExampleHigherNote =>
+      '66 ist mehr als 45, also ist der obere Wert jetzt 66.';
+
+  @override
+  String get rulesExampleTieNote =>
+      '26 ist nicht weniger als 26 und nicht mehr als 45. Raus.';
+
+  @override
+  String get higherLabel => 'HÖHER';
+
+  @override
+  String get lowerLabel => 'TIEFER';
+
+  @override
+  String get eliminatedLabel => 'RAUS';
+
+  @override
+  String get turnTotalLabel => 'AUFNAHME';
+
+  @override
+  String get survivedCaption => 'überstanden';
+
+  @override
+  String higherArrow(int before, int after) {
+    return 'HÖHER $before → $after';
+  }
+
+  @override
+  String lowerArrow(int before, int after) {
+    return 'TIEFER $before → $after';
+  }
+
+  @override
+  String get missedOut => 'DANEBEN · RAUS';
+
+  @override
+  String betweenOut(int higher, int lower) {
+    return 'NICHT ÜBER $higher, NICHT UNTER $lower · RAUS';
+  }
+
+  @override
+  String get lastStandingLabel => 'ALS LETZTER ÜBRIG';
+
+  @override
+  String get figureTurns => 'AUFNAHMEN';
+
+  @override
+  String get higherLowerLabel => 'HIGHER / LOWER';
+
+  @override
+  String get survivalRateLabel => 'Überlebensquote';
+
+  @override
+  String xOfYTurns(int x, int y) {
+    return '$x von $y Aufnahmen';
+  }
+
+  @override
+  String get higherCallsRow => 'Höher gegangen';
+
+  @override
+  String get lowerCallsRow => 'Tiefer gegangen';
+
+  @override
+  String get longestRunRow => 'Längste Serie';
+
+  @override
+  String turnsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Aufnahmen',
+      one: '1 Aufnahme',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get updatesSectionTitle => 'Updates';
 
   @override

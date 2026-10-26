@@ -22,6 +22,9 @@ import '../domain/bulling/bulling_reducer.dart';
 import '../domain/bulling/bulling_variant.dart';
 import '../domain/checkout/checkout_table.dart';
 import '../domain/game_mode.dart';
+import '../domain/higher_lower/higher_lower_config.dart';
+import '../domain/higher_lower/higher_lower_leg_state.dart';
+import '../domain/higher_lower/higher_lower_reducer.dart';
 import '../domain/segment.dart';
 import '../domain/stats/player_stats.dart';
 import '../domain/x01/game_config.dart';
@@ -32,11 +35,13 @@ import '../domain/x01/x01_rules.dart';
 import 'atc_controller.dart';
 import 'audio/atc_sound.dart';
 import 'audio/bulling_sound.dart';
+import 'audio/higher_lower_sound.dart';
 import 'audio/sound_controller.dart';
 import 'audio/sound_player.dart';
 import 'audio/training_sound.dart';
 import 'bulling_controller.dart';
 import 'game_controller.dart';
+import 'higher_lower_controller.dart';
 import 'match_controller.dart';
 import 'training_controller.dart';
 
@@ -238,6 +243,23 @@ final bullingGameProvider = NotifierProvider<BullingController, BullingSession>(
   BullingController.new,
 );
 
+class HigherLowerConfigController extends Notifier<HigherLowerConfig> {
+  @override
+  HigherLowerConfig build() => HigherLowerConfig(playerIds: const [1, 2]);
+
+  void update(HigherLowerConfig config) => state = config;
+}
+
+final higherLowerConfigProvider =
+    NotifierProvider<HigherLowerConfigController, HigherLowerConfig>(
+      HigherLowerConfigController.new,
+    );
+
+final higherLowerGameProvider =
+    NotifierProvider<HigherLowerController, HigherLowerSession>(
+      HigherLowerController.new,
+    );
+
 /// The training session on screen. Never fed by [gameRepositoryProvider] and
 /// never sets [currentGameIdProvider] - see [TrainingController] for why that
 /// is the whole persistence story.
@@ -322,6 +344,11 @@ final allBullingLegsProvider = StreamProvider<List<BullingLegState>>(
   (ref) => ref.watch(gameRepositoryProvider).watchAllBullingLegs(),
 );
 
+/// Every stored Higher/Lower leg, replayed.
+final allHigherLowerLegsProvider = StreamProvider<List<HigherLowerLegState>>(
+  (ref) => ref.watch(gameRepositoryProvider).watchAllHigherLowerLegs(),
+);
+
 /// A player's all-time record, one entry per mode they have played.
 ///
 /// See [computePlayerStats] for why the grouping happens here rather than
@@ -336,14 +363,16 @@ final playerStatsProvider = Provider.family<Map<GameMode, ModeStats>, int>((
     x01Matches: ref.watch(allMatchesProvider).value ?? const [],
     atcLegs: ref.watch(allAtcLegsProvider).value ?? const [],
     bullingLegs: ref.watch(allBullingLegsProvider).value ?? const [],
+    higherLowerLegs: ref.watch(allHigherLowerLegsProvider).value ?? const [],
   );
 });
 
 /// Where a player's darts have landed, for the accuracy heatmap.
 ///
 /// Every dart ever thrown counts here regardless of mode - the underlying
-/// query has no `gameMode` filter of its own - so this depends on both leg
-/// streams purely to know when to refresh, not to change what it reads.
+/// query has no `gameMode` filter of its own - so this depends on every
+/// mode's leg stream purely to know when to refresh, not to change what it
+/// reads.
 final segmentCountsProvider = FutureProvider.family<Map<Segment, int>, int>((
   ref,
   playerId,
@@ -351,6 +380,7 @@ final segmentCountsProvider = FutureProvider.family<Map<Segment, int>, int>((
   ref.watch(allLegsProvider);
   ref.watch(allAtcLegsProvider);
   ref.watch(allBullingLegsProvider);
+  ref.watch(allHigherLowerLegsProvider);
   return ref.watch(gameRepositoryProvider).segmentCounts(playerId);
 });
 
@@ -383,6 +413,12 @@ class ResumableBullingLeg extends ResumableLeg {
   const ResumableBullingLeg({required super.gameId, required this.leg});
 
   final BullingLegState leg;
+}
+
+class ResumableHigherLowerLeg extends ResumableLeg {
+  const ResumableHigherLowerLeg({required super.gameId, required this.leg});
+
+  final HigherLowerLegState leg;
 }
 
 /// The leg the main menu offers to resume, or null when there is none.
@@ -436,6 +472,16 @@ final resumableLegProvider = StreamProvider<ResumableLeg?>((ref) async* {
         yield ResumableBullingLeg(
           gameId: gameId,
           leg: foldBulling(config, await repository.loadLog(gameId)),
+        );
+      case GameMode.higherLower:
+        final config = await repository.loadHigherLowerConfig(gameId);
+        if (config == null) {
+          yield null;
+          continue;
+        }
+        yield ResumableHigherLowerLeg(
+          gameId: gameId,
+          leg: foldHigherLower(config, await repository.loadLog(gameId)),
         );
     }
   }
@@ -743,6 +789,17 @@ final bullingSoundControllerProvider = Provider<void>((ref) {
   ref.listen(
     bullingGameProvider,
     (previous, next) => _play(ref, player, soundsForBulling(previous, next)),
+  );
+  _silenceWhenSwitchedOff(ref, player);
+});
+
+/// Watches a Higher/Lower leg and plays what it hears.
+final higherLowerSoundControllerProvider = Provider<void>((ref) {
+  final player = ref.watch(soundPlayerProvider);
+  ref.listen(
+    higherLowerGameProvider,
+    (previous, next) =>
+        _play(ref, player, soundsForHigherLower(previous, next)),
   );
   _silenceWhenSwitchedOff(ref, player);
 });

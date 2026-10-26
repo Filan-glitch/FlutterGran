@@ -14,8 +14,8 @@ import 'rules_detail_screen.dart';
 ///
 ///  - A phone gets a column of cards; a tap opens that mode's
 ///    [RulesDetailScreen], its glyph flying up into the page's header.
-///  - A tablet gets a row of four tall posters (two by two when the window
-///    is narrower), the same tap and the same flight.
+///  - A tablet gets a row of tall posters, one per mode (two rows when the
+///    window is narrower), the same tap and the same flight.
 ///  - A desktop window big enough for the hero treatment is master-detail:
 ///    the modes as a rail on the left, the chosen one's [RulesBody] beside
 ///    it, switching in place - there is room for both, and a desktop reader
@@ -94,20 +94,22 @@ class _RulesScreenState extends State<RulesScreen> {
         ),
       );
 
-      final fourAcross = constraints.maxWidth >= 200 * scale * 4;
+      final allAcross = constraints.maxWidth >= 200 * scale * posters.length;
+      // Otherwise two rows, the longer one first.
+      final split = (posters.length + 1) ~/ 2;
       return SingleChildScrollView(
         padding: const EdgeInsets.all(Gap.xl),
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            minHeight: fourAcross ? constraints.maxHeight - Gap.xl * 2 : 0,
+            minHeight: allAcross ? constraints.maxHeight - Gap.xl * 2 : 0,
           ),
-          child: fourAcross
+          child: allAcross
               ? row(posters)
               : Column(
                   children: [
-                    row(posters.sublist(0, 2)),
+                    row(posters.sublist(0, split)),
                     const SizedBox(height: Gap.lg),
-                    row(posters.sublist(2)),
+                    row(posters.sublist(split)),
                   ],
                 ),
         ),

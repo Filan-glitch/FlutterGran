@@ -15,6 +15,8 @@ import '../theme.dart';
 ///  - Around the Clock adds a bright dot riding the rim - the numbers are
 ///    played in order, all the way around.
 ///  - Bulling fills the centre solid - the whole game is aiming for the bull.
+///  - Higher/Lower puts a dot at the top and the bottom of the rim - over the
+///    higher value or under the lower one.
 ///  - Training groups three dots on the treble ring - a practice grouping.
 ///
 /// A null [topic] is the dim, un-highlighted family with a plus in the
@@ -77,6 +79,12 @@ class ModeGlyph extends StatelessWidget {
               alignment: const Alignment(0.8, -0.8),
               child: _dot(dot, Palette.trebleBed),
             ),
+          if (topic == RulesTopic.higherLower)
+            for (final alignment in const [
+              Alignment.topCenter,
+              Alignment.bottomCenter,
+            ])
+              Align(alignment: alignment, child: _dot(dot, Palette.trebleBed)),
           if (topic == RulesTopic.training)
             for (final alignment in const [
               Alignment(-0.14, -0.62),

@@ -61,16 +61,54 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  void expectEveryMode() {
-    for (final name in ['X01', 'AROUND THE CLOCK', 'BULLING', 'TRAINING']) {
-      expect(find.text(name), findsWidgets);
-    }
-    for (final tagline in [
-      'Race down to zero and check out on a double',
-      'Clear every number in order, then both bulls',
-      'First to the target by hitting bulls wins',
-      'Free practice or checkout drills, solo',
+  /// Brings [topic]'s overview card into view - the list of modes can be
+  /// longer than a short window, and a lazily built list only has the cards
+  /// on screen.
+  Future<void> revealTopic(WidgetTester tester, RulesTopic topic) async {
+    final anyCard = find.byWidgetPredicate((widget) {
+      final key = widget.key;
+      return key is ValueKey<String> && key.value.startsWith('rules-overview-');
+    });
+    final list = find
+        .ancestor(of: anyCard.first, matching: find.byType(Scrollable))
+        .first;
+    // Back to the top first: the card may have scrolled past already.
+    tester.state<ScrollableState>(list).position.jumpTo(0);
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byKey(Key('rules-overview-${topic.name}')),
+      200,
+      scrollable: list,
+    );
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> expectEveryMode(WidgetTester tester) async {
+    for (final (topic, name, tagline) in [
+      (RulesTopic.x01, 'X01', 'Race down to zero and check out on a double'),
+      (
+        RulesTopic.aroundTheClock,
+        'AROUND THE CLOCK',
+        'Clear every number in order, then both bulls',
+      ),
+      (
+        RulesTopic.bulling,
+        'BULLING',
+        'First to the target by hitting bulls wins',
+      ),
+      (
+        RulesTopic.higherLower,
+        'HIGHER / LOWER',
+        "Beat the higher score or duck the lower one, or you're out",
+      ),
+      (
+        RulesTopic.training,
+        'TRAINING',
+        'Free practice or checkout drills, solo',
+      ),
     ]) {
+      await revealTopic(tester, topic);
+      expect(find.text(name), findsWidgets);
       expect(find.text(tagline), findsOneWidget);
     }
   }
@@ -81,7 +119,7 @@ void main() {
     await pump(tester, phonePortrait, const RulesScreen());
 
     expect(find.text('RULES'), findsOneWidget);
-    expectEveryMode();
+    await expectEveryMode(tester);
     // A picker, not a reference: no rules are on this screen yet.
     expect(find.byType(RulesBody), findsNothing);
 
@@ -100,14 +138,20 @@ void main() {
   ) async {
     await pump(tester, tabS6Lite, const RulesScreen());
 
-    expectEveryMode();
+    await expectEveryMode(tester);
     final x01 = tester.getRect(find.byKey(const Key('rules-overview-x01')));
+    final clock = tester.getRect(
+      find.byKey(const Key('rules-overview-aroundTheClock')),
+    );
     final training = tester.getRect(
       find.byKey(const Key('rules-overview-training')),
     );
-    expect(training.top, x01.top);
-    expect(training.left, greaterThan(x01.right));
+    expect(clock.top, x01.top);
+    expect(clock.left, greaterThan(x01.right));
+    // Five posters do not fit across: the rest wrap onto a second row.
+    expect(training.top, greaterThan(x01.bottom));
 
+    await revealTopic(tester, RulesTopic.bulling);
     await tester.tap(find.byKey(const Key('rules-overview-bulling')));
     await tester.pumpAndSettle();
     expect(
@@ -121,12 +165,13 @@ void main() {
     (tester) async {
       await pump(tester, laptop, const RulesScreen());
 
-      expectEveryMode();
+      await expectEveryMode(tester);
       expect(
         tester.widget<RulesBody>(find.byType(RulesBody)).topic,
         RulesTopic.x01,
       );
 
+      await revealTopic(tester, RulesTopic.aroundTheClock);
       await tester.tap(find.byKey(const Key('rules-overview-aroundTheClock')));
       await tester.pumpAndSettle();
 
@@ -146,6 +191,7 @@ void main() {
       await pump(tester, const Size(800, 560), const RulesScreen());
 
       expect(find.byType(RulesBody), findsNothing);
+      await revealTopic(tester, RulesTopic.training);
       await tester.tap(find.byKey(const Key('rules-overview-training')));
       await tester.pumpAndSettle();
       expect(find.byType(RulesDetailScreen), findsOneWidget);
@@ -192,6 +238,7 @@ void main() {
       testWidgets('in a $name', (tester) async {
         await pump(tester, size, const RulesScreen());
         for (final topic in RulesTopic.values) {
+          await revealTopic(tester, topic);
           await tester.tap(find.byKey(Key('rules-overview-${topic.name}')));
           await tester.pumpAndSettle();
           await scrollThrough(tester);
