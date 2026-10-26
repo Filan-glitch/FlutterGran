@@ -55,7 +55,9 @@ void main() {
     });
 
     test('a player who was not in the leg is skipped entirely', () {
-      final stats = computeX01Stats(9, [leg(501, [t(20)])]);
+      final stats = computeX01Stats(9, [
+        leg(501, [t(20)]),
+      ]);
       expect(stats.legsPlayed, 0);
       expect(stats.dartsThrown, 0);
     });
@@ -303,7 +305,13 @@ void main() {
     });
 
     test('a match still running counts as played', () {
-      final stats = computeX01Stats(1, const [], matches: [match(const [1])]);
+      final stats = computeX01Stats(
+        1,
+        const [],
+        matches: [
+          match(const [1]),
+        ],
+      );
 
       expect(stats.matchesPlayed, 1);
       expect(stats.matchesWon, 0);
@@ -313,7 +321,9 @@ void main() {
       final stats = computeX01Stats(
         9,
         const [],
-        matches: [match(const [1, 1])],
+        matches: [
+          match(const [1, 1]),
+        ],
       );
 
       expect(stats.matchesPlayed, 0);
@@ -324,7 +334,9 @@ void main() {
     test('keys x01 legs under GameMode.x01', () {
       final stats = computePlayerStats(
         1,
-        x01Legs: [leg(501, [t(20), t(20), t(20)])],
+        x01Legs: [
+          leg(501, [t(20), t(20), t(20)]),
+        ],
       );
 
       expect((stats[GameMode.x01]! as X01Stats).dartsThrown, 3);

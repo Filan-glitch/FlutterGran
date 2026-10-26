@@ -3,7 +3,7 @@
 /// Adding a mode means adding a value here, a matching entry in
 /// [gameModeRegistry], and its own stats calculator; nothing about picking a
 /// mode or reading its record should need to change shape again.
-enum GameMode { x01, aroundTheClock, bulling }
+enum GameMode { x01, aroundTheClock, bulling, higherLower }
 
 /// What the mode-select screen needs to render a tile, without pulling in
 /// anything Flutter.
@@ -48,6 +48,12 @@ const List<GameModeDescriptor> gameModeRegistry = [
     id: GameMode.bulling,
     displayName: 'BULLING',
     tagline: '21 · 31 · 41',
+    isAvailable: true,
+  ),
+  GameModeDescriptor(
+    id: GameMode.higherLower,
+    displayName: 'HIGHER / LOWER',
+    tagline: '45 · 26',
     isAvailable: true,
   ),
 ];

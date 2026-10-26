@@ -100,11 +100,16 @@ void main() {
   });
 
   group('computePlayerStats, the mode dispatcher', () {
-    test('keys all three modes even when only some have data', () {
+    test('keys every mode even when only some have data', () {
       final stats = computePlayerStats(1);
       expect(
         stats.keys,
-        containsAll([GameMode.x01, GameMode.aroundTheClock, GameMode.bulling]),
+        containsAll([
+          GameMode.x01,
+          GameMode.aroundTheClock,
+          GameMode.bulling,
+          GameMode.higherLower,
+        ]),
       );
     });
 

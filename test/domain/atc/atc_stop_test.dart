@@ -19,11 +19,17 @@ void main() {
     final stop = AtcStop.track[6]; // number 7
 
     test('a single on the matching number clears it', () {
-      expect(stop.clears(Segment(7, Ring.outerSingle), AtcVariant.anyPart), isTrue);
+      expect(
+        stop.clears(Segment(7, Ring.outerSingle), AtcVariant.anyPart),
+        isTrue,
+      );
     });
 
     test('a double on the matching number clears it', () {
-      expect(stop.clears(Segment(7, Ring.doubleRing), AtcVariant.anyPart), isTrue);
+      expect(
+        stop.clears(Segment(7, Ring.doubleRing), AtcVariant.anyPart),
+        isTrue,
+      );
     });
 
     test('a triple on the matching number clears it', () {
@@ -39,7 +45,10 @@ void main() {
     final stop = AtcStop.track[6]; // number 7
 
     test('a double on the matching number clears it', () {
-      expect(stop.clears(Segment(7, Ring.doubleRing), AtcVariant.masters), isTrue);
+      expect(
+        stop.clears(Segment(7, Ring.doubleRing), AtcVariant.masters),
+        isTrue,
+      );
     });
 
     test('a triple on the matching number clears it', () {
@@ -47,8 +56,14 @@ void main() {
     });
 
     test('a single on the matching number does not clear it', () {
-      expect(stop.clears(Segment(7, Ring.outerSingle), AtcVariant.masters), isFalse);
-      expect(stop.clears(Segment(7, Ring.innerSingle), AtcVariant.masters), isFalse);
+      expect(
+        stop.clears(Segment(7, Ring.outerSingle), AtcVariant.masters),
+        isFalse,
+      );
+      expect(
+        stop.clears(Segment(7, Ring.innerSingle), AtcVariant.masters),
+        isFalse,
+      );
     });
   });
 
@@ -63,7 +78,10 @@ void main() {
     });
 
     test('a triple on the matching number does not clear it', () {
-      expect(stop.clears(Segment(7, Ring.triple), AtcVariant.doublesOnly), isFalse);
+      expect(
+        stop.clears(Segment(7, Ring.triple), AtcVariant.doublesOnly),
+        isFalse,
+      );
     });
 
     test('a single on the matching number does not clear it', () {
@@ -79,7 +97,11 @@ void main() {
 
     test('clears on the outer bull under every variant', () {
       for (final variant in AtcVariant.values) {
-        expect(bull.clears(Segment.outerBull, variant), isTrue, reason: '$variant');
+        expect(
+          bull.clears(Segment.outerBull, variant),
+          isTrue,
+          reason: '$variant',
+        );
       }
     });
 
@@ -88,7 +110,10 @@ void main() {
     });
 
     test('does not clear on a numbered segment', () {
-      expect(bull.clears(Segment(20, Ring.triple), AtcVariant.anyPart), isFalse);
+      expect(
+        bull.clears(Segment(20, Ring.triple), AtcVariant.anyPart),
+        isFalse,
+      );
     });
   });
 
@@ -97,7 +122,11 @@ void main() {
 
     test('clears on the inner bull under every variant', () {
       for (final variant in AtcVariant.values) {
-        expect(bullseye.clears(Segment.innerBull, variant), isTrue, reason: '$variant');
+        expect(
+          bullseye.clears(Segment.innerBull, variant),
+          isTrue,
+          reason: '$variant',
+        );
       }
     });
 
