@@ -46,7 +46,10 @@ const _gameOn = Sound.speech(SoundAssets.spokenGameOn);
 const _click = Sound.cue(SoundAssets.dartCue);
 const _gameShot = [
   Sound.cue(SoundAssets.checkoutCue),
-  Sound.speech(SoundAssets.spokenGameShot, after: SoundTiming.afterCheckoutCue),
+  Sound.speech(
+    SoundAssets.spokenGameShot,
+    after: SoundTiming.afterCheckoutCue,
+  ),
 ];
 
 void main() {
@@ -55,8 +58,10 @@ void main() {
   group('Around the Clock', () {
     final solo = AtcConfig(playerIds: const [1], variant: AtcVariant.anyPart);
 
-    AtcSession at(List<ThrownDart> darts) =>
-        AtcSession(leg: foldAroundTheClock(solo, darts), acknowledgedTurns: 0);
+    AtcSession at(List<ThrownDart> darts) => AtcSession(
+      leg: foldAroundTheClock(solo, darts),
+      acknowledgedTurns: 0,
+    );
 
     List<Sound> throwing(List<ThrownDart> darts) =>
         soundsForAtc(at(darts.sublist(0, darts.length - 1)), at(darts));
@@ -110,8 +115,10 @@ void main() {
       target: 21,
     );
 
-    BullingSession at(List<ThrownDart> darts) =>
-        BullingSession(leg: foldBulling(solo, darts), acknowledgedTurns: 0);
+    BullingSession at(List<ThrownDart> darts) => BullingSession(
+      leg: foldBulling(solo, darts),
+      acknowledgedTurns: 0,
+    );
 
     List<Sound> throwing(List<ThrownDart> darts) =>
         soundsForBulling(at(darts.sublist(0, darts.length - 1)), at(darts));

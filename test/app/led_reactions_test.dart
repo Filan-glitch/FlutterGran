@@ -53,10 +53,7 @@ void main() {
 
   group('x01 darts', () {
     test('nothing before there is a previous state', () {
-      expect(
-        ledCuesFor(null, at(config(501), [t(20)]), endsMatch: true),
-        isEmpty,
-      );
+      expect(ledCuesFor(null, at(config(501), [t(20)]), endsMatch: true), isEmpty);
     });
 
     test('a hit flashes the number in the thrower\'s seat colour', () {
@@ -148,10 +145,7 @@ void main() {
     });
 
     test('a bull to throw next turns the whole ring turquoise', () {
-      expect(
-        checkoutRing(table.bestFor(50, 1)),
-        RingPaint.all(RingColor.turquoise),
-      );
+      expect(checkoutRing(table.bestFor(50, 1)), RingPaint.all(RingColor.turquoise));
     });
 
     test('is dark with no route, between turns and once the leg is over', () {

@@ -122,8 +122,7 @@ X01Stats computeX01Stats(
         playerOpened |= effectiveValue > 0;
 
         if (isOneDartFinishFor(standing, outRule)) {
-          dartsAtFinishByRule[outRule] =
-              (dartsAtFinishByRule[outRule] ?? 0) + 1;
+          dartsAtFinishByRule[outRule] = (dartsAtFinishByRule[outRule] ?? 0) + 1;
         }
         if (dart.checksOutUnder(outRule) && standing - effectiveValue == 0) {
           finishesHitByRule[outRule] = (finishesHitByRule[outRule] ?? 0) + 1;

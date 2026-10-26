@@ -46,13 +46,14 @@ class GameRepository {
 
   // Players
 
-  Stream<List<Player>> watchPlayers() => (db.select(
-    db.players,
-  )..orderBy([(p) => OrderingTerm(expression: p.name)])).watch();
+  Stream<List<Player>> watchPlayers() =>
+      (db.select(db.players)..orderBy([(p) => OrderingTerm(expression: p.name)]))
+          .watch();
 
-  Future<List<Player>> allPlayers() => (db.select(
-    db.players,
-  )..orderBy([(p) => OrderingTerm(expression: p.name)])).get();
+  Future<List<Player>> allPlayers() =>
+      (db.select(db.players)
+            ..orderBy([(p) => OrderingTerm(expression: p.name)]))
+          .get();
 
   Future<Player> addPlayer(String name) => db
       .into(db.players)
@@ -78,12 +79,12 @@ class GameRepository {
   /// complete replay. Accepted; most deletions are guests who are done
   /// playing.
   Future<void> removePlayer(int playerId) => db.transaction(() async {
-    await (db.delete(
-      db.dartEvents,
-    )..where((d) => d.playerId.equals(playerId))).go();
-    await (db.delete(
-      db.gameSeats,
-    )..where((s) => s.playerId.equals(playerId))).go();
+    await (db.delete(db.dartEvents)
+          ..where((d) => d.playerId.equals(playerId)))
+        .go();
+    await (db.delete(db.gameSeats)
+          ..where((s) => s.playerId.equals(playerId)))
+        .go();
     await (db.delete(db.players)..where((p) => p.id.equals(playerId))).go();
   });
 
@@ -159,19 +160,18 @@ class GameRepository {
   /// Games that were abandoned before anyone won.
   Future<void> deleteEmptyGames() async {
     final counts = db.dartEvents.gameId.count();
-    final played =
-        await (db.selectOnly(db.dartEvents)
-              ..addColumns([db.dartEvents.gameId, counts])
-              ..groupBy([db.dartEvents.gameId]))
-            .get();
+    final played = await (db.selectOnly(db.dartEvents)
+          ..addColumns([db.dartEvents.gameId, counts])
+          ..groupBy([db.dartEvents.gameId]))
+        .get();
     final withDarts = played
         .map((row) => row.read(db.dartEvents.gameId))
         .whereType<int>()
         .toSet();
 
-    await (db.delete(
-      db.games,
-    )..where((g) => g.id.isNotIn(withDarts) & g.finishedAt.isNull())).go();
+    await (db.delete(db.games)
+          ..where((g) => g.id.isNotIn(withDarts) & g.finishedAt.isNull()))
+        .go();
   }
 
   // Matches
@@ -243,9 +243,9 @@ class GameRepository {
   /// every leg in the same order, so storing it twice would only give it a
   /// chance to disagree with itself.
   Future<MatchConfig?> loadMatchConfig(int matchId) async {
-    final match = await (db.select(
-      db.matches,
-    )..where((m) => m.id.equals(matchId))).getSingleOrNull();
+    final match = await (db.select(db.matches)
+          ..where((m) => m.id.equals(matchId)))
+        .getSingleOrNull();
     if (match == null) return null;
 
     final first =
@@ -300,25 +300,31 @@ class GameRepository {
   /// its own row.
   Stream<List<MatchState>> watchAllMatches() =>
       (db.select(db.matches).join([
-        innerJoin(
-          db.games,
-          db.games.matchId.equalsExp(db.matches.id),
-          useColumns: false,
-        ),
-      ])..groupBy([db.matches.id])).watch().asyncMap((rows) async {
-        final states = <MatchState>[];
-        for (final row in rows) {
-          final id = row.readTable(db.matches).id;
-          final config = await loadMatchConfig(id);
-          if (config == null) continue;
-          states.add(foldMatch(config, await legWinners(id)));
-        }
-        return states;
-      });
+            innerJoin(
+              db.games,
+              db.games.matchId.equalsExp(db.matches.id),
+              useColumns: false,
+            ),
+          ])
+            ..groupBy([db.matches.id]))
+          .watch()
+          .asyncMap((rows) async {
+            final states = <MatchState>[];
+            for (final row in rows) {
+              final id = row.readTable(db.matches).id;
+              final config = await loadMatchConfig(id);
+              if (config == null) continue;
+              states.add(foldMatch(config, await legWinners(id)));
+            }
+            return states;
+          });
 
   /// Winners of a match's decided legs, oldest first.
   Future<List<int>> legWinners(int matchId, {int? beforeLegNumber}) async {
-    final legs = await loadMatchLegs(matchId, beforeLegNumber: beforeLegNumber);
+    final legs = await loadMatchLegs(
+      matchId,
+      beforeLegNumber: beforeLegNumber,
+    );
     return [for (final leg in legs) ?leg.winnerId];
   }
 
@@ -345,11 +351,8 @@ class GameRepository {
   /// Drops every dart at or after [ordinal]. Undo rewinds the log rather than
   /// recording a correction, so history stays a plain list of what was thrown.
   Future<void> truncateLog(int gameId, int ordinal) =>
-      (db.delete(db.dartEvents)..where(
-            (d) =>
-                d.gameId.equals(gameId) &
-                d.ordinal.isBiggerOrEqualValue(ordinal),
-          ))
+      (db.delete(db.dartEvents)
+            ..where((d) => d.gameId.equals(gameId) & d.ordinal.isBiggerOrEqualValue(ordinal)))
           .go();
 
   Future<List<ThrownDart>> loadLog(int gameId) async {
@@ -374,12 +377,12 @@ class GameRepository {
   /// resume from one abandoned at the setup screen.
   JoinedSelectStatement<HasResultSet, dynamic> _resumableQuery() {
     return db.select(db.games).join([
-        innerJoin(
-          db.dartEvents,
-          db.dartEvents.gameId.equalsExp(db.games.id),
-          useColumns: false,
-        ),
-      ])
+      innerJoin(
+        db.dartEvents,
+        db.dartEvents.gameId.equalsExp(db.games.id),
+        useColumns: false,
+      ),
+    ])
       ..where(db.games.finishedAt.isNull())
       ..groupBy([db.games.id])
       // Id breaks the tie: startedAt has second resolution, so two legs begun
@@ -401,9 +404,9 @@ class GameRepository {
   /// a dart being thrown: a stream built from `select(games)` alone is only
   /// invalidated by writes to games, so it would never notice the first dart
   /// turning a leg into one worth resuming.
-  Stream<int?> watchResumableGameId() => _resumableQuery().watch().map(
-    (rows) => rows.singleOrNull?.readTable(db.games).id,
-  );
+  Stream<int?> watchResumableGameId() => _resumableQuery()
+      .watch()
+      .map((rows) => rows.singleOrNull?.readTable(db.games).id);
 
   /// Every stored game, replayed into leg state.
   ///
@@ -415,17 +418,17 @@ class GameRepository {
   /// mode gets its own `watchAllLegsFor`-shaped method alongside this one,
   /// not a rewrite of it.
   Stream<List<LegState>> watchAllLegs() =>
-      (db.select(
-        db.games,
-      )..where((g) => g.gameMode.equals(_x01))).watch().asyncMap((games) async {
-        final legs = <LegState>[];
-        for (final game in games) {
-          final config = await loadConfig(game.id);
-          if (config == null) continue;
-          legs.add(foldLeg(config, await loadLog(game.id)));
-        }
-        return legs;
-      });
+      (db.select(db.games)..where((g) => g.gameMode.equals(_x01)))
+          .watch()
+          .asyncMap((games) async {
+            final legs = <LegState>[];
+            for (final game in games) {
+              final config = await loadConfig(game.id);
+              if (config == null) continue;
+              legs.add(foldLeg(config, await loadLog(game.id)));
+            }
+            return legs;
+          });
 
   /// How many darts a player has landed in each segment.
   ///
@@ -481,9 +484,9 @@ class GameRepository {
     );
   }
 
-  Future<Game?> loadGame(int gameId) => (db.select(
-    db.games,
-  )..where((g) => g.id.equals(gameId))).getSingleOrNull();
+  Future<Game?> loadGame(int gameId) =>
+      (db.select(db.games)..where((g) => g.id.equals(gameId)))
+          .getSingleOrNull();
 
   /// Player ids of a game, in throwing order.
   Future<List<int>> _seatsOf(int gameId) async {
@@ -535,9 +538,9 @@ class GameRepository {
   }
 
   /// The `AtcGames` row for a game, or null if there is not one.
-  Future<AtcGame?> loadAtcGame(int gameId) => (db.select(
-    db.atcGames,
-  )..where((g) => g.gameId.equals(gameId))).getSingleOrNull();
+  Future<AtcGame?> loadAtcGame(int gameId) =>
+      (db.select(db.atcGames)..where((g) => g.gameId.equals(gameId)))
+          .getSingleOrNull();
 
   /// Rebuilds the configuration an Around the Clock leg was played under.
   ///
@@ -609,9 +612,9 @@ class GameRepository {
   }
 
   /// The `BullingGames` row for a game, or null if there is not one.
-  Future<BullingGame?> loadBullingGame(int gameId) => (db.select(
-    db.bullingGames,
-  )..where((g) => g.gameId.equals(gameId))).getSingleOrNull();
+  Future<BullingGame?> loadBullingGame(int gameId) =>
+      (db.select(db.bullingGames)..where((g) => g.gameId.equals(gameId)))
+          .getSingleOrNull();
 
   /// Rebuilds the configuration a Bulling leg was played under.
   ///
