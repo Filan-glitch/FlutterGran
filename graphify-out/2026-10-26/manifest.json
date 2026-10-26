@@ -1,8 +1,8 @@
 {
   "android/app/build.gradle.kts": {
-    "mtime": 1793007863.5837338,
-    "seen": 1793008189.5743015,
-    "ast_hash": "d9172d149d02e3e9158cd6bfe5ab6ef9",
+    "mtime": 1793008419.1814525,
+    "seen": 1793008435.281815,
+    "ast_hash": "6be7f88cbd6ba0bf23edc52a587a8f21",
     "semantic_hash": ""
   },
   "android/app/src/main/kotlin/de/bot/filan/fluttergran/MainActivity.kt": {
@@ -462,9 +462,9 @@
     "semantic_hash": ""
   },
   "CLAUDE.md": {
-    "mtime": 1793008170.328785,
-    "seen": 1793008189.5745485,
-    "ast_hash": "b701245e75b9b248962216dc026de33c",
+    "mtime": 1793008419.181819,
+    "seen": 1793008435.2820833,
+    "ast_hash": "6d32dcc82c5db602e5f88017de40870a",
     "semantic_hash": ""
   },
   "README.md": {
@@ -2298,9 +2298,9 @@
     "semantic_hash": ""
   },
   ".github/workflows/ci.yml": {
-    "mtime": 1793007904.1985428,
-    "seen": 1793008189.5745456,
-    "ast_hash": "dbcc728cf44ae4178b2c96f88fa1f8ee",
+    "mtime": 1793008262.8088827,
+    "seen": 1793008435.2820814,
+    "ast_hash": "63abd08dbf4fa8c9987d1dd31459a5b0",
     "semantic_hash": ""
   },
   "windows/flutter/generated_plugin_registrant.cc": {
@@ -2406,21 +2406,27 @@
     "semantic_hash": ""
   },
   ".github/workflows/build.yml": {
-    "mtime": 1793007959.3631315,
-    "seen": 1793008189.5745442,
-    "ast_hash": "68de272f81a4dc7e88588a9ed378e935",
+    "mtime": 1793008262.8087535,
+    "seen": 1793008435.2820797,
+    "ast_hash": "eff9731294e647e973528546c33b9f1f",
     "semantic_hash": ""
   },
   ".github/workflows/release.yml": {
-    "mtime": 1793007985.089246,
-    "seen": 1793008189.5745466,
-    "ast_hash": "158dab415a0fea29529c8ee087427ddd",
+    "mtime": 1793008262.809042,
+    "seen": 1793008435.2820823,
+    "ast_hash": "ba7e29aab71290e8c0033569419ad174",
     "semantic_hash": ""
   },
   "docs/RELEASING.md": {
-    "mtime": 1793008154.592257,
-    "seen": 1793008189.574563,
-    "ast_hash": "eeadf3103bb3ecf8d8d6f19bb038def8",
+    "mtime": 1793008432.3709347,
+    "seen": 1793008435.2820988,
+    "ast_hash": "a56efe480077f8515538fce51c9d4a67",
+    "semantic_hash": ""
+  },
+  ".github/dependabot.yml": {
+    "mtime": 1793008419.1631744,
+    "seen": 1793008435.282078,
+    "ast_hash": "f097ea64f9186e0b6679ed810a37ebf9",
     "semantic_hash": ""
   }
 }
