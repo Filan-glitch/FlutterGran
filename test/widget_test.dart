@@ -306,5 +306,23 @@ void main() {
 
       await closeApp(tester);
     });
+
+    testWidgets(
+      'never asks a desktop window to rotate',
+      (tester) async {
+        // As big as the tablet that does get locked: a window has no
+        // orientation, only the size its owner dragged it to.
+        tester.view.physicalSize = const Size(1333, 800);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+
+        await launch(tester, database);
+
+        expect(lastRequestedOrientations(), isNull);
+
+        await closeApp(tester);
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.windows),
+    );
   });
 }

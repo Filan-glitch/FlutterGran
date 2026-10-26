@@ -1,5 +1,8 @@
+import 'dart:io' show Platform;
+
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../../domain/atc/atc_variant.dart';
 import '../../domain/bulling/bulling_variant.dart';
@@ -196,7 +199,23 @@ class BullingGames extends Table {
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
-    : super(executor ?? driftDatabase(name: 'fluttergran'));
+    : super(
+        executor ??
+            driftDatabase(
+              name: 'fluttergran',
+              native: Platform.isWindows ? _windowsStorage : null,
+            ),
+      );
+
+  /// drift's default home for the file is the documents directory, which on
+  /// Android is private to the app and on Windows is the user's own Documents
+  /// folder - visible, often synced to OneDrive, and no place for a database
+  /// that is open while the app runs. %APPDATA% is where a Windows app keeps
+  /// its state. Android stays where it always was: moving it would orphan
+  /// every dart already thrown.
+  static const _windowsStorage = DriftNativeOptions(
+    databaseDirectory: getApplicationSupportDirectory,
+  );
 
   @override
   int get schemaVersion => 8;

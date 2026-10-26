@@ -8,7 +8,7 @@ dart run build_runner build --delete-conflicting-outputs   # drift codegen
 flutter run
 ```
 
-Requires the Dart SDK matching `environment: sdk: ^3.12.2` in `pubspec.yaml`.
+Requires the Dart SDK matching `environment: sdk: ^3.13.7` in `pubspec.yaml`.
 No board is needed — the app starts on the simulated source.
 
 ## Commands
@@ -48,6 +48,34 @@ adb shell settings put system user_rotation 1   # 1 = landscape, 0 = portrait
 
 Remember to put `accelerometer_rotation` back to `1` afterwards.
 
+## Running on Windows
+
+```bash
+flutter run -d windows
+flutter build windows                  # build\windows\x64\runner\Release\
+```
+
+Needs Visual Studio 2022 with the **Desktop development with C++** workload
+(`flutter doctor` says what is missing), and only builds on Windows: there is
+no cross-compiling the runner from Linux or macOS. CI's `build-windows` job
+compiles it on every PR, which is the check for a change made elsewhere.
+
+What differs from Android:
+
+- **Layout.** The window opens maximised, cannot be dragged below 960x600
+  logical, and gets the desktop tiers in `lib/app/theme.dart`
+  (`isDesktop`, `desktopHeroLayout`, `typeScaleFor`) — see
+  [ARCHITECTURE.md](ARCHITECTURE.md#layout).
+- **Data.** The database lives in `%APPDATA%\de.bot.filan\Chalk\`
+  (`getApplicationSupportDirectory`, named from `CompanyName`/`ProductName` in
+  `windows/runner/Runner.rc`), not Documents. Renaming either string moves it.
+- **Audio.** The commentary is Ogg Vorbis. Windows decodes it through Media
+  Foundation with the *Web Media Extensions* codec, which ships with Windows
+  10 and 11 but not with the N editions; there the cues and commentary are
+  silent until it is installed from the Microsoft Store. `PlayerMode.lowLatency`
+  is a no-op on Windows.
+- **Bluetooth.** See [CONNECTIVITY.md](CONNECTIVITY.md#windows).
+
 ## Test layout
 
 | Directory | Runner | Covers |
@@ -74,7 +102,8 @@ python3 tool/make_icon.py       # needs Pillow
 
 Parses `Palette.ground` and `Palette.chalk` out of `lib/app/theme.dart` and
 draws a chalk tally, then writes five Android densities (legacy and adaptive),
-the adaptive-icon XML and `@color/ic_launcher_background`. Change the green, re-run, and everything follows — the
+the adaptive-icon XML, `@color/ic_launcher_background`, and the Windows
+`app_icon.ico` (16 to 256px, each drawn down from the master). Change the green, re-run, and everything follows — the
 icon cannot drift from the theme.
 
 Deterministic: fixed seed, explicit UTF-8, explicit `\n` newlines. Re-running

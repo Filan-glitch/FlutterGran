@@ -294,7 +294,29 @@ shortest side rather than a `LayoutBuilder`'s local width — the same question
 
 `typeScaleFor(size)` grows type on large viewports, keyed to the shortest
 side and applied once around the whole app in `main.dart` on top of the
-platform's own text setting; its top tier lines up with `heroLayout`. The
+platform's own text setting; its top tier lines up with `heroLayout`.
+
+A desktop window (`isDesktop`: Windows, plus Linux and macOS should they ever
+be added) is the opposite shape to a tablet: wide, short, and any size its
+owner drags it to. A maximised 1080p laptop at 150% scaling is about 1280x640
+logical, well short of `heroLayout`, so a desktop takes its own route into
+the same treatment:
+
+- `isHeroSize` also lets in any desktop window of at least
+  `desktopHeroLayout` (900x580). The Windows runner refuses to shrink the
+  window below 960x600, so on Windows every window is a hero window.
+  `isHeroDevice(context)` is the one call sites use.
+- `typeScaleFor` uses desktop tiers by window height: 1.25 from 580, 1.5
+  from 780, 1.75 from 1000 (a full-height window on a monitor at 100%).
+- Beside the keypad, the seat cards fill the column's height instead of
+  sitting mid-column at their content size, and from 1200 wide the score
+  side takes three fifths of the width, the keypad two.
+- `CenteredContent` grows its 640 cap by the type scale, so a form keeps a
+  tablet's words per line instead of becoming a strip down a monitor.
+- No orientation lock is ever requested, and `buildTheme` pins
+  `VisualDensity.standard` and padded tap targets, which Flutter would
+  otherwise shrink for a mouse.
+ The
 panels built around `Spacer`s are wrapped in `FitOrScroll`, which gives them
 the height when there is height and a scroll when there is not.
 

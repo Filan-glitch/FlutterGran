@@ -5,8 +5,8 @@
 **A darts scorer for the GranBoard 132, in the shape of the board rather than the shape of a form.**
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
-[![Dart SDK](https://img.shields.io/badge/Dart-%5E3.12-0175C2?logo=dart&logoColor=white)](https://dart.dev)
-[![Platform](https://img.shields.io/badge/platform-Android-3D9C64)](#)
+[![Dart SDK](https://img.shields.io/badge/Dart-%5E3.13-0175C2?logo=dart&logoColor=white)](https://dart.dev)
+[![Platform](https://img.shields.io/badge/platform-Android%20%7C%20Windows-3D9C64)](#)
 [![Tests](https://img.shields.io/badge/tests-304%20passing-3D9C64)](#testing)
 [![Schema](https://img.shields.io/badge/schema-v5-8A9A8E)](docs/DATA_MODEL.md)
 
@@ -51,7 +51,7 @@ total. Undo is folding a shorter list; there is nothing to retract.
 ```bash
 flutter pub get
 dart run build_runner build --delete-conflicting-outputs   # drift codegen
-flutter run
+flutter run                # or: flutter run -d windows
 ```
 
 No board required — the app starts on a **simulated** source. Switch it to
@@ -117,7 +117,7 @@ What the suite pins:
 - frame assembly: split frames, glued frames, duplicates inside 50 ms, the greeting
 - the v2 → v3 migration, with rows already in the table
 - the exact mapping from a game-state transition to a sound
-- the layout at phone portrait, phone landscape and tablet sizes
+- the layout at phone portrait, phone landscape, tablet and desktop-window sizes
 
 ## Generated assets
 
@@ -126,7 +126,7 @@ binary somebody has to redraw:
 
 | Script | Produces |
 |---|---|
-| `tool/make_icon.py` | The Android launcher icon, from `Palette.ground` and `Palette.chalk` — so the icon cannot drift from the theme |
+| `tool/make_icon.py` | The Android launcher icon and the Windows `.ico`, from `Palette.ground` and `Palette.chalk` — so the icon cannot drift from the theme |
 | `tool/make_speech.py` | 186 spoken lines via Piper, encoded to Ogg. The 63 MB voice model is build-time only and is never shipped |
 | `tool/make_cues.py` | The four cues, synthesised from sine partials with Python's `wave` module |
 

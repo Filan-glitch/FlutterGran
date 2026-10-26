@@ -19,6 +19,7 @@ Requires Pillow (10.x). Writes, all of it overwritten in place:
     android/app/src/main/res/mipmap-*/ic_launcher_foreground.png  adaptive, 108dp
     android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
     android/app/src/main/res/values/ic_launcher_background.xml
+    windows/runner/resources/app_icon.ico
 
 Why it is drawn the way it is:
 
@@ -97,7 +98,7 @@ STRIKE = ((0.0, 6.19), (WIDTH, 1.11), 0.06)
 
 # --- how much of each canvas the mark covers ---------------------------------
 
-# Legacy square: the mark's full width on a filled tile, the way a
+# Legacy square and Windows: the mark's full width on a filled tile, the way a
 # product icon sits on its background. The mark is wider than it is tall, so
 # this leaves more room above and below than at the sides, which is correct.
 EXTENT_TILE = 0.72
@@ -125,6 +126,9 @@ DENSITIES = {
 }
 LEGACY_DP = 48
 ADAPTIVE_DP = 108
+
+# Every size in the Windows .ico, smallest first.
+ICO_SIZES = (16, 20, 24, 32, 40, 48, 64, 128, 256)
 
 
 def read_palette() -> dict[str, tuple[int, int, int]]:
@@ -371,6 +375,22 @@ def main() -> None:
     )
     print(f"  {adaptive.relative_to(ROOT)}")
 
+    # Windows takes one .ico holding every size the shell might ask for, from
+    # 16px in the title bar to 256px in a large-icon Explorer view. Each one is
+    # drawn down from the master on its own, the same as the Android densities,
+    # rather than left to the ICO writer to shrink from the biggest. Rounded,
+    # like the legacy Android icon: a taskbar full of soft-cornered icons is
+    # what this sits beside.
+    print("windows")
+    ico = ROOT / "windows" / "runner" / "resources" / "app_icon.ico"
+    images = [tile(on_tile, size, ground, chalk, corners) for size in ICO_SIZES]
+    images[-1].save(
+        ico,
+        format="ICO",
+        sizes=[(size, size) for size in ICO_SIZES],
+        append_images=images[:-1],
+    )
+    print(f"  {ico.relative_to(ROOT)}  {', '.join(str(n) for n in ICO_SIZES)}px")
 
 
 if __name__ == "__main__":
