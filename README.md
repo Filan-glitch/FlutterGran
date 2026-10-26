@@ -6,7 +6,7 @@
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
 [![Dart SDK](https://img.shields.io/badge/Dart-%5E3.12-0175C2?logo=dart&logoColor=white)](https://dart.dev)
-[![Platform](https://img.shields.io/badge/platform-Android%20%7C%20iOS-3D9C64)](#)
+[![Platform](https://img.shields.io/badge/platform-Android-3D9C64)](#)
 [![Tests](https://img.shields.io/badge/tests-304%20passing-3D9C64)](#testing)
 [![Schema](https://img.shields.io/badge/schema-v5-8A9A8E)](docs/DATA_MODEL.md)
 
@@ -126,7 +126,7 @@ binary somebody has to redraw:
 
 | Script | Produces |
 |---|---|
-| `tool/make_icon.py` | The launcher icon, Android and iOS, from `Palette.ground` and `Palette.chalk` — so the icon cannot drift from the theme |
+| `tool/make_icon.py` | The Android launcher icon, from `Palette.ground` and `Palette.chalk` — so the icon cannot drift from the theme |
 | `tool/make_speech.py` | 186 spoken lines via Piper, encoded to Ogg. The 63 MB voice model is build-time only and is never shipped |
 | `tool/make_cues.py` | The four cues, synthesised from sine partials with Python's `wave` module |
 

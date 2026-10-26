@@ -19,7 +19,6 @@ Requires Pillow (10.x). Writes, all of it overwritten in place:
     android/app/src/main/res/mipmap-*/ic_launcher_foreground.png  adaptive, 108dp
     android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
     android/app/src/main/res/values/ic_launcher_background.xml
-    ios/Runner/Assets.xcassets/AppIcon.appiconset/*.png
 
 Why it is drawn the way it is:
 
@@ -40,7 +39,6 @@ Why it is drawn the way it is:
 
 from __future__ import annotations
 
-import json
 import math
 import random
 import re
@@ -99,7 +97,7 @@ STRIKE = ((0.0, 6.19), (WIDTH, 1.11), 0.06)
 
 # --- how much of each canvas the mark covers ---------------------------------
 
-# Legacy square and iOS: the mark's full width on a filled tile, the way a
+# Legacy square: the mark's full width on a filled tile, the way a
 # product icon sits on its background. The mark is wider than it is tall, so
 # this leaves more room above and below than at the sides, which is correct.
 EXTENT_TILE = 0.72
@@ -373,22 +371,6 @@ def main() -> None:
     )
     print(f"  {adaptive.relative_to(ROOT)}")
 
-    # iOS wants a fixed set of filenames and will warn about any it does not
-    # find, so take the list from the catalogue rather than repeating it here.
-    appicon = ROOT / "ios" / "Runner" / "Assets.xcassets" / "AppIcon.appiconset"
-    catalogue = json.loads((appicon / "Contents.json").read_text(encoding="utf-8"))
-    wanted = {
-        entry["filename"]: round(
-            float(entry["size"].split("x")[0]) * int(entry["scale"].rstrip("x"))
-        )
-        for entry in catalogue["images"]
-        if entry.get("filename")
-    }
-    print("ios")
-    for filename, size in sorted(wanted.items(), key=lambda kv: kv[1]):
-        # No alpha channel anywhere in the set: the App Store rejects icons that
-        # have one, and iOS applies its own mask regardless.
-        write(tile(on_tile, size, ground, chalk), appicon / filename)
 
 
 if __name__ == "__main__":

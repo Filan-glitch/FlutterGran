@@ -74,8 +74,7 @@ python3 tool/make_icon.py       # needs Pillow
 
 Parses `Palette.ground` and `Palette.chalk` out of `lib/app/theme.dart` and
 draws a chalk tally, then writes five Android densities (legacy and adaptive),
-the adaptive-icon XML, `@color/ic_launcher_background`, and the full iOS
-`AppIcon.appiconset`. Change the green, re-run, and everything follows — the
+the adaptive-icon XML and `@color/ic_launcher_background`. Change the green, re-run, and everything follows — the
 icon cannot drift from the theme.
 
 Deterministic: fixed seed, explicit UTF-8, explicit `\n` newlines. Re-running

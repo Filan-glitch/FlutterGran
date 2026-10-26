@@ -141,13 +141,6 @@ advertises its service UUID, the scan can filter by service and declare
 Android 12+ therefore never prompts for location — which matters, because a
 darts scorer asking for your location is a reasonable thing to refuse.
 
-### iOS
-
-```xml
-<key>NSBluetoothAlwaysUsageDescription</key>
-<string>Connects to your GranBoard to read the darts you throw.</string>
-```
-
 ## Licensing note
 
 `flutter_blue_plus` is **not open source**. The connect call passes
