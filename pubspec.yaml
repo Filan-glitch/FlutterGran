@@ -52,6 +52,18 @@ dependencies:
   # history nor relational, and a table for two booleans would cost a schema
   # migration - see the note on soundEnabledProvider in lib/app/providers.dart.
   shared_preferences: ^2.5.6
+  # The update check - see lib/data/update/. BSD-3, from dart-lang: http asks
+  # GitHub for the latest release and streams the APK down, crypto checks the
+  # download against the release's SHA256SUMS.txt before anything installs it.
+  http: ^1.6.0
+  crypto: ^3.0.8
+  # BSD-3, fluttercommunity. The running version to compare a release against,
+  # read from the APK's versionName or the .exe's version resource - both
+  # stamped from pubspec.yaml at build time.
+  package_info_plus: ^10.2.2
+  # BSD-3, from flutter/packages. Windows has no installer to hand an update
+  # to, so it opens the release page in the browser instead.
+  url_launcher: ^6.3.3
 
 dev_dependencies:
   flutter_test:

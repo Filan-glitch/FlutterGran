@@ -320,5 +320,27 @@
   "higherCallsRow": "Höher gegangen",
   "lowerCallsRow": "Tiefer gegangen",
   "longestRunRow": "Längste Serie",
-  "turnsCount": "{count, plural, =1{1 Aufnahme} other{{count} Aufnahmen}}"
+  "turnsCount": "{count, plural, =1{1 Aufnahme} other{{count} Aufnahmen}}",
+
+  "updatesSectionTitle": "Updates",
+  "updateCurrentVersion": "Version {version}",
+  "updateAutoCheckLabel": "Nach Updates suchen",
+  "updateAutoCheckDetail": "Fragt beim Start auf GitHub nach einer neueren Version",
+  "updateCheckNowButton": "JETZT PRÜFEN",
+  "updateCheckingStatus": "Suche…",
+  "updateUpToDateStatus": "Chalk ist aktuell",
+  "updateCheckFailedStatus": "GitHub nicht erreichbar",
+  "updateAvailableEyebrow": "UPDATE",
+  "updateAvailableTitle": "Chalk {version} ist verfügbar",
+  "updateAndroidDetail": "Lädt es herunter und installiert es – alle Spiele bleiben erhalten",
+  "updateWindowsDetail": "Öffnet die Release-Seite zum Herunterladen",
+  "updateInstallButton": "AKTUALISIEREN",
+  "updateDownloadButton": "HERUNTERLADEN",
+  "updateDownloadingStatus": "Wird heruntergeladen…",
+  "updateInstallingStatus": "Im geöffneten Android-Installer abschließen",
+  "updatePermissionStatus": "Erlaube Chalk, Apps zu installieren, und komm dann zurück",
+  "updateDownloadFailedStatus": "Download fehlgeschlagen",
+  "updateInstallFailedStatus": "Update konnte nicht gestartet werden",
+  "updateRetryButton": "ERNEUT VERSUCHEN",
+  "updateDismissTooltip": "Ausblenden"
 }

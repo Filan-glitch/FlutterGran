@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../l10n_extensions.dart';
 import '../providers.dart';
 import '../theme.dart';
+import '../update/update_controller.dart';
 import '../widgets/setup_controls.dart';
+import '../widgets/update_card.dart';
 
 /// App-wide preferences, away from any one game's setup.
 ///
@@ -86,10 +88,74 @@ class SettingsScreen extends ConsumerWidget {
                 value: ref.watch(localeProvider),
                 onChanged: ref.read(localeProvider.notifier).set,
               ),
+              // Only where there are releases to update to: Android and
+              // Windows.
+              if (platformCanUpdate) ...[
+                const SizedBox(height: Gap.lg),
+                SectionLabel(
+                  l10n.updatesSectionTitle,
+                  trailing: switch (ref.watch(appVersionProvider).value) {
+                    final version? => l10n.updateCurrentVersion(version),
+                    null => null,
+                  },
+                ),
+                const SizedBox(height: Gap.sm),
+                _SoundToggle(
+                  label: l10n.updateAutoCheckLabel,
+                  detail: l10n.updateAutoCheckDetail,
+                  value: ref.watch(updateAutoCheckProvider),
+                  onChanged: ref.read(updateAutoCheckProvider.notifier).set,
+                ),
+                const _UpdateStatus(),
+              ],
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+/// The by-hand check, and the update card once it finds something.
+class _UpdateStatus extends ConsumerWidget {
+  const _UpdateStatus();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final state = ref.watch(updateProvider);
+    if (state.release != null) return const UpdateCard();
+
+    final status = switch (state) {
+      UpdateChecking() => l10n.updateCheckingStatus,
+      UpdateUpToDate() => l10n.updateUpToDateStatus,
+      UpdateFailed() => l10n.updateCheckFailedStatus,
+      _ => null,
+    };
+
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            status ?? '',
+            key: const Key('update-status'),
+            style: Type.label.copyWith(
+              color: state is UpdateFailed
+                  ? Palette.doubleBed
+                  : Palette.chalkDim,
+              fontSize: 12,
+            ),
+          ),
+        ),
+        const SizedBox(width: Gap.md),
+        OutlinedButton(
+          key: const Key('update-check-now'),
+          onPressed: state is UpdateChecking
+              ? null
+              : () => ref.read(updateProvider.notifier).check(),
+          child: Text(l10n.updateCheckNowButton),
+        ),
+      ],
     );
   }
 }

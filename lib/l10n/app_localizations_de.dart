@@ -1065,4 +1065,77 @@ class AppLocalizationsDe extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get updatesSectionTitle => 'Updates';
+
+  @override
+  String updateCurrentVersion(String version) {
+    return 'Version $version';
+  }
+
+  @override
+  String get updateAutoCheckLabel => 'Nach Updates suchen';
+
+  @override
+  String get updateAutoCheckDetail =>
+      'Fragt beim Start auf GitHub nach einer neueren Version';
+
+  @override
+  String get updateCheckNowButton => 'JETZT PRÜFEN';
+
+  @override
+  String get updateCheckingStatus => 'Suche…';
+
+  @override
+  String get updateUpToDateStatus => 'Chalk ist aktuell';
+
+  @override
+  String get updateCheckFailedStatus => 'GitHub nicht erreichbar';
+
+  @override
+  String get updateAvailableEyebrow => 'UPDATE';
+
+  @override
+  String updateAvailableTitle(String version) {
+    return 'Chalk $version ist verfügbar';
+  }
+
+  @override
+  String get updateAndroidDetail =>
+      'Lädt es herunter und installiert es – alle Spiele bleiben erhalten';
+
+  @override
+  String get updateWindowsDetail =>
+      'Öffnet die Release-Seite zum Herunterladen';
+
+  @override
+  String get updateInstallButton => 'AKTUALISIEREN';
+
+  @override
+  String get updateDownloadButton => 'HERUNTERLADEN';
+
+  @override
+  String get updateDownloadingStatus => 'Wird heruntergeladen…';
+
+  @override
+  String get updateInstallingStatus =>
+      'Im geöffneten Android-Installer abschließen';
+
+  @override
+  String get updatePermissionStatus =>
+      'Erlaube Chalk, Apps zu installieren, und komm dann zurück';
+
+  @override
+  String get updateDownloadFailedStatus => 'Download fehlgeschlagen';
+
+  @override
+  String get updateInstallFailedStatus =>
+      'Update konnte nicht gestartet werden';
+
+  @override
+  String get updateRetryButton => 'ERNEUT VERSUCHEN';
+
+  @override
+  String get updateDismissTooltip => 'Ausblenden';
 }

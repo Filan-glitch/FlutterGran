@@ -106,6 +106,33 @@ sha256sum --check --ignore-missing SHA256SUMS.txt
 gh attestation verify chalk-X.Y.Z-android.apk --repo Filan-glitch/FlutterGran
 ```
 
+## In-app updates
+
+The app checks `releases/latest` on GitHub at launch (Settings → Updates
+turns that off, and has a by-hand check) and offers anything newer. Android
+downloads the APK for the device's ABI, checks it against `SHA256SUMS.txt`
+and hands it to the system installer; Windows opens the release page. Code:
+`lib/data/update/` (GitHub, versions, the verified download) and
+`lib/app/update/` (the controller and the platform seam, whose Android half
+is the `update` channel in `MainActivity.kt`).
+
+That makes parts of this pipeline a contract with every install already out
+there:
+
+- **File names.** The app looks for `chalk-<version>-android-<abi>.apk`, then
+  `chalk-<version>-android.apk`, from `NAME` in `build.yml`. Rename them and
+  installs stop finding their update.
+- **`SHA256SUMS.txt`.** An APK it does not list is never installed.
+- **Tags.** `vX.Y.Z`, compared with the running `versionName` on
+  major.minor.patch only; the `+build` number is ignored.
+- **Drafts and prereleases** are never offered - `releases/latest` skips them.
+- **The signing key.** Android only installs an update signed with the same
+  key as the installed app, so a release signed with the throwaway debug key
+  (see the warning above) fails at the installer with "App not installed".
+
+Debug builds never check at launch: they carry the debug key, which no release
+can install over.
+
 ## Pinned actions
 
 Every action in `.github/workflows` is pinned to a full commit SHA with its
