@@ -378,5 +378,33 @@
     "placeholders": { "count": { "type": "int" } }
   },
   "throwAgainButton": "THROW AGAIN",
-  "doneButton": "DONE"
+  "doneButton": "DONE",
+
+  "updatesSectionTitle": "Updates",
+  "updateCurrentVersion": "Version {version}",
+  "@updateCurrentVersion": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "updateAutoCheckLabel": "Check for updates",
+  "updateAutoCheckDetail": "Asks GitHub for a newer release when the app starts",
+  "updateCheckNowButton": "CHECK NOW",
+  "updateCheckingStatus": "Checking…",
+  "updateUpToDateStatus": "Chalk is up to date",
+  "updateCheckFailedStatus": "Couldn't reach GitHub",
+  "updateAvailableEyebrow": "UPDATE",
+  "updateAvailableTitle": "Chalk {version} is available",
+  "@updateAvailableTitle": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "updateAndroidDetail": "Downloads and installs it, keeping every game played",
+  "updateWindowsDetail": "Opens the release page to download it",
+  "updateInstallButton": "UPDATE",
+  "updateDownloadButton": "DOWNLOAD",
+  "updateDownloadingStatus": "Downloading…",
+  "updateInstallingStatus": "Finish in the installer Android opened",
+  "updatePermissionStatus": "Allow Chalk to install apps, then come back",
+  "updateDownloadFailedStatus": "Download failed",
+  "updateInstallFailedStatus": "Couldn't start the update",
+  "updateRetryButton": "TRY AGAIN",
+  "updateDismissTooltip": "Dismiss"
 }

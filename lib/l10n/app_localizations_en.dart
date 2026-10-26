@@ -929,4 +929,74 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get doneButton => 'DONE';
+
+  @override
+  String get updatesSectionTitle => 'Updates';
+
+  @override
+  String updateCurrentVersion(String version) {
+    return 'Version $version';
+  }
+
+  @override
+  String get updateAutoCheckLabel => 'Check for updates';
+
+  @override
+  String get updateAutoCheckDetail =>
+      'Asks GitHub for a newer release when the app starts';
+
+  @override
+  String get updateCheckNowButton => 'CHECK NOW';
+
+  @override
+  String get updateCheckingStatus => 'Checking…';
+
+  @override
+  String get updateUpToDateStatus => 'Chalk is up to date';
+
+  @override
+  String get updateCheckFailedStatus => 'Couldn\'t reach GitHub';
+
+  @override
+  String get updateAvailableEyebrow => 'UPDATE';
+
+  @override
+  String updateAvailableTitle(String version) {
+    return 'Chalk $version is available';
+  }
+
+  @override
+  String get updateAndroidDetail =>
+      'Downloads and installs it, keeping every game played';
+
+  @override
+  String get updateWindowsDetail => 'Opens the release page to download it';
+
+  @override
+  String get updateInstallButton => 'UPDATE';
+
+  @override
+  String get updateDownloadButton => 'DOWNLOAD';
+
+  @override
+  String get updateDownloadingStatus => 'Downloading…';
+
+  @override
+  String get updateInstallingStatus => 'Finish in the installer Android opened';
+
+  @override
+  String get updatePermissionStatus =>
+      'Allow Chalk to install apps, then come back';
+
+  @override
+  String get updateDownloadFailedStatus => 'Download failed';
+
+  @override
+  String get updateInstallFailedStatus => 'Couldn\'t start the update';
+
+  @override
+  String get updateRetryButton => 'TRY AGAIN';
+
+  @override
+  String get updateDismissTooltip => 'Dismiss';
 }

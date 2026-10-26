@@ -547,6 +547,13 @@ final ledCelebrationsProvider = NotifierProvider<BoolSetting, bool>(
   () => BoolSetting('led.celebrations'),
 );
 
+/// Whether the app asks GitHub for a newer release at launch. On by default;
+/// Settings can still check by hand with it off. See
+/// lib/app/update/update_controller.dart.
+final updateAutoCheckProvider = NotifierProvider<BoolSetting, bool>(
+  () => BoolSetting('update.autoCheck'),
+);
+
 /// The app's language, or null to follow the device's own.
 ///
 /// Same shape as [BoolSetting] - shared_preferences, a synchronous default

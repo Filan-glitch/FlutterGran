@@ -7,6 +7,7 @@ import 'app/lights/lights_providers.dart';
 import 'app/providers.dart';
 import 'app/screens/splash_screen.dart';
 import 'app/theme.dart';
+import 'app/update/update_controller.dart';
 import 'l10n/app_localizations.dart';
 
 void main() {
@@ -23,6 +24,8 @@ class FlutterGranApp extends ConsumerWidget {
     ref.watch(ledSchedulerProvider);
     // Same idiom: auto-connect, the resume retry and connection toasts.
     ref.watch(boardLifecycleProvider);
+    // And the launch update check.
+    ref.watch(updateLifecycleProvider);
 
     return MaterialApp(
       title: 'Chalk',

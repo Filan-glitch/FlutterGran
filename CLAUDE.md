@@ -54,6 +54,15 @@ with its tag. `build.yml` is the one build definition, called by `ci.yml`
 `# vX.Y.Z` comment, never a tag; the signing key lives only in the
 `sign-android` job, which must stay free of third-party actions.
 
+## Self-update
+
+At launch the app asks GitHub's `releases/latest` for a newer version; Android
+downloads the per-ABI APK, verifies it against `SHA256SUMS.txt` and opens the
+system installer (`update` MethodChannel in `MainActivity.kt`, FileProvider on
+`cache/updates/`), Windows opens the release page. Asset names, the checksum
+file and `vX.Y.Z` tags are a contract with installed apps: see
+`docs/RELEASING.md`, "In-app updates", before touching `NAME` in `build.yml`.
+
 ## Layering rule
 
 `lib/domain/` is **pure Dart and must not import `package:flutter`**. It holds the
