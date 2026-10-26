@@ -55,3 +55,6 @@ app.*.map.json
 *.onnx
 *.onnx.json
 *.onnx.part
+
+# Widget Preview related
+.widget_preview/

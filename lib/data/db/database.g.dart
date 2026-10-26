@@ -2903,18 +2903,16 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   ]);
 }
 
-typedef $$PlayersTableCreateCompanionBuilder =
-    PlayersCompanion Function({
-      Value<int> id,
-      required String name,
-      Value<DateTime> createdAt,
-    });
-typedef $$PlayersTableUpdateCompanionBuilder =
-    PlayersCompanion Function({
-      Value<int> id,
-      Value<String> name,
-      Value<DateTime> createdAt,
-    });
+typedef $$PlayersTableCreateCompanionBuilder = PlayersCompanion Function({
+  Value<int> id,
+  required String name,
+  Value<DateTime> createdAt,
+});
+typedef $$PlayersTableUpdateCompanionBuilder = PlayersCompanion Function({
+  Value<int> id,
+  Value<String> name,
+  Value<DateTime> createdAt,
+});
 
 final class $$PlayersTableReferences
     extends BaseReferences<_$AppDatabase, $PlayersTable, Player> {
@@ -3295,12 +3293,11 @@ class $$PlayersTableTableManager
               $$PlayersTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
               $$PlayersTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                Value<String> name = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-              }) => PlayersCompanion(id: id, name: name, createdAt: createdAt),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+          }) => PlayersCompanion(id: id, name: name, createdAt: createdAt),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
@@ -3314,7 +3311,7 @@ class $$PlayersTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$PlayersTable, Player>(table),
                   $$PlayersTableReferences(db, table, e),
                 ),
               )
@@ -3338,7 +3335,12 @@ class $$PlayersTableTableManager
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (matchesRefs)
-                        await $_getPrefetchedData<Player, $PlayersTable, Match>(
+                        await $_getPrefetchedDataByColumns<
+                          Player,
+                          $PlayersTable,
+                          Match,
+                          $MatchesTable
+                        >(
                           currentTable: table,
                           referencedTable: $$PlayersTableReferences
                               ._matchesRefsTable(db),
@@ -3348,30 +3350,32 @@ class $$PlayersTableTableManager
                                 table,
                                 p0,
                               ).matchesRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.winnerPlayerId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'winner_player_id',
                           typedResults: items,
                         ),
                       if (gamesRefs)
-                        await $_getPrefetchedData<Player, $PlayersTable, Game>(
+                        await $_getPrefetchedDataByColumns<
+                          Player,
+                          $PlayersTable,
+                          Game,
+                          $GamesTable
+                        >(
                           currentTable: table,
                           referencedTable: $$PlayersTableReferences
                               ._gamesRefsTable(db),
                           managerFromTypedResult: (p0) =>
                               $$PlayersTableReferences(db, table, p0).gamesRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.winnerPlayerId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'winner_player_id',
                           typedResults: items,
                         ),
                       if (gameSeatsRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           Player,
                           $PlayersTable,
-                          GameSeat
+                          GameSeat,
+                          $GameSeatsTable
                         >(
                           currentTable: table,
                           referencedTable: $$PlayersTableReferences
@@ -3382,17 +3386,16 @@ class $$PlayersTableTableManager
                                 table,
                                 p0,
                               ).gameSeatsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.playerId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'player_id',
                           typedResults: items,
                         ),
                       if (dartEventsRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           Player,
                           $PlayersTable,
-                          DartEvent
+                          DartEvent,
+                          $DartEventsTable
                         >(
                           currentTable: table,
                           referencedTable: $$PlayersTableReferences
@@ -3403,10 +3406,8 @@ class $$PlayersTableTableManager
                                 table,
                                 p0,
                               ).dartEventsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.playerId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'player_id',
                           typedResults: items,
                         ),
                     ];
@@ -3436,32 +3437,30 @@ typedef $$PlayersTableProcessedTableManager =
         bool dartEventsRefs,
       })
     >;
-typedef $$MatchesTableCreateCompanionBuilder =
-    MatchesCompanion Function({
-      Value<int> id,
-      required int startScore,
-      Value<bool> doubleOut,
-      Value<X01InRule> inRule,
-      Value<X01OutRule> outRule,
-      required int legsToPlay,
-      Value<GameMode> gameMode,
-      Value<DateTime> startedAt,
-      Value<DateTime?> finishedAt,
-      Value<int?> winnerPlayerId,
-    });
-typedef $$MatchesTableUpdateCompanionBuilder =
-    MatchesCompanion Function({
-      Value<int> id,
-      Value<int> startScore,
-      Value<bool> doubleOut,
-      Value<X01InRule> inRule,
-      Value<X01OutRule> outRule,
-      Value<int> legsToPlay,
-      Value<GameMode> gameMode,
-      Value<DateTime> startedAt,
-      Value<DateTime?> finishedAt,
-      Value<int?> winnerPlayerId,
-    });
+typedef $$MatchesTableCreateCompanionBuilder = MatchesCompanion Function({
+  Value<int> id,
+  required int startScore,
+  Value<bool> doubleOut,
+  Value<X01InRule> inRule,
+  Value<X01OutRule> outRule,
+  required int legsToPlay,
+  Value<GameMode> gameMode,
+  Value<DateTime> startedAt,
+  Value<DateTime?> finishedAt,
+  Value<int?> winnerPlayerId,
+});
+typedef $$MatchesTableUpdateCompanionBuilder = MatchesCompanion Function({
+  Value<int> id,
+  Value<int> startScore,
+  Value<bool> doubleOut,
+  Value<X01InRule> inRule,
+  Value<X01OutRule> outRule,
+  Value<int> legsToPlay,
+  Value<GameMode> gameMode,
+  Value<DateTime> startedAt,
+  Value<DateTime?> finishedAt,
+  Value<int?> winnerPlayerId,
+});
 
 final class $$MatchesTableReferences
     extends BaseReferences<_$AppDatabase, $MatchesTable, Match> {
@@ -3856,7 +3855,7 @@ class $$MatchesTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$MatchesTable, Match>(table),
                   $$MatchesTableReferences(db, table, e),
                 ),
               )
@@ -3882,17 +3881,15 @@ class $$MatchesTableTableManager
                     >
                   >(state) {
                     if (winnerPlayerId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.winnerPlayerId,
-                                referencedTable: $$MatchesTableReferences
-                                    ._winnerPlayerIdTable(db),
-                                referencedColumn: $$MatchesTableReferences
-                                    ._winnerPlayerIdTable(db)
-                                    .id,
-                              )
-                              as T;
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.winnerPlayerId,
+                        referencedTable: $$MatchesTableReferences
+                            ._winnerPlayerIdTable(db),
+                        referencedColumn: $$MatchesTableReferences
+                            ._winnerPlayerIdTable(db)
+                            .id,
+                      ) as T;
                     }
 
                     return state;
@@ -3900,15 +3897,20 @@ class $$MatchesTableTableManager
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (gamesRefs)
-                    await $_getPrefetchedData<Match, $MatchesTable, Game>(
+                    await $_getPrefetchedDataByColumns<
+                      Match,
+                      $MatchesTable,
+                      Game,
+                      $GamesTable
+                    >(
                       currentTable: table,
                       referencedTable: $$MatchesTableReferences._gamesRefsTable(
                         db,
                       ),
                       managerFromTypedResult: (p0) =>
                           $$MatchesTableReferences(db, table, p0).gamesRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.matchId == item.id),
+                      currentColumn: 'id',
+                      referencedColumn: 'match_id',
                       typedResults: items,
                     ),
                 ];
@@ -3933,34 +3935,32 @@ typedef $$MatchesTableProcessedTableManager =
       Match,
       PrefetchHooks Function({bool winnerPlayerId, bool gamesRefs})
     >;
-typedef $$GamesTableCreateCompanionBuilder =
-    GamesCompanion Function({
-      Value<int> id,
-      Value<int?> startScore,
-      Value<bool?> doubleOut,
-      Value<X01InRule?> inRule,
-      Value<X01OutRule?> outRule,
-      Value<int?> matchId,
-      Value<int?> legNumber,
-      Value<GameMode> gameMode,
-      Value<DateTime> startedAt,
-      Value<DateTime?> finishedAt,
-      Value<int?> winnerPlayerId,
-    });
-typedef $$GamesTableUpdateCompanionBuilder =
-    GamesCompanion Function({
-      Value<int> id,
-      Value<int?> startScore,
-      Value<bool?> doubleOut,
-      Value<X01InRule?> inRule,
-      Value<X01OutRule?> outRule,
-      Value<int?> matchId,
-      Value<int?> legNumber,
-      Value<GameMode> gameMode,
-      Value<DateTime> startedAt,
-      Value<DateTime?> finishedAt,
-      Value<int?> winnerPlayerId,
-    });
+typedef $$GamesTableCreateCompanionBuilder = GamesCompanion Function({
+  Value<int> id,
+  Value<int?> startScore,
+  Value<bool?> doubleOut,
+  Value<X01InRule?> inRule,
+  Value<X01OutRule?> outRule,
+  Value<int?> matchId,
+  Value<int?> legNumber,
+  Value<GameMode> gameMode,
+  Value<DateTime> startedAt,
+  Value<DateTime?> finishedAt,
+  Value<int?> winnerPlayerId,
+});
+typedef $$GamesTableUpdateCompanionBuilder = GamesCompanion Function({
+  Value<int> id,
+  Value<int?> startScore,
+  Value<bool?> doubleOut,
+  Value<X01InRule?> inRule,
+  Value<X01OutRule?> outRule,
+  Value<int?> matchId,
+  Value<int?> legNumber,
+  Value<GameMode> gameMode,
+  Value<DateTime> startedAt,
+  Value<DateTime?> finishedAt,
+  Value<int?> winnerPlayerId,
+});
 
 final class $$GamesTableReferences
     extends BaseReferences<_$AppDatabase, $GamesTable, Game> {
@@ -4652,8 +4652,10 @@ class $$GamesTableTableManager
               ),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) =>
-                    (e.readTable(table), $$GamesTableReferences(db, table, e)),
+                (e) => (
+                  e.readTable<$GamesTable, Game>(table),
+                  $$GamesTableReferences(db, table, e),
+                ),
               )
               .toList(),
           prefetchHooksCallback:
@@ -4690,30 +4692,26 @@ class $$GamesTableTableManager
                         >
                       >(state) {
                         if (matchId) {
-                          state =
-                              state.withJoin(
-                                    currentTable: table,
-                                    currentColumn: table.matchId,
-                                    referencedTable: $$GamesTableReferences
-                                        ._matchIdTable(db),
-                                    referencedColumn: $$GamesTableReferences
-                                        ._matchIdTable(db)
-                                        .id,
-                                  )
-                                  as T;
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.matchId,
+                            referencedTable: $$GamesTableReferences
+                                ._matchIdTable(db),
+                            referencedColumn: $$GamesTableReferences
+                                ._matchIdTable(db)
+                                .id,
+                          ) as T;
                         }
                         if (winnerPlayerId) {
-                          state =
-                              state.withJoin(
-                                    currentTable: table,
-                                    currentColumn: table.winnerPlayerId,
-                                    referencedTable: $$GamesTableReferences
-                                        ._winnerPlayerIdTable(db),
-                                    referencedColumn: $$GamesTableReferences
-                                        ._winnerPlayerIdTable(db)
-                                        .id,
-                                  )
-                                  as T;
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.winnerPlayerId,
+                            referencedTable: $$GamesTableReferences
+                                ._winnerPlayerIdTable(db),
+                            referencedColumn: $$GamesTableReferences
+                                ._winnerPlayerIdTable(db)
+                                .id,
+                          ) as T;
                         }
 
                         return state;
@@ -4721,7 +4719,12 @@ class $$GamesTableTableManager
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (gameSeatsRefs)
-                        await $_getPrefetchedData<Game, $GamesTable, GameSeat>(
+                        await $_getPrefetchedDataByColumns<
+                          Game,
+                          $GamesTable,
+                          GameSeat,
+                          $GameSeatsTable
+                        >(
                           currentTable: table,
                           referencedTable: $$GamesTableReferences
                               ._gameSeatsRefsTable(db),
@@ -4731,14 +4734,17 @@ class $$GamesTableTableManager
                                 table,
                                 p0,
                               ).gameSeatsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.gameId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'game_id',
                           typedResults: items,
                         ),
                       if (dartEventsRefs)
-                        await $_getPrefetchedData<Game, $GamesTable, DartEvent>(
+                        await $_getPrefetchedDataByColumns<
+                          Game,
+                          $GamesTable,
+                          DartEvent,
+                          $DartEventsTable
+                        >(
                           currentTable: table,
                           referencedTable: $$GamesTableReferences
                               ._dartEventsRefsTable(db),
@@ -4748,14 +4754,17 @@ class $$GamesTableTableManager
                                 table,
                                 p0,
                               ).dartEventsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.gameId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'game_id',
                           typedResults: items,
                         ),
                       if (atcGamesRefs)
-                        await $_getPrefetchedData<Game, $GamesTable, AtcGame>(
+                        await $_getPrefetchedDataByColumns<
+                          Game,
+                          $GamesTable,
+                          AtcGame,
+                          $AtcGamesTable
+                        >(
                           currentTable: table,
                           referencedTable: $$GamesTableReferences
                               ._atcGamesRefsTable(db),
@@ -4765,17 +4774,16 @@ class $$GamesTableTableManager
                                 table,
                                 p0,
                               ).atcGamesRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.gameId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'game_id',
                           typedResults: items,
                         ),
                       if (bullingGamesRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           Game,
                           $GamesTable,
-                          BullingGame
+                          BullingGame,
+                          $BullingGamesTable
                         >(
                           currentTable: table,
                           referencedTable: $$GamesTableReferences
@@ -4786,10 +4794,8 @@ class $$GamesTableTableManager
                                 table,
                                 p0,
                               ).bullingGamesRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.gameId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'game_id',
                           typedResults: items,
                         ),
                     ];
@@ -4821,20 +4827,18 @@ typedef $$GamesTableProcessedTableManager =
         bool bullingGamesRefs,
       })
     >;
-typedef $$GameSeatsTableCreateCompanionBuilder =
-    GameSeatsCompanion Function({
-      required int gameId,
-      required int playerId,
-      required int seat,
-      Value<int> rowid,
-    });
-typedef $$GameSeatsTableUpdateCompanionBuilder =
-    GameSeatsCompanion Function({
-      Value<int> gameId,
-      Value<int> playerId,
-      Value<int> seat,
-      Value<int> rowid,
-    });
+typedef $$GameSeatsTableCreateCompanionBuilder = GameSeatsCompanion Function({
+  required int gameId,
+  required int playerId,
+  required int seat,
+  Value<int> rowid,
+});
+typedef $$GameSeatsTableUpdateCompanionBuilder = GameSeatsCompanion Function({
+  Value<int> gameId,
+  Value<int> playerId,
+  Value<int> seat,
+  Value<int> rowid,
+});
 
 final class $$GameSeatsTableReferences
     extends BaseReferences<_$AppDatabase, $GameSeatsTable, GameSeat> {
@@ -5109,7 +5113,7 @@ class $$GameSeatsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$GameSeatsTable, GameSeat>(table),
                   $$GameSeatsTableReferences(db, table, e),
                 ),
               )
@@ -5135,30 +5139,26 @@ class $$GameSeatsTableTableManager
                     >
                   >(state) {
                     if (gameId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.gameId,
-                                referencedTable: $$GameSeatsTableReferences
-                                    ._gameIdTable(db),
-                                referencedColumn: $$GameSeatsTableReferences
-                                    ._gameIdTable(db)
-                                    .id,
-                              )
-                              as T;
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.gameId,
+                        referencedTable: $$GameSeatsTableReferences
+                            ._gameIdTable(db),
+                        referencedColumn: $$GameSeatsTableReferences
+                            ._gameIdTable(db)
+                            .id,
+                      ) as T;
                     }
                     if (playerId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.playerId,
-                                referencedTable: $$GameSeatsTableReferences
-                                    ._playerIdTable(db),
-                                referencedColumn: $$GameSeatsTableReferences
-                                    ._playerIdTable(db)
-                                    .id,
-                              )
-                              as T;
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.playerId,
+                        referencedTable: $$GameSeatsTableReferences
+                            ._playerIdTable(db),
+                        referencedColumn: $$GameSeatsTableReferences
+                            ._playerIdTable(db)
+                            .id,
+                      ) as T;
                     }
 
                     return state;
@@ -5186,28 +5186,26 @@ typedef $$GameSeatsTableProcessedTableManager =
       GameSeat,
       PrefetchHooks Function({bool gameId, bool playerId})
     >;
-typedef $$DartEventsTableCreateCompanionBuilder =
-    DartEventsCompanion Function({
-      Value<int> id,
-      required int gameId,
-      required int ordinal,
-      required int playerId,
-      Value<int?> number,
-      Value<Ring?> ring,
-      required int value,
-      Value<DateTime> thrownAt,
-    });
-typedef $$DartEventsTableUpdateCompanionBuilder =
-    DartEventsCompanion Function({
-      Value<int> id,
-      Value<int> gameId,
-      Value<int> ordinal,
-      Value<int> playerId,
-      Value<int?> number,
-      Value<Ring?> ring,
-      Value<int> value,
-      Value<DateTime> thrownAt,
-    });
+typedef $$DartEventsTableCreateCompanionBuilder = DartEventsCompanion Function({
+  Value<int> id,
+  required int gameId,
+  required int ordinal,
+  required int playerId,
+  Value<int?> number,
+  Value<Ring?> ring,
+  required int value,
+  Value<DateTime> thrownAt,
+});
+typedef $$DartEventsTableUpdateCompanionBuilder = DartEventsCompanion Function({
+  Value<int> id,
+  Value<int> gameId,
+  Value<int> ordinal,
+  Value<int> playerId,
+  Value<int?> number,
+  Value<Ring?> ring,
+  Value<int> value,
+  Value<DateTime> thrownAt,
+});
 
 final class $$DartEventsTableReferences
     extends BaseReferences<_$AppDatabase, $DartEventsTable, DartEvent> {
@@ -5564,7 +5562,7 @@ class $$DartEventsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$DartEventsTable, DartEvent>(table),
                   $$DartEventsTableReferences(db, table, e),
                 ),
               )
@@ -5590,30 +5588,26 @@ class $$DartEventsTableTableManager
                     >
                   >(state) {
                     if (gameId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.gameId,
-                                referencedTable: $$DartEventsTableReferences
-                                    ._gameIdTable(db),
-                                referencedColumn: $$DartEventsTableReferences
-                                    ._gameIdTable(db)
-                                    .id,
-                              )
-                              as T;
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.gameId,
+                        referencedTable: $$DartEventsTableReferences
+                            ._gameIdTable(db),
+                        referencedColumn: $$DartEventsTableReferences
+                            ._gameIdTable(db)
+                            .id,
+                      ) as T;
                     }
                     if (playerId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.playerId,
-                                referencedTable: $$DartEventsTableReferences
-                                    ._playerIdTable(db),
-                                referencedColumn: $$DartEventsTableReferences
-                                    ._playerIdTable(db)
-                                    .id,
-                              )
-                              as T;
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.playerId,
+                        referencedTable: $$DartEventsTableReferences
+                            ._playerIdTable(db),
+                        referencedColumn: $$DartEventsTableReferences
+                            ._playerIdTable(db)
+                            .id,
+                      ) as T;
                     }
 
                     return state;
@@ -5641,13 +5635,14 @@ typedef $$DartEventsTableProcessedTableManager =
       DartEvent,
       PrefetchHooks Function({bool gameId, bool playerId})
     >;
-typedef $$AtcGamesTableCreateCompanionBuilder =
-    AtcGamesCompanion Function({
-      Value<int> gameId,
-      required AtcVariant variant,
-    });
-typedef $$AtcGamesTableUpdateCompanionBuilder =
-    AtcGamesCompanion Function({Value<int> gameId, Value<AtcVariant> variant});
+typedef $$AtcGamesTableCreateCompanionBuilder = AtcGamesCompanion Function({
+  Value<int> gameId,
+  required AtcVariant variant,
+});
+typedef $$AtcGamesTableUpdateCompanionBuilder = AtcGamesCompanion Function({
+  Value<int> gameId,
+  Value<AtcVariant> variant,
+});
 
 final class $$AtcGamesTableReferences
     extends BaseReferences<_$AppDatabase, $AtcGamesTable, AtcGame> {
@@ -5810,20 +5805,18 @@ class $$AtcGamesTableTableManager
               $$AtcGamesTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
               $$AtcGamesTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<int> gameId = const Value.absent(),
-                Value<AtcVariant> variant = const Value.absent(),
-              }) => AtcGamesCompanion(gameId: gameId, variant: variant),
-          createCompanionCallback:
-              ({
-                Value<int> gameId = const Value.absent(),
-                required AtcVariant variant,
-              }) => AtcGamesCompanion.insert(gameId: gameId, variant: variant),
+          updateCompanionCallback: ({
+            Value<int> gameId = const Value.absent(),
+            Value<AtcVariant> variant = const Value.absent(),
+          }) => AtcGamesCompanion(gameId: gameId, variant: variant),
+          createCompanionCallback: ({
+            Value<int> gameId = const Value.absent(),
+            required AtcVariant variant,
+          }) => AtcGamesCompanion.insert(gameId: gameId, variant: variant),
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$AtcGamesTable, AtcGame>(table),
                   $$AtcGamesTableReferences(db, table, e),
                 ),
               )
@@ -5849,17 +5842,16 @@ class $$AtcGamesTableTableManager
                     >
                   >(state) {
                     if (gameId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.gameId,
-                                referencedTable: $$AtcGamesTableReferences
-                                    ._gameIdTable(db),
-                                referencedColumn: $$AtcGamesTableReferences
-                                    ._gameIdTable(db)
-                                    .id,
-                              )
-                              as T;
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.gameId,
+                        referencedTable: $$AtcGamesTableReferences._gameIdTable(
+                          db,
+                        ),
+                        referencedColumn: $$AtcGamesTableReferences
+                            ._gameIdTable(db)
+                            .id,
+                      ) as T;
                     }
 
                     return state;
@@ -6100,7 +6092,7 @@ class $$BullingGamesTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$BullingGamesTable, BullingGame>(table),
                   $$BullingGamesTableReferences(db, table, e),
                 ),
               )
@@ -6126,17 +6118,15 @@ class $$BullingGamesTableTableManager
                     >
                   >(state) {
                     if (gameId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.gameId,
-                                referencedTable: $$BullingGamesTableReferences
-                                    ._gameIdTable(db),
-                                referencedColumn: $$BullingGamesTableReferences
-                                    ._gameIdTable(db)
-                                    .id,
-                              )
-                              as T;
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.gameId,
+                        referencedTable: $$BullingGamesTableReferences
+                            ._gameIdTable(db),
+                        referencedColumn: $$BullingGamesTableReferences
+                            ._gameIdTable(db)
+                            .id,
+                      ) as T;
                     }
 
                     return state;
