@@ -1,0 +1,204 @@
+# Builds the Android APKs and the Windows app. Not triggered on its own:
+# ci.yml calls it in debug for every PR, release.yml in release for every
+# version release-please cuts. One definition, so what CI proves builds is
+# exactly what gets released.
+name: Build
+
+on:
+  workflow_call:
+    inputs:
+      mode:
+        description: debug or release
+        type: string
+        required: true
+      version:
+        description: >-
+          The version being released, without the v (release mode only).
+          Checked against pubspec.yaml, which is what the build actually
+          stamps into the APK and the .exe.
+        type: string
+        default: ''
+    secrets:
+      ANDROID_KEYSTORE_BASE64:
+        required: false
+      ANDROID_KEYSTORE_PASSWORD:
+        required: false
+      ANDROID_KEY_ALIAS:
+        required: false
+      ANDROID_KEY_PASSWORD:
+        required: false
+    outputs:
+      android-signed:
+        description: Whether the APKs carry the release key rather than a debug key
+        value: ${{ jobs.sign-android.outputs.signed }}
+      flutter-version:
+        description: The Flutter framework version that built the apps
+        value: ${{ jobs.android.outputs.flutter }}
+
+permissions:
+  contents: read
+
+env:
+  # Pinned, so a release is reproducible from its tag. Bump deliberately,
+  # together with .metadata, when the project moves to a new Flutter.
+  FLUTTER_VERSION: 3.47.8
+  MODE: ${{ inputs.mode }}
+  VERSION: ${{ inputs.version }}
+  # Asset names: chalk-<version>-<platform>[-<variant>].<ext>
+  NAME: chalk-${{ inputs.version != '' && inputs.version || 'dev' }}
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    outputs:
+      flutter: ${{ steps.flutter.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Flutter version
+        id: flutter
+        run: echo "version=$(flutter --version --machine | jq -r .frameworkVersion)" >> "$GITHUB_OUTPUT"
+
+      - name: Version matches pubspec.yaml
+        if: inputs.mode == 'release'
+        run: tool/ci/check_version.sh "$VERSION"
+
+      - run: flutter pub get
+
+      - name: Build
+        run: |
+          mkdir -p dist
+          if [ "$MODE" = release ]; then
+            # One APK per ABI, small enough to sideload on a slow
+            # connection, plus a universal one for anyone who does not know
+            # which ABI their device is.
+            flutter build apk --release --split-per-abi
+            for abi in arm64-v8a armeabi-v7a x86_64; do
+              cp "build/app/outputs/flutter-apk/app-$abi-release.apk" "dist/$NAME-android-$abi.apk"
+            done
+            flutter build apk --release
+            cp build/app/outputs/flutter-apk/app-release.apk "dist/$NAME-android.apk"
+          else
+            flutter build apk --debug
+            cp build/app/outputs/flutter-apk/app-debug.apk "dist/$NAME-android-debug.apk"
+          fi
+
+      # Release APKs leave here carrying the debug key; sign-android puts the
+      # real one on them.
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ inputs.mode == 'release' && 'android-unsigned' || 'android-debug' }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: ${{ inputs.mode == 'release' && 1 || 7 }}
+
+  # Signing is its own job so the release key is never on a runner that ran
+  # a third-party action or the Flutter SDK one installed: nothing here but
+  # GitHub's artifact actions and the Android SDK's own apksigner, which the
+  # runner image ships.
+  sign-android:
+    needs: android
+    if: inputs.mode == 'release'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      signed: ${{ steps.sign.outputs.signed }}
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: android-unsigned
+          path: dist
+
+      - name: Sign
+        id: sign
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::warning title=Unsigned release::ANDROID_KEYSTORE_BASE64 is not set, so these APKs keep the build runner's throwaway debug key and cannot update an earlier install. See docs/RELEASING.md."
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          apksigner="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)/apksigner"
+          keystore="$RUNNER_TEMP/release.jks"
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$keystore"
+          for apk in dist/*.apk; do
+            # Passwords by env: name, never on the command line.
+            "$apksigner" sign --ks "$keystore" --ks-key-alias "$KEY_ALIAS" \
+              --ks-pass env:KS_PASS --key-pass env:KEY_PASS \
+              --out "$apk.signed" "$apk"
+            mv "$apk.signed" "$apk"
+            "$apksigner" verify "$apk"
+          done
+          rm -f "$keystore"
+          echo "signed=true" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: android-release
+          path: dist/*.apk
+          if-no-files-found: error
+          retention-days: 30
+
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Version matches pubspec.yaml
+        if: inputs.mode == 'release'
+        run: tool/ci/check_version.sh "$VERSION"
+
+      - run: flutter pub get
+
+      - name: Build
+        run: flutter build windows --"$MODE"
+
+      # A Flutter .exe needs the Visual C++ runtime, which a fresh Windows
+      # install does not always have. Shipping the three DLLs beside it is
+      # what Flutter's own docs recommend over asking people to install the
+      # redistributable. Then zip the folder: it is the app, not just the .exe.
+      - name: Package
+        shell: pwsh
+        run: |
+          $mode = if ($env:MODE -eq 'release') { 'Release' } else { 'Debug' }
+          $app = "build\windows\x64\runner\$mode"
+          foreach ($dll in 'msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll') {
+            Copy-Item "$env:SystemRoot\System32\$dll" $app
+          }
+          $suffix = if ($env:MODE -eq 'release') { '' } else { '-debug' }
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Compress-Archive -Path "$app\*" -DestinationPath "dist\$env:NAME-windows-x64$suffix.zip"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: windows-${{ inputs.mode }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: ${{ inputs.mode == 'release' && 30 || 7 }}

@@ -25,7 +25,7 @@ imports Flutter. `test/app` needs `flutter test`.
 
 ## Windows
 
-Added 2026-10-26 (Flutter 3.47). Only builds on Windows; CI's `build-windows`
+Added 2026-10-26 (Flutter 3.47). Only builds on Windows; CI's `build / windows`
 job is the compile check from Linux. The desktop layout is the tablet's hero
 treatment re-keyed for a wide, short window: `isDesktop`, `desktopHeroLayout`,
 `isHeroSize` and the desktop tiers of `typeScaleFor` in `lib/app/theme.dart`.
@@ -39,6 +39,20 @@ sits in `%APPDATA%\<CompanyName>\<ProductName>` from `Runner.rc`, so renaming
 either string orphans it. Ogg audio needs the Web Media Extensions codec
 (absent on Windows N editions). Details: `docs/DEVELOPMENT.md`, "Running on
 Windows".
+
+## Releases
+
+Automated: `docs/RELEASING.md`. release-please reads **Conventional Commit**
+prefixes on `main` (`feat:` minor, `fix:` patch, `!` major; `chore:`/`ci:`/
+`test:` change nothing), so commit messages and squash-merge PR titles must use
+them. Never hand-edit `version:` in `pubspec.yaml`, `CHANGELOG.md` or
+`.release-please-manifest.json`, and never tag by hand: the release PR does all
+three, and `tool/ci/check_version.sh` fails a release whose pubspec disagrees
+with its tag. `build.yml` is the one build definition, called by `ci.yml`
+(debug) and `release.yml` (release); the Flutter version is pinned in both
+`build.yml` and `ci.yml`. Pin every action to a full commit SHA with a
+`# vX.Y.Z` comment, never a tag; the signing key lives only in the
+`sign-android` job, which must stay free of third-party actions.
 
 ## Layering rule
 

@@ -57,8 +57,9 @@ flutter build windows                  # build\windows\x64\runner\Release\
 
 Needs Visual Studio 2022 with the **Desktop development with C++** workload
 (`flutter doctor` says what is missing), and only builds on Windows: there is
-no cross-compiling the runner from Linux or macOS. CI's `build-windows` job
-compiles it on every PR, which is the check for a change made elsewhere.
+no cross-compiling the runner from Linux or macOS. CI's `build / windows` job
+compiles it on every PR (`build.yml`, called from `ci.yml`), which is the
+check for a change made elsewhere.
 
 What differs from Android:
 

@@ -1,8 +1,8 @@
 {
   "android/app/build.gradle.kts": {
-    "mtime": 1793005499.211682,
-    "seen": 1793007051.5193267,
-    "ast_hash": "637294b6979e8ae3eb104f376ef3f18b",
+    "mtime": 1793008419.1814525,
+    "seen": 1793008435.281815,
+    "ast_hash": "6be7f88cbd6ba0bf23edc52a587a8f21",
     "semantic_hash": ""
   },
   "android/app/src/main/kotlin/de/bot/filan/fluttergran/MainActivity.kt": {
@@ -462,15 +462,15 @@
     "semantic_hash": ""
   },
   "CLAUDE.md": {
-    "mtime": 1793006736.845201,
-    "seen": 1793007051.5197675,
-    "ast_hash": "dbc92a4f901bb06286b3197ec366f515",
+    "mtime": 1793008419.181819,
+    "seen": 1793008435.2820833,
+    "ast_hash": "6d32dcc82c5db602e5f88017de40870a",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1793006721.7328506,
-    "seen": 1793007051.5197706,
-    "ast_hash": "8aa0a9ccf2ea9b0c8b736b9a9ea5ff8e",
+    "mtime": 1793008164.2462227,
+    "seen": 1793008189.5745497,
+    "ast_hash": "d4387bf2f9ed4be8dd19dc8492257641",
     "semantic_hash": ""
   },
   "analysis_options.yaml": {
@@ -516,9 +516,9 @@
     "semantic_hash": ""
   },
   "docs/DEVELOPMENT.md": {
-    "mtime": 1793006721.733044,
-    "seen": 1793007051.519793,
-    "ast_hash": "1c4622d0577e75dbc98e2960e4ae53f3",
+    "mtime": 1793008170.3305326,
+    "seen": 1793008189.5745597,
+    "ast_hash": "61979a12243431f87f049b7a573669cd",
     "semantic_hash": ""
   },
   "docs/HARDWARE.md": {
@@ -2052,20 +2052,20 @@
     "semantic_hash": ""
   },
   "lib/l10n/app_localizations.dart": {
-    "mtime": 1793006918.762988,
-    "seen": 1793007051.5195844,
+    "mtime": 1793008011.0125096,
+    "seen": 1793008189.574441,
     "ast_hash": "8459b0651d5c042412754c7835d747ab",
     "semantic_hash": ""
   },
   "lib/l10n/app_localizations_de.dart": {
-    "mtime": 1793006918.749985,
-    "seen": 1793007051.5195868,
+    "mtime": 1793008010.9965093,
+    "seen": 1793008189.5744421,
     "ast_hash": "abfa6d59ccab083868c5ae88dcee5ce3",
     "semantic_hash": ""
   },
   "lib/l10n/app_localizations_en.dart": {
-    "mtime": 1793006918.7559865,
-    "seen": 1793007051.5195894,
+    "mtime": 1793008011.0035095,
+    "seen": 1793008189.5744433,
     "ast_hash": "fda3b973472703a3edbf404109dc531a",
     "semantic_hash": ""
   },
@@ -2298,9 +2298,9 @@
     "semantic_hash": ""
   },
   ".github/workflows/ci.yml": {
-    "mtime": 1793006685.2401803,
-    "seen": 1793007051.519765,
-    "ast_hash": "100dbc476119723163b1c3b4b318377a",
+    "mtime": 1793008262.8088827,
+    "seen": 1793008435.2820814,
+    "ast_hash": "63abd08dbf4fa8c9987d1dd31459a5b0",
     "semantic_hash": ""
   },
   "windows/flutter/generated_plugin_registrant.cc": {
@@ -2379,6 +2379,54 @@
     "mtime": 1793005005.5014055,
     "seen": 1793007051.5198183,
     "ast_hash": "e99a99b5cc82a168fc557eb23b8d5a96",
+    "semantic_hash": ""
+  },
+  ".release-please-manifest.json": {
+    "mtime": 1793007934.4885554,
+    "seen": 1793008189.5742943,
+    "ast_hash": "31a542588d2346c67e1ba53283396e01",
+    "semantic_hash": ""
+  },
+  "release-please-config.json": {
+    "mtime": 1793007934.487213,
+    "seen": 1793008189.5744457,
+    "ast_hash": "966709038d1fc185ea1c2a2f10aaa152",
+    "semantic_hash": ""
+  },
+  "tool/ci/check_version.sh": {
+    "mtime": 1793007897.9966466,
+    "seen": 1793008189.574525,
+    "ast_hash": "170095aff4cb08a40c27864aaf509f2f",
+    "semantic_hash": ""
+  },
+  "tool/ci/release_notes.sh": {
+    "mtime": 1793007949.440151,
+    "seen": 1793008189.5745263,
+    "ast_hash": "a7996d08d942b14492d882cec427e597",
+    "semantic_hash": ""
+  },
+  ".github/workflows/build.yml": {
+    "mtime": 1793008262.8087535,
+    "seen": 1793008435.2820797,
+    "ast_hash": "eff9731294e647e973528546c33b9f1f",
+    "semantic_hash": ""
+  },
+  ".github/workflows/release.yml": {
+    "mtime": 1793008262.809042,
+    "seen": 1793008435.2820823,
+    "ast_hash": "ba7e29aab71290e8c0033569419ad174",
+    "semantic_hash": ""
+  },
+  "docs/RELEASING.md": {
+    "mtime": 1793008432.3709347,
+    "seen": 1793008435.2820988,
+    "ast_hash": "a56efe480077f8515538fce51c9d4a67",
+    "semantic_hash": ""
+  },
+  ".github/dependabot.yml": {
+    "mtime": 1793008419.1631744,
+    "seen": 1793008435.282078,
+    "ast_hash": "f097ea64f9186e0b6679ed810a37ebf9",
     "semantic_hash": ""
   }
 }

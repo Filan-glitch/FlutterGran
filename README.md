@@ -7,6 +7,7 @@
 [![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
 [![Dart SDK](https://img.shields.io/badge/Dart-%5E3.13-0175C2?logo=dart&logoColor=white)](https://dart.dev)
 [![Platform](https://img.shields.io/badge/platform-Android%20%7C%20Windows-3D9C64)](#)
+[![Release](https://img.shields.io/github/v/release/Filan-glitch/FlutterGran?color=3D9C64)](https://github.com/Filan-glitch/FlutterGran/releases/latest)
 [![Tests](https://img.shields.io/badge/tests-304%20passing-3D9C64)](#testing)
 [![Schema](https://img.shields.io/badge/schema-v5-8A9A8E)](docs/DATA_MODEL.md)
 
@@ -97,6 +98,7 @@ Full detail: **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
 | [BOARD_PROTOCOL.md](docs/BOARD_PROTOCOL.md) | Frame format, the greeting, dedupe, calibration, hardware day |
 | [DATA_MODEL.md](docs/DATA_MODEL.md) | Every table, schema v1 → v4, and what the migrations do and deliberately do not do |
 | [DEVELOPMENT.md](docs/DEVELOPMENT.md) | Commands, codegen, the asset generators, dependency constraints, test layout |
+| [RELEASING.md](docs/RELEASING.md) | How a merged release PR becomes a GitHub release with APKs and a Windows build, and the one-time signing setup |
 
 ## Testing
 
