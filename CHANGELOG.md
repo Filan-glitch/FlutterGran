@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.3.0](https://github.com/Filan-glitch/FlutterGran/compare/v1.2.1...v1.3.0) (2026-11-08)
+
+
+### Features
+
+* add AimTarget and miss direction for training drills ([ce6f3e5](https://github.com/Filan-glitch/FlutterGran/commit/ce6f3e5fd806bfbaf1c4e4c1eb8986067acf8bbc))
+* add Bob's 27 and Weak-spot drill engines ([8f6a38d](https://github.com/Filan-glitch/FlutterGran/commit/8f6a38d5eca34ec23146d7caca306422738735bd))
+* add Checkout Challenge and 121 Ladder drill engines ([84844b0](https://github.com/Filan-glitch/FlutterGran/commit/84844b0cb1e226eaccd5751d4dfd464b5fb9d2be))
+* Checkout Challenge, 121 Ladder, Bob's 27 and Weak-spot Trainer in training ([2ec5bd9](https://github.com/Filan-glitch/FlutterGran/commit/2ec5bd99c86153b4f888bdc5a83b503c6b812130))
+* infer per-target hit rates from saved legs ([8e4779f](https://github.com/Filan-glitch/FlutterGran/commit/8e4779f149f311277df9ffe351255d2e3a279c14))
+* science-based training drills ([c8f3b11](https://github.com/Filan-glitch/FlutterGran/commit/c8f3b111e0a9f307853420efd001d248ebe895fd))
+
+
+### Documentation
+
+* describe the training drills and how to add one ([bdb2c6f](https://github.com/Filan-glitch/FlutterGran/commit/bdb2c6fa38e8d9cf4be97a8db0260e3289422a37))
+
 ## [1.2.1](https://github.com/Filan-glitch/FlutterGran/compare/v1.2.0...v1.2.1) (2026-11-08)
 
 
