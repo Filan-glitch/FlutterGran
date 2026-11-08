@@ -139,10 +139,10 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
               // the two together are the format: what you count down from, and
               // how many times.
               //
-              // Above two players, more than half of the legs is a target nobody
-              // need reach - three players can take one each - so the same choice
-              // is named for the target it really sets. The stored format does
-              // not change with the wording.
+              // Above two players, more than half of the legs is a target
+              // nobody need reach - three players can take one each - so the
+              // same choice is named for the target it really sets. The
+              // stored format does not change with the wording.
               SectionLabel(_headToHead ? l10n.bestOfLabel : l10n.firstToLabel),
               const SizedBox(height: Gap.md),
               NumeralChoiceRow<int>(

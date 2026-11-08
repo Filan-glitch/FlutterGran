@@ -93,6 +93,8 @@ class _RulesScreenState extends State<RulesScreen> {
         ),
       );
 
+      // One row when every poster gets at least 200 logical pixels at 1x
+      // text, scaled with the type so larger names still fit.
       final allAcross = constraints.maxWidth >= 200 * scale * posters.length;
       // Otherwise two rows, the longer one first.
       final split = (posters.length + 1) ~/ 2;
