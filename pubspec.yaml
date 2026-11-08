@@ -3,7 +3,7 @@ description: "Flutter Mobile Application for interacting with a GranBoard 132 El
 publish_to: 'none'
 
 # Owned by release-please - never edit by hand (docs/RELEASING.md).
-version: 1.4.0+7
+version: 1.4.1+8
 
 environment:
   sdk: ^3.13.7

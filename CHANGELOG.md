@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.4.1](https://github.com/Filan-glitch/FlutterGran/compare/v1.4.0...v1.4.1) (2026-11-08)
+
+
+### Bug Fixes
+
+* keep statistics figures inside narrow cards and document the redesign ([ea1824e](https://github.com/Filan-glitch/FlutterGran/commit/ea1824eb6e26003a4c7c66ecca8e5b622788c113))
+* redesign statistics screen with trends and match-predictive stats ([1410273](https://github.com/Filan-glitch/FlutterGran/commit/14102736b9137dbb04dd693897ac2df1639a732d))
+* redesign statistics screen with trends and match-predictive stats ([7ac16d2](https://github.com/Filan-glitch/FlutterGran/commit/7ac16d26ed0bedf558690b9aa9cdf4bd72c78b98))
+* reset the statistics range on every visit ([b2ae883](https://github.com/Filan-glitch/FlutterGran/commit/b2ae883255c828cab11fb2e451a9b8a272302e93))
+
 ## [1.4.0](https://github.com/Filan-glitch/FlutterGran/compare/v1.3.1...v1.4.0) (2026-11-08)
 
 
