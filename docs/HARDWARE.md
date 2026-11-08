@@ -1,13 +1,12 @@
 # The GranBoard 132
 
-What the board is, how it decides a dart landed where it did, and — just as
-importantly — which parts of this are **verified** and which are **inference**.
+What the board is, how it decides a dart landed where it did, and where each
+fact comes from.
 
-> **Read this first.** Everything below about the 132's sensor matrix is
-> derived from the **GRANBOARD 3s**. Six independent implementations agree on
-> the 3s exactly. Hardware day (2026-09-04) verified it against a real
-> **132**: all 82 scoring segments decoded correctly, with nothing to
-> correct. Treat the table below as confirmed, not provisional.
+> The sensor matrix below is derived from the **GRANBOARD 3s**, on which six
+> independent implementations agree exactly, and was verified against a real
+> **132** on hardware day: all 82 scoring segments, zero corrections. See
+> [BOARD_PROTOCOL.md](BOARD_PROTOCOL.md#hardware-day).
 
 ## What kind of device it is
 
@@ -109,17 +108,6 @@ fully playable without either.
 | `BTN@` on the 132 | **Confirmed 2026-09-04.** Fires. |
 | `OUT@` on the 132 | **Confirmed 2026-09-04.** Fires, unlike the 3s. |
 | The full advertised BLE name | **Confirmed 2026-09-04.** `GRANBOARD` |
-
-## Hardware day (2026-09-04) — done
-
-Every question above that needed a real 132 to answer has been answered. The
-app never guesses on a bad frame - an unrecognised body still becomes
-`UnknownFrame` carrying the body **verbatim** - but the calibration screen that
-existed to confirm or correct the table live (raw body, decoded meaning,
-right/wrong, an 82-cell coverage checklist, a codec override layer) is gone
-now that there is nothing left for it to find. See `BOARD_PROTOCOL.md` for
-the full results and the connect-path bug that had to be fixed before any of
-this could be tested.
 
 ## See also
 

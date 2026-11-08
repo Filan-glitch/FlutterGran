@@ -1,7 +1,7 @@
 # The board protocol
 
-Everything known about how a GranBoard talks, and which parts of it are still
-guesses.
+Everything known about how a GranBoard talks, all of it verified against a real
+132.
 
 Companion documents: [HARDWARE.md](HARDWARE.md) for the board itself and its
 sensor matrix, [CONNECTIVITY.md](CONNECTIVITY.md) for finding and holding the
@@ -26,7 +26,7 @@ BLE notification bytes
 FrameAssembler.feed()        buffer, strip greeting, split on @, dedupe
       │  List<String> bodies
       ▼
-SegmentCodec.decode()        overrides first, then the shipped table
+SegmentCodec.decode()        look the body up in the shipped table
       │  BoardEvent
       ▼
 BoardReader.events           DartHit | BoardMiss | ButtonPress | UnknownFrame
@@ -79,13 +79,15 @@ never a silently dropped hit and never a guess.
 ## The segment table is settled
 
 The table in `lib/data/board/granboard_segment_map.dart` is derived from the
-**GRANBOARD 3s**. Hardware day (2026-09-04) verified it against a real **132**:
-all 82 scoring segments decoded correctly, with nothing to correct. It is no
-longer provisional.
+**GRANBOARD 3s**. Hardware day verified it against a real **132**: all 82
+scoring segments decoded correctly, with nothing to correct. It is not
+provisional. The matrix itself is described in [HARDWARE.md](HARDWARE.md).
 
-## Hardware day (2026-09-04) — resolved
+## Hardware day
 
-Every question that could only be answered with a 132 connected:
+On 2026-09-04 a real 132 answered every question that could only be answered
+with one connected. This is the one place the story is told; the other
+documents link here.
 
 - Does the 132's matrix match the 3s table, or does calibration fill up with
   corrections? **Matches.** 82/82 segments verified with zero corrections.
@@ -109,12 +111,10 @@ again unless the board itself changes.
 
 ## Playing without a board
 
-`FakeBoardSource` emits the same raw byte chunks real hardware does, through the
-same code path — including split frames, glued frames, duplicates and the
-greeting. `boardSourceProvider` always builds a real `BleBoardSource` now that
-hardware day has confirmed it works; tests override the provider directly with
-`FakeBoardSource`, so every protocol quirk above stays reproducible without
-hardware attached.
+The app always reads a real `BleBoardSource`; with no board connected, the
+keypad scores. Tests override `boardSourceProvider` with `FakeBoardSource`,
+which reproduces every quirk above through the same parsing path. See
+[CONNECTIVITY.md](CONNECTIVITY.md#playing-without-a-board).
 
 ## Connection lifecycle
 
