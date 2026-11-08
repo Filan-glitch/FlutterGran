@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.1](https://github.com/Filan-glitch/FlutterGran/compare/v1.3.0...v1.3.1) (2026-11-08)
+
+
+### Bug Fixes
+
+* remove Checkout Practice drill ([26ea184](https://github.com/Filan-glitch/FlutterGran/commit/26ea184477681a803b3a96500956b3305c2884ed))
+* remove Checkout Practice drill, superseded by Checkout Challenge ([b6ff0c6](https://github.com/Filan-glitch/FlutterGran/commit/b6ff0c6476a67708eaa837436b3973e2b8259c35))
+
 ## [1.3.0](https://github.com/Filan-glitch/FlutterGran/compare/v1.2.1...v1.3.0) (2026-11-08)
 
 
