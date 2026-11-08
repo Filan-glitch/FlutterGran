@@ -119,10 +119,10 @@ List<Sound> soundsFor(GameSession? previous, GameSession next) {
 
   // Everything the app says is caused by a dart being thrown, and a dart being
   // thrown is exactly one entry appended to the log. Restarting, resuming a
-  // stored log and changing the config all move the log by more than one - or
-  // backwards - and none of them is someone at the oche. Resuming in
-  // particular arrives with completed turns already in it, and reading out the
-  // total of a turn thrown yesterday is the bug this guard exists to stop.
+  // stored log, undoing and changing the config all move the log by more than
+  // one - or backwards - and none of them is someone at the oche. Resuming in
+  // particular arrives with completed turns already in it, and must not read
+  // out the total of a turn thrown yesterday.
   //
   // The one case this cannot tell apart is resuming a leg whose stored log is a
   // single dart, which clicks once. That is a 45ms sound on a rare path and not
@@ -151,9 +151,9 @@ List<Sound> soundsFor(GameSession? previous, GameSession next) {
           ),
         );
     } else if (after.isFinished && !before.isFinished) {
-      // Checked before the maximum on purpose. Double-out makes a 180 checkout
-      // impossible, but if that rule is ever relaxed, the leg being over is the
-      // more important of the two things to say.
+      // Checked before the maximum on purpose: a straight or master out can
+      // check out on 180, and the leg being over is the more important of
+      // the two things to say.
       sounds
         ..add(const Sound.cue(SoundAssets.checkoutCue))
         ..add(

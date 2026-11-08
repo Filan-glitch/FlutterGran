@@ -54,8 +54,6 @@ class LedScheduler {
   /// Whether a show currently owns the ring.
   bool get isShowing => _show != null;
 
-  bool get inGame => _inGame;
-
   LedCommand get _resting => _inGame ? _ambient : idle;
 
   /// The master switch. Off darkens the ring once and then writes nothing;

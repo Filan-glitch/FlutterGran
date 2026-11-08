@@ -47,7 +47,8 @@ BoardToast? boardToastFor(
 ///
 /// A manual disconnect stops wanting the board, which is what keeps both the
 /// resume retry and the source's own backoff out of it until the next tap or
-/// launch. The app root keeps this alive by watching it.
+/// launch. Listen-only, watched by `main.dart` - see
+/// [soundControllerProvider].
 final boardLifecycleProvider = Provider<void>((ref) {
   final source = ref.watch(boardSourceProvider);
 

@@ -10,12 +10,10 @@ import '../l10n/app_localizations.dart';
 
 /// One rules page's worth of subject matter - a game mode, or training.
 ///
-/// Not [GameMode] (`domain/game_mode.dart`): that enum is tied to having an
-/// engine, a resumable leg type, and a stats calculator, all switched over
-/// exhaustively in a few places. Training has none of those - it isn't a
-/// [GameMode] - but it does need a rules page, so this is its own small
-/// enum rather than a stretch of that one. It also carries [IconData], which
-/// keeps it out of `lib/domain/`.
+/// Not [GameMode]: that enum is switched over exhaustively wherever a mode
+/// needs an engine, a resumable leg type and a stats calculator, and
+/// training has none of those. It also carries [IconData], which keeps it
+/// out of `lib/domain/`.
 enum RulesTopic {
   x01,
   aroundTheClock,
@@ -37,8 +35,7 @@ enum RulesTopic {
 typedef RulesFact = ({String figure, String label});
 
 extension RulesTopicPresentation on RulesTopic {
-  /// Reuses `Icons.fitness_center` for training - the same icon the main
-  /// menu's Training row already shows, so the overview card matches it.
+  /// The topic's icon; training's matches the main menu's Training row.
   IconData get icon => switch (this) {
     RulesTopic.x01 => Icons.exposure_zero,
     RulesTopic.aroundTheClock => Icons.schedule,
