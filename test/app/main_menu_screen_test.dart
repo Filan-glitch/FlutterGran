@@ -168,7 +168,7 @@ void main() {
         gameId: gameId,
         ordinal: 0,
         playerId: finn.id,
-        dart: ThrownDart(Segment(1, Ring.doubleRing)),
+        dart: const ThrownDart(Segment(1, Ring.doubleRing)),
       );
 
       await pump(tester);
@@ -191,7 +191,7 @@ void main() {
         gameId: gameId,
         ordinal: 0,
         playerId: finn.id,
-        dart: ThrownDart(Segment(1, Ring.outerSingle)),
+        dart: const ThrownDart(Segment(1, Ring.outerSingle)),
       );
 
       await pump(tester);

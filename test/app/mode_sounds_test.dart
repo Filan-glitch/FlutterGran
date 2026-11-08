@@ -76,7 +76,7 @@ void main() {
     });
 
     test('a dart mid-turn just clicks', () {
-      expect(throwing([miss, ThrownDart(Segment(1, Ring.outerSingle))]), [
+      expect(throwing([miss, const ThrownDart(Segment(1, Ring.outerSingle))]), [
         _click,
       ]);
     });
@@ -89,7 +89,7 @@ void main() {
     });
 
     test('a turn that moved forward says nothing more', () {
-      final one = ThrownDart(Segment(1, Ring.outerSingle));
+      const one = ThrownDart(Segment(1, Ring.outerSingle));
       expect(throwing([one, miss, miss]), [_click]);
     });
 
@@ -116,8 +116,8 @@ void main() {
     List<Sound> throwing(List<ThrownDart> darts) =>
         soundsForBulling(at(darts.sublist(0, darts.length - 1)), at(darts));
 
-    final sbull = ThrownDart(Segment.outerBull);
-    final dbull = ThrownDart(Segment.innerBull);
+    const sbull = ThrownDart(Segment.outerBull);
+    const dbull = ThrownDart(Segment.innerBull);
 
     test('the first dart clicks and calls game on', () {
       expect(throwing([sbull]), [_click, _gameOn]);
@@ -234,7 +234,7 @@ void main() {
     test('a Bulling dart clicks', () {
       container
           .read(bullingGameProvider.notifier)
-          .addDart(ThrownDart(Segment.outerBull));
+          .addDart(const ThrownDart(Segment.outerBull));
 
       expect(player.cues, [SoundAssets.dartCue]);
       expect(player.spoken, [(SoundAssets.spokenGameOn, Duration.zero)]);

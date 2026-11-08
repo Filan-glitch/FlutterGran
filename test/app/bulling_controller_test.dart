@@ -39,8 +39,8 @@ void main() {
     board.dispose();
   });
 
-  final ThrownDart sbull = ThrownDart(Segment.outerBull);
-  final ThrownDart dbull = ThrownDart(Segment.innerBull);
+  const ThrownDart sbull = ThrownDart(Segment.outerBull);
+  const ThrownDart dbull = ThrownDart(Segment.innerBull);
 
   group('scoring by hand', () {
     test('an outer bull adds a point', () {

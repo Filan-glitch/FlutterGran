@@ -9,8 +9,8 @@ ThrownDart s(int n) => ThrownDart(Segment(n, Ring.outerSingle));
 ThrownDart d(int n) => ThrownDart(Segment(n, Ring.doubleRing));
 ThrownDart t(int n) => ThrownDart(Segment(n, Ring.triple));
 const ThrownDart miss = ThrownDart.miss();
-final ThrownDart dbull = ThrownDart(Segment.innerBull);
-final ThrownDart sbull = ThrownDart(Segment.outerBull);
+const ThrownDart dbull = ThrownDart(Segment.innerBull);
+const ThrownDart sbull = ThrownDart(Segment.outerBull);
 
 /// Most rule tests start from a contrived low score so the interesting dart is
 /// the first one thrown.

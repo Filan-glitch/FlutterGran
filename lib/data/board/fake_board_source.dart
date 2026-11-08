@@ -1,5 +1,10 @@
 import 'dart:async';
 
+import 'package:fluttergran/data/board/frame_assembler.dart'
+    show FrameAssembler;
+
+import 'package:fluttergran/data/board/segment_codec.dart' show SegmentCodec;
+
 import '../../domain/segment.dart';
 import 'board_source.dart';
 import 'granboard_segment_map.dart';

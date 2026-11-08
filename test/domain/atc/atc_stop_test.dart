@@ -20,24 +20,30 @@ void main() {
 
     test('a single on the matching number clears it', () {
       expect(
-        stop.clears(Segment(7, Ring.outerSingle), AtcVariant.anyPart),
+        stop.clears(const Segment(7, Ring.outerSingle), AtcVariant.anyPart),
         isTrue,
       );
     });
 
     test('a double on the matching number clears it', () {
       expect(
-        stop.clears(Segment(7, Ring.doubleRing), AtcVariant.anyPart),
+        stop.clears(const Segment(7, Ring.doubleRing), AtcVariant.anyPart),
         isTrue,
       );
     });
 
     test('a triple on the matching number clears it', () {
-      expect(stop.clears(Segment(7, Ring.triple), AtcVariant.anyPart), isTrue);
+      expect(
+        stop.clears(const Segment(7, Ring.triple), AtcVariant.anyPart),
+        isTrue,
+      );
     });
 
     test('any ring on a different number does not clear it', () {
-      expect(stop.clears(Segment(8, Ring.triple), AtcVariant.anyPart), isFalse);
+      expect(
+        stop.clears(const Segment(8, Ring.triple), AtcVariant.anyPart),
+        isFalse,
+      );
     });
   });
 
@@ -46,22 +52,25 @@ void main() {
 
     test('a double on the matching number clears it', () {
       expect(
-        stop.clears(Segment(7, Ring.doubleRing), AtcVariant.masters),
+        stop.clears(const Segment(7, Ring.doubleRing), AtcVariant.masters),
         isTrue,
       );
     });
 
     test('a triple on the matching number clears it', () {
-      expect(stop.clears(Segment(7, Ring.triple), AtcVariant.masters), isTrue);
+      expect(
+        stop.clears(const Segment(7, Ring.triple), AtcVariant.masters),
+        isTrue,
+      );
     });
 
     test('a single on the matching number does not clear it', () {
       expect(
-        stop.clears(Segment(7, Ring.outerSingle), AtcVariant.masters),
+        stop.clears(const Segment(7, Ring.outerSingle), AtcVariant.masters),
         isFalse,
       );
       expect(
-        stop.clears(Segment(7, Ring.innerSingle), AtcVariant.masters),
+        stop.clears(const Segment(7, Ring.innerSingle), AtcVariant.masters),
         isFalse,
       );
     });
@@ -72,21 +81,21 @@ void main() {
 
     test('a double on the matching number clears it', () {
       expect(
-        stop.clears(Segment(7, Ring.doubleRing), AtcVariant.doublesOnly),
+        stop.clears(const Segment(7, Ring.doubleRing), AtcVariant.doublesOnly),
         isTrue,
       );
     });
 
     test('a triple on the matching number does not clear it', () {
       expect(
-        stop.clears(Segment(7, Ring.triple), AtcVariant.doublesOnly),
+        stop.clears(const Segment(7, Ring.triple), AtcVariant.doublesOnly),
         isFalse,
       );
     });
 
     test('a single on the matching number does not clear it', () {
       expect(
-        stop.clears(Segment(7, Ring.outerSingle), AtcVariant.doublesOnly),
+        stop.clears(const Segment(7, Ring.outerSingle), AtcVariant.doublesOnly),
         isFalse,
       );
     });
@@ -111,7 +120,7 @@ void main() {
 
     test('does not clear on a numbered segment', () {
       expect(
-        bull.clears(Segment(20, Ring.triple), AtcVariant.anyPart),
+        bull.clears(const Segment(20, Ring.triple), AtcVariant.anyPart),
         isFalse,
       );
     });

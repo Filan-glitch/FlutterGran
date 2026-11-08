@@ -1,3 +1,5 @@
+import 'package:fluttergran/domain/atc/atc_stop.dart' show AtcStop;
+
 /// Which ring counts as a hit on a numbered wedge (1-20) in Around the Clock.
 ///
 /// The two bull stops are unaffected by any of these - each is already a

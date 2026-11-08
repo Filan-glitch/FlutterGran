@@ -251,9 +251,9 @@ class EntrancePop extends StatelessWidget {
 /// `begin: value, end: value` on every build looks redundant, but is the
 /// whole trick: [TweenAnimationBuilder] only re-animates when the tween's
 /// *end* differs from the one it already has in flight, always starting
-/// from wherever it currently is rather than [begin] - so the first frame
+/// from wherever it currently is rather than `begin` - so the first frame
 /// renders [value] outright (nothing to animate from yet) and every frame
-/// after animates from the previous figure shown, not from [begin].
+/// after animates from the previous figure shown, not from `begin`.
 class AnimatedFigure extends StatelessWidget {
   const AnimatedFigure({super.key, required this.value, required this.style});
 

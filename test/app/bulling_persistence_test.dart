@@ -20,7 +20,7 @@ void main() {
 
   tearDown(() => database.close());
 
-  final ThrownDart sbull = ThrownDart(Segment.outerBull);
+  const ThrownDart sbull = ThrownDart(Segment.outerBull);
 
   Future<BullingConfig> seedBullingGame({
     int players = 2,

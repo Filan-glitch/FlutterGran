@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fluttergran/app/game_controller.dart' show GameController;
 
 import '../domain/board_event.dart';
 import '../domain/training/free_practice_state.dart';

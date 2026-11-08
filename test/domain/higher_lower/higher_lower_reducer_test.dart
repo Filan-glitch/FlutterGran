@@ -9,8 +9,8 @@ ThrownDart s(int n) => ThrownDart(Segment(n, Ring.outerSingle));
 ThrownDart d(int n) => ThrownDart(Segment(n, Ring.doubleRing));
 ThrownDart t(int n) => ThrownDart(Segment(n, Ring.triple));
 const ThrownDart miss = ThrownDart.miss();
-final ThrownDart sbull = ThrownDart(Segment.outerBull);
-final ThrownDart dbull = ThrownDart(Segment.innerBull);
+const ThrownDart sbull = ThrownDart(Segment.outerBull);
+const ThrownDart dbull = ThrownDart(Segment.innerBull);
 
 HigherLowerConfig config({int players = 2}) =>
     HigherLowerConfig(playerIds: [for (var i = 1; i <= players; i++) i]);

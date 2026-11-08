@@ -387,9 +387,8 @@ final segmentCountsProvider = FutureProvider.family<Map<Segment, int>, int>((
 /// A leg that was left unfinished, ready to be picked back up.
 ///
 /// Sealed, the same pattern [ModeStats] uses: every call site that reads
-/// [leg] has to switch on the concrete type, which is what makes a third
-/// mode's leg impossible to fall through unhandled the way an x01-only
-/// resume path once would have.
+/// `leg` has to switch on the concrete type, so a new mode's leg cannot fall
+/// through unhandled.
 sealed class ResumableLeg {
   const ResumableLeg({required this.gameId});
 

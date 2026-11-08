@@ -77,7 +77,7 @@ void main() {
       gameId: gameId,
       ordinal: 0,
       playerId: finn.id,
-      dart: ThrownDart(Segment(1, Ring.outerSingle)),
+      dart: const ThrownDart(Segment(1, Ring.outerSingle)),
     );
 
     final resumable = await readResumable();
@@ -99,7 +99,7 @@ void main() {
       gameId: gameId,
       ordinal: 0,
       playerId: finn.id,
-      dart: ThrownDart(Segment.outerBull),
+      dart: const ThrownDart(Segment.outerBull),
     );
 
     final resumable = await readResumable();

@@ -123,7 +123,11 @@ void main() {
 
     test('a leg shorter than nine darts still averages correctly', () {
       final stats = statsFor([
-        leg(170, [t(20), t(20), ThrownDart(Segment.innerBull)], players: 2),
+        leg(170, [
+          t(20),
+          t(20),
+          const ThrownDart(Segment.innerBull),
+        ], players: 2),
       ]);
       expect(stats.firstNineDarts, 3);
     });
@@ -160,7 +164,7 @@ void main() {
 
     test('the bull counts as a double', () {
       final stats = statsFor([
-        leg(50, [ThrownDart(Segment.innerBull)], players: 2),
+        leg(50, [const ThrownDart(Segment.innerBull)], players: 2),
       ]);
 
       expect(stats.checkoutsByRule[X01OutRule.double], (
@@ -211,7 +215,7 @@ void main() {
   group('winning', () {
     test('records the checkout and the darts it took', () {
       final stats = statsFor([
-        leg(101, [t(17), ThrownDart(Segment.innerBull)], players: 2),
+        leg(101, [t(17), const ThrownDart(Segment.innerBull)], players: 2),
       ]);
 
       expect(stats.legsWon, 1);
@@ -222,7 +226,7 @@ void main() {
 
     test('keeps the best of each across legs', () {
       final stats = statsFor([
-        leg(101, [t(17), ThrownDart(Segment.innerBull)], players: 2),
+        leg(101, [t(17), const ThrownDart(Segment.innerBull)], players: 2),
         leg(40, [d(20)], players: 2),
       ]);
 

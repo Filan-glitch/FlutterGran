@@ -14,13 +14,13 @@ void main() {
     addTearDown(tester.view.reset);
 
     await tester.pumpWidget(
-      MaterialApp(
+      const MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: CenteredContent(
             child: SizedBox(
-              key: const Key('content'),
+              key: Key('content'),
               width: double.infinity,
               height: 10,
             ),

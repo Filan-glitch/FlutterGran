@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart' show MaterialApp;
 import 'package:flutter/widgets.dart';
 
 import '../l10n/app_localizations.dart';

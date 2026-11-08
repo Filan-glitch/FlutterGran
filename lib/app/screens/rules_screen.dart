@@ -6,7 +6,7 @@ import '../theme.dart';
 import '../widgets/game_layout.dart' show isHeroDevice;
 import '../widgets/mode_glyph.dart';
 import '../widgets/rules/rules_body.dart';
-import '../widgets/rules/rules_hero.dart' show rulesGlyphTag;
+import '../widgets/rules/rules_hero.dart' show rulesGlyphTag, RulesHero;
 import 'rules_detail_screen.dart';
 
 /// The rules section's front page, reached from the main menu: every mode

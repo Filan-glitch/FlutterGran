@@ -153,7 +153,7 @@ void main() {
       board.pressButton();
       await settle();
 
-      expect(session().leg.darts, [ThrownDart(Segment.outerBull), miss]);
+      expect(session().leg.darts, [const ThrownDart(Segment.outerBull), miss]);
       expect(session().leg.isOut(1), isTrue);
       expect(session().awaitingTurnConfirm, isFalse);
       expect(session().leg.currentPlayerId, 2);

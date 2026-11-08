@@ -374,7 +374,7 @@ void main() {
       // match.isFinished become true together, before FINISH is tapped.
       container
           .read(gameProvider.notifier)
-          .addDart(ThrownDart(const Segment(1, Ring.doubleRing)));
+          .addDart(const ThrownDart(Segment(1, Ring.doubleRing)));
       await frames(tester);
 
       expect(find.text('MATCH WON'), findsOneWidget);
@@ -394,7 +394,7 @@ void main() {
       // Finn (seat 0) leads leg 1 off and checks it out immediately.
       container
           .read(gameProvider.notifier)
-          .addDart(ThrownDart(const Segment(1, Ring.doubleRing)));
+          .addDart(const ThrownDart(Segment(1, Ring.doubleRing)));
       await frames(tester);
       container.read(gameProvider.notifier).confirmTurn();
       await frames(tester);

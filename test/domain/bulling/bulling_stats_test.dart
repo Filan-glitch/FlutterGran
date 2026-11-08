@@ -10,8 +10,8 @@ import 'package:test/test.dart';
 
 ThrownDart t(int n) => ThrownDart(Segment(n, Ring.triple));
 const ThrownDart miss = ThrownDart.miss();
-final ThrownDart sbull = ThrownDart(Segment.outerBull);
-final ThrownDart dbull = ThrownDart(Segment.innerBull);
+const ThrownDart sbull = ThrownDart(Segment.outerBull);
+const ThrownDart dbull = ThrownDart(Segment.innerBull);
 
 BullingLegState leg(
   List<ThrownDart> darts, {

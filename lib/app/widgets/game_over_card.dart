@@ -6,7 +6,7 @@ import 'outcome_panel.dart';
 
 /// One player's column of figures on the [GameOverCard].
 ///
-/// [figures] keep their rows whether or not the values are in yet: a value
+/// `figures` keep their rows whether or not the values are in yet: a value
 /// still being worked out is written `—`, so the card neither jumps nor claims
 /// a total it has not got.
 typedef FigureColumn = ({

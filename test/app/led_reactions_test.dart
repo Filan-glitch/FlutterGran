@@ -61,10 +61,10 @@ void main() {
 
     test('a hit flashes the number in the thrower\'s seat colour', () {
       expect(throwing(config(501), [t(20)]), [
-        DartLanded(Segment(20, Ring.triple), seat: 0),
+        const DartLanded(Segment(20, Ring.triple), seat: 0),
       ]);
       expect(throwing(config(501), [s(1), s(1), s(1), d(5)]), [
-        DartLanded(Segment(5, Ring.doubleRing), seat: 1),
+        const DartLanded(Segment(5, Ring.doubleRing), seat: 1),
       ]);
     });
 
@@ -197,7 +197,7 @@ void main() {
 
     test('the target number flashes green, anything else is a miss', () {
       expect(ledCuesForAtc(atc([]), atc([s(1)])), [
-        TargetHit(Segment(1, Ring.outerSingle)),
+        const TargetHit(Segment(1, Ring.outerSingle)),
       ]);
       expect(ledCuesForAtc(atc([]), atc([s(7)])), [const DartMissed()]);
     });

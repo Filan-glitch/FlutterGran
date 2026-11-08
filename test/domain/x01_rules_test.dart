@@ -88,7 +88,7 @@ void main() {
     });
 
     test('opensUnder/checksOutUnder delegate to the segment', () {
-      final dart = ThrownDart(const Segment(20, Ring.doubleRing));
+      const dart = ThrownDart(Segment(20, Ring.doubleRing));
       expect(dart.opensUnder(X01InRule.double), isTrue);
       expect(dart.opensUnder(X01InRule.master), isTrue);
       expect(dart.checksOutUnder(X01OutRule.double), isTrue);
