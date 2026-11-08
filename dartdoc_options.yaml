@@ -1,0 +1,51 @@
+# API docs: dart pub global run dartdoc (pinned to 9.0.11 in tool/check.sh
+# and ci.yml). CI runs it with --no-generate-docs, and any warning listed
+# under `errors` fails the build.
+dartdoc:
+  # The generated localizations: thousands of string getters, no prose.
+  exclude:
+    - app_localizations
+    - app_localizations_de
+    - app_localizations_en
+
+  categories:
+    Domain:
+      markdown: docs/api/domain.md
+    Game modes:
+      markdown: docs/api/game_modes.md
+    Data:
+      markdown: docs/api/data.md
+    App:
+      markdown: docs/api/app.md
+
+  categoryOrder:
+    - Domain
+    - Game modes
+    - Data
+    - App
+
+  errors:
+    - ambiguous-doc-reference
+    - ambiguous-reexport
+    - category-order-gives-missing-package-name
+    - deprecated
+    - duplicate-file
+    - invalid-parameter
+    - missing-example-file
+    - missing-example-region
+    - missing-from-search-index
+    - no-canonical-found
+    - no-documentable-libraries
+    - no-library-level-docs
+    - orphaned-file
+    - tool-error
+    - unknown-file
+    - unknown-html-fragment
+    - unknown-macro
+    - unresolved-doc-reference
+
+  # README.md is the index page, and its relative links to CONTRIBUTING.md
+  # and docs/*.md have no counterpart in the generated site. Only a full
+  # build validates links; the category pages link the handbook absolutely.
+  ignore:
+    - broken-link
