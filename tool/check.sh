@@ -41,9 +41,13 @@ step 'all tests'
 flutter test
 
 if ! $quick; then
+  # A full build, not --no-generate-docs: only a full build checks library
+  # docs. Output goes to a temp dir so doc/api/ is left alone.
   step 'dartdoc builds without warnings'
   dart pub global activate dartdoc "$DARTDOC_VERSION" > /dev/null
-  dart pub global run dartdoc --no-generate-docs
+  out="$(mktemp -d)"
+  trap 'rm -rf "$out"' EXIT
+  dart pub global run dartdoc --output "$out"
 fi
 
 step 'all checks passed'

@@ -46,11 +46,12 @@ jobs:
       - run: flutter analyze
 
       # Pinned past the SDK's bundled dartdoc 9.0.6, which crashes on drift's
-      # inherited @docImport comments. Same version as tool/check.sh.
+      # inherited @docImport comments. Same version as tool/check.sh. A full
+      # build, because only that checks every library has a library doc.
       - name: API docs build without warnings
         run: |
           dart pub global activate dartdoc 9.0.11
-          dart pub global run dartdoc --no-generate-docs
+          dart pub global run dartdoc --output "$RUNNER_TEMP/api"
 
       # Pure-Dart layers, no Flutter (also enforces the domain layering rule).
       - name: Test domain and data

@@ -61,8 +61,10 @@ dart pub global run dartdoc              # writes doc/api/index.html (gitignored
 
 Pinned to 9.0.11 because the SDK's bundled `dart doc` (dartdoc 9.0.6) crashes
 on drift's inherited `@docImport` comments. Libraries are grouped by
-`{@category}` (Domain, Data, App, Game modes), and this handbook and the
-`docs/` files are included as dartdoc topics.
+`{@category}` (Domain, Game modes, Data, App); each category page
+(`docs/api/*.md`) links this handbook and the `docs/` files. Settings live in
+`dartdoc_options.yaml`: doc warnings such as an unresolved `[Symbol]` or a
+library without a library doc are errors, so the build fails on them.
 
 ### Where the docs live
 

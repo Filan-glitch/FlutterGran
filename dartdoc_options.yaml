@@ -1,6 +1,6 @@
 # API docs: dart pub global run dartdoc (pinned to 9.0.11 in tool/check.sh
-# and ci.yml). CI runs it with --no-generate-docs, and any warning listed
-# under `errors` fails the build.
+# and ci.yml). CI runs a full build to a temp dir, and any warning listed
+# under `errors` fails it.
 dartdoc:
   # The generated localizations: thousands of string getters, no prose.
   exclude:
