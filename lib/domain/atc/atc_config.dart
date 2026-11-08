@@ -4,7 +4,7 @@ import 'atc_variant.dart';
 /// The rules an Around the Clock leg is played under.
 ///
 /// No `startingSeat`, unlike [GameConfig]: a leg always opens on the first
-/// seat, since v1 has no match wrapping to rotate the lead across.
+/// seat, since this mode has no matches to rotate the lead across.
 class AtcConfig {
   AtcConfig({required this.playerIds, required this.variant})
     : assert(

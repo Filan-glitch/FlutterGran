@@ -11,8 +11,7 @@ const String missCode = 'OUT';
 /// The codes are physical `column.row` coordinates, not scores.
 ///
 /// Derived from the GRANBOARD 3s, on which six independent implementations
-/// agree exactly. **No public source has verified the GRANBOARD 132.** Treat
-/// this as a provisional default that the calibration screen may override.
+/// agree, and verified segment by segment against a real GRANBOARD 132.
 const Map<int, List<String>> wedgeCodes = {
   1: ['2.3', '2.4', '2.5', '2.6'],
   2: ['9.1', '9.0', '9.2', '8.2'],

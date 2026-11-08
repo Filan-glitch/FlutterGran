@@ -1,8 +1,7 @@
 /// Which game a leg is played under.
 ///
-/// Adding a mode means adding a value here, a matching entry in
-/// [gameModeRegistry], and its own stats calculator; nothing about picking a
-/// mode or reading its record should need to change shape again.
+/// Each value needs a matching entry in [gameModeRegistry] and its own stats
+/// calculator.
 enum GameMode { x01, aroundTheClock, bulling, higherLower }
 
 /// What the mode-select screen needs to render a tile, without pulling in
