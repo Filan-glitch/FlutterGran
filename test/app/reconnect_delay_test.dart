@@ -105,7 +105,10 @@ void _scanCooldownTests() {
         scanCooldown(now.subtract(const Duration(seconds: 30)), now),
         Duration.zero,
       );
-      expect(scanCooldown(now.subtract(minimumScanInterval), now), Duration.zero);
+      expect(
+        scanCooldown(now.subtract(minimumScanInterval), now),
+        Duration.zero,
+      );
     });
 
     test('a clock that jumped backwards does not produce a negative wait', () {

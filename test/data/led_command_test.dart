@@ -89,12 +89,18 @@ void main() {
         encodeLedCommand(const EffectFrame(LedEffect.rainbowFlicker)),
         hex('0D 00 00 00 00 00 00 00 00 00 00 02 0A 02 00 01'),
       );
-      expect(encodeLedCommand(const EffectFrame(LedEffect.nextSweep))[10], 0x10);
+      expect(
+        encodeLedCommand(const EffectFrame(LedEffect.nextSweep))[10],
+        0x10,
+      );
       expect(encodeLedCommand(const EffectFrame(LedEffect.pulse))[4], 0x7D);
     });
 
     test('leaves out hunt flicker, which does nothing on a 132', () {
-      expect(LedEffect.values.map((effect) => effect.op), isNot(contains(0x19)));
+      expect(
+        LedEffect.values.map((effect) => effect.op),
+        isNot(contains(0x19)),
+      );
     });
   });
 

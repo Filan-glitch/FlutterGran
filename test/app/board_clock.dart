@@ -14,8 +14,7 @@ class BoardClock {
   DateTime now = DateTime(2026, 9, 24);
 
   /// Moves well past the dedupe window, as a real throw would.
-  void advance([Duration by = const Duration(seconds: 2)]) =>
-      now = now.add(by);
+  void advance([Duration by = const Duration(seconds: 2)]) => now = now.add(by);
 
   /// Reads [board] through an assembler on this clock.
   Override readerFor(FakeBoardSource board) =>

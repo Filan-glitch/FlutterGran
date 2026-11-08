@@ -85,9 +85,7 @@ void main() {
     await close(tester);
   });
 
-  testWidgets('the empty roster shows the empty-state prompt', (
-    tester,
-  ) async {
+  testWidgets('the empty roster shows the empty-state prompt', (tester) async {
     await open(tester);
 
     expect(
@@ -165,28 +163,27 @@ void main() {
     },
   );
 
-  testWidgets(
-    'a held delete left to time out actually removes the player',
-    (tester) async {
-      final finn = await repository.addPlayer('Finn');
-      await open(tester);
+  testWidgets('a held delete left to time out actually removes the player', (
+    tester,
+  ) async {
+    final finn = await repository.addPlayer('Finn');
+    await open(tester);
 
-      await tester.longPress(find.byKey(Key('delete-player-${finn.id}')));
-      await frames(tester);
-      expect(find.text('Finn'), findsNothing);
-      // Nothing written yet - the undo window is still open.
-      expect(await repository.allPlayers(), hasLength(1));
+    await tester.longPress(find.byKey(Key('delete-player-${finn.id}')));
+    await frames(tester);
+    expect(find.text('Finn'), findsNothing);
+    // Nothing written yet - the undo window is still open.
+    expect(await repository.allPlayers(), hasLength(1));
 
-      // Really waits the window out. This used to call
-      // `removeCurrentSnackBar()` instead, which hid that a snackbar with an
-      // action no longer times out on its own - so the delete never landed.
-      await waitOutUndo(tester);
+    // Really waits the window out. This used to call
+    // `removeCurrentSnackBar()` instead, which hid that a snackbar with an
+    // action no longer times out on its own - so the delete never landed.
+    await waitOutUndo(tester);
 
-      expect(await repository.allPlayers(), isEmpty);
+    expect(await repository.allPlayers(), isEmpty);
 
-      await close(tester);
-    },
-  );
+    await close(tester);
+  });
 
   testWidgets('a tap on the delete icon hides the player and offers UNDO', (
     tester,

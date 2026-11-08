@@ -38,7 +38,9 @@ void main() {
     });
 
     test('a player who was not in the leg is skipped entirely', () {
-      final stats = computeAtcStats(9, [leg([s(1)])]);
+      final stats = computeAtcStats(9, [
+        leg([s(1)]),
+      ]);
       expect(stats.legsPlayed, 0);
       expect(stats.dartsThrown, 0);
     });
@@ -110,7 +112,9 @@ void main() {
     });
 
     test('a leg not won leaves fewestDartsToWin alone', () {
-      final stats = computeAtcStats(1, [leg([s(1)])]);
+      final stats = computeAtcStats(1, [
+        leg([s(1)]),
+      ]);
       expect(stats.legsWon, 0);
       expect(stats.fewestDartsToWin, isNull);
     });
@@ -126,7 +130,9 @@ void main() {
     test('keys ATC legs under GameMode.aroundTheClock', () {
       final stats = computePlayerStats(
         1,
-        atcLegs: [leg([s(1), miss, miss])],
+        atcLegs: [
+          leg([s(1), miss, miss]),
+        ],
       );
 
       final atc = stats[GameMode.aroundTheClock]! as AtcStats;

@@ -56,17 +56,20 @@ void main() {
       expect(loaded.target, config.target);
     });
 
-    test('the bullseye value and target round-trip through BullingGames', () async {
-      final config = await seedBullingGame(
-        bullseyeValue: BullseyeValue.three,
-        target: 31,
-      );
-      final gameId = await repository.startBullingGame(config);
+    test(
+      'the bullseye value and target round-trip through BullingGames',
+      () async {
+        final config = await seedBullingGame(
+          bullseyeValue: BullseyeValue.three,
+          target: 31,
+        );
+        final gameId = await repository.startBullingGame(config);
 
-      final loaded = await repository.loadBullingConfig(gameId);
-      expect(loaded!.bullseyeValue, BullseyeValue.three);
-      expect(loaded.target, 31);
-    });
+        final loaded = await repository.loadBullingConfig(gameId);
+        expect(loaded!.bullseyeValue, BullseyeValue.three);
+        expect(loaded.target, 31);
+      },
+    );
   });
 
   group('replaying a stored game', () {
@@ -111,18 +114,21 @@ void main() {
       expect(legs, hasLength(1));
     });
 
-    test('appears in the resumable-leg query the same as any other mode', () async {
-      final config = await seedBullingGame();
-      final gameId = await repository.startBullingGame(config);
-      await repository.appendDart(
-        gameId: gameId,
-        ordinal: 0,
-        playerId: config.playerIds[0],
-        dart: sbull,
-      );
+    test(
+      'appears in the resumable-leg query the same as any other mode',
+      () async {
+        final config = await seedBullingGame();
+        final gameId = await repository.startBullingGame(config);
+        await repository.appendDart(
+          gameId: gameId,
+          ordinal: 0,
+          playerId: config.playerIds[0],
+          dart: sbull,
+        );
 
-      expect(await repository.findResumableGameId(), gameId);
-    });
+        expect(await repository.findResumableGameId(), gameId);
+      },
+    );
 
     test('finishGame/reopenGame work unchanged for a Bulling row', () async {
       final config = await seedBullingGame();

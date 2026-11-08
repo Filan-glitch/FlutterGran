@@ -91,9 +91,7 @@ void main() {
     expect(find.byType(AtcSetupScreen), findsOneWidget);
   });
 
-  testWidgets('the Bulling tile navigates to its setup screen', (
-    tester,
-  ) async {
+  testWidgets('the Bulling tile navigates to its setup screen', (tester) async {
     await pumpScreen(tester);
 
     expect(find.text('BULLING'), findsOneWidget);

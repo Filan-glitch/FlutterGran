@@ -289,10 +289,9 @@ void main() {
         if (winningSeat == null) null else seats[winningSeat],
       ],
     );
-    final gameId = (await db
-            .customSelect('SELECT MAX(id) AS id FROM games')
-            .getSingle())
-        .read<int>('id');
+    final gameId =
+        (await db.customSelect('SELECT MAX(id) AS id FROM games').getSingle())
+            .read<int>('id');
 
     for (var seat = 0; seat < seats.length; seat++) {
       await db
@@ -328,7 +327,10 @@ void main() {
 
   /// Writes one leg the way schema 4 stored legs - everything except
   /// `game_mode`, which schema 4 did not have a column for yet.
-  Future<int> seedV4({required List<ThrownDart> darts, int startScore = 501}) async {
+  Future<int> seedV4({
+    required List<ThrownDart> darts,
+    int startScore = 501,
+  }) async {
     final db = _SchemaV4(NativeDatabase(file));
 
     final finn = await db
@@ -376,7 +378,10 @@ void main() {
 
   /// Writes one x01 leg the way schema 5 stored legs - `game_mode` present,
   /// `start_score`/`double_out` still required.
-  Future<int> seedV5({required List<ThrownDart> darts, int startScore = 501}) async {
+  Future<int> seedV5({
+    required List<ThrownDart> darts,
+    int startScore = 501,
+  }) async {
     final db = _SchemaV5(NativeDatabase(file));
 
     final finn = await db
@@ -432,30 +437,31 @@ void main() {
     // Touching a table is what actually forces the migration to run.
     await db.select(db.matches).get();
 
-    final version = await db
-        .customSelect('PRAGMA user_version')
-        .getSingle();
+    final version = await db.customSelect('PRAGMA user_version').getSingle();
     expect(version.read<int>('user_version'), db.schemaVersion);
 
     await db.close();
   });
 
-  test('an old segment_calibrations table is dropped, not carried forward', () async {
-    await seedV2(darts: [t(20)]);
+  test(
+    'an old segment_calibrations table is dropped, not carried forward',
+    () async {
+      await seedV2(darts: [t(20)]);
 
-    final db = migrated();
-    await db.select(db.matches).get();
+      final db = migrated();
+      await db.select(db.matches).get();
 
-    final tables = await db
-        .customSelect(
-          "SELECT name FROM sqlite_master WHERE type = 'table' "
-          "AND name = 'segment_calibrations'",
-        )
-        .get();
-    expect(tables, isEmpty);
+      final tables = await db
+          .customSelect(
+            "SELECT name FROM sqlite_master WHERE type = 'table' "
+            "AND name = 'segment_calibrations'",
+          )
+          .get();
+      expect(tables, isEmpty);
 
-    await db.close();
-  });
+      await db.close();
+    },
+  );
 
   test('an old leg still folds to exactly what was thrown', () async {
     final gameId = await seedV2(
@@ -507,11 +513,7 @@ void main() {
   });
 
   test('an old finished leg is still finished', () async {
-    final gameId = await seedV2(
-      darts: [d(20)],
-      startScore: 40,
-      winningSeat: 0,
-    );
+    final gameId = await seedV2(darts: [d(20)], startScore: 40, winningSeat: 0);
 
     final db = migrated();
     final repository = GameRepository(db);
@@ -586,42 +588,48 @@ void main() {
     await db.close();
   });
 
-  test('a fresh install lands on the current version with atc_games present', () async {
-    final db = migrated();
-    await db.select(db.matches).get();
+  test(
+    'a fresh install lands on the current version with atc_games present',
+    () async {
+      final db = migrated();
+      await db.select(db.matches).get();
 
-    final version = await db.customSelect('PRAGMA user_version').getSingle();
-    expect(version.read<int>('user_version'), db.schemaVersion);
+      final version = await db.customSelect('PRAGMA user_version').getSingle();
+      expect(version.read<int>('user_version'), db.schemaVersion);
 
-    final tables = await db
-        .customSelect(
-          "SELECT name FROM sqlite_master WHERE type = 'table' "
-          "AND name = 'atc_games'",
-        )
-        .get();
-    expect(tables, isNotEmpty);
+      final tables = await db
+          .customSelect(
+            "SELECT name FROM sqlite_master WHERE type = 'table' "
+            "AND name = 'atc_games'",
+          )
+          .get();
+      expect(tables, isNotEmpty);
 
-    await db.close();
-  });
+      await db.close();
+    },
+  );
 
-  test('an old x01 leg from v5 still folds correctly after the rebuild', () async {
-    final gameId = await seedV5(
-      darts: [t(20), t(20), t(20), t(1), t(1), t(1), t(19)],
-    );
+  test(
+    'an old x01 leg from v5 still folds correctly after the rebuild',
+    () async {
+      final gameId = await seedV5(
+        darts: [t(20), t(20), t(20), t(1), t(1), t(1), t(19)],
+      );
 
-    final db = migrated();
-    final repository = GameRepository(db);
+      final db = migrated();
+      final repository = GameRepository(db);
 
-    final config = await repository.loadConfig(gameId);
-    expect(config, isNotNull);
-    expect(config!.startScore, 501);
+      final config = await repository.loadConfig(gameId);
+      expect(config, isNotNull);
+      expect(config!.startScore, 501);
 
-    final leg = foldLeg(config, await repository.loadLog(gameId));
-    expect(leg.remaining[config.playerIds[0]], 501 - 180 - 57);
-    expect(leg.remaining[config.playerIds[1]], 501 - 9);
+      final leg = foldLeg(config, await repository.loadLog(gameId));
+      expect(leg.remaining[config.playerIds[0]], 501 - 180 - 57);
+      expect(leg.remaining[config.playerIds[1]], 501 - 9);
 
-    await db.close();
-  });
+      await db.close();
+    },
+  );
 
   test('an old v5 leg still resumes after the rebuild', () async {
     final gameId = await seedV5(darts: [t(20), t(20)]);
@@ -656,7 +664,10 @@ void main() {
   /// Writes one x01 leg the way schema 6 stored legs - everything the
   /// current schema also writes, minus `bulling_games`, which did not
   /// exist yet.
-  Future<int> seedV6({required List<ThrownDart> darts, int startScore = 501}) async {
+  Future<int> seedV6({
+    required List<ThrownDart> darts,
+    int startScore = 501,
+  }) async {
     final db = _SchemaV6(NativeDatabase(file));
 
     final finn = await db
@@ -714,39 +725,45 @@ void main() {
     await db.close();
   });
 
-  test('a fresh install lands on the current version with bulling_games present', () async {
-    final db = migrated();
-    await db.select(db.matches).get();
+  test(
+    'a fresh install lands on the current version with bulling_games present',
+    () async {
+      final db = migrated();
+      await db.select(db.matches).get();
 
-    final tables = await db
-        .customSelect(
-          "SELECT name FROM sqlite_master WHERE type = 'table' "
-          "AND name = 'bulling_games'",
-        )
-        .get();
-    expect(tables, isNotEmpty);
+      final tables = await db
+          .customSelect(
+            "SELECT name FROM sqlite_master WHERE type = 'table' "
+            "AND name = 'bulling_games'",
+          )
+          .get();
+      expect(tables, isNotEmpty);
 
-    await db.close();
-  });
+      await db.close();
+    },
+  );
 
-  test('an old x01 leg from v6 still folds correctly after gaining bulling_games', () async {
-    final gameId = await seedV6(
-      darts: [t(20), t(20), t(20), t(1), t(1), t(1), t(19)],
-    );
+  test(
+    'an old x01 leg from v6 still folds correctly after gaining bulling_games',
+    () async {
+      final gameId = await seedV6(
+        darts: [t(20), t(20), t(20), t(1), t(1), t(1), t(19)],
+      );
 
-    final db = migrated();
-    final repository = GameRepository(db);
+      final db = migrated();
+      final repository = GameRepository(db);
 
-    final config = await repository.loadConfig(gameId);
-    expect(config, isNotNull);
-    expect(config!.startScore, 501);
+      final config = await repository.loadConfig(gameId);
+      expect(config, isNotNull);
+      expect(config!.startScore, 501);
 
-    final leg = foldLeg(config, await repository.loadLog(gameId));
-    expect(leg.remaining[config.playerIds[0]], 501 - 180 - 57);
-    expect(leg.remaining[config.playerIds[1]], 501 - 9);
+      final leg = foldLeg(config, await repository.loadLog(gameId));
+      expect(leg.remaining[config.playerIds[0]], 501 - 180 - 57);
+      expect(leg.remaining[config.playerIds[1]], 501 - 9);
 
-    await db.close();
-  });
+      await db.close();
+    },
+  );
 
   test('an old v6 leg still resumes after the migration', () async {
     final gameId = await seedV6(darts: [t(20), t(20)]);
@@ -954,7 +971,11 @@ void main() {
       expect(config.inRule, X01InRule.straight);
 
       final leg = foldLeg(config, await repository.loadLog(gameId));
-      expect(leg.winnerId, config.playerIds[0], reason: 'straight-out wins on zero');
+      expect(
+        leg.winnerId,
+        config.playerIds[0],
+        reason: 'straight-out wins on zero',
+      );
 
       await db.close();
     },

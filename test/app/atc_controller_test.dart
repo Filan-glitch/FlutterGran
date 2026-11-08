@@ -225,9 +225,11 @@ void main() {
     test('changing the config starts a fresh leg', () {
       controller().addDart(s(1));
 
-      container.read(atcConfigProvider.notifier).update(
-        AtcConfig(playerIds: const [1, 2], variant: AtcVariant.doublesOnly),
-      );
+      container
+          .read(atcConfigProvider.notifier)
+          .update(
+            AtcConfig(playerIds: const [1, 2], variant: AtcVariant.doublesOnly),
+          );
 
       expect(session().leg.config.variant, AtcVariant.doublesOnly);
       expect(session().leg.darts, isEmpty);
@@ -235,9 +237,11 @@ void main() {
   });
 
   test('a variant that requires a double ignores a single', () {
-    container.read(atcConfigProvider.notifier).update(
-      AtcConfig(playerIds: const [1, 2], variant: AtcVariant.doublesOnly),
-    );
+    container
+        .read(atcConfigProvider.notifier)
+        .update(
+          AtcConfig(playerIds: const [1, 2], variant: AtcVariant.doublesOnly),
+        );
     controller().restart();
 
     controller().addDart(t(1));

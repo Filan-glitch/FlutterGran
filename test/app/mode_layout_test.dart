@@ -211,9 +211,9 @@ void main() {
           home: Builder(
             builder: (context) => Scaffold(
               body: TextButton(
-                onPressed: () => Navigator.of(
-                  context,
-                ).push(MaterialPageRoute<void>(builder: (_) => screen)),
+                onPressed: () =>
+                    Navigator.of(context)
+                        .push(MaterialPageRoute<void>(builder: (_) => screen)),
                 child: const Text('open'),
               ),
             ),

@@ -108,9 +108,9 @@ void main() {
     });
 
     test('ending a turn after the leg is won does nothing', () {
-      container.read(gameConfigProvider.notifier).update(
-        GameConfig(startScore: 40, playerIds: const [1, 2]),
-      );
+      container
+          .read(gameConfigProvider.notifier)
+          .update(GameConfig(startScore: 40, playerIds: const [1, 2]));
       controller()
         ..addDart(d(20))
         ..endTurn();
@@ -132,9 +132,9 @@ void main() {
     });
 
     test('a bust ends the turn immediately', () {
-      container.read(gameConfigProvider.notifier).update(
-        GameConfig(startScore: 40, playerIds: const [1, 2]),
-      );
+      container
+          .read(gameConfigProvider.notifier)
+          .update(GameConfig(startScore: 40, playerIds: const [1, 2]));
 
       controller().addDart(t(20));
 
@@ -169,9 +169,9 @@ void main() {
     });
 
     test('backs out of a finished leg', () {
-      container.read(gameConfigProvider.notifier).update(
-        GameConfig(startScore: 40, playerIds: const [1, 2]),
-      );
+      container
+          .read(gameConfigProvider.notifier)
+          .update(GameConfig(startScore: 40, playerIds: const [1, 2]));
 
       controller().addDart(d(20));
       expect(session().leg.isFinished, isTrue);
@@ -383,10 +383,7 @@ void main() {
     test('reopens the leg to board input', () async {
       controller()
         ..leave()
-        ..resume(
-          GameConfig(startScore: 501, playerIds: const [1, 2]),
-          [t(20)],
-        );
+        ..resume(GameConfig(startScore: 501, playerIds: const [1, 2]), [t(20)]);
 
       board.hit(const Segment(20, Ring.triple));
       await settle();

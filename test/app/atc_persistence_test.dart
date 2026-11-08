@@ -37,21 +37,24 @@ void main() {
   }
 
   group('starting a game', () {
-    test('writes a games row under aroundTheClock and seats the players', () async {
-      final config = await seedAtcGame(players: 3);
-      final gameId = await repository.startAtcGame(config);
+    test(
+      'writes a games row under aroundTheClock and seats the players',
+      () async {
+        final config = await seedAtcGame(players: 3);
+        final gameId = await repository.startAtcGame(config);
 
-      final game = await repository.loadGame(gameId);
-      expect(game!.gameMode, GameMode.aroundTheClock);
-      expect(game.startScore, isNull);
-      expect(game.doubleOut, isNull);
-      expect(game.inRule, isNull);
-      expect(game.outRule, isNull);
+        final game = await repository.loadGame(gameId);
+        expect(game!.gameMode, GameMode.aroundTheClock);
+        expect(game.startScore, isNull);
+        expect(game.doubleOut, isNull);
+        expect(game.inRule, isNull);
+        expect(game.outRule, isNull);
 
-      final loaded = await repository.loadAtcConfig(gameId);
-      expect(loaded!.playerIds, config.playerIds);
-      expect(loaded.variant, config.variant);
-    });
+        final loaded = await repository.loadAtcConfig(gameId);
+        expect(loaded!.playerIds, config.playerIds);
+        expect(loaded.variant, config.variant);
+      },
+    );
 
     test('the variant round-trips through AtcGames', () async {
       final config = await seedAtcGame(variant: AtcVariant.masters);
@@ -121,7 +124,10 @@ void main() {
       final gameId = await repository.startAtcGame(config);
 
       await repository.finishGame(gameId, config.playerIds[0]);
-      expect((await repository.loadGame(gameId))!.winnerPlayerId, config.playerIds[0]);
+      expect(
+        (await repository.loadGame(gameId))!.winnerPlayerId,
+        config.playerIds[0],
+      );
 
       await repository.reopenGame(gameId);
       expect((await repository.loadGame(gameId))!.winnerPlayerId, isNull);

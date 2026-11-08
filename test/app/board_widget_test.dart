@@ -38,11 +38,7 @@ void main() {
   // hit test on different centres, so taps landed on the wrong segment - which
   // is exactly what a square box prevents.
   group('taps land where the board is drawn', () {
-    for (final box in const [
-      Size(300, 300),
-      Size(400, 280),
-      Size(260, 420),
-    ]) {
+    for (final box in const [Size(300, 300), Size(400, 280), Size(260, 420)]) {
       testWidgets('the centre is the bull in a ${box.width.toInt()}x'
           '${box.height.toInt()} box', (tester) async {
         final tapped = await pumpBoardIn(tester, box);

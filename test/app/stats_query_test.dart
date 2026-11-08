@@ -49,10 +49,7 @@ void main() {
     final finn = await repository.addPlayer('Finn');
     final sam = await repository.addPlayer('Sam');
 
-    await recordLeg(
-      [finn.id, sam.id],
-      [t(20), t(20), t(20), t(1), t(1), t(1)],
-    );
+    await recordLeg([finn.id, sam.id], [t(20), t(20), t(20), t(1), t(1), t(1)]);
 
     final legs = await repository.watchAllLegs().first;
     final stats = computeX01Stats(finn.id, legs);
@@ -87,10 +84,7 @@ void main() {
     final finn = await repository.addPlayer('Finn');
     final sam = await repository.addPlayer('Sam');
 
-    await recordLeg(
-      [finn.id, sam.id],
-      [t(20), t(20), d(5), t(1), t(1), t(1)],
-    );
+    await recordLeg([finn.id, sam.id], [t(20), t(20), d(5), t(1), t(1), t(1)]);
 
     final finnCounts = await repository.segmentCounts(finn.id);
     expect(finnCounts[const Segment(20, Ring.triple)], 2);

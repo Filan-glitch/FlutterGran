@@ -251,9 +251,7 @@ void main() {
 
     setUp(() {
       platformCalls = [];
-      TestDefaultBinaryMessengerBinding
-          .instance
-          .defaultBinaryMessenger
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(SystemChannels.platform, (call) async {
             platformCalls.add(call);
             return null;
@@ -261,9 +259,7 @@ void main() {
     });
 
     tearDown(() {
-      TestDefaultBinaryMessengerBinding
-          .instance
-          .defaultBinaryMessenger
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(SystemChannels.platform, null);
     });
 
@@ -278,9 +274,7 @@ void main() {
       return null;
     }
 
-    testWidgets('locks to landscape on the connected tablet', (
-      tester,
-    ) async {
+    testWidgets('locks to landscape on the connected tablet', (tester) async {
       tester.view.physicalSize = const Size(1333, 800);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
@@ -289,7 +283,10 @@ void main() {
 
       expect(
         lastRequestedOrientations(),
-        unorderedEquals(['DeviceOrientation.landscapeLeft', 'DeviceOrientation.landscapeRight']),
+        unorderedEquals([
+          'DeviceOrientation.landscapeLeft',
+          'DeviceOrientation.landscapeRight',
+        ]),
       );
 
       await closeApp(tester);
@@ -307,22 +304,18 @@ void main() {
       await closeApp(tester);
     });
 
-    testWidgets(
-      'never asks a desktop window to rotate',
-      (tester) async {
-        // As big as the tablet that does get locked: a window has no
-        // orientation, only the size its owner dragged it to.
-        tester.view.physicalSize = const Size(1333, 800);
-        tester.view.devicePixelRatio = 1;
-        addTearDown(tester.view.reset);
+    testWidgets('never asks a desktop window to rotate', (tester) async {
+      // As big as the tablet that does get locked: a window has no
+      // orientation, only the size its owner dragged it to.
+      tester.view.physicalSize = const Size(1333, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
 
-        await launch(tester, database);
+      await launch(tester, database);
 
-        expect(lastRequestedOrientations(), isNull);
+      expect(lastRequestedOrientations(), isNull);
 
-        await closeApp(tester);
-      },
-      variant: TargetPlatformVariant.only(TargetPlatform.windows),
-    );
+      await closeApp(tester);
+    }, variant: TargetPlatformVariant.only(TargetPlatform.windows));
   });
 }

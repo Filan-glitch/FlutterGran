@@ -44,10 +44,7 @@ void main() {
   ThrownDart t(int n) => ThrownDart(Segment(n, Ring.triple));
   ThrownDart d(int n) => ThrownDart(Segment(n, Ring.doubleRing));
 
-  Future<GameConfig> seedGame({
-    int startScore = 501,
-    int players = 2,
-  }) async {
+  Future<GameConfig> seedGame({int startScore = 501, int players = 2}) async {
     final roster = [
       for (var i = 0; i < players; i++)
         await repository.addPlayer('Player ${i + 1}'),
@@ -81,10 +78,10 @@ void main() {
       await repository.addPlayer('Zoe');
       await repository.addPlayer('Alex');
 
-      expect(
-        (await repository.allPlayers()).map((p) => p.name),
-        ['Alex', 'Zoe'],
-      );
+      expect((await repository.allPlayers()).map((p) => p.name), [
+        'Alex',
+        'Zoe',
+      ]);
     });
 
     test('deleting a player removes them', () async {
@@ -171,19 +168,16 @@ void main() {
         ..addDart(t(1));
       await settle();
 
-      final rows = await (database.select(database.dartEvents)
-            ..orderBy([(row) => OrderingTerm(expression: row.ordinal)]))
-          .get();
+      final rows = await (database.select(
+        database.dartEvents,
+      )..orderBy([(row) => OrderingTerm(expression: row.ordinal)])).get();
 
-      expect(
-        rows.map((row) => row.playerId),
-        [
-          config.playerIds[0],
-          config.playerIds[0],
-          config.playerIds[0],
-          config.playerIds[1],
-        ],
-      );
+      expect(rows.map((row) => row.playerId), [
+        config.playerIds[0],
+        config.playerIds[0],
+        config.playerIds[0],
+        config.playerIds[1],
+      ]);
     });
 
     test('undo removes the row rather than recording a correction', () async {
@@ -274,9 +268,9 @@ void main() {
       controller().addDart(d(20));
       await settle();
 
-      final game = await (database.select(database.games)
-            ..where((g) => g.id.equals(gameId())))
-          .getSingle();
+      final game = await (database.select(
+        database.games,
+      )..where((g) => g.id.equals(gameId()))).getSingle();
 
       expect(game.winnerPlayerId, config.playerIds[0]);
       expect(game.finishedAt, isNotNull);
@@ -291,9 +285,9 @@ void main() {
       controller().undo();
       await settle();
 
-      final game = await (database.select(database.games)
-            ..where((g) => g.id.equals(gameId())))
-          .getSingle();
+      final game = await (database.select(
+        database.games,
+      )..where((g) => g.id.equals(gameId()))).getSingle();
 
       expect(game.winnerPlayerId, isNull);
       expect(game.finishedAt, isNull);

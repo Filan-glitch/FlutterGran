@@ -119,7 +119,10 @@ void main() {
       tester,
     ) async {
       await pump(tester);
-      expect(lights(tester).map((toggle) => toggle.value), everyElement(isTrue));
+      expect(
+        lights(tester).map((toggle) => toggle.value),
+        everyElement(isTrue),
+      );
 
       await tester.ensureVisible(find.byType(Switch).at(2));
       await tester.tap(find.byType(Switch).at(2));

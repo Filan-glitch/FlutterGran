@@ -65,19 +65,17 @@ void main() {
     });
 
     test('three players share the same threshold', () {
-      final state = foldMatch(
-        config(legsToPlay: 3, players: 3),
-        const [3, 3],
-      );
+      final state = foldMatch(config(legsToPlay: 3, players: 3), const [3, 3]);
       expect(state.legsWon, {1: 0, 2: 0, 3: 2});
       expect(state.winnerId, 3);
     });
 
     test('three players taking one each carries on past the third leg', () {
-      final state = foldMatch(
-        config(legsToPlay: 3, players: 3),
-        const [1, 2, 3],
-      );
+      final state = foldMatch(config(legsToPlay: 3, players: 3), const [
+        1,
+        2,
+        3,
+      ]);
       expect(state.winnerId, isNull, reason: 'nobody has two');
       expect(state.legsPlayed, 3);
       expect(state.nextLegNumber, 3, reason: 'the target is the rule');

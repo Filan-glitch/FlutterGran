@@ -49,10 +49,8 @@ void main() {
 
   /// The sounds produced by throwing [darts] where all but the last were
   /// already thrown - which is the only transition a dart ever causes.
-  List<Sound> throwing(GameConfig cfg, List<ThrownDart> darts) => soundsFor(
-    at(cfg, darts.sublist(0, darts.length - 1)),
-    at(cfg, darts),
-  );
+  List<Sound> throwing(GameConfig cfg, List<ThrownDart> darts) =>
+      soundsFor(at(cfg, darts.sublist(0, darts.length - 1)), at(cfg, darts));
 
   group('what a dart sounds like', () {
     test('nothing is played before there is a previous state to compare', () {
@@ -81,7 +79,10 @@ void main() {
       // Three darts appear at once. Nobody threw them just now, so nothing
       // clicks and no total is read out.
       final cfg = config(501);
-      expect(soundsFor(at(cfg, const []), at(cfg, [t(20), t(20), t(20)])), isEmpty);
+      expect(
+        soundsFor(at(cfg, const []), at(cfg, [t(20), t(20), t(20)])),
+        isEmpty,
+      );
     });
 
     test('starting a fresh leg is silent', () {

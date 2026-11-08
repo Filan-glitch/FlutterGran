@@ -187,7 +187,12 @@ void main() {
         bullseyeValue: BullseyeValue.two,
         target: 99,
       );
-      controller().resume(config, [sbull, sbull, const ThrownDart.miss(), sbull]);
+      controller().resume(config, [
+        sbull,
+        sbull,
+        const ThrownDart.miss(),
+        sbull,
+      ]);
 
       expect(session().leg.score[1], 2);
       expect(session().leg.score[2], 1);
@@ -230,13 +235,15 @@ void main() {
     test('changing the config starts a fresh leg', () {
       controller().addDart(sbull);
 
-      container.read(bullingConfigProvider.notifier).update(
-        BullingConfig(
-          playerIds: const [1, 2],
-          bullseyeValue: BullseyeValue.three,
-          target: 31,
-        ),
-      );
+      container
+          .read(bullingConfigProvider.notifier)
+          .update(
+            BullingConfig(
+              playerIds: const [1, 2],
+              bullseyeValue: BullseyeValue.three,
+              target: 31,
+            ),
+          );
 
       expect(session().leg.config.bullseyeValue, BullseyeValue.three);
       expect(session().leg.darts, isEmpty);
@@ -244,13 +251,15 @@ void main() {
   });
 
   test('reaching the target wins the leg instantly', () {
-    container.read(bullingConfigProvider.notifier).update(
-      BullingConfig(
-        playerIds: const [1, 2],
-        bullseyeValue: BullseyeValue.three,
-        target: 3,
-      ),
-    );
+    container
+        .read(bullingConfigProvider.notifier)
+        .update(
+          BullingConfig(
+            playerIds: const [1, 2],
+            bullseyeValue: BullseyeValue.three,
+            target: 3,
+          ),
+        );
     controller().restart();
 
     controller().addDart(dbull);

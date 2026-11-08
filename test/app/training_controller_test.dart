@@ -171,22 +171,19 @@ void main() {
   });
 
   group('never persisted', () {
-    test(
-      'a full checkout-practice session never touches the game repository '
-      'or the current-game id',
-      () {
-        controller().start(drill: TrainingDrill.checkoutPractice, startScore: 40);
-        controller()
-          ..addDart(d(20))
-          ..throwAgain()
-          ..addDart(t(20)) // bust
-          ..undo()
-          ..addDart(d(20));
+    test('a full checkout-practice session never touches the game repository '
+        'or the current-game id', () {
+      controller().start(drill: TrainingDrill.checkoutPractice, startScore: 40);
+      controller()
+        ..addDart(d(20))
+        ..throwAgain()
+        ..addDart(t(20)) // bust
+        ..undo()
+        ..addDart(d(20));
 
-        expect(container.exists(gameRepositoryProvider), isFalse);
-        expect(container.exists(currentGameIdProvider), isFalse);
-        expect(container.exists(databaseProvider), isFalse);
-      },
-    );
+      expect(container.exists(gameRepositoryProvider), isFalse);
+      expect(container.exists(currentGameIdProvider), isFalse);
+      expect(container.exists(databaseProvider), isFalse);
+    });
   });
 }

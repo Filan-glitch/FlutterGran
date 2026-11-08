@@ -29,7 +29,8 @@ void main() {
   });
 
   /// Lets every queued play reach the platform.
-  Future<void> settle() => Future<void>.delayed(const Duration(milliseconds: 5));
+  Future<void> settle() =>
+      Future<void>.delayed(const Duration(milliseconds: 5));
 
   /// Runs one frame, which is when a polling loop polls and re-arms itself.
   var frameTime = Duration.zero;

@@ -8,7 +8,8 @@ import 'granboard_segment_map.dart';
 /// day (2026-09-04): every one of the 82 scoring segments decoded correctly,
 /// with nothing to correct.
 class SegmentCodec {
-  SegmentCodec({Map<String, Segment>? base}) : _base = base ?? granboardSegmentMap;
+  SegmentCodec({Map<String, Segment>? base})
+    : _base = base ?? granboardSegmentMap;
 
   final Map<String, Segment> _base;
 

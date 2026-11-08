@@ -1,4 +1,5 @@
 import 'dart:math';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/app/widgets/board_widget.dart';
 import 'package:fluttergran/domain/segment.dart';

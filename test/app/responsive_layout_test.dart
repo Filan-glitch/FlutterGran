@@ -444,48 +444,46 @@ void main() {
       expect(find.byType(DartKeypad), findsNothing);
     });
 
-    testWidgets(
-      'gives the players the width the keypad no longer needs',
-      (tester) async {
-        await openAt(tester, tabS6Lite);
-        final body = where(tester, find.byKey(const Key('game-body')));
-        final withKeypad = where(
-          tester,
-          find.byKey(const Key('hero-scoreboard')),
-        );
-        // Sharing the screen with the keypad, roughly half of it.
-        expect(withKeypad.width, lessThan(body.width * 0.6));
+    testWidgets('gives the players the width the keypad no longer needs', (
+      tester,
+    ) async {
+      await openAt(tester, tabS6Lite);
+      final body = where(tester, find.byKey(const Key('game-body')));
+      final withKeypad = where(
+        tester,
+        find.byKey(const Key('hero-scoreboard')),
+      );
+      // Sharing the screen with the keypad, roughly half of it.
+      expect(withKeypad.width, lessThan(body.width * 0.6));
 
-        await board.connect();
-        await frames(tester);
-        final withoutKeypad = where(
-          tester,
-          find.byKey(const Key('hero-scoreboard')),
-        );
-        // Nothing left to share it with.
-        expect(withoutKeypad.width, greaterThan(body.width * 0.9));
-      },
-    );
+      await board.connect();
+      await frames(tester);
+      final withoutKeypad = where(
+        tester,
+        find.byKey(const Key('hero-scoreboard')),
+      );
+      // Nothing left to share it with.
+      expect(withoutKeypad.width, greaterThan(body.width * 0.9));
+    });
 
-    testWidgets(
-      'grows the score into the height the keypad no longer needs',
-      (tester) async {
-        await openAt(tester, tabS6Lite);
-        // `Text`'s own render size never changes under `FittedBox` - it is
-        // laid out at its natural size and scaled only at paint time - so
-        // the box `FittedBox` itself was given is what actually shows growth.
-        final withKeypad = tester.getSize(find.byType(FittedBox).first);
+    testWidgets('grows the score into the height the keypad no longer needs', (
+      tester,
+    ) async {
+      await openAt(tester, tabS6Lite);
+      // `Text`'s own render size never changes under `FittedBox` - it is
+      // laid out at its natural size and scaled only at paint time - so
+      // the box `FittedBox` itself was given is what actually shows growth.
+      final withKeypad = tester.getSize(find.byType(FittedBox).first);
 
-        await board.connect();
-        await frames(tester);
-        final withoutKeypad = tester.getSize(find.byType(FittedBox).first);
+      await board.connect();
+      await frames(tester);
+      final withoutKeypad = tester.getSize(find.byType(FittedBox).first);
 
-        // Sized to its card's content before; sized to fill the card's now
-        // much taller box after - not the same number by a few pixels of
-        // padding, meaningfully bigger.
-        expect(withoutKeypad.height, greaterThan(withKeypad.height * 1.5));
-      },
-    );
+      // Sized to its card's content before; sized to fill the card's now
+      // much taller box after - not the same number by a few pixels of
+      // padding, meaningfully bigger.
+      expect(withoutKeypad.height, greaterThan(withKeypad.height * 1.5));
+    });
   });
 
   group('a desktop window', () {
