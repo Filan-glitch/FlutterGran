@@ -50,6 +50,13 @@ class _DartKeypadState extends State<DartKeypad> {
   bool _isHighlighted(int number) =>
       widget.highlight.contains(Segment(number, _ring));
 
+  Widget _wedgeKey(int number) => _Key(
+    label: '$number',
+    ring: _ring,
+    highlighted: _isHighlighted(number),
+    onTap: () => _enter(Segment(number, _ring)),
+  );
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -95,19 +102,7 @@ class _DartKeypadState extends State<DartKeypad> {
                     children: [
                       for (var column = 0; column < 5; column++) ...[
                         if (column > 0) const SizedBox(width: Gap.xs + 2),
-                        Builder(
-                          builder: (context) {
-                            final number = row * 5 + column + 1;
-                            return Expanded(
-                              child: _Key(
-                                label: '$number',
-                                ring: _ring,
-                                highlighted: _isHighlighted(number),
-                                onTap: () => _enter(Segment(number, _ring)),
-                              ),
-                            );
-                          },
-                        ),
+                        Expanded(child: _wedgeKey(row * 5 + column + 1)),
                       ],
                     ],
                   ),

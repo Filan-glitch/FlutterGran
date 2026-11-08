@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/atc/atc_config.dart';
 import '../../domain/atc/atc_variant.dart';
 import '../l10n_extensions.dart';
+import '../labels.dart';
 import '../providers.dart';
 import '../rules_topic.dart';
 import '../theme.dart';
@@ -13,23 +14,10 @@ import '../widgets/rules_button.dart';
 import '../widgets/setup_controls.dart';
 import 'atc_game_screen.dart';
 
-/// How each [AtcVariant] reads on the setup tile and everywhere else a short
-/// label is needed for it.
-String atcVariantLabel(BuildContext context, AtcVariant variant) {
-  final l10n = context.l10n;
-  return switch (variant) {
-    AtcVariant.anyPart => l10n.atcVariantAnyPart,
-    AtcVariant.masters => l10n.atcVariantMasters,
-    AtcVariant.doublesOnly => l10n.atcVariantDoublesOnly,
-  };
-}
-
 /// Picks the Around the Clock variant and who is playing it, then starts a
 /// persisted leg.
 ///
-/// Mirrors `X01SetupScreen`'s shape exactly - same reasons for what belongs
-/// here (just the format and the roster) and what does not (branding,
-/// resuming, sound toggles).
+/// Laid out like `X01SetupScreen`, with the variant as the only format choice.
 class AtcSetupScreen extends ConsumerStatefulWidget {
   const AtcSetupScreen({super.key});
 

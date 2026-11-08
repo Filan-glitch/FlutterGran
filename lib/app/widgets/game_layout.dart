@@ -6,15 +6,6 @@ import '../providers.dart';
 import '../theme.dart';
 import 'board_connection_button.dart';
 
-/// Whether this device earns the hero treatment. See [isHeroSize].
-///
-/// The whole viewport, not the local width a `LayoutBuilder` would give: this
-/// is "how big is the device", the same question [typeScaleFor] answers, and
-/// the two are meant to move together - the device that earns bigger type
-/// earns the hero layout with it.
-bool isHeroDevice(BuildContext context) =>
-    isHeroSize(MediaQuery.sizeOf(context));
-
 /// Window width from which a desktop gives the score three fifths of the
 /// screen rather than half. Below it, two fifths of the window is too narrow
 /// for a three-dart checkout to sit above the keypad.

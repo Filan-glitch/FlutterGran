@@ -6,6 +6,7 @@ import '../../domain/x01/game_config.dart';
 import '../l10n_extensions.dart';
 import '../providers.dart';
 import '../theme.dart';
+import 'add_player_field.dart';
 import 'setup_controls.dart';
 
 /// Who is playing, and in what order: every setup screen's roster.
@@ -78,42 +79,7 @@ class _PlayerPickerState extends ConsumerState<PlayerPicker> {
               : l10n.seatsOfMax(seats.length, GameConfig.maxPlayers),
         ),
         const SizedBox(height: Gap.md),
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _newPlayer,
-                style: Type.body.copyWith(color: Palette.chalk),
-                cursorColor: Palette.live,
-                decoration: InputDecoration(
-                  labelText: l10n.addPlayerFieldLabel,
-                ),
-                textCapitalization: TextCapitalization.words,
-                textInputAction: TextInputAction.done,
-                onSubmitted: (_) => _addPlayer(),
-              ),
-            ),
-            const SizedBox(width: Gap.sm),
-            SizedBox(
-              height: 46,
-              width: 46,
-              child: FilledButton(
-                onPressed: _addPlayer,
-                style: FilledButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-                child: Icon(
-                  Icons.add,
-                  size: 22,
-                  semanticLabel: l10n.addPlayerFieldLabel,
-                ),
-              ),
-            ),
-          ],
-        ),
+        AddPlayerField(controller: _newPlayer, onAdd: _addPlayer),
         const SizedBox(height: Gap.md),
         switch (players) {
           AsyncError(:final error) => Text(

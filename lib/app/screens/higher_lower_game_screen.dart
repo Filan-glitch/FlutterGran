@@ -7,8 +7,10 @@ import '../../domain/higher_lower/higher_lower_leg_state.dart';
 import '../../domain/x01/thrown_dart.dart';
 import '../../l10n/app_localizations.dart';
 import '../l10n_extensions.dart';
+import '../labels.dart';
 import '../lights/lights_providers.dart';
 import '../providers.dart';
+import '../theme.dart';
 import '../widgets/bounds_card.dart';
 import '../widgets/dart_keypad.dart';
 import '../widgets/game_layout.dart';
@@ -30,8 +32,7 @@ class HigherLowerGameScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(higherLowerGameProvider);
-    // Nothing is read from either: watching keeps the board's lights and the
-    // sound following this game, and stops them when the screen goes.
+    // Keeps the board lights and the sound alive while this screen is up.
     ref.watch(higherLowerLightsProvider);
     ref.watch(higherLowerSoundControllerProvider);
     final controller = ref.read(higherLowerGameProvider.notifier);
@@ -54,9 +55,7 @@ class HigherLowerGameScreen extends ConsumerWidget {
       onLeave: leave,
       child: Scaffold(
         appBar: GameAppBar(
-          title: gameModeRegistry
-              .firstWhere((mode) => mode.id == GameMode.higherLower)
-              .displayName,
+          title: gameModeName(GameMode.higherLower),
           onUndo: leg.darts.isEmpty ? null : controller.undo,
         ),
         body: SafeArea(

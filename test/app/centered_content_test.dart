@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/app/theme.dart';
 import 'package:fluttergran/l10n/app_localizations.dart';
 
-/// The wrapper every form-shaped screen (setup, statistics, diagnostics) puts
+/// The wrapper every form-shaped screen (setup, statistics) puts
 /// around its `ListView`, so a single column of controls sized for a phone
 /// does not stretch into a wall of sparse text and giant tap targets on a
 /// tablet.

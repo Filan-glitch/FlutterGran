@@ -9,34 +9,32 @@ import '../../domain/stats/player_stats.dart';
 import '../../domain/x01/thrown_dart.dart';
 import '../../l10n/app_localizations.dart';
 import '../l10n_extensions.dart';
+import '../labels.dart';
 import '../lights/lights_providers.dart';
 import '../providers.dart';
+import '../theme.dart';
 import '../widgets/dart_keypad.dart';
 import '../widgets/game_layout.dart';
 import '../widgets/game_over_card.dart';
 import '../widgets/scoreboard.dart';
 import '../widgets/turn_ledger.dart';
 import '../widgets/turn_result.dart';
-import 'bulling_setup_screen.dart' show bullseyeValueLabel;
 
 /// Plays a leg of Bulling.
 ///
 /// The same arrangement as every other game (see [GameLayout]): the running
 /// score in place of a remaining one, with a rail filling towards the target.
 /// There is no aim strip - the target never changes, and the keypad already
-/// lights both bulls. Like Around the Clock, this mode has no match wrapping
-/// yet, so a leg won is the game over, and offers another leg under the same
-/// config.
+/// lights both bulls. Like Around the Clock, this mode has no matches, so a
+/// leg won is the game over, and offers another leg under the same config.
 class BullingGameScreen extends ConsumerWidget {
   const BullingGameScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(bullingGameProvider);
-    // Nothing is read from it: watching keeps the board's lights following
-    // this game, and turns them off when the screen goes.
+    // Keeps the board lights and the sound alive while this screen is up.
     ref.watch(bullingLightsProvider);
-    // Same idiom for sound: its own listener on the game does the rest.
     ref.watch(bullingSoundControllerProvider);
     final controller = ref.read(bullingGameProvider.notifier);
     final names = ref.watch(playerNamesProvider);
@@ -162,9 +160,7 @@ class BullingGameScreen extends ConsumerWidget {
     int playerId,
   ) {
     final stats = computeBullingStats(playerId, [leg]);
-    final hitRate = stats.dartsThrown == 0
-        ? '—'
-        : '${(stats.scoringDarts * 100 / stats.dartsThrown).round()}%';
+    final hitRate = hitRateText(stats.scoringDarts, stats.dartsThrown);
 
     return (
       name: name,

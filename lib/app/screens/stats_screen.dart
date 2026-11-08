@@ -8,11 +8,11 @@ import '../../domain/segment.dart';
 import '../../domain/stats/mode_stats.dart';
 import '../../domain/x01/x01_rules.dart';
 import '../l10n_extensions.dart';
+import '../labels.dart';
 import '../providers.dart';
 import '../theme.dart';
 import '../widgets/board_widget.dart';
 import '../widgets/setup_controls.dart';
-import 'x01_setup_screen.dart' show x01OutRuleLabel;
 
 /// A player's record across every leg they have played.
 class StatsScreen extends ConsumerStatefulWidget {

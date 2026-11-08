@@ -7,6 +7,7 @@ import '../../domain/x01/game_config.dart';
 import '../../domain/x01/match_state.dart';
 import '../../domain/x01/x01_rules.dart';
 import '../l10n_extensions.dart';
+import '../labels.dart';
 import '../providers.dart';
 import '../rules_topic.dart';
 import '../theme.dart';
@@ -16,37 +17,10 @@ import '../widgets/rules_button.dart';
 import '../widgets/setup_controls.dart';
 import 'game_screen.dart';
 
-/// How each in/out rule reads on the setup chip and the stats screen's
-/// checkout rows - the localized counterpart to [X01InRuleChecks.label],
-/// which domain code (and tests) still use internally. Mirrors
-/// `atc_setup_screen.dart`'s `atcVariantLabel`.
+/// Picks the x01 format and who is playing it, then starts the match.
 ///
-/// [X01InRule] and [X01OutRule] are separate enums (an in-rule and an
-/// out-rule are independent choices) but share the same three member names,
-/// so one name-keyed lookup serves both instead of two identical switches.
-String _x01RuleLabel(BuildContext context, Enum rule) {
-  final l10n = context.l10n;
-  return switch (rule.name) {
-    'straight' => l10n.x01RuleStraight,
-    'double' => l10n.x01RuleDouble,
-    'master' => l10n.x01RuleMaster,
-    _ => throw ArgumentError('unknown rule: ${rule.name}'),
-  };
-}
-
-String x01InRuleLabel(BuildContext context, X01InRule rule) =>
-    _x01RuleLabel(context, rule);
-
-/// The out-rule counterpart to [x01InRuleLabel].
-String x01OutRuleLabel(BuildContext context, X01OutRule rule) =>
-    _x01RuleLabel(context, rule);
-
-/// Picks the x01 format and who is playing it, then starts a persisted leg.
-///
-/// Reached from Select Game Mode, so app branding, resuming an in-progress
-/// leg, and the sound toggles all live elsewhere now (Main Menu and the
-/// Settings screen respectively) - this screen is only the format and the
-/// roster for the leg about to start.
+/// Only the format and the roster live here; resuming a leg is on the main
+/// menu and the sound toggles are in Settings.
 class X01SetupScreen extends ConsumerStatefulWidget {
   const X01SetupScreen({super.key});
 
@@ -62,14 +36,12 @@ class _X01SetupScreenState extends ConsumerState<X01SetupScreen> {
   X01InRule _inRule = X01InRule.straight;
   X01OutRule _outRule = X01OutRule.double;
 
-  /// Best of this many legs. One is a single leg, exactly as the app has always
-  /// played it.
+  /// Best of this many legs; one is a single leg.
   int _legsToPlay = 1;
 
-  /// Whether the start score/rules have been seeded from the remembered
-  /// defaults yet. Guards against a `ref.listen` firing after the initial
-  /// synchronous fallback but overwriting something the user has already
-  /// tapped in that first frame.
+  /// Whether the user has tapped a start score or rule. Once set, the
+  /// remembered defaults arriving late through `ref.listen` no longer
+  /// overwrite the choice.
   bool _userEditedRules = false;
 
   /// Whether the format can honestly be called a best of.

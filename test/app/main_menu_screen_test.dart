@@ -2,11 +2,10 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fluttergran/app/labels.dart';
 import 'package:fluttergran/app/providers.dart';
 import 'package:fluttergran/app/screens/atc_game_screen.dart';
 import 'package:fluttergran/app/screens/bulling_game_screen.dart';
-import 'package:fluttergran/app/screens/bulling_setup_screen.dart'
-    show bullseyeValueLabel;
 import 'package:fluttergran/app/screens/higher_lower_game_screen.dart';
 import 'package:fluttergran/app/screens/main_menu_screen.dart';
 import 'package:fluttergran/app/screens/roster_screen.dart';

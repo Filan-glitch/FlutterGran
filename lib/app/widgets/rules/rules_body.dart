@@ -9,11 +9,8 @@ import '../../../domain/x01/match_state.dart';
 import '../../../domain/x01/x01_rules.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../l10n_extensions.dart';
+import '../../labels.dart';
 import '../../rules_topic.dart';
-import '../../screens/atc_setup_screen.dart' show atcVariantLabel;
-import '../../screens/bulling_setup_screen.dart' show bullseyeValueLabel;
-import '../../screens/x01_setup_screen.dart'
-    show x01InRuleLabel, x01OutRuleLabel;
 import '../../theme.dart';
 import '../setup_controls.dart';
 import 'rule_board.dart';
@@ -21,11 +18,6 @@ import 'rule_callout.dart';
 import 'rule_explorer.dart';
 import 'rules_hero.dart';
 import 'worked_example.dart';
-
-/// Width, in unscaled logical pixels, from which a rules page sets things
-/// side by side - two examples, a callout beside its example, the hero at
-/// full size. Multiplied by the text scale, like [RuleExplorer]'s own.
-const double _wideWidth = 560;
 
 /// The rules for one [topic], as a scrolling page: a [RulesHero], then one
 /// section per rule, each one shown rather than told - a [RuleExplorer] for
@@ -50,7 +42,7 @@ class RulesBody extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final wide = constraints.maxWidth >= _wideWidth * scale;
+        final wide = constraints.maxWidth >= rulesSideBySideWidth * scale;
         final sections = <Widget>[
           RulesHero(topic: topic, wide: wide, flight: flight),
           ...switch (topic) {

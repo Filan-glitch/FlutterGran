@@ -11,10 +11,9 @@ import '../theme.dart';
 /// The board connection light, in every screen's app bar.
 ///
 /// Holds no state of its own: everything it shows comes from
-/// [boardConnectionProvider], which is right from its first read. That is what
-/// lets a screen opened mid-session show the same light as the one before it -
-/// the old button kept "has this ever been tapped" per widget, so every new
-/// screen started white whatever the board was doing.
+/// [boardConnectionProvider], so a screen opened mid-session shows the same
+/// light as the one before it. Keep it that way - per-widget state would make
+/// every new screen start from the wrong colour.
 ///
 /// One tap does the obvious thing for the state it is in: connect, cancel,
 /// retry now, disconnect, or ask for Bluetooth to be switched on.
