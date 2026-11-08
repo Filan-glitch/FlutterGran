@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.2.1](https://github.com/Filan-glitch/FlutterGran/compare/v1.2.0...v1.2.1) (2026-11-08)
+
+
+### Documentation
+
+* absolute README links so the docs site has no broken links ([28c1fbf](https://github.com/Filan-glitch/FlutterGran/commit/28c1fbf1d42cd4c22d04409b2a2bbe83e2d96a38))
+* add CONTRIBUTING.md developer handbook ([3f8c839](https://github.com/Filan-glitch/FlutterGran/commit/3f8c839bcb7b629ad2e691596736ce82cafc1a95))
+* add library docs and dartdoc categories ([06b89c8](https://github.com/Filan-glitch/FlutterGran/commit/06b89c88d5f7c85303abd6b99171ef03196fd0ab))
+* clean domain and data comments ([982e5c3](https://github.com/Filan-glitch/FlutterGran/commit/982e5c34288fd7256a550ca6be225dc2b9ca3d75))
+* clean up comments in app core, audio, lights and update ([769490d](https://github.com/Filan-glitch/FlutterGran/commit/769490d14f690beeb6286f8be13bca70dd378e9e))
+* clean up comments in theme, screens and widgets ([daa2c28](https://github.com/Filan-glitch/FlutterGran/commit/daa2c288eda80a38f7df079a696c40f645d877ce))
+* configure dartdoc categories and fail on doc warnings ([2457874](https://github.com/Filan-glitch/FlutterGran/commit/2457874cb12f16c2d9d0fb243454a9ae86c7388f))
+* developer experience pass - comments, handbook, API docs, test harness ([4ab68b7](https://github.com/Filan-glitch/FlutterGran/commit/4ab68b749eee5b0cdd49eb93b5548267afff36a2))
+* move superpowers planning docs to docs/history ([0956e62](https://github.com/Filan-glitch/FlutterGran/commit/0956e624626182cfce9c5bca9bb7e9a3356a6db9))
+* name the test/support helpers ([f1283a5](https://github.com/Filan-glitch/FlutterGran/commit/f1283a5ebcf820340f5485ab123490b27c3b3f24))
+* note that docs commits open a patch release ([80cecd1](https://github.com/Filan-glitch/FlutterGran/commit/80cecd1e62e7480c7ee07d9aa8f551a861f19dff))
+* point CLAUDE.md at the handbook and drop stale bits ([23410af](https://github.com/Filan-glitch/FlutterGran/commit/23410af3be37bceeb531e703e0cc296120f3c9a4))
+* refresh README and docs/ against the current code ([2fe29f2](https://github.com/Filan-glitch/FlutterGran/commit/2fe29f23b3547a91fb4296a8327c90db72dd32d3))
+* regenerate drift code for the updated table comments ([c55bbd1](https://github.com/Filan-glitch/FlutterGran/commit/c55bbd10958183dabdda9cdffb5f19cf19b6d40d))
+
 ## [1.2.0](https://github.com/Filan-glitch/FlutterGran/compare/v1.1.0...v1.2.0) (2026-10-26)
 
 
