@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.4.0](https://github.com/Filan-glitch/FlutterGran/compare/v1.3.1...v1.4.0) (2026-11-08)
+
+
+### Features
+
+* add a Windows installer and update through it ([1985a17](https://github.com/Filan-glitch/FlutterGran/commit/1985a1779e719ef4ec28acd2c45b5928ec78d9fd))
+* add a Windows installer and update through it ([0c635cf](https://github.com/Filan-glitch/FlutterGran/commit/0c635cff9c163f683799f717acc6d474c4b7dbb1))
+
+
+### Bug Fixes
+
+* animate the splash and give the main menu a header, board light and hero layout ([b9b8494](https://github.com/Filan-glitch/FlutterGran/commit/b9b84946dcc5644c415baab07c635370e65338a9))
+* launch Android on the dark ground instead of a white screen ([870ee8b](https://github.com/Filan-glitch/FlutterGran/commit/870ee8ba5e66ba3a1a3c4a0cebfba659560e9e5a))
+* polish the splash screen and main menu ([f5f469e](https://github.com/Filan-glitch/FlutterGran/commit/f5f469e0722b8bd2053420748e630753fcef43bc))
+
 ## [1.3.1](https://github.com/Filan-glitch/FlutterGran/compare/v1.3.0...v1.3.1) (2026-11-08)
 
 
