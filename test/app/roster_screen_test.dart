@@ -156,9 +156,9 @@ void main() {
     // Nothing written yet - the undo window is still open.
     expect(await repository.allPlayers(), hasLength(1));
 
-    // Really waits the window out. This used to call
-    // `removeCurrentSnackBar()` instead, which hid that a snackbar with an
-    // action no longer times out on its own - so the delete never landed.
+    // Really waits the window out. Don't shortcut with
+    // `removeCurrentSnackBar()`: it hides that a snackbar with an action does
+    // not time out on its own, which would leave the delete never landing.
     await waitOutUndo(tester);
 
     expect(await repository.allPlayers(), isEmpty);
