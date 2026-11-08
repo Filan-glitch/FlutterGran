@@ -480,7 +480,7 @@ release-please reads them on `main`:
 | `fix:` | patch release |
 | `feat:` | minor release |
 | `!` or a `BREAKING CHANGE:` footer | major release |
-| `docs:`, `perf:`, `revert:`, `deps:` | listed in the changelog |
+| `docs:`, `perf:`, `revert:`, `deps:` | patch release (a visible changelog section makes a commit releasable) |
 | `chore:`, `ci:`, `test:`, `refactor:`, `style:`, `build:` | no release, hidden from the changelog |
 
 With squash merges the **PR title** is the commit that counts, so it needs the
