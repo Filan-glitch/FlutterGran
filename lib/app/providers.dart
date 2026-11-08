@@ -349,79 +349,202 @@ final playerNamesProvider = Provider<Map<int, String>>((ref) {
   return {for (final player in players) player.id: player.name};
 });
 
-/// Every stored leg, replayed. Refreshes itself when a game changes.
-final allLegsProvider = StreamProvider<List<LegState>>(
+/// Every stored leg, replayed and dated. Refreshes itself when a game
+/// changes.
+final allLegsProvider = StreamProvider<List<Dated<LegState>>>(
   (ref) => ref.watch(gameRepositoryProvider).watchAllLegs(),
 );
 
 /// Every stored match, folded from its legs.
-final allMatchesProvider = StreamProvider<List<MatchState>>(
+final allMatchesProvider = StreamProvider<List<Dated<MatchState>>>(
   (ref) => ref.watch(gameRepositoryProvider).watchAllMatches(),
 );
 
 /// Every stored Around the Clock leg, replayed.
-final allAtcLegsProvider = StreamProvider<List<AtcLegState>>(
+final allAtcLegsProvider = StreamProvider<List<Dated<AtcLegState>>>(
   (ref) => ref.watch(gameRepositoryProvider).watchAllAtcLegs(),
 );
 
 /// Every stored Bulling leg, replayed.
-final allBullingLegsProvider = StreamProvider<List<BullingLegState>>(
+final allBullingLegsProvider = StreamProvider<List<Dated<BullingLegState>>>(
   (ref) => ref.watch(gameRepositoryProvider).watchAllBullingLegs(),
 );
 
 /// Every stored Higher/Lower leg, replayed.
-final allHigherLowerLegsProvider = StreamProvider<List<HigherLowerLegState>>(
-  (ref) => ref.watch(gameRepositoryProvider).watchAllHigherLowerLegs(),
-);
+final allHigherLowerLegsProvider =
+    StreamProvider<List<Dated<HigherLowerLegState>>>(
+      (ref) => ref.watch(gameRepositoryProvider).watchAllHigherLowerLegs(),
+    );
 
-/// A player's all-time record, one entry per mode they have played.
+/// Which player's record, and from when: the key of every statistics
+/// provider.
 ///
-/// See [computePlayerStats] for why the grouping happens here rather than
-/// inside the domain function.
-final playerStatsProvider = Provider.family<Map<GameMode, ModeStats>, int>((
+/// `since` comes from the screen's own [StatsRange], read against the clock
+/// each time the screen builds, so the range starts on today's date even in
+/// an app left open for days. Null means all time.
+typedef StatsKey = ({int playerId, DateTime? since});
+
+/// The modes a player has ever played a leg in, in [GameMode] order - the
+/// statistics screen's tabs. All time, whatever the range, so a tab does not
+/// vanish when a shorter range happens to be empty.
+final playedModesProvider = Provider.family<List<GameMode>, int>((
   ref,
   playerId,
 ) {
-  return computePlayerStats(
-    playerId,
-    x01Legs: ref.watch(allLegsProvider).value ?? const [],
-    x01Matches: ref.watch(allMatchesProvider).value ?? const [],
-    atcLegs: ref.watch(allAtcLegsProvider).value ?? const [],
-    bullingLegs: ref.watch(allBullingLegsProvider).value ?? const [],
-    higherLowerLegs: ref.watch(allHigherLowerLegsProvider).value ?? const [],
+  bool played<T>(List<Dated<T>>? legs, List<int> Function(T leg) seats) =>
+      (legs ?? const []).any((leg) => seats(leg.value).contains(playerId));
+
+  return [
+    if (played(ref.watch(allLegsProvider).value, (l) => l.config.playerIds))
+      GameMode.x01,
+    if (played(ref.watch(allAtcLegsProvider).value, (l) => l.config.playerIds))
+      GameMode.aroundTheClock,
+    if (played(
+      ref.watch(allBullingLegsProvider).value,
+      (l) => l.config.playerIds,
+    ))
+      GameMode.bulling,
+    if (played(
+      ref.watch(allHigherLowerLegsProvider).value,
+      (l) => l.config.playerIds,
+    ))
+      GameMode.higherLower,
+  ];
+});
+
+/// A player's record from the key's `since` on, one entry per mode.
+///
+/// See [computePlayerStats] for why the grouping happens here rather than
+/// inside the domain function.
+final playerStatsProvider = Provider.autoDispose
+    .family<Map<GameMode, ModeStats>, StatsKey>((ref, key) {
+      final since = key.since;
+      return computePlayerStats(
+        key.playerId,
+        x01Legs: playedSince(
+          ref.watch(allLegsProvider).value ?? const [],
+          since,
+        ),
+        x01Matches: playedSince(
+          ref.watch(allMatchesProvider).value ?? const [],
+          since,
+        ),
+        atcLegs: playedSince(
+          ref.watch(allAtcLegsProvider).value ?? const [],
+          since,
+        ),
+        bullingLegs: playedSince(
+          ref.watch(allBullingLegsProvider).value ?? const [],
+          since,
+        ),
+        higherLowerLegs: playedSince(
+          ref.watch(allHigherLowerLegsProvider).value ?? const [],
+          since,
+        ),
+      );
+    });
+
+/// A player's record day by day from the key's `since` on, per mode, for the
+/// trend charts. Days the player did not play in that mode are dropped.
+typedef PlayerTrend = ({
+  List<Daily<X01Stats>> x01,
+  List<Daily<AtcStats>> atc,
+  List<Daily<BullingStats>> bulling,
+  List<Daily<HigherLowerStats>> higherLower,
+});
+
+final playerTrendProvider = Provider.autoDispose.family<PlayerTrend, StatsKey>((
+  ref,
+  key,
+) {
+  final (:playerId, :since) = key;
+  List<Dated<T>> inRange<T>(List<Dated<T>>? items) =>
+      datedSince(items ?? const [], since);
+
+  return (
+    x01: [
+      for (final day in byDay(
+        inRange(ref.watch(allLegsProvider).value),
+        (legs) => computeX01Stats(playerId, legs),
+      ))
+        if (day.stats.legsPlayed > 0) day,
+    ],
+    atc: [
+      for (final day in byDay(
+        inRange(ref.watch(allAtcLegsProvider).value),
+        (legs) => computeAtcStats(playerId, legs),
+      ))
+        if (day.stats.legsPlayed > 0) day,
+    ],
+    bulling: [
+      for (final day in byDay(
+        inRange(ref.watch(allBullingLegsProvider).value),
+        (legs) => computeBullingStats(playerId, legs),
+      ))
+        if (day.stats.legsPlayed > 0) day,
+    ],
+    higherLower: [
+      for (final day in byDay(
+        inRange(ref.watch(allHigherLowerLegsProvider).value),
+        (legs) => computeHigherLowerStats(playerId, legs),
+      ))
+        if (day.stats.legsPlayed > 0) day,
+    ],
   );
 });
 
+/// A player's record at each double from the key's `since` on: darts
+/// thrown on a one-dart finish under double out, which is the one time the
+/// rules say what a dart was aimed at. See [inferAimRecords].
+final doublesRecordProvider = Provider.autoDispose
+    .family<Map<AimTarget, AimRecord>, StatsKey>((ref, key) {
+      final since = key.since;
+      return inferAimRecords(
+        key.playerId,
+        x01Legs: playedSince(
+          ref.watch(allLegsProvider).value ?? const [],
+          since,
+        ),
+      );
+    });
+
 /// What a player's saved games say about each target they were clearly
 /// aiming at - see [inferAimRecords]. Seeds the Weak-spot Trainer.
+///
+/// Always the whole record, whatever range the statistics screen shows.
 final aimRecordsProvider = Provider.family<Map<AimTarget, AimRecord>, int>((
   ref,
   playerId,
 ) {
   return inferAimRecords(
     playerId,
-    x01Legs: ref.watch(allLegsProvider).value ?? const [],
-    atcLegs: ref.watch(allAtcLegsProvider).value ?? const [],
-    bullingLegs: ref.watch(allBullingLegsProvider).value ?? const [],
+    x01Legs: playedSince(ref.watch(allLegsProvider).value ?? const [], null),
+    atcLegs: playedSince(ref.watch(allAtcLegsProvider).value ?? const [], null),
+    bullingLegs: playedSince(
+      ref.watch(allBullingLegsProvider).value ?? const [],
+      null,
+    ),
   );
 });
 
-/// Where a player's darts have landed, for the accuracy heatmap.
+/// Where a player's darts have landed in one mode, in games started from
+/// `since` on, for that mode's heatmap.
 ///
-/// Every dart ever thrown counts here regardless of mode - the underlying
-/// query has no `gameMode` filter of its own - so this depends on every
-/// mode's leg stream purely to know when to refresh, not to change what it
-/// reads.
-final segmentCountsProvider = FutureProvider.family<Map<Segment, int>, int>((
-  ref,
-  playerId,
-) {
-  ref.watch(allLegsProvider);
-  ref.watch(allAtcLegsProvider);
-  ref.watch(allBullingLegsProvider);
-  ref.watch(allHigherLowerLegsProvider);
-  return ref.watch(gameRepositoryProvider).segmentCounts(playerId);
-});
+/// Depends on every mode's leg stream purely to know when to refresh, not to
+/// change what it reads: the counts come straight from SQL.
+final segmentCountsProvider = FutureProvider.autoDispose
+    .family<
+      Map<Segment, int>,
+      ({int playerId, GameMode mode, DateTime? since})
+    >((ref, key) {
+      ref.watch(allLegsProvider);
+      ref.watch(allAtcLegsProvider);
+      ref.watch(allBullingLegsProvider);
+      ref.watch(allHigherLowerLegsProvider);
+      return ref
+          .watch(gameRepositoryProvider)
+          .segmentCounts(key.playerId, mode: key.mode, since: key.since);
+    });
 
 /// A leg that was left unfinished, ready to be picked back up.
 ///

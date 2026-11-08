@@ -2304,6 +2304,234 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Time goes where it helps most, and knowing how you miss tells you what to fix.'**
   String get rulesTrainingWeakSpotWhy;
+
+  /// No description provided for @statsRangeAllTime.
+  ///
+  /// In en, this message translates to:
+  /// **'All time'**
+  String get statsRangeAllTime;
+
+  /// No description provided for @statsRange30Days.
+  ///
+  /// In en, this message translates to:
+  /// **'30 days'**
+  String get statsRange30Days;
+
+  /// No description provided for @statsRange7Days.
+  ///
+  /// In en, this message translates to:
+  /// **'7 days'**
+  String get statsRange7Days;
+
+  /// No description provided for @checkoutRateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkout rate'**
+  String get checkoutRateLabel;
+
+  /// No description provided for @fastLegsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Legs in ≤{darts} darts'**
+  String fastLegsLabel(int darts);
+
+  /// No description provided for @fastLegsDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'{won} of {finished} legs from {start}'**
+  String fastLegsDetail(int won, int finished, int start);
+
+  /// No description provided for @needsMoreDarts.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 more dart needed} other{{count} more darts needed}}'**
+  String needsMoreDarts(int count);
+
+  /// No description provided for @formSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Form'**
+  String get formSectionTitle;
+
+  /// No description provided for @trendAverageOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Average'**
+  String get trendAverageOption;
+
+  /// No description provided for @trendCheckoutOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkout'**
+  String get trendCheckoutOption;
+
+  /// No description provided for @trendNeedsMoreDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Play on two or more days to see a trend.'**
+  String get trendNeedsMoreDays;
+
+  /// No description provided for @trendLegend.
+  ///
+  /// In en, this message translates to:
+  /// **'Each dot is a day · line: last 5 days · dashed: range average'**
+  String get trendLegend;
+
+  /// No description provided for @scoringAverageRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Scoring average'**
+  String get scoringAverageRow;
+
+  /// No description provided for @trebleRateRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Treble rate'**
+  String get trebleRateRow;
+
+  /// No description provided for @visitSpreadRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Visit spread (±)'**
+  String get visitSpreadRow;
+
+  /// No description provided for @perLegValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} · {perLeg}/leg'**
+  String perLegValue(int count, String perLeg);
+
+  /// No description provided for @visitScoresTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scoring visits'**
+  String get visitScoresTitle;
+
+  /// No description provided for @visitScoresCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Every visit too high to finish, by score.'**
+  String get visitScoresCaption;
+
+  /// No description provided for @ruleCheckoutVisitRow.
+  ///
+  /// In en, this message translates to:
+  /// **'{rule} checkout per visit'**
+  String ruleCheckoutVisitRow(String rule);
+
+  /// No description provided for @tonPlusCheckoutsRow.
+  ///
+  /// In en, this message translates to:
+  /// **'100+ checkouts'**
+  String get tonPlusCheckoutsRow;
+
+  /// No description provided for @doublesSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Doubles'**
+  String get doublesSectionTitle;
+
+  /// No description provided for @doublesCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Shaded by hit rate on a one-dart finish, double out.'**
+  String get doublesCaption;
+
+  /// No description provided for @noDoublesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No darts at a double yet.'**
+  String get noDoublesYet;
+
+  /// No description provided for @bestDoublesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Best'**
+  String get bestDoublesLabel;
+
+  /// No description provided for @worstDoublesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Weakest'**
+  String get worstDoublesLabel;
+
+  /// No description provided for @doubleHitsRate.
+  ///
+  /// In en, this message translates to:
+  /// **'{hits}/{attempts} · {rate}'**
+  String doubleHitsRate(int hits, int attempts, String rate);
+
+  /// No description provided for @onThrowLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'On the throw'**
+  String get onThrowLabel;
+
+  /// No description provided for @againstThrowLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Against the throw'**
+  String get againstThrowLabel;
+
+  /// No description provided for @throwSplitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Legs won by who threw first'**
+  String get throwSplitTitle;
+
+  /// No description provided for @dartsPerLegWonRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Darts per leg won'**
+  String get dartsPerLegWonRow;
+
+  /// No description provided for @dartsPerLegTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Darts per leg won · {start}'**
+  String dartsPerLegTitle(int start);
+
+  /// No description provided for @stopHeatCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Shaded by hit rate at each stop.'**
+  String get stopHeatCaption;
+
+  /// No description provided for @bullSplitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bull hits'**
+  String get bullSplitTitle;
+
+  /// No description provided for @noLegsInRangeHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing in this range'**
+  String get noLegsInRangeHeadline;
+
+  /// No description provided for @noLegsInRangeDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a longer range to see older legs.'**
+  String get noLegsInRangeDetail;
+
+  /// No description provided for @callsSplitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Calls that survived'**
+  String get callsSplitTitle;
+
+  /// No description provided for @stopsSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Stops'**
+  String get stopsSectionTitle;
+
+  /// No description provided for @statsRangeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Range'**
+  String get statsRangeLabel;
 }
 
 class _AppLocalizationsDelegate

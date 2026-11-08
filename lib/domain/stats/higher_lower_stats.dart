@@ -5,6 +5,7 @@ class HigherLowerStats extends ModeStats {
   const HigherLowerStats({
     required this.legsPlayed,
     required this.legsWon,
+    this.legsFinished = 0,
     required this.turnsPlayed,
     required this.turnsSurvived,
     required this.higherCalls,
@@ -29,6 +30,10 @@ class HigherLowerStats extends ModeStats {
   /// Legs this player was the last one standing in.
   final int legsWon;
 
+  /// Legs that reached a winner, the denominator for [winRate]: a leg left
+  /// unfinished was neither won nor lost.
+  final int legsFinished;
+
   final int turnsPlayed;
 
   /// Turns that went over the higher value or under the lower one.
@@ -50,5 +55,5 @@ class HigherLowerStats extends ModeStats {
       turnsPlayed == 0 ? null : turnsSurvived / turnsPlayed;
 
   /// Share of legs won, 0 to 1.
-  double? get winRate => legsPlayed == 0 ? null : legsWon / legsPlayed;
+  double? get winRate => legsFinished == 0 ? null : legsWon / legsFinished;
 }

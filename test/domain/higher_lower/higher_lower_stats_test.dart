@@ -21,7 +21,9 @@ void main() {
       expect(stats.legsPlayed, 1);
       expect(stats.turnsPlayed, 0);
       expect(stats.survivalRate, isNull);
-      expect(stats.winRate, 0);
+      // An unfinished leg was neither won nor lost.
+      expect(stats.legsFinished, 0);
+      expect(stats.winRate, isNull);
       expect(stats.longestRun, 0);
     });
 

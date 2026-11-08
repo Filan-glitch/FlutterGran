@@ -269,8 +269,10 @@ exhaustive switches below.
    stream, drops `DartHit`/`BoardMiss` while `keypadOverrideProvider` is on, and
    persists through `appendDart`, `truncateLog`, `finishGame` and `reopenGame`.
 7. **Providers** in `lib/app/providers.dart`: `<mode>GameProvider` (and a
-   `<mode>ConfigProvider` if setup has choices), `all<Mode>LegsProvider`, fed
-   into `playerStatsProvider` and watched by `segmentCountsProvider`.
+   `<mode>ConfigProvider` if setup has choices), `all<Mode>LegsProvider`
+   (a stream of `Dated<…>` legs), fed into `playerStatsProvider`,
+   `playerTrendProvider` and `playedModesProvider`, and watched by
+   `segmentCountsProvider`.
 8. **Setup screen.** `lib/app/screens/<mode>_setup_screen.dart`, using
    `PlayerPicker` and `setup_controls.dart`; it calls `start<Mode>Game` and sets
    `currentGameIdProvider`. Map the mode to it in `_setupScreenFor`
@@ -294,8 +296,10 @@ exhaustive switches below.
 14. **Resume.** A `Resumable<Mode>Leg` subclass of the sealed `ResumableLeg` and
     its case in `resumableLegProvider` (`providers.dart`), then its case and
     subtitle in `main_menu_screen.dart`.
-15. **Statistics screen.** A section in `stats_screen.dart` for the new
-    `<Mode>Stats`.
+15. **Statistics screen.** A tab for the new `<Mode>Stats` under
+    `lib/app/screens/stats/` (a `TileRow` of `StatTile`s over a `StatsGrid` of
+    `StatCard`s, ending in `HeatmapCard`), its label and case in
+    `stats_screen.dart`.
 16. **Tests.** `test/domain/<mode>/` for config, reducer and stats;
     `test/app/<mode>_controller_test.dart` and `<mode>_persistence_test.dart`;
     and the mode's cases in `mode_layout_test`, `mode_sounds_test`,

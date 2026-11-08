@@ -5,6 +5,7 @@ class BullingStats extends ModeStats {
   const BullingStats({
     required this.legsPlayed,
     required this.legsWon,
+    this.legsFinished = 0,
     required this.dartsThrown,
     required this.scoringDarts,
     required this.pointsScored,
@@ -27,6 +28,10 @@ class BullingStats extends ModeStats {
   final int legsPlayed;
   final int legsWon;
 
+  /// Legs that reached a winner, the denominator for [winRate]: a leg left
+  /// unfinished was neither won nor lost.
+  final int legsFinished;
+
   final int dartsThrown;
 
   /// Darts that landed on either bull ring - the only ones worth anything.
@@ -43,5 +48,5 @@ class BullingStats extends ModeStats {
   double? get hitRate => dartsThrown == 0 ? null : scoringDarts / dartsThrown;
 
   /// Share of legs won, 0 to 1.
-  double? get winRate => legsPlayed == 0 ? null : legsWon / legsPlayed;
+  double? get winRate => legsFinished == 0 ? null : legsWon / legsFinished;
 }

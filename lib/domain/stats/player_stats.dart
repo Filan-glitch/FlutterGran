@@ -8,6 +8,8 @@ import '../atc/atc_leg_state.dart';
 import '../atc/atc_stop.dart';
 import '../bulling/bulling_leg_state.dart';
 import '../bulling/bulling_reducer.dart';
+import '../checkout/checkout_search.dart';
+import '../checkout/checkout_table.dart';
 import '../game_mode.dart';
 import '../higher_lower/higher_lower_leg_state.dart';
 import '../segment.dart';
@@ -16,7 +18,19 @@ import '../x01/match_state.dart';
 import '../x01/x01_rules.dart';
 import 'mode_stats.dart';
 
+export 'dated.dart';
 export 'mode_stats.dart';
+
+/// One memoised checkout table per out-rule, for "could this visit finish?".
+final Map<X01OutRule, CheckoutTable> _checkoutTables = {
+  for (final rule in X01OutRule.values)
+    rule: CheckoutTable(limit: 1, outRule: rule),
+};
+
+/// Whether [score] can be finished within one visit of three darts under
+/// [outRule] - the definition behind "visits at a finish".
+bool isFinishableInOneVisit(int score, X01OutRule outRule) =>
+    _checkoutTables[outRule]!.bestFor(score, dartsPerTurn) != null;
 
 /// Whether [score] can be finished with a single dart, under [outRule].
 ///
@@ -78,10 +92,44 @@ X01Stats computeX01Stats(
   int? fewestDartsToWin;
   var firstNinePoints = 0;
   var firstNineDarts = 0;
+  var legsFinished = 0;
+  var scoringPoints = 0;
+  var scoringDarts = 0;
+  var scoringTrebles = 0;
+  var scoringVisitSquares = 0;
+  final scoringVisitBands = List.filled(X01Stats.visitScoreBands.length, 0);
+  final visitsAtFinishByRule = <X01OutRule, int>{};
+  final visitsWonByRule = <X01OutRule, int>{};
+  var tonPlusCheckouts = 0;
+  final dartsToWinByStart = <int, List<int>>{};
+  final legsFinishedByStart = <int, int>{};
+  var legsOnThrow = 0;
+  var legsWonOnThrow = 0;
+  var legsAgainstThrow = 0;
+  var legsWonAgainstThrow = 0;
 
   for (final leg in legs) {
     if (!leg.config.playerIds.contains(playerId)) continue;
     legsPlayed++;
+
+    final start = leg.config.startScore;
+    if (leg.isFinished) {
+      legsFinished++;
+      legsFinishedByStart[start] = (legsFinishedByStart[start] ?? 0) + 1;
+
+      // Who threw first only means something against an opponent.
+      if (leg.config.playerIds.length > 1) {
+        final won = leg.winnerId == playerId;
+        final seat = leg.config.playerIds.indexOf(playerId);
+        if (seat == leg.config.startingSeat) {
+          legsOnThrow++;
+          if (won) legsWonOnThrow++;
+        } else {
+          legsAgainstThrow++;
+          if (won) legsWonAgainstThrow++;
+        }
+      }
+    }
 
     final outRule = leg.config.outRule;
     // Whether this player has opened yet, tracked across the leg the same
@@ -105,6 +153,30 @@ X01Stats computeX01Stats(
       if (turnIndex < 3) {
         firstNinePoints += turn.scored;
         firstNineDarts += turn.darts.length;
+      }
+
+      // A scoring visit is one that could not have finished the leg, so no
+      // dart in it was thrown at a finish - only complete visits count, a
+      // leg abandoned mid-visit is not a three-dart score.
+      if (turn.scoreBefore > maxCheckoutFor(outRule) &&
+          turn.darts.length == dartsPerTurn) {
+        scoringPoints += turn.scored;
+        scoringDarts += turn.darts.length;
+        scoringTrebles += turn.darts
+            .where((dart) => dart.segment?.ring == Ring.triple)
+            .length;
+        scoringVisitBands[X01Stats.bandFor(turn.scored)]++;
+        scoringVisitSquares += turn.scored * turn.scored;
+      }
+
+      // A visit at a finish: opened (or straight in), and on a score three
+      // darts can check out. Won when it left the player on nothing.
+      if (playerOpened && isFinishableInOneVisit(turn.scoreBefore, outRule)) {
+        visitsAtFinishByRule[outRule] =
+            (visitsAtFinishByRule[outRule] ?? 0) + 1;
+        if (!turn.busted && turn.scoreAfter == 0) {
+          visitsWonByRule[outRule] = (visitsWonByRule[outRule] ?? 0) + 1;
+        }
       }
 
       // Walk the turn dart by dart, re-deriving each dart's effective value
@@ -141,11 +213,13 @@ X01Stats computeX01Stats(
       if (bestCheckout == null || winningTurn.scoreBefore > bestCheckout) {
         bestCheckout = winningTurn.scoreBefore;
       }
+      if (winningTurn.scoreBefore >= 100) tonPlusCheckouts++;
 
       final darts = leg.dartsThrownBy(playerId);
       if (fewestDartsToWin == null || darts < fewestDartsToWin) {
         fewestDartsToWin = darts;
       }
+      (dartsToWinByStart[start] ??= []).add(darts);
     }
   }
 
@@ -180,6 +254,29 @@ X01Stats computeX01Stats(
     fewestDartsToWin: fewestDartsToWin,
     firstNinePoints: firstNinePoints,
     firstNineDarts: firstNineDarts,
+    legsFinished: legsFinished,
+    scoringPoints: scoringPoints,
+    scoringDarts: scoringDarts,
+    scoringTrebles: scoringTrebles,
+    scoringVisitBands: List.unmodifiable(scoringVisitBands),
+    scoringVisitSquares: scoringVisitSquares,
+    checkoutVisitsByRule: {
+      for (final rule in visitsAtFinishByRule.keys)
+        rule: (
+          visits: visitsAtFinishByRule[rule]!,
+          won: visitsWonByRule[rule] ?? 0,
+        ),
+    },
+    tonPlusCheckouts: tonPlusCheckouts,
+    dartsToWinByStart: {
+      for (final entry in dartsToWinByStart.entries)
+        entry.key: List.unmodifiable(entry.value),
+    },
+    legsFinishedByStart: Map.unmodifiable(legsFinishedByStart),
+    legsOnThrow: legsOnThrow,
+    legsWonOnThrow: legsWonOnThrow,
+    legsAgainstThrow: legsAgainstThrow,
+    legsWonAgainstThrow: legsWonAgainstThrow,
   );
 }
 
@@ -190,6 +287,7 @@ X01Stats computeX01Stats(
 AtcStats computeAtcStats(int playerId, Iterable<AtcLegState> legs) {
   var legsPlayed = 0;
   var legsWon = 0;
+  var legsFinished = 0;
   var dartsThrown = 0;
   var qualifyingDarts = 0;
   int? fewestDartsToWin;
@@ -227,6 +325,7 @@ AtcStats computeAtcStats(int playerId, Iterable<AtcLegState> legs) {
       }
     }
 
+    if (leg.isFinished) legsFinished++;
     if (leg.winnerId == playerId) {
       legsWon++;
       final darts = leg.dartsThrownBy(playerId);
@@ -239,6 +338,7 @@ AtcStats computeAtcStats(int playerId, Iterable<AtcLegState> legs) {
   return AtcStats(
     legsPlayed: legsPlayed,
     legsWon: legsWon,
+    legsFinished: legsFinished,
     dartsThrown: dartsThrown,
     qualifyingDarts: qualifyingDarts,
     fewestDartsToWin: fewestDartsToWin,
@@ -253,6 +353,7 @@ AtcStats computeAtcStats(int playerId, Iterable<AtcLegState> legs) {
 BullingStats computeBullingStats(int playerId, Iterable<BullingLegState> legs) {
   var legsPlayed = 0;
   var legsWon = 0;
+  var legsFinished = 0;
   var dartsThrown = 0;
   var scoringDarts = 0;
   var pointsScored = 0;
@@ -277,6 +378,7 @@ BullingStats computeBullingStats(int playerId, Iterable<BullingLegState> legs) {
       }
     }
 
+    if (leg.isFinished) legsFinished++;
     if (leg.winnerId == playerId) {
       legsWon++;
       final darts = leg.dartsThrownBy(playerId);
@@ -289,6 +391,7 @@ BullingStats computeBullingStats(int playerId, Iterable<BullingLegState> legs) {
   return BullingStats(
     legsPlayed: legsPlayed,
     legsWon: legsWon,
+    legsFinished: legsFinished,
     dartsThrown: dartsThrown,
     scoringDarts: scoringDarts,
     pointsScored: pointsScored,
@@ -308,6 +411,7 @@ HigherLowerStats computeHigherLowerStats(
 ) {
   var legsPlayed = 0;
   var legsWon = 0;
+  var legsFinished = 0;
   var turnsPlayed = 0;
   var turnsSurvived = 0;
   var higherCalls = 0;
@@ -318,6 +422,7 @@ HigherLowerStats computeHigherLowerStats(
   for (final leg in legs) {
     if (!leg.config.playerIds.contains(playerId)) continue;
     legsPlayed++;
+    if (leg.isFinished) legsFinished++;
     if (leg.winnerId == playerId) legsWon++;
 
     for (final turn in leg.turns) {
@@ -342,6 +447,7 @@ HigherLowerStats computeHigherLowerStats(
   return HigherLowerStats(
     legsPlayed: legsPlayed,
     legsWon: legsWon,
+    legsFinished: legsFinished,
     turnsPlayed: turnsPlayed,
     turnsSurvived: turnsSurvived,
     higherCalls: higherCalls,
