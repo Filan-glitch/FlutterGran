@@ -13,6 +13,8 @@ import 'package:fluttergran/app/screens/select_game_mode_screen.dart';
 import 'package:fluttergran/app/screens/settings_screen.dart';
 import 'package:fluttergran/app/screens/stats_screen.dart';
 import 'package:fluttergran/app/screens/training_setup_screen.dart';
+import 'package:fluttergran/app/widgets/board_connection_button.dart';
+import 'package:fluttergran/app/widgets/chalk_mark.dart';
 import 'package:fluttergran/data/board/fake_board_source.dart';
 import 'package:fluttergran/data/db/database.dart';
 import 'package:fluttergran/data/db/game_repository.dart';
@@ -27,6 +29,7 @@ import 'package:fluttergran/domain/x01/game_config.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
 
 import '../support/database.dart';
+import '../support/devices.dart';
 import '../support/pump.dart';
 
 /// The mode name the resume banner prefixes its format eyebrow with -
@@ -347,5 +350,79 @@ void main() {
     await pumpFrames(tester);
 
     expect(find.byType(SettingsScreen), findsOneWidget);
+  });
+  testWidgets('carries the brand mark and the board light', (tester) async {
+    await pump(tester);
+
+    expect(find.byType(ChalkMark), findsOneWidget);
+    expect(find.byType(ChalkWordmark), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(AppBar),
+        matching: find.byKey(const Key('menu-board-button')),
+      ),
+      findsOneWidget,
+    );
+    expect(find.byType(BoardConnectionButton), findsOneWidget);
+  });
+
+  group('layout', () {
+    Offset playAt(WidgetTester tester) =>
+        tester.getCenter(find.byKey(const Key('menu-play-button')));
+    Offset rowAt(WidgetTester tester) =>
+        tester.getCenter(find.byKey(const Key('menu-training-row')));
+
+    testWidgets('stacks everything in one column on a phone', (tester) async {
+      setViewSize(tester, phonePortrait);
+      await pump(tester);
+
+      expect(playAt(tester).dx, moreOrLessEquals(rowAt(tester).dx));
+      expect(playAt(tester).dy, lessThan(rowAt(tester).dy));
+    });
+
+    testWidgets('puts PLAY beside the other actions on the tablet', (
+      tester,
+    ) async {
+      setViewSize(tester, tabS6Lite);
+      await pump(tester);
+
+      expect(playAt(tester).dx, lessThan(rowAt(tester).dx));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('puts PLAY beside the other actions in a laptop window', (
+      tester,
+    ) async {
+      setViewSize(tester, laptop);
+      await pump(tester);
+
+      expect(playAt(tester).dx, lessThan(rowAt(tester).dx));
+      expect(tester.takeException(), isNull);
+    }, variant: windows);
+
+    testWidgets('keeps the resume card with PLAY in the smallest window', (
+      tester,
+    ) async {
+      final finn = await repository.addPlayer('Finn');
+      final gameId = await repository.startGame(
+        GameConfig(startScore: 501, playerIds: [finn.id]),
+      );
+      await repository.appendDart(
+        gameId: gameId,
+        ordinal: 0,
+        playerId: finn.id,
+        dart: const ThrownDart.miss(),
+      );
+
+      setViewSize(tester, smallestWindow);
+      await pump(tester);
+
+      final resume = tester.getCenter(
+        find.byKey(const Key('menu-resume-banner')),
+      );
+      expect(resume.dx, moreOrLessEquals(playAt(tester).dx));
+      expect(resume.dx, lessThan(rowAt(tester).dx));
+      expect(tester.takeException(), isNull);
+    }, variant: windows);
   });
 }

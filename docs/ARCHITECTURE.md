@@ -269,12 +269,27 @@ SplashScreen                                  (MaterialApp's home)
 Each setup screen's info button pushes `RulesDetailScreen` for its own mode
 directly. The rules section's design is in `docs/RULES_SCREENS.md`.
 
-`SplashScreen` waits on `max(700ms, resumableLegProvider's first value)`
-before replacing itself - not for show, but so `MainMenuScreen` never
-renders a frame with no Resume card before the database has actually
-answered whether there is one. It is removed from the back stack by the
-`pushReplacement`, so the back button from the main menu exits the app,
-correctly.
+`SplashScreen` waits on `max(SplashScreen.minimumHold, resumableLegProvider's
+first value)` before replacing itself - not for show, but so `MainMenuScreen`
+never renders a frame with no Resume card before the database has actually
+answered whether there is one. The hold (1 s) is long enough for the tally
+mark (`ChalkMark`, `lib/app/widgets/chalk_mark.dart`) to chalk itself in; the
+menu then fades in over it while the mark flies into the menu's header as a
+`Hero`. It is removed from the back stack by the `pushReplacement`, so the
+back button from the main menu exits the app, correctly.
+
+Before the first Flutter frame Android shows its own launch screen: the
+ground color with the icon's tally (`drawable/launch_background.xml`, or the
+system splash from `values-v31/styles.xml` on Android 12+). There is no
+`values-night`: the app is dark in both modes, and a light launch theme is
+what flashed white. Windows needs none, since the runner only shows its
+window after the first frame.
+
+The main menu has two layouts. On a phone it is one column: header, update
+and resume cards, PLAY, then the other actions. On a hero device
+(`isHeroDevice`) it splits into two panes, the header, resume card and PLAY
+on the left and the update card and the other actions on the right. The
+board light sits in its app bar as on every other screen.
 
 The roster is deliberately its own screen, reachable only from the main
 menu, with no mode of its own - the same board is played by different

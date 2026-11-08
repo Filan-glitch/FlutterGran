@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/app/providers.dart';
+import 'package:fluttergran/app/screens/splash_screen.dart';
 import 'package:fluttergran/app/theme.dart';
 import 'package:fluttergran/data/db/database.dart';
 import 'package:fluttergran/l10n/app_localizations.dart';
@@ -67,8 +68,8 @@ Widget _scaleType(BuildContext context, Widget? child) {
 /// landing on the main menu.
 ///
 /// Not `pumpAndSettle`: it stops as soon as one pump fails to schedule a new
-/// frame, which the splash screen's bare 700 ms `Timer` never does on its own
-/// while it is idling. An explicit pump past that floor, with margin for the
+/// frame, which the splash screen's bare [SplashScreen.minimumHold] `Timer`
+/// never does on its own while it is idling. An explicit pump past that floor, with margin for the
 /// route transition to the main menu, is what actually drives it forward.
 Future<void> launchApp(WidgetTester tester, AppDatabase database) async {
   await tester.pumpWidget(
@@ -77,7 +78,7 @@ Future<void> launchApp(WidgetTester tester, AppDatabase database) async {
       child: const FlutterGranApp(),
     ),
   );
-  await tester.pump(const Duration(milliseconds: 700));
+  await tester.pump(SplashScreen.minimumHold);
   await tester.pump(const Duration(milliseconds: 500));
 }
 
