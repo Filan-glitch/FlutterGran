@@ -8,10 +8,8 @@ import 'package:fluttergran/domain/bulling/bulling_variant.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
 
-import 'board_clock.dart';
-
-/// Lets queued stream events reach the controller before assertions run.
-Future<void> settle() => Future<void>.delayed(Duration.zero);
+import '../support/async.dart';
+import '../support/board_clock.dart';
 
 void main() {
   late FakeBoardSource board;

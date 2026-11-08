@@ -1,4 +1,3 @@
-import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/app/providers.dart';
@@ -14,6 +13,8 @@ import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/game_config.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
 
+import '../support/database.dart';
+
 void main() {
   late AppDatabase database;
   late GameRepository repository;
@@ -21,7 +22,7 @@ void main() {
   late ProviderContainer container;
 
   setUp(() {
-    database = AppDatabase(NativeDatabase.memory());
+    database = memoryDatabase();
     repository = GameRepository(database);
     board = FakeBoardSource();
     container = ProviderContainer(

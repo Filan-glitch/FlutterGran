@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/app/theme.dart';
-import 'package:fluttergran/l10n/app_localizations.dart';
+
+import '../support/devices.dart';
+import '../support/pump.dart';
 
 /// The wrapper every form-shaped screen (setup, statistics) puts
 /// around its `ListView`, so a single column of controls sized for a phone
@@ -9,24 +11,20 @@ import 'package:fluttergran/l10n/app_localizations.dart';
 /// tablet.
 void main() {
   Future<Size> contentSizeAt(WidgetTester tester, Size viewport) async {
-    tester.view.physicalSize = viewport;
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
+    setViewSize(tester, viewport);
 
-    await tester.pumpWidget(
-      const MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          body: CenteredContent(
-            child: SizedBox(
-              key: Key('content'),
-              width: double.infinity,
-              height: 10,
-            ),
+    await pumpApp(
+      tester,
+      const Scaffold(
+        body: CenteredContent(
+          child: SizedBox(
+            key: Key('content'),
+            width: double.infinity,
+            height: 10,
           ),
         ),
       ),
+      themed: false,
     );
 
     return tester.getSize(find.byKey(const Key('content')));

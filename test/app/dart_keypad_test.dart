@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/app/widgets/dart_keypad.dart';
 import 'package:fluttergran/domain/segment.dart';
-import 'package:fluttergran/l10n/app_localizations.dart';
+
+import '../support/pump.dart';
 
 Future<void> pumpKeypad(
   WidgetTester tester,
@@ -10,18 +11,16 @@ Future<void> pumpKeypad(
   VoidCallback? onMiss,
   Set<Segment> highlight = const {},
 }) async {
-  await tester.pumpWidget(
-    MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(
-        body: DartKeypad(
-          onDart: entered.add,
-          onMiss: onMiss ?? () {},
-          highlight: highlight,
-        ),
+  await pumpApp(
+    tester,
+    Scaffold(
+      body: DartKeypad(
+        onDart: entered.add,
+        onMiss: onMiss ?? () {},
+        highlight: highlight,
       ),
     ),
+    themed: false,
   );
 }
 

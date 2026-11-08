@@ -1,4 +1,3 @@
-import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,7 +13,6 @@ import 'package:fluttergran/app/screens/select_game_mode_screen.dart';
 import 'package:fluttergran/app/screens/settings_screen.dart';
 import 'package:fluttergran/app/screens/stats_screen.dart';
 import 'package:fluttergran/app/screens/training_setup_screen.dart';
-import 'package:fluttergran/app/theme.dart';
 import 'package:fluttergran/data/board/fake_board_source.dart';
 import 'package:fluttergran/data/db/database.dart';
 import 'package:fluttergran/data/db/game_repository.dart';
@@ -27,7 +25,9 @@ import 'package:fluttergran/domain/higher_lower/higher_lower_config.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/game_config.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
-import 'package:fluttergran/l10n/app_localizations.dart';
+
+import '../support/database.dart';
+import '../support/pump.dart';
 
 /// The mode name the resume banner prefixes its format eyebrow with -
 /// read from the registry rather than hardcoded, same reasoning as the
@@ -43,7 +43,7 @@ void main() {
   late ProviderContainer container;
 
   setUp(() {
-    database = AppDatabase(NativeDatabase.memory());
+    database = memoryDatabase();
     repository = GameRepository(database);
     board = FakeBoardSource();
     container = ProviderContainer(
@@ -60,29 +60,9 @@ void main() {
     await database.close();
   });
 
-  /// Pumps frames without settling: the resumable-leg stream and the
-  /// database writes both land a frame or two after the query starts.
-  Future<void> frames(WidgetTester tester) async {
-    // Long enough to cover a route transition (~300ms) with margin, so the
-    // outgoing route is fully gone rather than one frame short of it.
-    for (var i = 0; i < 25; i++) {
-      await tester.pump(const Duration(milliseconds: 20));
-    }
-  }
-
   Future<void> pump(WidgetTester tester) async {
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          theme: buildTheme(),
-          home: const MainMenuScreen(),
-        ),
-      ),
-    );
-    await frames(tester);
+    await pumpApp(tester, const MainMenuScreen(), container: container);
+    await pumpFrames(tester);
   }
 
   testWidgets('shows no resume card when nothing is in progress', (
@@ -149,7 +129,7 @@ void main() {
 
     await pump(tester);
     await tester.tap(find.byKey(const Key('menu-resume-banner')));
-    await frames(tester);
+    await pumpFrames(tester);
 
     expect(container.read(currentGameIdProvider), gameId);
     expect(find.byType(MainMenuScreen), findsNothing);
@@ -195,7 +175,7 @@ void main() {
 
       await pump(tester);
       await tester.tap(find.byKey(const Key('menu-resume-banner')));
-      await frames(tester);
+      await pumpFrames(tester);
 
       expect(container.read(currentGameIdProvider), gameId);
       expect(find.byType(AtcGameScreen), findsOneWidget);
@@ -255,7 +235,7 @@ void main() {
 
       await pump(tester);
       await tester.tap(find.byKey(const Key('menu-resume-banner')));
-      await frames(tester);
+      await pumpFrames(tester);
 
       expect(container.read(currentGameIdProvider), gameId);
       expect(find.byType(BullingGameScreen), findsOneWidget);
@@ -305,7 +285,7 @@ void main() {
 
       await pump(tester);
       await tester.tap(find.byKey(const Key('menu-resume-banner')));
-      await frames(tester);
+      await pumpFrames(tester);
 
       expect(container.read(currentGameIdProvider), gameId);
       expect(find.byType(HigherLowerGameScreen), findsOneWidget);
@@ -317,7 +297,7 @@ void main() {
     await pump(tester);
 
     await tester.tap(find.byKey(const Key('menu-play-button')));
-    await frames(tester);
+    await pumpFrames(tester);
 
     expect(find.byType(SelectGameModeScreen), findsOneWidget);
   });
@@ -328,7 +308,7 @@ void main() {
     await pump(tester);
 
     await tester.tap(find.byKey(const Key('menu-training-row')));
-    await frames(tester);
+    await pumpFrames(tester);
 
     expect(find.byType(TrainingSetupScreen), findsOneWidget);
   });
@@ -337,7 +317,7 @@ void main() {
     await pump(tester);
 
     await tester.tap(find.byKey(const Key('menu-rules-row')));
-    await frames(tester);
+    await pumpFrames(tester);
 
     expect(find.byType(RulesScreen), findsOneWidget);
   });
@@ -346,7 +326,7 @@ void main() {
     await pump(tester);
 
     await tester.tap(find.byKey(const Key('menu-statistics-row')));
-    await frames(tester);
+    await pumpFrames(tester);
 
     expect(find.byType(StatsScreen), findsOneWidget);
   });
@@ -355,7 +335,7 @@ void main() {
     await pump(tester);
 
     await tester.tap(find.byKey(const Key('menu-roster-row')));
-    await frames(tester);
+    await pumpFrames(tester);
 
     expect(find.byType(RosterScreen), findsOneWidget);
   });
@@ -364,7 +344,7 @@ void main() {
     await pump(tester);
 
     await tester.tap(find.byKey(const Key('menu-settings-row')));
-    await frames(tester);
+    await pumpFrames(tester);
 
     expect(find.byType(SettingsScreen), findsOneWidget);
   });

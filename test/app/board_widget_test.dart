@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/app/widgets/board_widget.dart';
 import 'package:fluttergran/domain/segment.dart';
-import 'package:fluttergran/l10n/app_localizations.dart';
+
+import '../support/pump.dart';
 
 /// Puts the board in a box of a given shape, as a real screen would.
 Future<List<Segment>> pumpBoardIn(
@@ -11,23 +12,21 @@ Future<List<Segment>> pumpBoardIn(
   VoidCallback? onMiss,
 }) async {
   final tapped = <Segment>[];
-  await tester.pumpWidget(
-    MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(
-        body: Center(
-          child: SizedBox(
-            width: box.width,
-            height: box.height,
-            child: BoardWidget(
-              onSegmentTapped: tapped.add,
-              onMissTapped: onMiss ?? () {},
-            ),
+  await pumpApp(
+    tester,
+    Scaffold(
+      body: Center(
+        child: SizedBox(
+          width: box.width,
+          height: box.height,
+          child: BoardWidget(
+            onSegmentTapped: tapped.add,
+            onMissTapped: onMiss ?? () {},
           ),
         ),
       ),
     ),
+    themed: false,
   );
   return tapped;
 }

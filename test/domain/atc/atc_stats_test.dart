@@ -9,9 +9,8 @@ import 'package:fluttergran/domain/stats/player_stats.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
 import 'package:test/test.dart';
 
-ThrownDart s(int n) => ThrownDart(Segment(n, Ring.outerSingle));
-ThrownDart d(int n) => ThrownDart(Segment(n, Ring.doubleRing));
-const ThrownDart miss = ThrownDart.miss();
+import '../../support/darts.dart';
+
 const ThrownDart sbull = ThrownDart(Segment.outerBull);
 const ThrownDart dbull = ThrownDart(Segment.innerBull);
 

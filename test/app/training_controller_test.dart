@@ -5,12 +5,10 @@ import 'package:fluttergran/app/training_controller.dart';
 import 'package:fluttergran/data/board/fake_board_source.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/training/training_drill.dart';
-import 'package:fluttergran/domain/x01/thrown_dart.dart';
 
-import 'board_clock.dart';
-
-/// Lets queued stream events reach the controller before assertions run.
-Future<void> settle() => Future<void>.delayed(Duration.zero);
+import '../support/async.dart';
+import '../support/board_clock.dart';
+import '../support/darts.dart';
 
 void main() {
   late FakeBoardSource board;
@@ -38,9 +36,6 @@ void main() {
     container.dispose();
     board.dispose();
   });
-
-  ThrownDart t(int n) => ThrownDart(Segment(n, Ring.triple));
-  ThrownDart d(int n) => ThrownDart(Segment(n, Ring.doubleRing));
 
   group('free practice', () {
     setUp(() => controller().start(drill: TrainingDrill.freePractice));

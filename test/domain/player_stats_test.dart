@@ -9,10 +9,7 @@ import 'package:fluttergran/domain/x01/thrown_dart.dart';
 import 'package:fluttergran/domain/x01/x01_rules.dart';
 import 'package:test/test.dart';
 
-ThrownDart s(int n) => ThrownDart(Segment(n, Ring.outerSingle));
-ThrownDart d(int n) => ThrownDart(Segment(n, Ring.doubleRing));
-ThrownDart t(int n) => ThrownDart(Segment(n, Ring.triple));
-const ThrownDart miss = ThrownDart.miss();
+import '../support/darts.dart';
 
 LegState leg(int start, List<ThrownDart> darts, {int players = 1}) => foldLeg(
   GameConfig(

@@ -1,6 +1,5 @@
 // Only OrderingTerm is needed here; drift also exports matcher-like names.
 import 'package:drift/drift.dart' hide isNotNull, isNull;
-import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/app/game_controller.dart';
@@ -8,11 +7,13 @@ import 'package:fluttergran/app/providers.dart';
 import 'package:fluttergran/data/board/fake_board_source.dart';
 import 'package:fluttergran/data/db/database.dart';
 import 'package:fluttergran/data/db/game_repository.dart';
-import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/game_config.dart';
 import 'package:fluttergran/domain/x01/leg_reducer.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
 import 'package:fluttergran/domain/x01/x01_rules.dart';
+
+import '../support/darts.dart';
+import '../support/database.dart';
 
 /// Lets the fire-and-forget database writes land before assertions run.
 Future<void> settle() => Future<void>.delayed(const Duration(milliseconds: 20));
@@ -24,7 +25,7 @@ void main() {
   late ProviderContainer container;
 
   setUp(() {
-    database = AppDatabase(NativeDatabase.memory());
+    database = memoryDatabase();
     repository = GameRepository(database);
     board = FakeBoardSource();
     container = ProviderContainer(
@@ -40,9 +41,6 @@ void main() {
     await board.dispose();
     await database.close();
   });
-
-  ThrownDart t(int n) => ThrownDart(Segment(n, Ring.triple));
-  ThrownDart d(int n) => ThrownDart(Segment(n, Ring.doubleRing));
 
   Future<GameConfig> seedGame({int startScore = 501, int players = 2}) async {
     final roster = [

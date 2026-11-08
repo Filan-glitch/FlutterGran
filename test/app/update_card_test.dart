@@ -1,19 +1,18 @@
 import 'dart:io';
 
-import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/app/providers.dart';
 import 'package:fluttergran/app/screens/main_menu_screen.dart';
 import 'package:fluttergran/app/screens/settings_screen.dart';
-import 'package:fluttergran/app/theme.dart';
 import 'package:fluttergran/app/update/update_controller.dart';
 import 'package:fluttergran/data/board/fake_board_source.dart';
 import 'package:fluttergran/data/db/database.dart';
-import 'package:fluttergran/l10n/app_localizations.dart';
 
-import 'fake_update.dart';
+import '../support/database.dart';
+import '../support/fake_update.dart';
+import '../support/pump.dart';
 
 void main() {
   late Directory directory;
@@ -25,7 +24,7 @@ void main() {
   setUp(() {
     directory = Directory.systemTemp.createTempSync('update_card');
     platform = FakeUpdatePlatform(directory);
-    database = AppDatabase(NativeDatabase.memory());
+    database = memoryDatabase();
     board = FakeBoardSource();
     container = ProviderContainer(
       overrides: [
@@ -45,20 +44,8 @@ void main() {
   });
 
   Future<void> pump(WidgetTester tester, Widget home) async {
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          theme: buildTheme(),
-          home: home,
-        ),
-      ),
-    );
-    for (var i = 0; i < 25; i++) {
-      await tester.pump(const Duration(milliseconds: 20));
-    }
+    await pumpApp(tester, home, container: container);
+    await pumpFrames(tester);
   }
 
   Future<void> check(WidgetTester tester) async {

@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fluttergran/app/audio/sound_controller.dart' show SoundPlayer;
 import 'package:fluttergran/app/providers.dart';
 import 'package:fluttergran/app/screens/training_game_screen.dart';
 import 'package:fluttergran/app/theme.dart';
@@ -13,38 +12,20 @@ import 'package:fluttergran/data/board/fake_board_source.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/training/training_drill.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
-import 'package:fluttergran/l10n/app_localizations.dart';
 
-/// Records rather than plays, and - unlike `AudioPlayersSoundPlayer` -
-/// schedules no real `Timer` for a delayed line, which would otherwise
-/// outlive the widget tree these tests tear down. Same shape as the
-/// `_FakePlayer` in `sound_controller_test.dart`.
-class _FakePlayer implements SoundPlayer {
-  int silenced = 0;
-
-  @override
-  void playCue(String asset) {}
-
-  @override
-  void playSpeech(String asset, {Duration after = Duration.zero}) {}
-
-  @override
-  void silence() => silenced++;
-
-  @override
-  Future<void> dispose() async {}
-}
+import '../support/pump.dart';
+import '../support/sound.dart';
 
 void main() {
   late FakeBoardSource board;
   late ProviderContainer container;
-  late _FakePlayer player;
+  late RecordingSoundPlayer player;
 
   TrainingController controller() => container.read(trainingProvider.notifier);
 
   setUp(() {
     board = FakeBoardSource();
-    player = _FakePlayer();
+    player = RecordingSoundPlayer();
     container = ProviderContainer(
       overrides: [
         boardSourceProvider.overrideWithValue(board),
@@ -59,17 +40,7 @@ void main() {
   });
 
   Future<void> pump(WidgetTester tester) async {
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          theme: buildTheme(),
-          home: const TrainingGameScreen(),
-        ),
-      ),
-    );
+    await pumpApp(tester, const TrainingGameScreen(), container: container);
   }
 
   /// Lets a board frame travel through the stream pipeline before the next

@@ -21,27 +21,9 @@ import 'package:fluttergran/domain/higher_lower/higher_lower_reducer.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
 
-/// Records what it was asked for instead of making a noise.
-class _FakePlayer implements SoundPlayer {
-  final List<String> cues = [];
-  final List<(String, Duration)> spoken = [];
-  int silenced = 0;
+import '../support/darts.dart';
+import '../support/sound.dart';
 
-  @override
-  void playCue(String asset) => cues.add(asset);
-
-  @override
-  void playSpeech(String asset, {Duration after = Duration.zero}) =>
-      spoken.add((asset, after));
-
-  @override
-  void silence() => silenced++;
-
-  @override
-  Future<void> dispose() async {}
-}
-
-const miss = ThrownDart.miss();
 const _gameOn = Sound.speech(SoundAssets.spokenGameOn);
 const _click = Sound.cue(SoundAssets.dartCue);
 const _gameShot = [
@@ -199,12 +181,12 @@ void main() {
   });
 
   group('wired to the game', () {
-    late _FakePlayer player;
+    late RecordingSoundPlayer player;
     late FakeBoardSource board;
     late ProviderContainer container;
 
     setUp(() {
-      player = _FakePlayer();
+      player = RecordingSoundPlayer();
       board = FakeBoardSource();
       container = ProviderContainer(
         overrides: [

@@ -1,3 +1,6 @@
+/// A hand-moved clock for the board reader's frame dedupe.
+library;
+
 import 'package:flutter_riverpod/misc.dart';
 import 'package:fluttergran/app/providers.dart';
 import 'package:fluttergran/data/board/board_source.dart';

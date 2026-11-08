@@ -1,14 +1,11 @@
-import 'dart:async';
-
-import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fluttergran/app/providers.dart';
 import 'package:fluttergran/app/widgets/dart_keypad.dart';
 import 'package:fluttergran/data/db/database.dart';
 import 'package:fluttergran/domain/game_mode.dart';
-import 'package:fluttergran/main.dart';
+
+import 'support/database.dart';
+import 'support/pump.dart';
 
 /// The mode name the main menu's resume banner prefixes its format eyebrow
 /// with - read from the registry rather than hardcoded.
@@ -28,24 +25,6 @@ Finder scoreboardText(String label) => find.descendant(
   matching: find.text(label),
 );
 
-/// Pumps a few frames to let a route transition or a roster query land.
-Future<void> pumpFrames(WidgetTester tester) async {
-  for (var i = 0; i < 25; i++) {
-    await tester.pump(const Duration(milliseconds: 20));
-  }
-}
-
-Future<void> launch(WidgetTester tester, AppDatabase database) async {
-  await tester.pumpWidget(
-    ProviderScope(
-      overrides: [databaseProvider.overrideWithValue(database)],
-      child: const FlutterGranApp(),
-    ),
-  );
-  await tester.pump(const Duration(milliseconds: 700));
-  await tester.pump(const Duration(milliseconds: 500));
-}
-
 /// From the main menu, walks Play -> Select Game Mode -> Around the Clock
 /// Setup.
 Future<void> openAtcSetup(WidgetTester tester) async {
@@ -56,26 +35,14 @@ Future<void> openAtcSetup(WidgetTester tester) async {
   await pumpFrames(tester);
 }
 
-Future<void> popRoute(WidgetTester tester, Finder onScreen) async {
-  final route = ModalRoute.of(tester.element(onScreen))!;
-  unawaited(route.navigator!.maybePop());
-  await pumpFrames(tester);
-}
-
-Future<void> closeApp(WidgetTester tester) async {
-  await tester.pumpWidget(const SizedBox.shrink());
-  await tester.pump(const Duration(milliseconds: 10));
-  await tester.pump(const Duration(milliseconds: 10));
-}
-
 void main() {
   late AppDatabase database;
 
-  setUp(() => database = AppDatabase(NativeDatabase.memory()));
+  setUp(() => database = memoryDatabase());
   tearDown(() => database.close());
 
   testWidgets('the mode picker offers Around the Clock', (tester) async {
-    await launch(tester, database);
+    await launchApp(tester, database);
 
     await tester.tap(find.byKey(const Key('menu-play-button')));
     await pumpFrames(tester);
@@ -88,7 +55,7 @@ void main() {
   testWidgets('reaches setup with the default variant selected', (
     tester,
   ) async {
-    await launch(tester, database);
+    await launchApp(tester, database);
     await openAtcSetup(tester);
 
     expect(find.text('AROUND THE CLOCK SETUP'), findsOneWidget);
@@ -103,7 +70,7 @@ void main() {
   testWidgets('starting a leg opens the game with everyone on stop 1', (
     tester,
   ) async {
-    await launch(tester, database);
+    await launchApp(tester, database);
     await openAtcSetup(tester);
 
     await tester.enterText(find.byType(TextField), 'Finn');
@@ -122,7 +89,7 @@ void main() {
   testWidgets('a hit on the current number advances the stop shown', (
     tester,
   ) async {
-    await launch(tester, database);
+    await launchApp(tester, database);
     await openAtcSetup(tester);
 
     await tester.enterText(find.byType(TextField), 'Finn');
@@ -143,7 +110,7 @@ void main() {
 
   testWidgets('leaving a leg keeps it, and it can be resumed from the main '
       'menu', (tester) async {
-    await launch(tester, database);
+    await launchApp(tester, database);
     await openAtcSetup(tester);
 
     await tester.enterText(find.byType(TextField), 'Finn');

@@ -4,42 +4,15 @@ import 'package:fluttergran/app/audio/sound_controller.dart';
 import 'package:fluttergran/app/game_controller.dart';
 import 'package:fluttergran/app/providers.dart';
 import 'package:fluttergran/data/board/fake_board_source.dart';
-import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/game_config.dart';
 import 'package:fluttergran/domain/x01/leg_reducer.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
 
-/// Records what it was asked for instead of making a noise.
-///
-/// The whole reason [SoundPlayer] is three methods wide: the mapping from a
-/// state change to a sound can be asserted exactly, with no audio device, no
-/// plugin and no waiting.
-class _FakePlayer implements SoundPlayer {
-  final List<String> cues = [];
-  final List<(String, Duration)> spoken = [];
-  int silenced = 0;
-
-  @override
-  void playCue(String asset) => cues.add(asset);
-
-  @override
-  void playSpeech(String asset, {Duration after = Duration.zero}) =>
-      spoken.add((asset, after));
-
-  @override
-  void silence() => silenced++;
-
-  @override
-  Future<void> dispose() async {}
-}
+import '../support/darts.dart';
+import '../support/sound.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-
-  ThrownDart t(int n) => ThrownDart(Segment(n, Ring.triple));
-  ThrownDart d(int n) => ThrownDart(Segment(n, Ring.doubleRing));
-  ThrownDart s(int n) => ThrownDart(Segment(n, Ring.outerSingle));
-  const miss = ThrownDart.miss();
 
   GameConfig config(int startScore) =>
       GameConfig(startScore: startScore, playerIds: const [1, 2]);
@@ -156,11 +129,11 @@ void main() {
   });
 
   group('the toggles', () {
-    late _FakePlayer player;
+    late RecordingSoundPlayer player;
     late SoundController controller;
 
     setUp(() {
-      player = _FakePlayer();
+      player = RecordingSoundPlayer();
       controller = SoundController(player);
     });
 
@@ -200,7 +173,7 @@ void main() {
   });
 
   group('wired to the game', () {
-    late _FakePlayer player;
+    late RecordingSoundPlayer player;
     late FakeBoardSource board;
     late ProviderContainer container;
 
@@ -208,7 +181,7 @@ void main() {
       // shared_preferences has no platform behind it under the test binding, so
       // both toggles stay on their defaults - which is on, which is what these
       // expect.
-      player = _FakePlayer();
+      player = RecordingSoundPlayer();
       board = FakeBoardSource();
       container = ProviderContainer(
         overrides: [

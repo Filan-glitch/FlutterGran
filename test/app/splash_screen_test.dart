@@ -1,17 +1,17 @@
-import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/app/providers.dart';
 import 'package:fluttergran/app/screens/main_menu_screen.dart';
 import 'package:fluttergran/app/screens/splash_screen.dart';
-import 'package:fluttergran/app/theme.dart';
 import 'package:fluttergran/data/board/fake_board_source.dart';
 import 'package:fluttergran/data/db/database.dart';
 import 'package:fluttergran/data/db/game_repository.dart';
 import 'package:fluttergran/domain/x01/game_config.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
-import 'package:fluttergran/l10n/app_localizations.dart';
+
+import '../support/database.dart';
+import '../support/pump.dart';
 
 void main() {
   late AppDatabase database;
@@ -19,7 +19,7 @@ void main() {
   late ProviderContainer container;
 
   setUp(() {
-    database = AppDatabase(NativeDatabase.memory());
+    database = memoryDatabase();
     board = FakeBoardSource();
     container = ProviderContainer(
       overrides: [
@@ -35,17 +35,8 @@ void main() {
     await database.close();
   });
 
-  Future<void> pump(WidgetTester tester) => tester.pumpWidget(
-    UncontrolledProviderScope(
-      container: container,
-      child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        theme: buildTheme(),
-        home: const SplashScreen(),
-      ),
-    ),
-  );
+  Future<void> pump(WidgetTester tester) =>
+      pumpApp(tester, const SplashScreen(), container: container);
 
   testWidgets('lands on the main menu once the database has answered', (
     tester,

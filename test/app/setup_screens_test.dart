@@ -1,43 +1,23 @@
-import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fluttergran/app/audio/sound_controller.dart';
 import 'package:fluttergran/app/providers.dart';
 import 'package:fluttergran/app/screens/atc_setup_screen.dart';
 import 'package:fluttergran/app/screens/bulling_setup_screen.dart';
 import 'package:fluttergran/app/screens/higher_lower_setup_screen.dart';
 import 'package:fluttergran/app/screens/x01_setup_screen.dart';
-import 'package:fluttergran/app/theme.dart';
 import 'package:fluttergran/app/widgets/player_picker.dart';
 import 'package:fluttergran/data/board/fake_board_source.dart';
 import 'package:fluttergran/data/db/database.dart';
 import 'package:fluttergran/data/db/game_repository.dart';
 import 'package:fluttergran/domain/atc/atc_variant.dart';
 import 'package:fluttergran/domain/bulling/bulling_variant.dart';
-import 'package:fluttergran/l10n/app_localizations.dart';
 
-/// Silent, so nothing goes looking for an audio plugin once a game opens.
-class _MutePlayer implements SoundPlayer {
-  @override
-  void playCue(String asset) {}
-
-  @override
-  void playSpeech(String asset, {Duration after = Duration.zero}) {}
-
-  @override
-  void silence() {}
-
-  @override
-  Future<void> dispose() async {}
-}
-
-class _LightsOff extends BoolSetting {
-  _LightsOff() : super('led.enabled');
-
-  @override
-  bool build() => false;
-}
+import '../support/database.dart';
+import '../support/devices.dart';
+import '../support/lights.dart';
+import '../support/pump.dart';
+import '../support/sound.dart';
 
 void main() {
   late AppDatabase database;
@@ -46,15 +26,15 @@ void main() {
   late ProviderContainer container;
 
   setUp(() {
-    database = AppDatabase(NativeDatabase.memory());
+    database = memoryDatabase();
     repository = GameRepository(database);
     board = FakeBoardSource();
     container = ProviderContainer(
       overrides: [
         databaseProvider.overrideWithValue(database),
         boardSourceProvider.overrideWithValue(board),
-        soundPlayerProvider.overrideWithValue(_MutePlayer()),
-        ledEnabledProvider.overrideWith(_LightsOff.new),
+        soundPlayerProvider.overrideWithValue(MuteSoundPlayer()),
+        lightsOff(),
       ],
     );
   });
@@ -65,37 +45,18 @@ void main() {
     await database.close();
   });
 
-  /// Pumps frames rather than settling: a game screen that opens lights its
-  /// target keys with a looping pulse, which never settles.
-  Future<void> frames(WidgetTester tester) async {
-    for (var i = 0; i < 25; i++) {
-      await tester.pump(const Duration(milliseconds: 20));
-    }
-  }
-
   Future<void> pump(
     WidgetTester tester,
     Widget screen, {
     Size size = const Size(400, 1400),
     Locale? locale,
   }) async {
-    tester.view.physicalSize = size;
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
+    setViewSize(tester, size);
 
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          locale: locale,
-          theme: buildTheme(),
-          home: screen,
-        ),
-      ),
-    );
-    await frames(tester);
+    await pumpApp(tester, screen, container: container, locale: locale);
+    // Frames, not settling: an opened game screen pulses its target keys
+    // forever.
+    await pumpFrames(tester);
   }
 
   for (final (name, screen) in const [
@@ -118,11 +79,11 @@ void main() {
         );
 
         await tester.tap(find.text(player.name));
-        await frames(tester);
+        await pumpFrames(tester);
         expect(find.text('1 of 4'), findsOneWidget);
 
         await tester.tap(find.text(player.name));
-        await frames(tester);
+        await pumpFrames(tester);
         expect(find.text('1 of 4'), findsNothing);
         expect(await repository.allPlayers(), hasLength(1));
       });
@@ -143,7 +104,7 @@ void main() {
 
         await tester.enterText(find.byType(TextField), 'Ada');
         await tester.testTextInput.receiveAction(TextInputAction.done);
-        await frames(tester);
+        await pumpFrames(tester);
 
         expect(find.text('Ada'), findsOneWidget);
         expect(find.text('1 of 4'), findsOneWidget);
@@ -159,9 +120,9 @@ void main() {
 
     await tester.tap(find.text('MASTERS'));
     await tester.tap(find.text('Finn'));
-    await frames(tester);
+    await pumpFrames(tester);
     await tester.tap(find.byKey(const Key('start-leg-button')));
-    await frames(tester);
+    await pumpFrames(tester);
 
     expect(
       container.read(atcGameProvider).leg.config.variant,
@@ -178,9 +139,9 @@ void main() {
     await tester.tap(find.text('BULLSEYE = 3'));
     await tester.tap(find.text('41'));
     await tester.tap(find.text('Finn'));
-    await frames(tester);
+    await pumpFrames(tester);
     await tester.tap(find.byKey(const Key('start-leg-button')));
-    await frames(tester);
+    await pumpFrames(tester);
 
     final config = container.read(bullingGameProvider).leg.config;
     expect(config.bullseyeValue, BullseyeValue.three);
@@ -193,16 +154,16 @@ void main() {
     await pump(tester, const HigherLowerSetupScreen());
 
     await tester.tap(find.text('Finn'));
-    await frames(tester);
+    await pumpFrames(tester);
     expect(find.text('PICK AT LEAST TWO PLAYERS'), findsOneWidget);
     await tester.tap(find.byKey(const Key('start-leg-button')));
-    await frames(tester);
+    await pumpFrames(tester);
     expect(find.byType(HigherLowerSetupScreen), findsOneWidget);
 
     await tester.tap(find.text('Ada'));
-    await frames(tester);
+    await pumpFrames(tester);
     await tester.tap(find.byKey(const Key('start-leg-button')));
-    await frames(tester);
+    await pumpFrames(tester);
 
     expect(container.read(higherLowerGameProvider).leg.config.playerIds, [
       finn.id,
