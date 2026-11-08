@@ -1,3 +1,9 @@
+/// [soundsForAtc], the cues and commentary for a change in an Around the Clock
+/// leg.
+///
+/// {@category App}
+library;
+
 import '../atc_controller.dart';
 import 'sound_controller.dart';
 

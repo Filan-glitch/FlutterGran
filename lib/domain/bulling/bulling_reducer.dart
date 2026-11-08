@@ -1,3 +1,9 @@
+/// The Bulling engine: [foldBulling] replays a dart log in which only the bulls
+/// score, and [bullingPointsFor] values a single dart.
+///
+/// {@category Game modes}
+library;
+
 import '../segment.dart';
 import '../x01/leg_reducer.dart' show foldLeg;
 import '../x01/leg_state.dart' show dartsPerTurn;

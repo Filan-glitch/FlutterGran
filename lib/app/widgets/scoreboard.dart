@@ -1,3 +1,9 @@
+/// [Scoreboard], the players side by side in chalk-scoreboard style, with the
+/// [SeatView] each mode fills in and its [ProgressRail].
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 
 import '../theme.dart';

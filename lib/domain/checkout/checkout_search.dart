@@ -1,3 +1,10 @@
+/// The checkout search: finds and ranks the routes that finish an x01 score in
+/// the darts left under an out-rule, and the highest and lowest scores that can
+/// be checked out.
+///
+/// {@category Domain}
+library;
+
 import '../segment.dart';
 import '../x01/x01_rules.dart';
 

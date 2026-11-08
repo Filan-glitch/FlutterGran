@@ -1,3 +1,9 @@
+/// [AddPlayerField], the name field and add button the roster and player picker
+/// add players with.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 
 import '../l10n_extensions.dart';

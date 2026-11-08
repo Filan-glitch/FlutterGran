@@ -1,3 +1,9 @@
+/// [TurnResultPanel], the result held after every turn in place of the keypad,
+/// and the [FitOrScroll] it lays out in.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 
 import '../../domain/x01/thrown_dart.dart';

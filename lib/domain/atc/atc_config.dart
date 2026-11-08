@@ -1,3 +1,9 @@
+/// [AtcConfig], the rules an Around the Clock leg is played under: the players
+/// and the [AtcVariant].
+///
+/// {@category Game modes}
+library;
+
 import '../x01/game_config.dart';
 import 'atc_variant.dart';
 

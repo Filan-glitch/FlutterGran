@@ -1,3 +1,9 @@
+/// The building blocks of a setup screen: section labels, rows of numerals or
+/// named options to pick from, and the [StartBar].
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 
 import '../theme.dart';

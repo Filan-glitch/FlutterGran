@@ -1,3 +1,9 @@
+/// [BoardWidget], a painted dartboard that can be tapped, highlighted and
+/// shaded, and the [BoardGeometry] it is drawn to.
+///
+/// {@category App}
+library;
+
 import 'dart:math';
 
 import 'package:flutter/material.dart';

@@ -1,3 +1,9 @@
+/// [KnownBoardStore], the interface that remembers the last board connected to
+/// so the next launch can connect without a scan.
+///
+/// {@category Data}
+library;
+
 /// Where the last board connected to is remembered between launches.
 ///
 /// Holds a platform device id. Remembering it lets the next launch connect

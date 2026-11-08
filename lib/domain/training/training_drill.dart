@@ -1,3 +1,8 @@
+/// [TrainingDrill], the practice loops a solo training session can run.
+///
+/// {@category Game modes}
+library;
+
 /// Which practice loop a training session runs.
 ///
 /// A training session is never persisted - see `TrainingController` in

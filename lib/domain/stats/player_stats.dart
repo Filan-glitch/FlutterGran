@@ -1,3 +1,9 @@
+/// Aggregates a player's replayed legs into their all-time record, one
+/// [ModeStats] per [GameMode], for the statistics screen.
+///
+/// {@category Domain}
+library;
+
 import '../atc/atc_leg_state.dart';
 import '../atc/atc_stop.dart';
 import '../bulling/bulling_leg_state.dart';

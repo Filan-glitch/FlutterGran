@@ -1,3 +1,9 @@
+/// [DartKeypad], the ring-then-wedge keypad for keying in darts by hand when no
+/// board is connected.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 
 import '../../domain/segment.dart';

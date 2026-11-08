@@ -1,3 +1,9 @@
+/// [HigherLowerSetupScreen], which picks the players and starts a stored
+/// Higher/Lower leg.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

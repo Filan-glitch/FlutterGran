@@ -1,3 +1,9 @@
+/// [UpdateCard], the main-menu card that offers a newer release and follows it
+/// through download and install.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

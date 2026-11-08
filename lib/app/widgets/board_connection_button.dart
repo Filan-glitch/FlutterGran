@@ -1,3 +1,9 @@
+/// [BoardConnectionButton], the app-bar light that shows the board connection
+/// and connects or disconnects on a tap.
+///
+/// {@category App}
+library;
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';

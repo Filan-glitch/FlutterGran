@@ -1,3 +1,9 @@
+/// [AimCard], Around the Clock's counterpart to the checkout card: the stop to
+/// hit next, as one chip per bed that clears it.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 
 import '../../domain/atc/atc_stop.dart';

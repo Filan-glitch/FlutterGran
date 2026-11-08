@@ -1,3 +1,9 @@
+/// [RulesButton], the app-bar button that opens a mode's rules page from its
+/// setup and game screens.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 
 import '../l10n_extensions.dart';

@@ -1,3 +1,9 @@
+/// What the board protocol decodes into - a dart in a segment, a miss, a button
+/// press or an unknown frame - so controllers never see raw frames.
+///
+/// {@category Domain}
+library;
+
 import 'segment.dart';
 
 /// Anything the board can tell us, after the raw frame stream has been parsed.

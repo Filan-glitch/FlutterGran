@@ -1,3 +1,9 @@
+/// [CheckoutCard], the best checkout route as one chip per dart, shown when
+/// there is a finish on.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 
 import '../../domain/checkout/checkout_search.dart';

@@ -1,3 +1,9 @@
+/// [GameController], which owns an x01 leg's dart log, turns board and keypad
+/// darts into scoring, stores each dart and undoes by refolding.
+///
+/// {@category App}
+library;
+
 import 'dart:async';
 import 'dart:math';
 

@@ -1,3 +1,9 @@
+/// [ringColours], the board's own fill and ink for each ring, so the keypad and
+/// the aim chips colour a bed the same way.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/painting.dart';
 
 import '../../domain/segment.dart';

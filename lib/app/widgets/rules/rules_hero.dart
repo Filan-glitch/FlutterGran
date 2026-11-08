@@ -1,3 +1,9 @@
+/// [RulesHero], the top of a rules page, whose glyph flies in from the overview
+/// card.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 
 import '../../l10n_extensions.dart';

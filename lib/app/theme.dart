@@ -1,3 +1,9 @@
+/// The design system: palette, motion, spacing and type tokens, the breakpoints
+/// that choose between the phone, hero and desktop layouts, and [buildTheme].
+///
+/// {@category App}
+library;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 

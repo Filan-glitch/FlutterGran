@@ -1,3 +1,9 @@
+/// [RosterScreen], where the players shared by every game mode are added,
+/// renamed and removed.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

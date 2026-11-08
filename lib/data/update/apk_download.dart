@@ -1,3 +1,9 @@
+/// Downloads a release APK and checks it against the SHA-256 the release lists,
+/// keeping the file only when they match.
+///
+/// {@category Data}
+library;
+
 import 'dart:async';
 import 'dart:io';
 

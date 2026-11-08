@@ -1,3 +1,9 @@
+/// [ModeGlyph], the small painted rings that stand for each [RulesTopic] on
+/// tiles and rules pages.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 
 import '../rules_topic.dart';

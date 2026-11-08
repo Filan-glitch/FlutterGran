@@ -1,3 +1,9 @@
+/// [RulesBody], the scrolling rules page for one [RulesTopic], assembled from
+/// the hero, callouts, explorers and worked examples.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 
 import '../../../domain/atc/atc_stop.dart';

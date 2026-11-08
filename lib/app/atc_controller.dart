@@ -1,3 +1,9 @@
+/// [AtcController], which owns an Around the Clock leg's dart log, turns board
+/// and keypad darts into moves along the track and stores each dart.
+///
+/// {@category App}
+library;
+
 import 'dart:async';
 import 'dart:math';
 

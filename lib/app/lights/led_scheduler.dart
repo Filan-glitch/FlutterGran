@@ -1,3 +1,9 @@
+/// [LedScheduler], which decides what the ring shows right now: it plays shows
+/// by priority, then falls back to the resting ring.
+///
+/// {@category App}
+library;
+
 import 'dart:async';
 
 import '../../data/board/led_command.dart';

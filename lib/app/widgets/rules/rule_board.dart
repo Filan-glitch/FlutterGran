@@ -1,3 +1,9 @@
+/// [RuleBoard], a dartboard on a rules page that lights the segments a rule
+/// lets count.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 
 import '../../../domain/segment.dart';

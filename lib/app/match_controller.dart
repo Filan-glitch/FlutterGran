@@ -1,3 +1,9 @@
+/// [MatchController], which starts x01 matches and moves them on one leg at a
+/// time.
+///
+/// {@category App}
+library;
+
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';

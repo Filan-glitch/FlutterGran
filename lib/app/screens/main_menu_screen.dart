@@ -1,3 +1,9 @@
+/// [MainMenuScreen], the front door: new game, resume, players, statistics,
+/// rules and settings, plus the update card.
+///
+/// {@category App}
+library;
+
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';

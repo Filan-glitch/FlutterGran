@@ -1,3 +1,9 @@
+/// [LedCue], the board moments worth lighting up, grouped into the
+/// [LedCueKind]s the settings screen can switch off.
+///
+/// {@category App}
+library;
+
 import '../../domain/segment.dart';
 
 /// Something that happened at the board and is worth lighting up.

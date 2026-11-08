@@ -1,3 +1,9 @@
+/// [ThrownDart], one entry in a leg's dart log: who threw it and where it
+/// landed. Every engine in the app folds a list of these.
+///
+/// {@category Domain}
+library;
+
 import '../segment.dart';
 
 /// One dart as recorded in a leg.

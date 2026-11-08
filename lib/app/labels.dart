@@ -1,3 +1,9 @@
+/// Localized labels for domain values - in- and out-rules, Around the Clock
+/// variants, bullseye values, mode names - and hit-rate text.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/widgets.dart';
 
 import '../domain/atc/atc_variant.dart';

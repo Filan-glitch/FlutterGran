@@ -1,3 +1,9 @@
+/// [ReleaseVersion], the `major.minor.patch` the update check compares the
+/// running build and the latest release on.
+///
+/// {@category Data}
+library;
+
 /// A release's `major.minor.patch`, the only part of a version two builds
 /// are compared on.
 ///

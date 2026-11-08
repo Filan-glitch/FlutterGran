@@ -1,3 +1,9 @@
+/// Riverpod wiring for the board lights: the one [LedScheduler], and a provider
+/// per game mode that feeds it cues and the resting ring.
+///
+/// {@category App}
+library;
+
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';

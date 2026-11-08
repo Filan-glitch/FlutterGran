@@ -1,3 +1,9 @@
+/// [FakeBoardSource], a scripted board for tests and runs without hardware that
+/// emits the same frame bodies a real GranBoard does.
+///
+/// {@category Data}
+library;
+
 import 'dart:async';
 
 import 'package:fluttergran/data/board/frame_assembler.dart'

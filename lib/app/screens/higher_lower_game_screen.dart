@@ -1,3 +1,8 @@
+/// [HigherLowerGameScreen], where a Higher/Lower leg is played.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

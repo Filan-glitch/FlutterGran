@@ -1,3 +1,8 @@
+/// [soundsForBulling], the cues and commentary for a change in a Bulling leg.
+///
+/// {@category App}
+library;
+
 import '../bulling_controller.dart';
 import 'sound_controller.dart';
 

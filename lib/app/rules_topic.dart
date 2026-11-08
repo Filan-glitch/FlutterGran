@@ -1,3 +1,9 @@
+/// [RulesTopic], the subjects of the rules section - one per game mode, plus
+/// training - with each topic's headline facts.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 
 import '../domain/atc/atc_stop.dart';

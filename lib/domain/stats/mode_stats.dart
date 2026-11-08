@@ -1,3 +1,9 @@
+/// A player's record per game mode: the sealed [ModeStats] and its one subtype
+/// per mode, each in a part file of this library.
+///
+/// {@category Domain}
+library;
+
 import '../atc/atc_stop.dart';
 import '../x01/leg_state.dart';
 import '../x01/x01_rules.dart';

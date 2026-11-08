@@ -1,3 +1,9 @@
+/// The app's Riverpod provider graph: the board, the database, each mode's
+/// setup and game state, stored legs and statistics, settings and sound.
+///
+/// {@category App}
+library;
+
 import 'dart:async';
 
 import 'package:flutter/services.dart';
