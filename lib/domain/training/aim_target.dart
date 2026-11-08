@@ -74,12 +74,12 @@ class AimTarget {
   bool get isBull => number == 25;
 
   /// Short notation in the same style as [Segment.label]: `D16`, `T20`,
-  /// `S5`, `B` for either bull, `DB` for the bullseye.
+  /// `S5`, `BULL` for either bull, `DB` for the bullseye.
   String get label => switch (kind) {
     AimKind.single => 'S$number',
     AimKind.double => 'D$number',
     AimKind.triple => 'T$number',
-    AimKind.bull => 'B',
+    AimKind.bull => 'BULL',
     AimKind.bullseye => 'DB',
   };
 

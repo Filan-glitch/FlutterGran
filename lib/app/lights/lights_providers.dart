@@ -9,6 +9,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/board/led_command.dart';
+import '../../domain/x01/x01_rules.dart';
 import '../providers.dart';
 import '../training_controller.dart';
 import 'led_cue.dart';
@@ -171,7 +172,8 @@ final higherLowerLightsProvider = Provider.autoDispose<void>((ref) {
 });
 
 /// Lights for a training session - see [x01LightsProvider]. Free practice
-/// has no resting ring.
+/// has no resting ring; the checkout drills show the route, the target
+/// drills the target.
 final trainingLightsProvider = Provider.autoDispose<void>((ref) {
   RingPaint ring() => switch (ref.read(trainingProvider)) {
     CheckoutPracticeSession(:final leg) => x01Ring(
@@ -180,6 +182,26 @@ final trainingLightsProvider = Provider.autoDispose<void>((ref) {
       bestRoute: ref.read(checkoutTableProvider(leg.config.outRule)).bestFor,
     ),
     FreePracticeSession() => RingPaint.off,
+    CheckoutChallengeSession(:final state) =>
+      state.config.showRoute && state.current != null
+          ? x01Ring(
+              state.current!.leg,
+              awaitingTurnConfirm: false,
+              bestRoute: ref
+                  .read(checkoutTableProvider(state.config.outRule))
+                  .bestFor,
+            )
+          : RingPaint.off,
+    Ladder121Session(:final state) => switch (state.current) {
+      null => RingPaint.off,
+      final attempt => x01Ring(
+        attempt.leg,
+        awaitingTurnConfirm: false,
+        bestRoute: ref.read(checkoutTableProvider(X01OutRule.double)).bestFor,
+      ),
+    },
+    Bobs27Session(:final state) => aimRing(state.currentTarget),
+    WeakSpotSession(:final state) => aimRing(state.currentTarget),
   };
 
   _drive(

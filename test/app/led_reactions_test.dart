@@ -17,7 +17,11 @@ import 'package:fluttergran/domain/checkout/checkout_table.dart';
 import 'package:fluttergran/domain/higher_lower/higher_lower_config.dart';
 import 'package:fluttergran/domain/higher_lower/higher_lower_reducer.dart';
 import 'package:fluttergran/domain/segment.dart';
+import 'package:fluttergran/domain/training/aim_target.dart';
+import 'package:fluttergran/domain/training/bobs_27.dart';
+import 'package:fluttergran/domain/training/checkout_challenge.dart';
 import 'package:fluttergran/domain/training/free_practice_state.dart';
+import 'package:fluttergran/domain/training/weak_spot.dart';
 import 'package:fluttergran/domain/x01/game_config.dart';
 import 'package:fluttergran/domain/x01/leg_reducer.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
@@ -298,6 +302,54 @@ void main() {
       );
       expect(ledCuesForTraining(before, after), [const LegWon(0)]);
       expect(ledCuesForTraining(after, before), [const GameOn()]);
+    });
+
+    test('a checkout challenge finish is a leg won, a bust a bust', () {
+      const cfg = CheckoutChallengeConfig();
+      CheckoutChallengeSession at(List<ThrownDart> darts) =>
+          CheckoutChallengeSession(
+            foldCheckoutChallenge(cfg, const [40, 32], darts),
+          );
+      expect(ledCuesForTraining(at([s(20)]), at([s(20), d(10)])), [
+        const LegWon(0),
+      ]);
+      expect(ledCuesForTraining(at([]), at([t(20)])), [const TurnBusted()]);
+      expect(ledCuesForTraining(at([]), at([s(20)])), [
+        const DartLanded(Segment(20, Ring.outerSingle), seat: 0),
+      ]);
+    });
+
+    test('a target drill flashes the target on a hit', () {
+      final before = WeakSpotSession(
+        foldWeakSpot(const WeakSpotConfig(), const [AimTarget.double(16)], []),
+      );
+      WeakSpotSession after(ThrownDart dart) => WeakSpotSession(
+        foldWeakSpot(
+          const WeakSpotConfig(),
+          const [AimTarget.double(16)],
+          [dart],
+        ),
+      );
+      expect(ledCuesForTraining(before, after(d(16))), [
+        const TargetHit(Segment(16, Ring.doubleRing)),
+      ]);
+      expect(ledCuesForTraining(before, after(s(16))), [const DartMissed()]);
+    });
+
+    test('a blank Bob\'s 27 visit is a bust', () {
+      const cfg = Bobs27Config();
+      final before = Bobs27Session(foldBobs27(cfg, [miss, miss]));
+      final after = Bobs27Session(foldBobs27(cfg, [miss, miss, miss]));
+      expect(ledCuesForTraining(before, after), [const TurnBusted()]);
+    });
+
+    test('target drills light the target on the ring', () {
+      expect(
+        aimRing(const AimTarget.double(16)),
+        RingPaint.only({16: RingColor.yellow}),
+      );
+      expect(aimRing(AimTarget.bull), RingPaint.all(RingColor.turquoise));
+      expect(aimRing(null), RingPaint.off);
     });
   });
 }

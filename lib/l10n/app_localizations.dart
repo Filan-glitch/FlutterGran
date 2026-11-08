@@ -1981,6 +1981,371 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dismiss'**
   String get updateDismissTooltip;
+
+  /// No description provided for @checkoutChallengeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'CHECKOUT CHALLENGE'**
+  String get checkoutChallengeLabel;
+
+  /// No description provided for @checkoutChallengeTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'a random finish, one visit to take it out'**
+  String get checkoutChallengeTagline;
+
+  /// No description provided for @ladder121Label.
+  ///
+  /// In en, this message translates to:
+  /// **'121 LADDER'**
+  String get ladder121Label;
+
+  /// No description provided for @ladder121Tagline.
+  ///
+  /// In en, this message translates to:
+  /// **'finish in nine darts, climb a rung each time'**
+  String get ladder121Tagline;
+
+  /// No description provided for @bobs27Label.
+  ///
+  /// In en, this message translates to:
+  /// **'BOB\'S 27'**
+  String get bobs27Label;
+
+  /// No description provided for @bobs27Tagline.
+  ///
+  /// In en, this message translates to:
+  /// **'doubles under pressure: a blank visit costs points'**
+  String get bobs27Tagline;
+
+  /// No description provided for @weakSpotLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'WEAK-SPOT TRAINER'**
+  String get weakSpotLabel;
+
+  /// No description provided for @weakSpotTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'your weakest targets, picked for you'**
+  String get weakSpotTagline;
+
+  /// No description provided for @difficultyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Difficulty'**
+  String get difficultyLabel;
+
+  /// No description provided for @difficultyAdaptive.
+  ///
+  /// In en, this message translates to:
+  /// **'Adaptive'**
+  String get difficultyAdaptive;
+
+  /// No description provided for @roundsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Rounds'**
+  String get roundsLabel;
+
+  /// No description provided for @routeHintLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Route'**
+  String get routeHintLabel;
+
+  /// No description provided for @routeShown.
+  ///
+  /// In en, this message translates to:
+  /// **'Shown'**
+  String get routeShown;
+
+  /// No description provided for @routeAfterVisit.
+  ///
+  /// In en, this message translates to:
+  /// **'After the visit'**
+  String get routeAfterVisit;
+
+  /// No description provided for @bobs27DropOutLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Below zero'**
+  String get bobs27DropOutLabel;
+
+  /// No description provided for @bobs27StopAtZero.
+  ///
+  /// In en, this message translates to:
+  /// **'Out'**
+  String get bobs27StopAtZero;
+
+  /// No description provided for @bobs27PlayOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Play on'**
+  String get bobs27PlayOn;
+
+  /// No description provided for @focusLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus'**
+  String get focusLabel;
+
+  /// No description provided for @focusDoubles.
+  ///
+  /// In en, this message translates to:
+  /// **'Doubles'**
+  String get focusDoubles;
+
+  /// No description provided for @focusTrebles.
+  ///
+  /// In en, this message translates to:
+  /// **'Trebles'**
+  String get focusTrebles;
+
+  /// No description provided for @focusSingles.
+  ///
+  /// In en, this message translates to:
+  /// **'Singles'**
+  String get focusSingles;
+
+  /// No description provided for @focusMixed.
+  ///
+  /// In en, this message translates to:
+  /// **'Mixed'**
+  String get focusMixed;
+
+  /// No description provided for @trainingPlayerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Player'**
+  String get trainingPlayerLabel;
+
+  /// No description provided for @trainingPlayerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'optional: weights targets by your saved games'**
+  String get trainingPlayerHint;
+
+  /// No description provided for @roundOfRounds.
+  ///
+  /// In en, this message translates to:
+  /// **'ROUND {round} OF {rounds}'**
+  String roundOfRounds(int round, int rounds);
+
+  /// No description provided for @levelLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'LEVEL'**
+  String get levelLabel;
+
+  /// No description provided for @rungLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'RUNG'**
+  String get rungLabel;
+
+  /// No description provided for @scoreLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'SCORE'**
+  String get scoreLabel;
+
+  /// No description provided for @hitsOfAttempts.
+  ///
+  /// In en, this message translates to:
+  /// **'{hits} OF {attempts}'**
+  String hitsOfAttempts(int hits, int attempts);
+
+  /// No description provided for @visitsLeftCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 visit left} other{{count} visits left}}'**
+  String visitsLeftCount(int count);
+
+  /// No description provided for @routeAfterVisitHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Work it out - the route shows after the visit'**
+  String get routeAfterVisitHint;
+
+  /// No description provided for @lastAttemptCheckedOut.
+  ///
+  /// In en, this message translates to:
+  /// **'{score} CHECKED OUT'**
+  String lastAttemptCheckedOut(int score);
+
+  /// No description provided for @lastAttemptMissed.
+  ///
+  /// In en, this message translates to:
+  /// **'{score} MISSED'**
+  String lastAttemptMissed(int score);
+
+  /// No description provided for @bestRouteWas.
+  ///
+  /// In en, this message translates to:
+  /// **'Best was {route}'**
+  String bestRouteWas(String route);
+
+  /// No description provided for @sessionCompleteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'SESSION COMPLETE'**
+  String get sessionCompleteLabel;
+
+  /// No description provided for @checkoutChallengeSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{hits} of {attempts} checked out'**
+  String checkoutChallengeSummary(int hits, int attempts);
+
+  /// No description provided for @highestFinishDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Highest finish {score}'**
+  String highestFinishDetail(int score);
+
+  /// No description provided for @dartsPerCheckoutDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'{darts} darts per checkout'**
+  String dartsPerCheckoutDetail(String darts);
+
+  /// No description provided for @ladderSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Highest rung {rung}'**
+  String ladderSummary(int rung);
+
+  /// No description provided for @ladderNoFinish.
+  ///
+  /// In en, this message translates to:
+  /// **'No rung finished yet'**
+  String get ladderNoFinish;
+
+  /// No description provided for @bobs27PassedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'PASSED'**
+  String get bobs27PassedLabel;
+
+  /// No description provided for @bobs27OutLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'KNOCKED OUT'**
+  String get bobs27OutLabel;
+
+  /// No description provided for @bobs27Detail.
+  ///
+  /// In en, this message translates to:
+  /// **'Reached {target} - {rate} of doubles hit'**
+  String bobs27Detail(String target, String rate);
+
+  /// No description provided for @weakSpotSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{rate} hit this session'**
+  String weakSpotSummary(String rate);
+
+  /// No description provided for @weakSpotResultLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{target}: {hits} of {attempts}, misses mostly {direction}'**
+  String weakSpotResultLine(
+    String target,
+    int hits,
+    int attempts,
+    String direction,
+  );
+
+  /// No description provided for @weakSpotResultClean.
+  ///
+  /// In en, this message translates to:
+  /// **'{target}: {hits} of {attempts}, no misses'**
+  String weakSpotResultClean(String target, int hits, int attempts);
+
+  /// No description provided for @weakSpotHistoryRate.
+  ///
+  /// In en, this message translates to:
+  /// **'saved games: {rate}'**
+  String weakSpotHistoryRate(String rate);
+
+  /// No description provided for @missInside.
+  ///
+  /// In en, this message translates to:
+  /// **'inside'**
+  String get missInside;
+
+  /// No description provided for @missOutside.
+  ///
+  /// In en, this message translates to:
+  /// **'outside'**
+  String get missOutside;
+
+  /// No description provided for @missLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'left'**
+  String get missLeft;
+
+  /// No description provided for @missRight.
+  ///
+  /// In en, this message translates to:
+  /// **'right'**
+  String get missRight;
+
+  /// No description provided for @missElsewhere.
+  ///
+  /// In en, this message translates to:
+  /// **'wide'**
+  String get missElsewhere;
+
+  /// No description provided for @rulesTrainingChallengeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Each round draws a random score you can finish in one visit, up to 170 under double out. Check out with three darts or less. Adaptive difficulty climbs a level after every checkout and drops one after two misses in a row.'**
+  String get rulesTrainingChallengeBody;
+
+  /// No description provided for @rulesTrainingChallengeWhy.
+  ///
+  /// In en, this message translates to:
+  /// **'Random targets beat repeating one: you remember more of what you practise.'**
+  String get rulesTrainingChallengeWhy;
+
+  /// No description provided for @rulesTrainingLadderBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish the target in nine darts under double out. A finish raises the next target by one; a failure lowers it by one, never below where you started.'**
+  String get rulesTrainingLadderBody;
+
+  /// No description provided for @rulesTrainingLadderWhy.
+  ///
+  /// In en, this message translates to:
+  /// **'The target follows your form, so it stays hard but within reach.'**
+  String get rulesTrainingLadderWhy;
+
+  /// No description provided for @rulesTrainingBobsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Start on 27. Throw one visit at each double from D1 to D20, then the bull. Every hit adds the double; a visit without one takes it away. Drop to zero or below and you are out.'**
+  String get rulesTrainingBobsBody;
+
+  /// No description provided for @rulesTrainingBobsWhy.
+  ///
+  /// In en, this message translates to:
+  /// **'Practising with something at stake helps you hold up when it counts.'**
+  String get rulesTrainingBobsWhy;
+
+  /// No description provided for @rulesTrainingWeakSpotBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The app picks one target per visit, more often the ones you hit least - in your saved games and in this session - but never the same one twice in a row. At the end you see your weakest targets and which way the misses go.'**
+  String get rulesTrainingWeakSpotBody;
+
+  /// No description provided for @rulesTrainingWeakSpotWhy.
+  ///
+  /// In en, this message translates to:
+  /// **'Time goes where it helps most, and knowing how you miss tells you what to fix.'**
+  String get rulesTrainingWeakSpotWhy;
 }
 
 class _AppLocalizationsDelegate

@@ -6,6 +6,8 @@ library;
 
 import '../../data/board/led_command.dart';
 import '../../domain/checkout/checkout_search.dart';
+import '../../domain/training/aim_target.dart';
+import '../../domain/training/checkout_attempt.dart';
 import '../../domain/x01/leg_state.dart';
 import '../../domain/x01/thrown_dart.dart';
 import '../atc_controller.dart';
@@ -169,9 +171,62 @@ List<LedCue> ledCuesForTraining(
     ):
       return _legCues(before, after, endsMatch: false) ??
           (_newLegOpened(before, after) ? const [GameOn()] : const []);
+    case (
+      CheckoutChallengeSession(state: final before),
+      CheckoutChallengeSession(state: final after),
+    ):
+      return _attemptCues(before.attempts, after.attempts);
+    case (
+      Ladder121Session(state: final before),
+      Ladder121Session(state: final after),
+    ):
+      return _attemptCues(before.attempts, after.attempts);
+    case (
+      Bobs27Session(state: final before),
+      Bobs27Session(state: final after),
+    ):
+      final target = before.currentTarget;
+      if (target == null || after.darts.length != before.darts.length + 1) {
+        return const [];
+      }
+      if (after.visits.length > before.visits.length) {
+        if (after.passed) return const [LegWon(0)];
+        if (after.visits.last.hits == 0) return const [TurnBusted()];
+      }
+      return [_aimCue(target, after.darts.last)];
+    case (
+      WeakSpotSession(state: final before),
+      WeakSpotSession(state: final after),
+    ):
+      final target = before.currentTarget;
+      if (target == null || after.darts.length != before.darts.length + 1) {
+        return const [];
+      }
+      return [_aimCue(target, after.darts.last)];
     default:
       return const [];
   }
+}
+
+/// The cues for one dart in a drill made of checkout attempts, read off the
+/// attempt it landed in: the one running before it. A finish lights up as a
+/// leg won.
+List<LedCue> _attemptCues(
+  List<CheckoutAttempt> before,
+  List<CheckoutAttempt> after,
+) {
+  final index = before.length - 1;
+  if (index < 0 || index >= after.length) return const [];
+  return _legCues(before[index].leg, after[index].leg, endsMatch: false) ??
+      const [];
+}
+
+/// A dart thrown at [target]: a hit flashes the bed, anything else is a miss.
+LedCue _aimCue(AimTarget target, ThrownDart dart) {
+  final segment = dart.segment;
+  return segment != null && target.isHitBy(segment)
+      ? TargetHit(segment)
+      : const DartMissed();
 }
 
 /// The cues for one x01 dart, or null when [before] to [after] is not one.
@@ -270,6 +325,14 @@ RingPaint bullingRing(BullingSession session) {
     return RingPaint.off;
   }
   return RingPaint.all(RingColor.turquoise);
+}
+
+/// The resting ring for a drill with one target: that number in yellow, or
+/// the whole ring turquoise for a bull. Dark once the drill is over.
+RingPaint aimRing(AimTarget? target) {
+  if (target == null) return RingPaint.off;
+  if (target.isBull) return RingPaint.all(RingColor.turquoise);
+  return RingPaint.only({target.number: RingColor.yellow});
 }
 
 /// The resting ring for Higher/Lower: dark. There is no bed to aim for -

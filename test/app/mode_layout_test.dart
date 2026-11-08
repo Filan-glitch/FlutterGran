@@ -6,6 +6,7 @@ import 'package:fluttergran/app/screens/atc_game_screen.dart';
 import 'package:fluttergran/app/screens/bulling_game_screen.dart';
 import 'package:fluttergran/app/screens/higher_lower_game_screen.dart';
 import 'package:fluttergran/app/screens/training_game_screen.dart';
+import 'package:fluttergran/app/training_controller.dart';
 import 'package:fluttergran/app/widgets/aim_card.dart';
 import 'package:fluttergran/app/widgets/bounds_card.dart';
 import 'package:fluttergran/app/widgets/dart_keypad.dart';
@@ -193,7 +194,7 @@ void main() {
     TrainingDrill drill,
     Size size,
   ) async {
-    container.read(trainingProvider.notifier).start(drill: drill);
+    container.read(trainingProvider.notifier).start(TrainingPlan.of(drill));
     await pushAt(tester, const TrainingGameScreen(), size);
   }
 

@@ -1138,4 +1138,238 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get updateDismissTooltip => 'Ausblenden';
+
+  @override
+  String get checkoutChallengeLabel => 'CHECKOUT-CHALLENGE';
+
+  @override
+  String get checkoutChallengeTagline =>
+      'ein zufälliges Finish, eine Aufnahme zum Auschecken';
+
+  @override
+  String get ladder121Label => '121-LEITER';
+
+  @override
+  String get ladder121Tagline =>
+      'in neun Darts auschecken, jedes Mal eine Stufe höher';
+
+  @override
+  String get bobs27Label => 'BOB\'S 27';
+
+  @override
+  String get bobs27Tagline =>
+      'Doppel unter Druck: eine leere Aufnahme kostet Punkte';
+
+  @override
+  String get weakSpotLabel => 'SCHWACHSTELLEN-TRAINER';
+
+  @override
+  String get weakSpotTagline => 'deine schwächsten Ziele, für dich ausgesucht';
+
+  @override
+  String get difficultyLabel => 'Schwierigkeit';
+
+  @override
+  String get difficultyAdaptive => 'Adaptiv';
+
+  @override
+  String get roundsLabel => 'Runden';
+
+  @override
+  String get routeHintLabel => 'Weg';
+
+  @override
+  String get routeShown => 'Anzeigen';
+
+  @override
+  String get routeAfterVisit => 'Nach der Aufnahme';
+
+  @override
+  String get bobs27DropOutLabel => 'Unter null';
+
+  @override
+  String get bobs27StopAtZero => 'Aus';
+
+  @override
+  String get bobs27PlayOn => 'Weiterspielen';
+
+  @override
+  String get focusLabel => 'Fokus';
+
+  @override
+  String get focusDoubles => 'Doppel';
+
+  @override
+  String get focusTrebles => 'Triple';
+
+  @override
+  String get focusSingles => 'Einfach';
+
+  @override
+  String get focusMixed => 'Gemischt';
+
+  @override
+  String get trainingPlayerLabel => 'Spieler';
+
+  @override
+  String get trainingPlayerHint =>
+      'optional: gewichtet Ziele nach deinen gespeicherten Spielen';
+
+  @override
+  String roundOfRounds(int round, int rounds) {
+    return 'RUNDE $round VON $rounds';
+  }
+
+  @override
+  String get levelLabel => 'STUFE';
+
+  @override
+  String get rungLabel => 'STUFE';
+
+  @override
+  String get scoreLabel => 'PUNKTE';
+
+  @override
+  String hitsOfAttempts(int hits, int attempts) {
+    return '$hits VON $attempts';
+  }
+
+  @override
+  String visitsLeftCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'noch $count Aufnahmen',
+      one: 'noch 1 Aufnahme',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get routeAfterVisitHint =>
+      'Selbst überlegen - der Weg kommt nach der Aufnahme';
+
+  @override
+  String lastAttemptCheckedOut(int score) {
+    return '$score AUSGECHECKT';
+  }
+
+  @override
+  String lastAttemptMissed(int score) {
+    return '$score VERPASST';
+  }
+
+  @override
+  String bestRouteWas(String route) {
+    return 'Bester Weg war $route';
+  }
+
+  @override
+  String get sessionCompleteLabel => 'TRAINING BEENDET';
+
+  @override
+  String checkoutChallengeSummary(int hits, int attempts) {
+    return '$hits von $attempts ausgecheckt';
+  }
+
+  @override
+  String highestFinishDetail(int score) {
+    return 'Höchstes Finish $score';
+  }
+
+  @override
+  String dartsPerCheckoutDetail(String darts) {
+    return '$darts Darts pro Checkout';
+  }
+
+  @override
+  String ladderSummary(int rung) {
+    return 'Höchste Stufe $rung';
+  }
+
+  @override
+  String get ladderNoFinish => 'Noch keine Stufe geschafft';
+
+  @override
+  String get bobs27PassedLabel => 'BESTANDEN';
+
+  @override
+  String get bobs27OutLabel => 'AUSGESCHIEDEN';
+
+  @override
+  String bobs27Detail(String target, String rate) {
+    return 'Bis $target - $rate der Doppel getroffen';
+  }
+
+  @override
+  String weakSpotSummary(String rate) {
+    return '$rate getroffen in dieser Sitzung';
+  }
+
+  @override
+  String weakSpotResultLine(
+    String target,
+    int hits,
+    int attempts,
+    String direction,
+  ) {
+    return '$target: $hits von $attempts, meist $direction daneben';
+  }
+
+  @override
+  String weakSpotResultClean(String target, int hits, int attempts) {
+    return '$target: $hits von $attempts, kein Fehlwurf';
+  }
+
+  @override
+  String weakSpotHistoryRate(String rate) {
+    return 'gespeicherte Spiele: $rate';
+  }
+
+  @override
+  String get missInside => 'innen';
+
+  @override
+  String get missOutside => 'außen';
+
+  @override
+  String get missLeft => 'links';
+
+  @override
+  String get missRight => 'rechts';
+
+  @override
+  String get missElsewhere => 'weit';
+
+  @override
+  String get rulesTrainingChallengeBody =>
+      'Jede Runde zieht eine zufällige Punktzahl, die in einer Aufnahme auscheckbar ist, bis 170 bei Double Out. Checke mit höchstens drei Darts aus. Adaptiv steigt nach jedem Checkout eine Stufe und fällt nach zwei Fehlversuchen in Folge.';
+
+  @override
+  String get rulesTrainingChallengeWhy =>
+      'Zufällige Ziele schlagen Wiederholung: du behältst mehr vom Geübten.';
+
+  @override
+  String get rulesTrainingLadderBody =>
+      'Checke das Ziel in neun Darts mit Double Out aus. Ein Finish erhöht das nächste Ziel um eins, ein Fehlversuch senkt es um eins, nie unter den Start.';
+
+  @override
+  String get rulesTrainingLadderWhy =>
+      'Das Ziel folgt deiner Form: schwer, aber machbar.';
+
+  @override
+  String get rulesTrainingBobsBody =>
+      'Start bei 27. Eine Aufnahme auf jedes Doppel von D1 bis D20, dann Bull. Jeder Treffer zählt das Doppel dazu, eine Aufnahme ohne Treffer zieht es ab. Bei null oder darunter bist du raus.';
+
+  @override
+  String get rulesTrainingBobsWhy =>
+      'Üben mit etwas auf dem Spiel hilft, wenn es zählt.';
+
+  @override
+  String get rulesTrainingWeakSpotBody =>
+      'Die App wählt ein Ziel pro Aufnahme, öfter die, die du am seltensten triffst - in gespeicherten Spielen und in dieser Sitzung -, aber nie zweimal hintereinander dasselbe. Am Ende siehst du deine schwächsten Ziele und wohin die Fehlwürfe gehen.';
+
+  @override
+  String get rulesTrainingWeakSpotWhy =>
+      'Die Zeit geht dahin, wo sie am meisten hilft, und zu wissen, wie du danebenwirfst, zeigt, was zu ändern ist.';
 }
