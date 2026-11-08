@@ -24,8 +24,11 @@ dartdoc:
     - Data
     - App
 
+  # README.md is the site's index page, so its links to docs/ and
+  # CONTRIBUTING.md are absolute GitHub URLs; a relative one is a broken link.
   errors:
     - ambiguous-doc-reference
+    - broken-link
     - ambiguous-reexport
     - category-order-gives-missing-package-name
     - deprecated
@@ -44,8 +47,3 @@ dartdoc:
     - unknown-macro
     - unresolved-doc-reference
 
-  # README.md is the index page, and its relative links to CONTRIBUTING.md
-  # and docs/*.md have no counterpart in the generated site. Only a full
-  # build validates links; the category pages link the handbook absolutely.
-  ignore:
-    - broken-link

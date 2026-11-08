@@ -54,6 +54,9 @@ dart run build_runner build --delete-conflicting-outputs   # after a table chang
 
 ### API docs
 
+Published from `main` at <https://filan-glitch.github.io/FlutterGran/> by `.github/workflows/docs.yml`
+on every push. To build locally:
+
 ```bash
 dart pub global activate dartdoc 9.0.11
 dart pub global run dartdoc              # writes doc/api/index.html (gitignored)
@@ -65,6 +68,9 @@ on drift's inherited `@docImport` comments. Libraries are grouped by
 (`docs/api/*.md`) links this handbook and the `docs/` files. Settings live in
 `dartdoc_options.yaml`: doc warnings such as an unresolved `[Symbol]` or a
 library without a library doc are errors, so the build fails on them.
+
+README.md is the site's index page, so its links into the repo are absolute
+GitHub URLs; a relative link there fails the docs build as a broken link.
 
 ### Where the docs live
 
