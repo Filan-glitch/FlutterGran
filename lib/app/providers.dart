@@ -661,8 +661,8 @@ class X01DefaultsController extends Notifier<X01Defaults> {
     if (prefs == null) return;
 
     final startScore = prefs.getInt(_startScoreKey);
-    final inRule = _parse(X01InRule.values, prefs.getString(_inRuleKey));
-    final outRule = _parse(X01OutRule.values, prefs.getString(_outRuleKey));
+    final inRule = X01InRule.values.asNameMap()[prefs.getString(_inRuleKey)];
+    final outRule = X01OutRule.values.asNameMap()[prefs.getString(_outRuleKey)];
 
     state = (
       startScore: startScore ?? state.startScore,
@@ -678,14 +678,6 @@ class X01DefaultsController extends Notifier<X01Defaults> {
     await prefs.setInt(_startScoreKey, next.startScore);
     await prefs.setString(_inRuleKey, next.inRule.name);
     await prefs.setString(_outRuleKey, next.outRule.name);
-  }
-
-  T? _parse<T extends Enum>(List<T> values, String? name) {
-    if (name == null) return null;
-    for (final value in values) {
-      if (value.name == name) return value;
-    }
-    return null;
   }
 }
 
