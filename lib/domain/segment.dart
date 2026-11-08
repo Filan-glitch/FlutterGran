@@ -100,3 +100,12 @@ class Segment {
   @override
   String toString() => label;
 }
+
+/// The wedge numbers clockwise from the top of the board, starting at 20.
+///
+/// Neighbours in this list are neighbours on the board, which is what tells
+/// a dart that went one wedge wide apart from one that was nowhere near.
+const List<int> boardOrder = [
+  20, 1, 18, 4, 13, 6, 10, 15, 2, 17, //
+  3, 19, 7, 16, 8, 11, 14, 9, 12, 5,
+];

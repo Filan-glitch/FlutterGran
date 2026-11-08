@@ -145,6 +145,10 @@ Two deliberate choices:
 - **`value` is denormalised** *only* so that rule-free aggregates — the accuracy
   heatmap — stay a single query. Nothing that applies rules reads it.
 
+No column says what a dart was **aimed at**. Where the rules make it plain,
+`inferAimRecords` (`lib/domain/training/aim_records.dart`) rebuilds it by
+replaying legs, for the Weak-spot Trainer: it is derived, never stored.
+
 ## Migrations
 
 `AppDatabase.migration`, in the same file:

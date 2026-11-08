@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,7 +11,9 @@ import 'package:fluttergran/app/training_controller.dart';
 import 'package:fluttergran/app/widgets/checkout_card.dart';
 import 'package:fluttergran/data/board/fake_board_source.dart';
 import 'package:fluttergran/domain/segment.dart';
-import 'package:fluttergran/domain/training/training_drill.dart';
+import 'package:fluttergran/domain/training/bobs_27.dart';
+import 'package:fluttergran/domain/training/checkout_challenge.dart';
+import 'package:fluttergran/domain/training/weak_spot.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
 
 import '../support/pump.dart';
@@ -30,6 +33,7 @@ void main() {
       overrides: [
         boardSourceProvider.overrideWithValue(board),
         soundPlayerProvider.overrideWithValue(player),
+        trainingRandomProvider.overrideWithValue(Random(5)),
       ],
     );
   });
@@ -53,7 +57,7 @@ void main() {
   }
 
   group('free practice', () {
-    setUp(() => controller().start(drill: TrainingDrill.freePractice));
+    setUp(() => controller().start(const FreePracticePlan()));
 
     testWidgets('a board hit shows the dart and updates the session stats', (
       tester,
@@ -79,12 +83,7 @@ void main() {
           widget.style?.fontSize == Type.score.fontSize,
     );
 
-    setUp(
-      () => controller().start(
-        drill: TrainingDrill.checkoutPractice,
-        startScore: 40,
-      ),
-    );
+    setUp(() => controller().start(const CheckoutPracticePlan(startScore: 40)));
 
     testWidgets('shows the remaining score and the checkout suggestion', (
       tester,
@@ -179,6 +178,84 @@ void main() {
 
         expect(player.silenced, greaterThan(silencedBefore));
       },
+    );
+  });
+
+  group('checkout challenge', () {
+    testWidgets('a hidden route shows a hint, then the best route after a '
+        'miss', (tester) async {
+      controller().start(
+        const CheckoutChallengePlan(
+          CheckoutChallengeConfig(
+            band: CheckoutBand(40, 40),
+            rounds: 2,
+            showRoute: false,
+          ),
+        ),
+      );
+      await pump(tester);
+      expect(find.byType(CheckoutCard), findsNothing);
+      expect(
+        find.text('Work it out - the route shows after the visit'),
+        findsOneWidget,
+      );
+
+      for (var i = 0; i < 3; i++) {
+        controller().addDart(const ThrownDart.miss());
+      }
+      await tester.pump();
+      expect(find.text('40 MISSED'), findsOneWidget);
+      expect(find.text('Best was 40: D20'), findsOneWidget);
+    });
+
+    testWidgets('the end shows the session summary', (tester) async {
+      controller().start(
+        const CheckoutChallengePlan(
+          CheckoutChallengeConfig(band: CheckoutBand(40, 40), rounds: 1),
+        ),
+      );
+      await pump(tester);
+      controller().addDart(const ThrownDart(Segment(20, Ring.doubleRing)));
+      await tester.pumpAndSettle();
+
+      expect(find.text('SESSION COMPLETE'), findsOneWidget);
+      expect(find.text('1 of 1 checked out'), findsOneWidget);
+      expect(find.byKey(const Key('throw-again-button')), findsOneWidget);
+    });
+  });
+
+  testWidgets("bob's 27 shows the knock-out", (tester) async {
+    controller().start(const Bobs27Plan(Bobs27Config()));
+    await pump(tester);
+    expect(find.text('D1'), findsWidgets);
+
+    for (var i = 0; i < 15; i++) {
+      controller().addDart(const ThrownDart.miss());
+    }
+    await tester.pumpAndSettle();
+    expect(find.text('KNOCKED OUT'), findsOneWidget);
+  });
+
+  testWidgets('the weak-spot summary names the usual miss', (tester) async {
+    controller().start(
+      const WeakSpotPlan(
+        WeakSpotConfig(focus: WeakSpotFocus.singles, rounds: 1),
+      ),
+    );
+    await pump(tester);
+    final target = (container.read(
+      trainingProvider,
+    ) as WeakSpotSession).state.currentTarget!;
+
+    for (var i = 0; i < 3; i++) {
+      controller().addDart(const ThrownDart.miss());
+    }
+    await tester.pumpAndSettle();
+
+    expect(find.text('SESSION COMPLETE'), findsOneWidget);
+    expect(
+      find.textContaining('${target.label}: 0 of 3, misses mostly outside'),
+      findsOneWidget,
     );
   });
 }

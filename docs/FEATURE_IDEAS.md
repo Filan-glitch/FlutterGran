@@ -5,7 +5,8 @@ is committed or scheduled — this exists so a future session doesn't have to
 re-derive the same list.
 
 Current modes: X01, Around the Clock, Bulling, Higher/Lower, plus training
-(free practice and checkout practice, `lib/domain/training/`).
+(free practice, checkout practice, Checkout Challenge, 121 Ladder, Bob's 27,
+Weak-spot Trainer; `lib/domain/training/`).
 `select_game_mode_screen.dart` renders a "coming soon" tile after the registry
 entries, deliberately not naming a specific next mode.
 
@@ -54,8 +55,14 @@ the LED cues, is the "Add a game mode" recipe in
 - Player profiles: persisted avatar/colour in the roster.
 - Quick-launch shortcut (home-screen widget or in-app) for the last-used game
   config.
-- Expanded training drill library (ton-plus targets, doubles-only drill),
-  building on `lib/domain/training/training_drill.dart`.
+- More training drills (ton-plus targets), building on
+  `lib/domain/training/training_drill.dart`.
+- Saved training sessions (a schema bump), for progress across sessions; the
+  drills are pure folds already, so only storage is missing.
+- A personal "aim here" heatmap: fit the player's scatter from where their
+  darts land (Tibshirani, Price & Taylor, "A statistician plays darts", JRSS A
+  2011, an EM fit on score-only data) and show where to aim for the most
+  points.
 
 ## Process note
 

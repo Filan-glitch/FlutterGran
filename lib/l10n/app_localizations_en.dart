@@ -1129,4 +1129,237 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updateDismissTooltip => 'Dismiss';
+
+  @override
+  String get checkoutChallengeLabel => 'CHECKOUT CHALLENGE';
+
+  @override
+  String get checkoutChallengeTagline =>
+      'a random finish, one visit to take it out';
+
+  @override
+  String get ladder121Label => '121 LADDER';
+
+  @override
+  String get ladder121Tagline => 'finish in nine darts, climb a rung each time';
+
+  @override
+  String get bobs27Label => 'BOB\'S 27';
+
+  @override
+  String get bobs27Tagline =>
+      'doubles under pressure: a blank visit costs points';
+
+  @override
+  String get weakSpotLabel => 'WEAK-SPOT TRAINER';
+
+  @override
+  String get weakSpotTagline => 'your weakest targets, picked for you';
+
+  @override
+  String get difficultyLabel => 'Difficulty';
+
+  @override
+  String get difficultyAdaptive => 'Adaptive';
+
+  @override
+  String get roundsLabel => 'Rounds';
+
+  @override
+  String get routeHintLabel => 'Route';
+
+  @override
+  String get routeShown => 'Shown';
+
+  @override
+  String get routeAfterVisit => 'After the visit';
+
+  @override
+  String get bobs27DropOutLabel => 'Below zero';
+
+  @override
+  String get bobs27StopAtZero => 'Out';
+
+  @override
+  String get bobs27PlayOn => 'Play on';
+
+  @override
+  String get focusLabel => 'Focus';
+
+  @override
+  String get focusDoubles => 'Doubles';
+
+  @override
+  String get focusTrebles => 'Trebles';
+
+  @override
+  String get focusSingles => 'Singles';
+
+  @override
+  String get focusMixed => 'Mixed';
+
+  @override
+  String get trainingPlayerLabel => 'Player';
+
+  @override
+  String get trainingPlayerHint =>
+      'optional: weights targets by your saved games';
+
+  @override
+  String roundOfRounds(int round, int rounds) {
+    return 'ROUND $round OF $rounds';
+  }
+
+  @override
+  String get levelLabel => 'LEVEL';
+
+  @override
+  String get rungLabel => 'RUNG';
+
+  @override
+  String get scoreLabel => 'SCORE';
+
+  @override
+  String hitsOfAttempts(int hits, int attempts) {
+    return '$hits OF $attempts';
+  }
+
+  @override
+  String visitsLeftCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count visits left',
+      one: '1 visit left',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get routeAfterVisitHint =>
+      'Work it out - the route shows after the visit';
+
+  @override
+  String lastAttemptCheckedOut(int score) {
+    return '$score CHECKED OUT';
+  }
+
+  @override
+  String lastAttemptMissed(int score) {
+    return '$score MISSED';
+  }
+
+  @override
+  String bestRouteWas(String route) {
+    return 'Best was $route';
+  }
+
+  @override
+  String get sessionCompleteLabel => 'SESSION COMPLETE';
+
+  @override
+  String checkoutChallengeSummary(int hits, int attempts) {
+    return '$hits of $attempts checked out';
+  }
+
+  @override
+  String highestFinishDetail(int score) {
+    return 'Highest finish $score';
+  }
+
+  @override
+  String dartsPerCheckoutDetail(String darts) {
+    return '$darts darts per checkout';
+  }
+
+  @override
+  String ladderSummary(int rung) {
+    return 'Highest rung $rung';
+  }
+
+  @override
+  String get ladderNoFinish => 'No rung finished yet';
+
+  @override
+  String get bobs27PassedLabel => 'PASSED';
+
+  @override
+  String get bobs27OutLabel => 'KNOCKED OUT';
+
+  @override
+  String bobs27Detail(String target, String rate) {
+    return 'Reached $target - $rate of doubles hit';
+  }
+
+  @override
+  String weakSpotSummary(String rate) {
+    return '$rate hit this session';
+  }
+
+  @override
+  String weakSpotResultLine(
+    String target,
+    int hits,
+    int attempts,
+    String direction,
+  ) {
+    return '$target: $hits of $attempts, misses mostly $direction';
+  }
+
+  @override
+  String weakSpotResultClean(String target, int hits, int attempts) {
+    return '$target: $hits of $attempts, no misses';
+  }
+
+  @override
+  String weakSpotHistoryRate(String rate) {
+    return 'saved games: $rate';
+  }
+
+  @override
+  String get missInside => 'inside';
+
+  @override
+  String get missOutside => 'outside';
+
+  @override
+  String get missLeft => 'left';
+
+  @override
+  String get missRight => 'right';
+
+  @override
+  String get missElsewhere => 'wide';
+
+  @override
+  String get rulesTrainingChallengeBody =>
+      'Each round draws a random score you can finish in one visit, up to 170 under double out. Check out with three darts or less. Adaptive difficulty climbs a level after every checkout and drops one after two misses in a row.';
+
+  @override
+  String get rulesTrainingChallengeWhy =>
+      'Random targets beat repeating one: you remember more of what you practise.';
+
+  @override
+  String get rulesTrainingLadderBody =>
+      'Finish the target in nine darts under double out. A finish raises the next target by one; a failure lowers it by one, never below where you started.';
+
+  @override
+  String get rulesTrainingLadderWhy =>
+      'The target follows your form, so it stays hard but within reach.';
+
+  @override
+  String get rulesTrainingBobsBody =>
+      'Start on 27. Throw one visit at each double from D1 to D20, then the bull. Every hit adds the double; a visit without one takes it away. Drop to zero or below and you are out.';
+
+  @override
+  String get rulesTrainingBobsWhy =>
+      'Practising with something at stake helps you hold up when it counts.';
+
+  @override
+  String get rulesTrainingWeakSpotBody =>
+      'The app picks one target per visit, more often the ones you hit least - in your saved games and in this session - but never the same one twice in a row. At the end you see your weakest targets and which way the misses go.';
+
+  @override
+  String get rulesTrainingWeakSpotWhy =>
+      'Time goes where it helps most, and knowing how you miss tells you what to fix.';
 }

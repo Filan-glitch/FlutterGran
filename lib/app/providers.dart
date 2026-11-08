@@ -33,6 +33,8 @@ import '../domain/higher_lower/higher_lower_leg_state.dart';
 import '../domain/higher_lower/higher_lower_reducer.dart';
 import '../domain/segment.dart';
 import '../domain/stats/player_stats.dart';
+import '../domain/training/aim_records.dart';
+import '../domain/training/aim_target.dart';
 import '../domain/x01/game_config.dart';
 import '../domain/x01/leg_reducer.dart';
 import '../domain/x01/leg_state.dart';
@@ -387,6 +389,20 @@ final playerStatsProvider = Provider.family<Map<GameMode, ModeStats>, int>((
     atcLegs: ref.watch(allAtcLegsProvider).value ?? const [],
     bullingLegs: ref.watch(allBullingLegsProvider).value ?? const [],
     higherLowerLegs: ref.watch(allHigherLowerLegsProvider).value ?? const [],
+  );
+});
+
+/// What a player's saved games say about each target they were clearly
+/// aiming at - see [inferAimRecords]. Seeds the Weak-spot Trainer.
+final aimRecordsProvider = Provider.family<Map<AimTarget, AimRecord>, int>((
+  ref,
+  playerId,
+) {
+  return inferAimRecords(
+    playerId,
+    x01Legs: ref.watch(allLegsProvider).value ?? const [],
+    atcLegs: ref.watch(allAtcLegsProvider).value ?? const [],
+    bullingLegs: ref.watch(allBullingLegsProvider).value ?? const [],
   );
 });
 

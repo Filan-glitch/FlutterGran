@@ -458,5 +458,111 @@
   "updateDownloadFailedStatus": "Download failed",
   "updateInstallFailedStatus": "Couldn't start the update",
   "updateRetryButton": "TRY AGAIN",
-  "updateDismissTooltip": "Dismiss"
+  "updateDismissTooltip": "Dismiss",
+
+  "checkoutChallengeLabel": "CHECKOUT CHALLENGE",
+  "checkoutChallengeTagline": "a random finish, one visit to take it out",
+  "ladder121Label": "121 LADDER",
+  "ladder121Tagline": "finish in nine darts, climb a rung each time",
+  "bobs27Label": "BOB'S 27",
+  "bobs27Tagline": "doubles under pressure: a blank visit costs points",
+  "weakSpotLabel": "WEAK-SPOT TRAINER",
+  "weakSpotTagline": "your weakest targets, picked for you",
+  "difficultyLabel": "Difficulty",
+  "difficultyAdaptive": "Adaptive",
+  "roundsLabel": "Rounds",
+  "routeHintLabel": "Route",
+  "routeShown": "Shown",
+  "routeAfterVisit": "After the visit",
+  "bobs27DropOutLabel": "Below zero",
+  "bobs27StopAtZero": "Out",
+  "bobs27PlayOn": "Play on",
+  "focusLabel": "Focus",
+  "focusDoubles": "Doubles",
+  "focusTrebles": "Trebles",
+  "focusSingles": "Singles",
+  "focusMixed": "Mixed",
+  "trainingPlayerLabel": "Player",
+  "trainingPlayerHint": "optional: weights targets by your saved games",
+  "roundOfRounds": "ROUND {round} OF {rounds}",
+  "@roundOfRounds": {
+    "placeholders": { "round": { "type": "int" }, "rounds": { "type": "int" } }
+  },
+  "levelLabel": "LEVEL",
+  "rungLabel": "RUNG",
+  "scoreLabel": "SCORE",
+  "hitsOfAttempts": "{hits} OF {attempts}",
+  "@hitsOfAttempts": {
+    "placeholders": { "hits": { "type": "int" }, "attempts": { "type": "int" } }
+  },
+  "visitsLeftCount": "{count, plural, one{1 visit left} other{{count} visits left}}",
+  "@visitsLeftCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "routeAfterVisitHint": "Work it out - the route shows after the visit",
+  "lastAttemptCheckedOut": "{score} CHECKED OUT",
+  "@lastAttemptCheckedOut": {
+    "placeholders": { "score": { "type": "int" } }
+  },
+  "lastAttemptMissed": "{score} MISSED",
+  "@lastAttemptMissed": {
+    "placeholders": { "score": { "type": "int" } }
+  },
+  "bestRouteWas": "Best was {route}",
+  "@bestRouteWas": {
+    "placeholders": { "route": { "type": "String" } }
+  },
+  "sessionCompleteLabel": "SESSION COMPLETE",
+  "checkoutChallengeSummary": "{hits} of {attempts} checked out",
+  "@checkoutChallengeSummary": {
+    "placeholders": { "hits": { "type": "int" }, "attempts": { "type": "int" } }
+  },
+  "highestFinishDetail": "Highest finish {score}",
+  "@highestFinishDetail": {
+    "placeholders": { "score": { "type": "int" } }
+  },
+  "dartsPerCheckoutDetail": "{darts} darts per checkout",
+  "@dartsPerCheckoutDetail": {
+    "placeholders": { "darts": { "type": "String" } }
+  },
+  "ladderSummary": "Highest rung {rung}",
+  "@ladderSummary": {
+    "placeholders": { "rung": { "type": "int" } }
+  },
+  "ladderNoFinish": "No rung finished yet",
+  "bobs27PassedLabel": "PASSED",
+  "bobs27OutLabel": "KNOCKED OUT",
+  "bobs27Detail": "Reached {target} - {rate} of doubles hit",
+  "@bobs27Detail": {
+    "placeholders": { "target": { "type": "String" }, "rate": { "type": "String" } }
+  },
+  "weakSpotSummary": "{rate} hit this session",
+  "@weakSpotSummary": {
+    "placeholders": { "rate": { "type": "String" } }
+  },
+  "weakSpotResultLine": "{target}: {hits} of {attempts}, misses mostly {direction}",
+  "@weakSpotResultLine": {
+    "placeholders": { "target": { "type": "String" }, "hits": { "type": "int" }, "attempts": { "type": "int" }, "direction": { "type": "String" } }
+  },
+  "weakSpotResultClean": "{target}: {hits} of {attempts}, no misses",
+  "@weakSpotResultClean": {
+    "placeholders": { "target": { "type": "String" }, "hits": { "type": "int" }, "attempts": { "type": "int" } }
+  },
+  "weakSpotHistoryRate": "saved games: {rate}",
+  "@weakSpotHistoryRate": {
+    "placeholders": { "rate": { "type": "String" } }
+  },
+  "missInside": "inside",
+  "missOutside": "outside",
+  "missLeft": "left",
+  "missRight": "right",
+  "missElsewhere": "wide",
+  "rulesTrainingChallengeBody": "Each round draws a random score you can finish in one visit, up to 170 under double out. Check out with three darts or less. Adaptive difficulty climbs a level after every checkout and drops one after two misses in a row.",
+  "rulesTrainingChallengeWhy": "Random targets beat repeating one: you remember more of what you practise.",
+  "rulesTrainingLadderBody": "Finish the target in nine darts under double out. A finish raises the next target by one; a failure lowers it by one, never below where you started.",
+  "rulesTrainingLadderWhy": "The target follows your form, so it stays hard but within reach.",
+  "rulesTrainingBobsBody": "Start on 27. Throw one visit at each double from D1 to D20, then the bull. Every hit adds the double; a visit without one takes it away. Drop to zero or below and you are out.",
+  "rulesTrainingBobsWhy": "Practising with something at stake helps you hold up when it counts.",
+  "rulesTrainingWeakSpotBody": "The app picks one target per visit, more often the ones you hit least - in your saved games and in this session - but never the same one twice in a row. At the end you see your weakest targets and which way the misses go.",
+  "rulesTrainingWeakSpotWhy": "Time goes where it helps most, and knowing how you miss tells you what to fix."
 }

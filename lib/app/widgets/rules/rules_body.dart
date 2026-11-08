@@ -382,51 +382,103 @@ class RulesBody extends StatelessWidget {
   List<Widget> _training(AppLocalizations l10n, bool wide) => [
     _Section(
       title: l10n.rulesSectionDrills,
-      child: _Pair(
-        wide: wide,
-        first: _DrillCard(
-          key: const Key('rules-drill-freePractice'),
-          title: l10n.freePracticeLabel,
-          body: l10n.rulesTrainingFreeBody,
-          child: Wrap(
-            spacing: Gap.sm,
-            runSpacing: Gap.sm,
-            children: [
-              for (final stat in [
-                l10n.rulesStatTotal,
-                l10n.statBestTurn,
-                l10n.statAverage,
-                l10n.figure180s,
-              ])
-                _StatChip(stat),
-            ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _trainingBasics(l10n, wide),
+          const SizedBox(height: Gap.lg),
+          _Pair(
+            wide: wide,
+            first: _DrillCard(
+              key: const Key('rules-drill-checkoutChallenge'),
+              title: l10n.checkoutChallengeLabel,
+              body: l10n.rulesTrainingChallengeBody,
+              child: _Why(l10n.rulesTrainingChallengeWhy),
+            ),
+            second: _DrillCard(
+              key: const Key('rules-drill-ladder121'),
+              title: l10n.ladder121Label,
+              body: l10n.rulesTrainingLadderBody,
+              child: _Why(l10n.rulesTrainingLadderWhy),
+            ),
           ),
-        ),
-        second: _DrillCard(
-          key: const Key('rules-drill-checkoutPractice'),
-          title: l10n.checkoutPracticeLabel,
-          body: l10n.rulesTrainingCheckoutBody,
-          child: Column(
-            children: [
-              SizedBox.square(
-                dimension: 180,
-                child: RuleBoard(
-                  lit: Segment.all.where(X01OutRule.double.checksOut).toSet(),
-                  showNumbers: false,
-                ),
-              ),
-              const SizedBox(height: Gap.sm),
-              Text(
-                l10n.rulesLegendCheckout,
-                textAlign: TextAlign.center,
-                style: Type.eyebrow.copyWith(color: Palette.live),
-              ),
-            ],
+          const SizedBox(height: Gap.lg),
+          _Pair(
+            wide: wide,
+            first: _DrillCard(
+              key: const Key('rules-drill-bobs27'),
+              title: l10n.bobs27Label,
+              body: l10n.rulesTrainingBobsBody,
+              child: _Why(l10n.rulesTrainingBobsWhy),
+            ),
+            second: _DrillCard(
+              key: const Key('rules-drill-weakSpot'),
+              title: l10n.weakSpotLabel,
+              body: l10n.rulesTrainingWeakSpotBody,
+              child: _Why(l10n.rulesTrainingWeakSpotWhy),
+            ),
           ),
-        ),
+        ],
       ),
     ),
   ];
+
+  /// Free practice and checkout practice, side by side.
+  Widget _trainingBasics(AppLocalizations l10n, bool wide) => _Pair(
+    wide: wide,
+    first: _DrillCard(
+      key: const Key('rules-drill-freePractice'),
+      title: l10n.freePracticeLabel,
+      body: l10n.rulesTrainingFreeBody,
+      child: Wrap(
+        spacing: Gap.sm,
+        runSpacing: Gap.sm,
+        children: [
+          for (final stat in [
+            l10n.rulesStatTotal,
+            l10n.statBestTurn,
+            l10n.statAverage,
+            l10n.figure180s,
+          ])
+            _StatChip(stat),
+        ],
+      ),
+    ),
+    second: _DrillCard(
+      key: const Key('rules-drill-checkoutPractice'),
+      title: l10n.checkoutPracticeLabel,
+      body: l10n.rulesTrainingCheckoutBody,
+      child: Column(
+        children: [
+          SizedBox.square(
+            dimension: 180,
+            child: RuleBoard(
+              lit: Segment.all.where(X01OutRule.double.checksOut).toSet(),
+              showNumbers: false,
+            ),
+          ),
+          const SizedBox(height: Gap.sm),
+          Text(
+            l10n.rulesLegendCheckout,
+            textAlign: TextAlign.center,
+            style: Type.eyebrow.copyWith(color: Palette.live),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+/// A drill card's one line on why it works, under the rules.
+class _Why extends StatelessWidget {
+  const _Why(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(text, style: Type.eyebrow.copyWith(color: Palette.live));
+  }
 }
 
 /// A titled stretch of a rules page: the name in small capitals running into

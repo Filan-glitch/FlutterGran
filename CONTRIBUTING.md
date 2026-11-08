@@ -303,6 +303,30 @@ exhaustive switches below.
     `select_game_mode_screen_test`, `setup_screens_test`, the two rules tests
     and `test/domain/game_mode_test.dart`.
 
+### Add a training drill
+
+A drill is never saved, so it skips the database, repository, statistics and
+resume steps of a game mode. Copy Bob's 27 (no randomness) or the Weak-spot
+Trainer (draws its targets).
+
+1. **Domain.** A value in `TrainingDrill`, and `lib/domain/training/<drill>.dart`
+   with its config, state and a pure `fold<Drill>`. Random targets are an input
+   to the fold, drawn with `training_random.dart`.
+2. **Controller.** A `TrainingPlan` and a `TrainingSession` subclass in
+   `training_controller.dart`, a case in `TrainingPlan.of`, and a branch in
+   `addDart`, `undo`, `start` and `throwAgain`.
+3. **Setup and game screens.** A `_DrillChoice` and its options in
+   `training_setup_screen.dart`; the `GameLayout` slots and an `OutcomePanel`
+   summary in `training_game_screen.dart`.
+4. **Sound and lights.** Cases in `soundsForTraining`, `ledCuesForTraining`
+   and the ring in `trainingLightsProvider`.
+5. **Rules and strings.** A `_DrillCard` in `rules_body.dart`; every label in
+   both `.arb` files.
+6. **Tests.** `test/domain/training/`, the drill in
+   `training_controller_test`, `training_setup_screen_test`,
+   `training_game_screen_test`, `training_sound_test` and
+   `led_reactions_test`. `mode_layout_test` covers every drill already.
+
 ### Add a provider
 
 1. Write it by hand in `lib/app/providers.dart` (lights providers live in

@@ -9,6 +9,8 @@ import 'package:flutter/widgets.dart';
 import '../domain/atc/atc_variant.dart';
 import '../domain/bulling/bulling_variant.dart';
 import '../domain/game_mode.dart';
+import '../domain/training/aim_target.dart';
+import '../domain/training/weak_spot.dart';
 import '../domain/x01/x01_rules.dart';
 import 'l10n_extensions.dart';
 
@@ -63,3 +65,32 @@ String gameModeName(GameMode mode) => gameModeRegistry
 /// no darts have been thrown.
 String hitRateText(int hits, int darts) =>
     darts == 0 ? '—' : '${(hits * 100 / darts).round()}%';
+
+/// The short label for a [WeakSpotFocus], on the training setup chip.
+String weakSpotFocusLabel(BuildContext context, WeakSpotFocus focus) {
+  final l10n = context.l10n;
+  return switch (focus) {
+    WeakSpotFocus.doubles => l10n.focusDoubles,
+    WeakSpotFocus.trebles => l10n.focusTrebles,
+    WeakSpotFocus.singles => l10n.focusSingles,
+    WeakSpotFocus.mixed => l10n.focusMixed,
+  };
+}
+
+/// Which way a miss went, as the Weak-spot summary words it.
+String missDirectionLabel(BuildContext context, MissDirection direction) {
+  final l10n = context.l10n;
+  return switch (direction) {
+    // A hit is never a miss; the summary only asks about misses.
+    MissDirection.hit => '',
+    MissDirection.inside => l10n.missInside,
+    MissDirection.outside => l10n.missOutside,
+    MissDirection.left => l10n.missLeft,
+    MissDirection.right => l10n.missRight,
+    MissDirection.elsewhere => l10n.missElsewhere,
+  };
+}
+
+/// A share from 0 to 1 as a whole percentage, or a dash for none.
+String rateText(double? rate) =>
+    rate == null ? '—' : '${(rate * 100).round()}%';
