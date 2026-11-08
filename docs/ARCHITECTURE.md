@@ -103,7 +103,44 @@ is not playing.
 `aroundTheClock`, `bulling` and `higherLower`. `gameModeRegistry` holds a
 `GameModeDescriptor` for each, and the select-mode screen renders one tile per
 entry. Training has its own engine (`lib/domain/training/`) but is not a
-`GameMode`: nothing about it is stored.
+`GameMode`: nothing about it is stored. See "Training drills" below.
+
+### Training drills
+
+`TrainingDrill` lists six drills. `TrainingController.start` takes a sealed
+`TrainingPlan` (one per drill, carrying its settings) and holds a sealed
+`TrainingSession` (one per drill, wrapping its folded state). Every drill is a
+pure fold:
+
+| Drill | Fold | Built from |
+| --- | --- | --- |
+| Free practice | `foldFreePractice` | darts in threes |
+| Checkout practice | `foldLeg` | a solo x01 leg |
+| Checkout Challenge | `foldCheckoutChallenge(config, targets, darts)` | one-visit `CheckoutAttempt`s |
+| 121 Ladder | `foldLadder121` | three-visit `CheckoutAttempt`s |
+| Bob's 27 | `foldBobs27` | visits at D1-D20 and the bull |
+| Weak-spot Trainer | `foldWeakSpot(config, targets, darts)` | one visit per `AimTarget` |
+
+Checkout Challenge and the Weak-spot Trainer draw random targets. The drawn
+targets are an input to the fold, so it stays pure and undo is a replay; the
+controller draws the next one (`drawCheckoutTarget`, `drawWeakSpotTarget`,
+both via `training_random.dart`, never repeating the previous target) from
+`trainingRandomProvider`, which tests override with a seeded `Random`. Undo
+trims any target drawn after the dart it takes back.
+
+The design follows the motor-learning literature: random rather than repeated
+targets (contextual interference), difficulty that tracks success (the
+challenge-point framework: Checkout Challenge's adaptive levels climb on a
+checkout and drop after two misses in a row, settling near 38% success),
+something at stake (pressure training: Bob's 27, the ladder), and a summary at
+the end of every drill (knowledge of results).
+
+The Weak-spot Trainer weights each target by `1 - (hits + 1) / (attempts + 2)`
+over the player's history plus the session. History comes from
+`inferAimRecords` (`lib/domain/training/aim_records.dart`) via
+`aimRecordsProvider`: no table stores what a dart was aimed at, so it is
+rebuilt from the rules - double-out x01 darts on a one-dart finish, Around the
+Clock stops (not masters, where the aim is ambiguous), and every Bulling dart.
 
 Each mode has its own config, leg state and fold, in its own folder
 (`lib/domain/atc/`, `bulling/`, `higher_lower/`, `x01/`), rather than a generic
@@ -380,18 +417,18 @@ them the height when there is height and a scroll when there is not. The
 measurements behind each breakpoint are in
 [DEVELOPMENT.md](DEVELOPMENT.md#layout-breakpoints).
 
-Every game screen - x01, Around the Clock, Bulling, Higher/Lower and both
-training drills -
+Every game screen - x01, Around the Clock, Bulling, Higher/Lower and every
+training drill -
 is laid out by one `GameLayout` (`lib/app/widgets/game_layout.dart`) and
 differs only in what it puts in the slots:
 
 | Slot | Widget | x01 | Around the Clock | Bulling | Higher/Lower | Training |
 | --- | --- | --- | --- | --- | --- | --- |
-| seats | `Scoreboard` of `SeatView`s | remaining | stop needed + 22-tick rail | points + rail to target | turns survived, or OUT | remaining / session figures |
-| aim | `AimStrip` | `CheckoutCard` | `AimCard` | - | `BoundsCard` (higher and lower) | `CheckoutCard` |
+| seats | `Scoreboard` of `SeatView`s | remaining | stop needed + 22-tick rail | points + rail to target | turns survived, or OUT | remaining, level, rung, score or target, plus session rate |
+| aim | `AimStrip` | `CheckoutCard` | `AimCard` | - | `BoundsCard` (higher and lower) | `CheckoutCard`, or the target to hit |
 | ledger | `TurnLedger` | turn total, struck on a bust | `+n` stops | `+n` points | turn total | turn total |
 | turn result | `TurnResultPanel` | score, `before → after` | `+n`, stop → stop | `+n`, score → score | total, `HIGHER 45 → 60` or why out | - |
-| outcome | `OutcomePanel` | leg won mid-match | - | - | - | checked out |
+| outcome | `OutcomePanel` | leg won mid-match | - | - | - | checked out, or the drill's summary |
 | game over | `GameOverCard` | match won | leg won | leg won | last one standing | - |
 
 `GameAppBar` gives every one of them the same actions (board light, keypad
