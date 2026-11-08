@@ -11,10 +11,7 @@ import 'package:flutter/material.dart';
 import '../../domain/segment.dart';
 
 /// Wedge numbers clockwise from the top, as they appear on a real board.
-const List<int> boardWedgeOrder = [
-  20, 1, 18, 4, 13, 6, 10, 15, 2, 17, //
-  3, 19, 7, 16, 8, 11, 14, 9, 12, 5,
-];
+const List<int> boardWedgeOrder = boardOrder;
 
 /// Ring boundaries as a fraction of the double ring's outer radius, taken from
 /// standard board dimensions.
