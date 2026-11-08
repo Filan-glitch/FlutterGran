@@ -1,3 +1,9 @@
+/// [SelectGameModeScreen], the tiles a player picks the next game from, drawn
+/// from [gameModeRegistry].
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 
 import '../../domain/game_mode.dart';

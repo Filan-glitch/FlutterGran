@@ -1,3 +1,9 @@
+/// [TurnLedger], the turn in progress written out dart by dart with a running
+/// total.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 
 import '../../domain/x01/leg_state.dart' show dartsPerTurn;

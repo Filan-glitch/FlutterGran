@@ -1,3 +1,9 @@
+/// [HigherLowerController], which owns a Higher/Lower leg's dart log, scores
+/// board and keypad darts against the bounds and stores each one.
+///
+/// {@category App}
+library;
+
 import 'dart:async';
 import 'dart:math';
 

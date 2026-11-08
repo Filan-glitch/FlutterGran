@@ -1,3 +1,9 @@
+/// [higherLowerPointsFor], what one dart is worth in Higher/Lower, shared by
+/// the engine and the statistics.
+///
+/// {@category Game modes}
+library;
+
 import '../segment.dart';
 
 /// Points a dart is worth in Higher/Lower, or null for a miss.

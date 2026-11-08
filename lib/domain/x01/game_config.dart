@@ -1,3 +1,9 @@
+/// [GameConfig], the rules an x01 leg is played under: start score, in and out
+/// rules, the players in throwing order and who throws first.
+///
+/// {@category Domain}
+library;
+
 import 'x01_rules.dart';
 
 /// The rules a leg is played under.

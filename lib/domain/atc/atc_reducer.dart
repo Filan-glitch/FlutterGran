@@ -1,3 +1,9 @@
+/// The Around the Clock engine: [foldAroundTheClock] replays a dart log, moving
+/// a player on along the track each time a dart clears their stop.
+///
+/// {@category Game modes}
+library;
+
 import '../x01/leg_reducer.dart' show foldLeg;
 import '../x01/leg_state.dart' show dartsPerTurn;
 import '../x01/thrown_dart.dart';

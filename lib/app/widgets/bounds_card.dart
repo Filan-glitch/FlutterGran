@@ -1,3 +1,9 @@
+/// [BoundsCard], Higher/Lower's counterpart to the checkout card: the two
+/// values the turn has to beat.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 
 import '../../domain/segment.dart';

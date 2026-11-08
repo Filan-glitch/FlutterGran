@@ -1,3 +1,9 @@
+/// [X01SetupScreen], which picks the start score, in- and out-rules, match
+/// length and players and starts the match.
+///
+/// {@category App}
+library;
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';

@@ -1,3 +1,9 @@
+/// [RuleExplorer], one rule shown with its settings to switch between and a
+/// board that follows the choice.
+///
+/// {@category App}
+library;
+
 import 'dart:math';
 
 import 'package:flutter/material.dart';

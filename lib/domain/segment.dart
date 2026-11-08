@@ -1,3 +1,10 @@
+/// The board's scoring areas, [Ring] and [Segment]: the value every dart,
+/// checkout and statistic is expressed in, shared by the engines and the board
+/// protocol.
+///
+/// {@category Domain}
+library;
+
 /// Which ring of the board a dart landed in.
 ///
 /// The board reports inner and outer singles as distinct physical segments even

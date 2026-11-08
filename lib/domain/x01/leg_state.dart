@@ -1,3 +1,9 @@
+/// [LegState], everything derivable about an x01 leg from its dart log: scores,
+/// completed turns, whose throw it is and the winner.
+///
+/// {@category Domain}
+library;
+
 import 'game_config.dart';
 import 'thrown_dart.dart';
 import 'x01_rules.dart';

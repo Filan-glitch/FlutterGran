@@ -1,3 +1,9 @@
+/// [RuleCallout], a highlighted rule worth stopping on, such as what busts a
+/// turn.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 
 import '../../theme.dart';

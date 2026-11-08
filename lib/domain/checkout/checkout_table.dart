@@ -1,3 +1,9 @@
+/// A memoising cache over [findCheckouts], so the game screen can ask for the
+/// route after every dart without repeating the search.
+///
+/// {@category Domain}
+library;
+
 import '../x01/x01_rules.dart';
 import 'checkout_search.dart';
 

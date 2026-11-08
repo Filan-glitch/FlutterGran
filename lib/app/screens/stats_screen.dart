@@ -1,3 +1,9 @@
+/// [StatsScreen], a player's record in every mode they have played, with the
+/// accuracy heatmap.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

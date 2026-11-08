@@ -1,3 +1,10 @@
+/// The real board over Bluetooth Low Energy: scanning for a GranBoard,
+/// connecting, reconnecting with backoff within Android's scan limits, and
+/// passing on its notification bytes and LED writes.
+///
+/// {@category Data}
+library;
+
 import 'dart:async';
 import 'dart:io' show Platform;
 import 'dart:math';

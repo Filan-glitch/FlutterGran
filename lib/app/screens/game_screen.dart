@@ -1,3 +1,9 @@
+/// [GameScreen], where an x01 leg is played inside its match, with the checkout
+/// card, the end-of-leg panel and the match card.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

@@ -1,3 +1,9 @@
+/// [AudioPlayersSoundPlayer], the real [SoundPlayer], built on audioplayers
+/// with position polling switched off.
+///
+/// {@category App}
+library;
+
 import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';

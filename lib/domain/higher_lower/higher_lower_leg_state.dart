@@ -1,3 +1,10 @@
+/// [HigherLowerLegState], everything derivable about a Higher/Lower leg from
+/// its dart log: the values the next turn must beat, who is out, and how each
+/// turn ended.
+///
+/// {@category Game modes}
+library;
+
 import '../x01/leg_state.dart' show LegState, dartsPerTurn;
 import '../x01/thrown_dart.dart';
 import 'higher_lower_config.dart';

@@ -1,3 +1,9 @@
+/// Reads the latest release from GitHub's REST API and parses its assets and
+/// `SHA256SUMS.txt`, for the in-app update check.
+///
+/// {@category Data}
+library;
+
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;

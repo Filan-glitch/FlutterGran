@@ -1,3 +1,8 @@
+/// [WorkedExample], a turn played out dart by dart to show how a rule scores.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 
 import '../../../domain/segment.dart';

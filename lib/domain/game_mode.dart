@@ -1,3 +1,9 @@
+/// The game modes and the registry the mode-select screen draws its tiles from,
+/// kept free of Flutter so the engines and the database can name a mode.
+///
+/// {@category Domain}
+library;
+
 /// Which game a leg is played under.
 ///
 /// Each value needs a matching entry in [gameModeRegistry] and its own stats

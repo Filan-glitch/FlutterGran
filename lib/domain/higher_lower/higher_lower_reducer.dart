@@ -1,3 +1,9 @@
+/// The Higher/Lower engine: [foldHigherLower] replays a dart log, eliminating
+/// each player whose turn fails to beat the higher or the lower value.
+///
+/// {@category Game modes}
+library;
+
 import '../x01/leg_reducer.dart' show foldLeg;
 import '../x01/leg_state.dart' show dartsPerTurn;
 import '../x01/thrown_dart.dart';

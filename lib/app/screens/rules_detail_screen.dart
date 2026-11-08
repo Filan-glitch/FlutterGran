@@ -1,3 +1,9 @@
+/// [RulesDetailScreen], the rules page for one [RulesTopic], and the width a
+/// rules page may grow to.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 
 import '../l10n_extensions.dart';

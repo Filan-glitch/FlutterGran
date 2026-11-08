@@ -1,3 +1,9 @@
+/// [GameLayout], the arrangement every game screen shares, with its app bar,
+/// the keypad switch and the guard against leaving a leg mid-way.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

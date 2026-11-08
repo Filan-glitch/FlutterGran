@@ -1,3 +1,10 @@
+/// The entry point: [FlutterGranApp] applies the theme, the chosen locale and
+/// device-scaled type, and keeps the board, lights and update providers
+/// running.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

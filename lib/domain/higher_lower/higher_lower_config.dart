@@ -1,3 +1,8 @@
+/// [HigherLowerConfig], the rules a Higher/Lower leg is played under.
+///
+/// {@category Game modes}
+library;
+
 import '../x01/game_config.dart';
 
 /// The rules a Higher/Lower leg is played under.

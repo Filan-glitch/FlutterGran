@@ -1,3 +1,9 @@
+/// [TrainingSetupScreen], which picks a drill and, for checkout practice, a
+/// start score.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

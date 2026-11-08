@@ -1,3 +1,9 @@
+/// [AtcSetupScreen], which picks the Around the Clock variant and players and
+/// starts a stored leg.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

@@ -1,3 +1,10 @@
+/// The in-app update flow: [UpdateController] checks GitHub for a newer release
+/// and, asked to, installs its APK on Android or opens the release page on
+/// Windows.
+///
+/// {@category App}
+library;
+
 import 'dart:async';
 import 'dart:io';
 

@@ -1,3 +1,9 @@
+/// [BullingLegState], everything derivable about a Bulling leg from its dart
+/// log: each player's points, completed turns and the winner.
+///
+/// {@category Game modes}
+library;
+
 import '../x01/leg_state.dart' show LegState, dartsPerTurn;
 import '../x01/thrown_dart.dart';
 import 'bulling_config.dart';

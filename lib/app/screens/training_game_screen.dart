@@ -1,3 +1,9 @@
+/// [TrainingGameScreen], where free practice or a checkout-practice session is
+/// played.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

@@ -1,3 +1,9 @@
+/// Shorthand for the generated localizations on a [BuildContext], and the
+/// seat-label fallback for a player who has since been deleted.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart' show MaterialApp;
 import 'package:flutter/widgets.dart';
 

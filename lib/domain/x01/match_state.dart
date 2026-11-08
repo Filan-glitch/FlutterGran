@@ -1,3 +1,9 @@
+/// Best-of matches: [MatchConfig], and [foldMatch], which derives the score and
+/// the winner from the legs already won, plus who throws first in each leg.
+///
+/// {@category Domain}
+library;
+
 import 'game_config.dart';
 import 'leg_reducer.dart';
 import 'x01_rules.dart';

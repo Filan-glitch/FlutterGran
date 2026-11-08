@@ -1,3 +1,9 @@
+/// [RulesScreen], the rules section's overview of every mode and training, each
+/// opening its own rules page.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 
 import '../l10n_extensions.dart';

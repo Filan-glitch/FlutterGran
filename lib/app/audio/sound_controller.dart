@@ -1,3 +1,9 @@
+/// x01 sound: which cues and spoken lines a change in the game produces, and
+/// [SoundController], which plays them through a [SoundPlayer].
+///
+/// {@category App}
+library;
+
 import '../game_controller.dart';
 
 /// Which of the two players a line belongs to.

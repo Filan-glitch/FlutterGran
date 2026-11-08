@@ -1,3 +1,9 @@
+/// The drift schema - players, matches, legs, seats, the dart log and each
+/// mode's own config - and [AppDatabase] with its migrations.
+///
+/// {@category Data}
+library;
+
 import 'dart:io' show Platform;
 
 import 'package:drift/drift.dart';

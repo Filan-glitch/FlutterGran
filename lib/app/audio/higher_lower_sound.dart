@@ -1,3 +1,9 @@
+/// [soundsForHigherLower], the cues and commentary for a change in a
+/// Higher/Lower leg.
+///
+/// {@category App}
+library;
+
 import '../higher_lower_controller.dart';
 import 'sound_controller.dart';
 

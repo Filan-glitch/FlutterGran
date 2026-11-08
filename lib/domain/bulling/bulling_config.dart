@@ -1,3 +1,9 @@
+/// [BullingConfig], the rules a Bulling leg is played under: the players, what
+/// the bullseye is worth and the score that wins.
+///
+/// {@category Game modes}
+library;
+
 import '../x01/game_config.dart';
 import 'bulling_variant.dart';
 

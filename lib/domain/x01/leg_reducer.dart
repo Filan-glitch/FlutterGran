@@ -1,3 +1,9 @@
+/// The x01 engine: [foldLeg] replays a dart log into a [LegState], applying the
+/// in-rule, busts and the out-rule. Undo is folding a shorter log.
+///
+/// {@category Domain}
+library;
+
 import 'game_config.dart';
 import 'leg_state.dart';
 import 'thrown_dart.dart';

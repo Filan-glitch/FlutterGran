@@ -1,3 +1,9 @@
+/// [AtcLegState], everything derivable about an Around the Clock leg from its
+/// dart log: each player's stop on the track, completed turns and the winner.
+///
+/// {@category Game modes}
+library;
+
 import '../x01/leg_state.dart' show LegState, dartsPerTurn;
 import '../x01/thrown_dart.dart';
 import 'atc_config.dart';

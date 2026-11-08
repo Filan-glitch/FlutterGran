@@ -1,3 +1,8 @@
+/// [PlayerPicker], every setup screen's choice of who plays and in what order.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

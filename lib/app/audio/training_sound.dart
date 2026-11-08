@@ -1,3 +1,9 @@
+/// [soundsForTraining], the cues and commentary for a change in a training
+/// session.
+///
+/// {@category App}
+library;
+
 import '../../domain/x01/thrown_dart.dart';
 import '../training_controller.dart';
 import 'sound_controller.dart';

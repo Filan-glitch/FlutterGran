@@ -1,3 +1,9 @@
+/// Free practice: [foldFreePractice] groups an open-ended dart log into turns
+/// and totals, with no target and no finish.
+///
+/// {@category Game modes}
+library;
+
 import '../x01/leg_reducer.dart' show foldLeg;
 import '../x01/leg_state.dart' show LegState, dartsPerTurn;
 import '../x01/thrown_dart.dart';

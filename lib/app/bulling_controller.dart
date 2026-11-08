@@ -1,3 +1,9 @@
+/// [BullingController], which owns a Bulling leg's dart log, scores board and
+/// keypad darts and stores each one.
+///
+/// {@category App}
+library;
+
 import 'dart:async';
 import 'dart:math';
 

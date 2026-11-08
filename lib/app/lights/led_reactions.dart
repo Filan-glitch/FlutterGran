@@ -1,3 +1,9 @@
+/// Turns a change in each game mode into [LedCue]s, and works out the resting
+/// ring each mode shows between them.
+///
+/// {@category App}
+library;
+
 import '../../data/board/led_command.dart';
 import '../../domain/checkout/checkout_search.dart';
 import '../../domain/x01/leg_state.dart';

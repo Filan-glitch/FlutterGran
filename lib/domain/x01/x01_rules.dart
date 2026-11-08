@@ -1,3 +1,9 @@
+/// The x01 in- and out-rules (straight, double, master) and the checks that
+/// decide whether a dart opens or finishes a leg under them.
+///
+/// {@category Domain}
+library;
+
 import '../segment.dart';
 import 'thrown_dart.dart';
 

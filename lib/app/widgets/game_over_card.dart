@@ -1,3 +1,9 @@
+/// [GameOverCard], the end-of-game summary of each player's figures, shown over
+/// the board the game was won on.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 
 import '../l10n_extensions.dart';

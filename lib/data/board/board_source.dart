@@ -1,3 +1,10 @@
+/// The seam between the board's transport and the app: [BoardSource] for raw
+/// bytes and LED writes, and [BoardReader], which frames and decodes them into
+/// [BoardEvent]s.
+///
+/// {@category Data}
+library;
+
 import 'dart:async';
 
 import '../../domain/board_event.dart';

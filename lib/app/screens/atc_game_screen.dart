@@ -1,3 +1,8 @@
+/// [AtcGameScreen], where an Around the Clock leg is played.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

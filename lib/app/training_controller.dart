@@ -1,3 +1,9 @@
+/// [TrainingController], which runs a solo training session - free practice or
+/// checkout practice - from board events, without storing anything.
+///
+/// {@category App}
+library;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttergran/app/game_controller.dart' show GameController;
 

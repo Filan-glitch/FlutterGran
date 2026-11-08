@@ -1,3 +1,9 @@
+/// Keeps the board connected for the life of the app and announces connection
+/// changes as toasts on the app's one [ScaffoldMessenger].
+///
+/// {@category App}
+library;
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';

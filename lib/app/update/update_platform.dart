@@ -1,3 +1,9 @@
+/// [UpdatePlatform], the device side of updating behind one seam: the running
+/// version, opening a link and handing an APK to the installer.
+///
+/// {@category App}
+library;
+
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';

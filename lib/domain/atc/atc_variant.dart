@@ -1,3 +1,9 @@
+/// [AtcVariant], which ring of a numbered wedge counts as a hit in Around the
+/// Clock.
+///
+/// {@category Game modes}
+library;
+
 import 'package:fluttergran/domain/atc/atc_stop.dart' show AtcStop;
 
 /// Which ring counts as a hit on a numbered wedge (1-20) in Around the Clock.

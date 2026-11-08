@@ -7,6 +7,8 @@
 /// characteristic. Those change how the board scores and are deliberately
 /// unrepresentable: [encodeLedCommand] can only produce a 20-byte ring frame or
 /// a 16-byte effect frame, from the closed set of commands below.
+///
+/// {@category Data}
 library;
 
 import 'dart:typed_data';

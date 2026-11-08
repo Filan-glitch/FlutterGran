@@ -1,3 +1,9 @@
+/// The GranBoard's sensor-matrix table: which `column.row` frame body is which
+/// segment, and the codes for a miss and the button.
+///
+/// {@category Data}
+library;
+
 import '../../domain/segment.dart';
 
 /// Frame bodies the board sends for things that are not darts.

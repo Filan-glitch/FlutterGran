@@ -1,3 +1,9 @@
+/// [BullingSetupScreen], which picks the bullseye value, the target score and
+/// the players and starts a stored leg.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

@@ -1,3 +1,9 @@
+/// [SegmentCodec], the lookup from one complete frame body to the [BoardEvent]
+/// it stands for.
+///
+/// {@category Data}
+library;
+
 import '../../domain/board_event.dart';
 import 'granboard_segment_map.dart';
 

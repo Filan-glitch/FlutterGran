@@ -1,3 +1,9 @@
+/// [GameRepository], every read and write of stored players, matches, legs and
+/// darts, translating between database rows and domain types.
+///
+/// {@category Data}
+library;
+
 import 'package:drift/drift.dart';
 
 import '../../domain/atc/atc_config.dart';

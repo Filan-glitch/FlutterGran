@@ -1,3 +1,9 @@
+/// [SettingsScreen], the preferences that outlive a leg: sound, board lights,
+/// language and updates.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
