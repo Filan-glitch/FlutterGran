@@ -11,7 +11,6 @@ import '../../domain/training/checkout_challenge.dart';
 import '../../domain/training/ladder_121.dart';
 import '../../domain/training/training_drill.dart';
 import '../../domain/training/weak_spot.dart';
-import '../../domain/x01/game_config.dart';
 import '../../domain/x01/x01_rules.dart';
 import '../l10n_extensions.dart';
 import '../labels.dart';
@@ -42,7 +41,6 @@ class TrainingSetupScreen extends ConsumerStatefulWidget {
 
 class _TrainingSetupScreenState extends ConsumerState<TrainingSetupScreen> {
   TrainingDrill _drill = TrainingDrill.freePractice;
-  int _startScore = 501;
   int _rounds = offeredTrainingRounds.first;
 
   // Checkout Challenge. A null band is adaptive.
@@ -59,9 +57,6 @@ class _TrainingSetupScreenState extends ConsumerState<TrainingSetupScreen> {
 
   TrainingPlan _plan() => switch (_drill) {
     TrainingDrill.freePractice => const FreePracticePlan(),
-    TrainingDrill.checkoutPractice => CheckoutPracticePlan(
-      startScore: _startScore,
-    ),
     TrainingDrill.checkoutChallenge => CheckoutChallengePlan(
       CheckoutChallengeConfig(
         outRule: _outRule,
@@ -156,11 +151,6 @@ class _TrainingSetupScreenState extends ConsumerState<TrainingSetupScreen> {
                     l10n.freePracticeTagline,
                   ),
                   drill(
-                    TrainingDrill.checkoutPractice,
-                    l10n.checkoutPracticeLabel,
-                    l10n.checkoutPracticeTagline,
-                  ),
-                  drill(
                     TrainingDrill.checkoutChallenge,
                     l10n.checkoutChallengeLabel,
                     l10n.checkoutChallengeTagline,
@@ -184,16 +174,6 @@ class _TrainingSetupScreenState extends ConsumerState<TrainingSetupScreen> {
               ),
               ...switch (_drill) {
                 TrainingDrill.freePractice => const <Widget>[],
-                TrainingDrill.checkoutPractice => option(
-                  l10n.startScoreLabel,
-                  NumeralChoiceRow<int>(
-                    key: const Key('training-start-score-row'),
-                    values: GameConfig.offeredStartScores,
-                    selected: _startScore,
-                    label: (score) => '$score',
-                    onSelected: (score) => setState(() => _startScore = score),
-                  ),
-                ),
                 TrainingDrill.checkoutChallenge => [
                   ...option(
                     l10n.difficultyLabel,

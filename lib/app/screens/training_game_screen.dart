@@ -56,10 +56,6 @@ class TrainingGameScreen extends ConsumerWidget {
     // The leg being thrown at a checkout right now, in the drills that have
     // one, and whether its route may be shown yet.
     final (LegState? checkoutLeg, bool showRoute) = switch (session) {
-      CheckoutPracticeSession(:final leg) => (
-        leg.isFinished ? null : leg,
-        true,
-      ),
       CheckoutChallengeSession(:final state) => (
         state.current?.leg,
         state.config.showRoute,
@@ -108,8 +104,6 @@ class TrainingGameScreen extends ConsumerWidget {
         appBar: GameAppBar(
           title: switch (session) {
             FreePracticeSession() => l10n.freePracticeLabel,
-            CheckoutPracticeSession(:final startScore) =>
-              l10n.checkoutPracticeWithScore(startScore),
             CheckoutChallengeSession() => l10n.checkoutChallengeLabel,
             Ladder121Session() => l10n.ladder121Label,
             Bobs27Session() => l10n.bobs27Label,
@@ -131,49 +125,6 @@ class TrainingGameScreen extends ConsumerWidget {
               ),
               keypad: keypad,
             ),
-            CheckoutPracticeSession(:final leg, :final checkoutsCompleted) =>
-              GameLayout(
-                scoreboard: (expand) => Scoreboard(
-                  seats: [
-                    SeatView(
-                      name: l10n.remainingLabel,
-                      count: leg.currentRemaining,
-                      caption: l10n.dartsCount(leg.darts.length),
-                      tally: l10n.checkoutsThisSession(checkoutsCompleted),
-                      tallyLit: checkoutsCompleted > 0,
-                      live: !leg.isFinished,
-                      won: leg.isFinished,
-                    ),
-                  ],
-                  hero: hero,
-                  expand: expand,
-                ),
-                ledger: _ledger(leg),
-                aim: CheckoutCard(
-                  routes: routes,
-                  remaining: leg.currentRemaining,
-                  dartsLeft: leg.dartsLeftThisTurn,
-                  hero: hero,
-                ),
-                keypad: keypad,
-                outcome: leg.isFinished
-                    ? OutcomePanel(
-                        eyebrow: l10n.checkedOutLabel,
-                        headline: '${leg.config.startScore}',
-                        detail: l10n.inDartsCount(leg.darts.length),
-                        primary: (
-                          label: l10n.throwAgainButton,
-                          onPressed: controller.throwAgain,
-                          key: const Key('throw-again-button'),
-                        ),
-                        secondary: (
-                          label: l10n.doneButton,
-                          onPressed: () => Navigator.of(context).pop(),
-                          key: const Key('training-done-button'),
-                        ),
-                      )
-                    : null,
-              ),
             CheckoutChallengeSession(:final state) => _attemptLayout(
               context,
               hero: hero,

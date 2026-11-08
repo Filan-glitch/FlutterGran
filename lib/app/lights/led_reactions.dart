@@ -152,8 +152,8 @@ List<LedCue> ledCuesForHigherLower(
   return const [];
 }
 
-/// Training: free practice flashes every dart; checkout practice reacts like
-/// an x01 leg, with a checkout as a leg won.
+/// Training: free practice flashes every dart; the checkout drills treat a
+/// checkout as a leg won, the target drills react to the target.
 List<LedCue> ledCuesForTraining(
   TrainingSession? previous,
   TrainingSession next,
@@ -165,12 +165,6 @@ List<LedCue> ledCuesForTraining(
     ):
       if (after.darts.length != before.darts.length + 1) return const [];
       return [_dartCue(after.darts.last, seat: 0)];
-    case (
-      CheckoutPracticeSession(leg: final before),
-      CheckoutPracticeSession(leg: final after),
-    ):
-      return _legCues(before, after, endsMatch: false) ??
-          (_newLegOpened(before, after) ? const [GameOn()] : const []);
     case (
       CheckoutChallengeSession(state: final before),
       CheckoutChallengeSession(state: final after),

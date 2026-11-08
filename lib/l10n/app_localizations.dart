@@ -554,12 +554,6 @@ abstract class AppLocalizations {
   /// **'ONLY THE LIT BULLS SCORE'**
   String get rulesLegendBulling;
 
-  /// No description provided for @rulesLegendCheckout.
-  ///
-  /// In en, this message translates to:
-  /// **'LIT SEGMENTS CAN FINISH'**
-  String get rulesLegendCheckout;
-
   /// No description provided for @rulesInStraight.
   ///
   /// In en, this message translates to:
@@ -727,12 +721,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No target and no win condition. Throw and watch your numbers.'**
   String get rulesTrainingFreeBody;
-
-  /// No description provided for @rulesTrainingCheckoutBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Pick a start score and finish it under double out, the same rule as an X01 leg. The checkout route stays on screen the whole way.'**
-  String get rulesTrainingCheckoutBody;
 
   /// No description provided for @rulesStatTotal.
   ///
@@ -949,18 +937,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'throw and see what you hit'**
   String get freePracticeTagline;
-
-  /// No description provided for @checkoutPracticeLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'CHECKOUT PRACTICE'**
-  String get checkoutPracticeLabel;
-
-  /// No description provided for @checkoutPracticeTagline.
-  ///
-  /// In en, this message translates to:
-  /// **'pick a score, practice finishing it'**
-  String get checkoutPracticeTagline;
 
   /// No description provided for @startButton.
   ///
@@ -1598,12 +1574,6 @@ abstract class AppLocalizations {
   /// **'Shaded against the busiest segment.'**
   String get shadedAgainstBusiest;
 
-  /// No description provided for @checkoutPracticeWithScore.
-  ///
-  /// In en, this message translates to:
-  /// **'{score} · CHECKOUT PRACTICE'**
-  String checkoutPracticeWithScore(int score);
-
   /// No description provided for @statDarts.
   ///
   /// In en, this message translates to:
@@ -1621,24 +1591,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'BEST TURN'**
   String get statBestTurn;
-
-  /// No description provided for @checkoutsThisSession.
-  ///
-  /// In en, this message translates to:
-  /// **'CHECKOUTS THIS SESSION: {count}'**
-  String checkoutsThisSession(int count);
-
-  /// No description provided for @checkedOutLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'CHECKED OUT'**
-  String get checkedOutLabel;
-
-  /// No description provided for @inDartsCount.
-  ///
-  /// In en, this message translates to:
-  /// **'in {count, plural, one{{count} dart} other{{count} darts}}'**
-  String inDartsCount(int count);
 
   /// No description provided for @throwAgainButton.
   ///

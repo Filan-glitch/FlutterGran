@@ -290,20 +290,6 @@ void main() {
       expect(ledCuesForTraining(before, after), [const DartMissed()]);
     });
 
-    test('a checkout in checkout practice is a leg won', () {
-      final cfg = GameConfig(startScore: 40, playerIds: const [0]);
-      final before = CheckoutPracticeSession(
-        leg: foldLeg(cfg, []),
-        checkoutsCompleted: 0,
-      );
-      final after = CheckoutPracticeSession(
-        leg: foldLeg(cfg, [d(20)]),
-        checkoutsCompleted: 1,
-      );
-      expect(ledCuesForTraining(before, after), [const LegWon(0)]);
-      expect(ledCuesForTraining(after, before), [const GameOn()]);
-    });
-
     test('a checkout challenge finish is a leg won, a bust a bust', () {
       const cfg = CheckoutChallengeConfig();
       CheckoutChallengeSession at(List<ThrownDart> darts) =>

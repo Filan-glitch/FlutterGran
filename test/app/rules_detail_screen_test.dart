@@ -7,6 +7,7 @@ import 'package:fluttergran/app/widgets/rules/rule_board.dart';
 import 'package:fluttergran/domain/atc/atc_stop.dart';
 import 'package:fluttergran/domain/atc/atc_variant.dart';
 import 'package:fluttergran/domain/segment.dart';
+import 'package:fluttergran/domain/training/training_drill.dart';
 import 'package:fluttergran/domain/x01/x01_rules.dart';
 
 import '../support/devices.dart';
@@ -203,12 +204,15 @@ void main() {
     expect(find.text('THE ROUTE'), findsNothing);
   });
 
-  testWidgets('Training shows both drills', (tester) async {
+  testWidgets('Training shows every drill', (tester) async {
     await pump(tester, RulesTopic.training);
 
     expect(find.text('TRAINING RULES'), findsOneWidget);
-    await reveal(tester, find.byKey(const Key('rules-drill-checkoutPractice')));
-    expect(find.byKey(const Key('rules-drill-freePractice')), findsOneWidget);
+    await reveal(tester, find.byKey(const Key('rules-drill-weakSpot')));
+    for (final drill in TrainingDrill.values) {
+      expect(find.byKey(Key('rules-drill-${drill.name}')), findsOneWidget);
+    }
+    expect(find.byKey(const Key('rules-drill-checkoutPractice')), findsNothing);
 
     expect(find.text('IN RULE'), findsNothing);
     expect(find.text('THE ROUTE'), findsNothing);

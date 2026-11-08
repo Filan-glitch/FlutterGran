@@ -37,13 +37,6 @@ List<Sound> soundsForTraining(TrainingSession? previous, TrainingSession next) {
 
   switch ((previous, next)) {
     case (
-      CheckoutPracticeSession(leg: final before),
-      CheckoutPracticeSession(leg: final after),
-    ):
-      // Checkout practice has always stayed quiet on a bust: the attempt
-      // just carries on.
-      return after.isFinished && !before.isFinished ? checkout : const [dart];
-    case (
       CheckoutChallengeSession(state: final before),
       CheckoutChallengeSession(state: final after),
     ):

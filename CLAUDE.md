@@ -6,9 +6,9 @@ x01 (301/501/701, single/double/master in and out) for up to 4 players, best of 
 legs, live checkout suggestions, spoken commentary and sound cues, reactions on
 the board's LED ring, and per-player statistics across every dart ever thrown.
 Also Around the Clock, Bulling, Higher/Lower (elimination: beat the higher or
-lower value each turn) and solo training: free practice, checkout practice,
-Checkout Challenge, 121 Ladder, Bob's 27 and the Weak-spot Trainer (never
-saved; see `docs/ARCHITECTURE.md`, "Training drills").
+lower value each turn) and solo training: free practice, Checkout Challenge,
+121 Ladder, Bob's 27 and the Weak-spot Trainer (never saved;
+see `docs/ARCHITECTURE.md`, "Training drills").
 
 MVP finished 2026-09-07 — real hardware connects and scores correctly, and the
 five post-MVP features (multi-leg matches, sound, app icon, end screen,

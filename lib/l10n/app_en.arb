@@ -94,7 +94,6 @@
   "rulesLegendOut": "LIT SEGMENTS CAN FINISH A LEG",
   "rulesLegendAtc": "LIT SEGMENTS CLEAR STOP 20",
   "rulesLegendBulling": "ONLY THE LIT BULLS SCORE",
-  "rulesLegendCheckout": "LIT SEGMENTS CAN FINISH",
   "rulesInStraight": "Every dart counts, right from the first throw.",
   "rulesInDouble": "Nothing counts until you hit a double. That double opens your score and counts too.",
   "rulesInMaster": "Nothing counts until you hit a double or a triple. That dart opens your score and counts too.",
@@ -126,7 +125,6 @@
   "rulesBullingInstant": "The leg ends the moment you reach the target, even mid-turn. Darts after that don't count.",
   "rulesBullingNoBust": "Going past the target is fine - there is no bust in bulling.",
   "rulesTrainingFreeBody": "No target and no win condition. Throw and watch your numbers.",
-  "rulesTrainingCheckoutBody": "Pick a start score and finish it under double out, the same rule as an X01 leg. The checkout route stays on screen the whole way.",
   "rulesStatTotal": "TOTAL",
   "rulesOutcomeCheckout": "GAME SHOT",
   "rulesOutcomeNextStop": "NEXT STOP",
@@ -175,8 +173,6 @@
   "drillLabel": "Drill",
   "freePracticeLabel": "FREE PRACTICE",
   "freePracticeTagline": "throw and see what you hit",
-  "checkoutPracticeLabel": "CHECKOUT PRACTICE",
-  "checkoutPracticeTagline": "pick a score, practice finishing it",
   "startButton": "START",
 
   "connectBoardTooltip": "Connect board",
@@ -361,22 +357,9 @@
   "noDartsRecorded": "No darts recorded yet.",
   "shadedAgainstBusiest": "Shaded against the busiest segment.",
 
-  "checkoutPracticeWithScore": "{score} · CHECKOUT PRACTICE",
-  "@checkoutPracticeWithScore": {
-    "placeholders": { "score": { "type": "int" } }
-  },
   "statDarts": "DARTS",
   "statAverage": "AVERAGE",
   "statBestTurn": "BEST TURN",
-  "checkoutsThisSession": "CHECKOUTS THIS SESSION: {count}",
-  "@checkoutsThisSession": {
-    "placeholders": { "count": { "type": "int" } }
-  },
-  "checkedOutLabel": "CHECKED OUT",
-  "inDartsCount": "in {count, plural, one{{count} dart} other{{count} darts}}",
-  "@inDartsCount": {
-    "placeholders": { "count": { "type": "int" } }
-  },
   "throwAgainButton": "THROW AGAIN",
   "doneButton": "DONE",
   "pickAtLeastTwoPlayers": "PICK AT LEAST TWO PLAYERS",

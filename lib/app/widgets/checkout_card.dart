@@ -20,8 +20,8 @@ const Key checkoutNextDartKey = Key('checkout-next-dart');
 /// The next dart carries the pale outline and says so under it; the rest of
 /// the route follows beside it, and up to two alternates sit on a line below.
 ///
-/// Shared by the x01 game screen and checkout practice. [hero] is the tablet
-/// scale: the same card with more room to say it in.
+/// Shared by the x01 game screen and the training checkout drills. [hero] is
+/// the tablet scale: the same card with more room to say it in.
 class CheckoutCard extends StatelessWidget {
   const CheckoutCard({
     super.key,

@@ -19,7 +19,6 @@ import '../../labels.dart';
 import '../../rules_topic.dart';
 import '../../theme.dart';
 import '../setup_controls.dart';
-import 'rule_board.dart';
 import 'rule_callout.dart';
 import 'rule_explorer.dart';
 import 'rules_hero.dart';
@@ -385,7 +384,7 @@ class RulesBody extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _trainingBasics(l10n, wide),
+          _freePractice(l10n),
           const SizedBox(height: Gap.lg),
           _Pair(
             wide: wide,
@@ -423,48 +422,23 @@ class RulesBody extends StatelessWidget {
     ),
   ];
 
-  /// Free practice and checkout practice, side by side.
-  Widget _trainingBasics(AppLocalizations l10n, bool wide) => _Pair(
-    wide: wide,
-    first: _DrillCard(
-      key: const Key('rules-drill-freePractice'),
-      title: l10n.freePracticeLabel,
-      body: l10n.rulesTrainingFreeBody,
-      child: Wrap(
-        spacing: Gap.sm,
-        runSpacing: Gap.sm,
-        children: [
-          for (final stat in [
-            l10n.rulesStatTotal,
-            l10n.statBestTurn,
-            l10n.statAverage,
-            l10n.figure180s,
-          ])
-            _StatChip(stat),
-        ],
-      ),
-    ),
-    second: _DrillCard(
-      key: const Key('rules-drill-checkoutPractice'),
-      title: l10n.checkoutPracticeLabel,
-      body: l10n.rulesTrainingCheckoutBody,
-      child: Column(
-        children: [
-          SizedBox.square(
-            dimension: 180,
-            child: RuleBoard(
-              lit: Segment.all.where(X01OutRule.double.checksOut).toSet(),
-              showNumbers: false,
-            ),
-          ),
-          const SizedBox(height: Gap.sm),
-          Text(
-            l10n.rulesLegendCheckout,
-            textAlign: TextAlign.center,
-            style: Type.eyebrow.copyWith(color: Palette.live),
-          ),
-        ],
-      ),
+  /// Free practice, on its own: it has no target, only stats.
+  Widget _freePractice(AppLocalizations l10n) => _DrillCard(
+    key: const Key('rules-drill-freePractice'),
+    title: l10n.freePracticeLabel,
+    body: l10n.rulesTrainingFreeBody,
+    child: Wrap(
+      spacing: Gap.sm,
+      runSpacing: Gap.sm,
+      children: [
+        for (final stat in [
+          l10n.rulesStatTotal,
+          l10n.statBestTurn,
+          l10n.statAverage,
+          l10n.figure180s,
+        ])
+          _StatChip(stat),
+      ],
     ),
   );
 }

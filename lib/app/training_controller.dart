@@ -17,18 +17,8 @@ import '../domain/training/free_practice_state.dart';
 import '../domain/training/ladder_121.dart';
 import '../domain/training/training_drill.dart';
 import '../domain/training/weak_spot.dart';
-import '../domain/x01/game_config.dart';
-import '../domain/x01/leg_reducer.dart';
-import '../domain/x01/leg_state.dart';
 import '../domain/x01/thrown_dart.dart';
 import 'providers.dart';
-
-/// The seat id a solo checkout-practice leg plays under.
-///
-/// Never written anywhere - no repository call ever reads a training session
-/// back - so it only has to be a value [GameConfig] accepts, not a real
-/// player.
-const int soloTrainingSeat = 0;
 
 /// The random source for drills that draw their targets. Overridden with a
 /// seeded [Random] in tests, so a drawn sequence is repeatable.
@@ -43,7 +33,6 @@ sealed class TrainingPlan {
   /// [drill] with its default settings.
   factory TrainingPlan.of(TrainingDrill drill) => switch (drill) {
     TrainingDrill.freePractice => const FreePracticePlan(),
-    TrainingDrill.checkoutPractice => const CheckoutPracticePlan(),
     TrainingDrill.checkoutChallenge => const CheckoutChallengePlan(),
     TrainingDrill.ladder121 => const Ladder121Plan(),
     TrainingDrill.bobs27 => const Bobs27Plan(),
@@ -58,15 +47,6 @@ class FreePracticePlan extends TrainingPlan {
 
   @override
   TrainingDrill get drill => TrainingDrill.freePractice;
-}
-
-class CheckoutPracticePlan extends TrainingPlan {
-  const CheckoutPracticePlan({this.startScore = 501});
-
-  final int startScore;
-
-  @override
-  TrainingDrill get drill => TrainingDrill.checkoutPractice;
 }
 
 class CheckoutChallengePlan extends TrainingPlan {
@@ -113,8 +93,7 @@ class WeakSpotPlan extends TrainingPlan {
 sealed class TrainingSession {
   const TrainingSession();
 
-  /// Every dart thrown this session (or, for checkout practice, this
-  /// attempt) - what undo steps back through.
+  /// Every dart thrown this session - what undo steps back through.
   List<ThrownDart> get darts;
 }
 
@@ -126,31 +105,6 @@ class FreePracticeSession extends TrainingSession {
 
   @override
   List<ThrownDart> get darts => practice.darts;
-}
-
-/// A checkout-practice attempt, plus how many the session has finished so
-/// far.
-///
-/// [leg] is a genuine [LegState] - checkout practice is just a solo x01 leg
-/// nobody saves - so bust handling, the win check and turn structure all
-/// come from [foldLeg] for free.
-class CheckoutPracticeSession extends TrainingSession {
-  const CheckoutPracticeSession({
-    required this.leg,
-    required this.checkoutsCompleted,
-  });
-
-  final LegState leg;
-
-  /// How many attempts have finished this session, across every "throw
-  /// again". Kept here rather than in [leg] because restarting an attempt
-  /// re-folds [leg] from an empty log, and this count must survive that.
-  final int checkoutsCompleted;
-
-  int get startScore => leg.config.startScore;
-
-  @override
-  List<ThrownDart> get darts => leg.darts;
 }
 
 class CheckoutChallengeSession extends TrainingSession {
@@ -244,18 +198,6 @@ class TrainingController extends Notifier<TrainingSession> {
         state = FreePracticeSession(
           foldFreePractice([...practice.darts, dart]),
         );
-      case CheckoutPracticeSession(:final leg, :final checkoutsCompleted):
-        // A finished attempt waits for "throw again" - a stray dart at an
-        // already-checked-out board must not restart it on its own.
-        if (leg.isFinished) return;
-
-        final folded = foldLeg(leg.config, [...leg.darts, dart]);
-        state = CheckoutPracticeSession(
-          leg: folded,
-          checkoutsCompleted: folded.isFinished
-              ? checkoutsCompleted + 1
-              : checkoutsCompleted,
-        );
       case CheckoutChallengeSession(state: final s):
         if (s.isFinished) return;
         state = _challenge(s.config, s.targets, [...s.darts, dart]);
@@ -280,15 +222,6 @@ class TrainingController extends Notifier<TrainingSession> {
     switch (current) {
       case FreePracticeSession():
         state = FreePracticeSession(foldFreePractice(shorter));
-      case CheckoutPracticeSession(:final leg, :final checkoutsCompleted):
-        final folded = foldLeg(leg.config, shorter);
-        state = CheckoutPracticeSession(
-          leg: folded,
-          // Undoing the dart that checked out un-completes the attempt.
-          checkoutsCompleted: leg.isFinished && !folded.isFinished
-              ? checkoutsCompleted - 1
-              : checkoutsCompleted,
-        );
       case CheckoutChallengeSession(state: final s):
         // Only the targets of attempts the shorter log reaches survive: a
         // target drawn after the dart being undone is dropped.
@@ -317,15 +250,6 @@ class TrainingController extends Notifier<TrainingSession> {
     _live = true;
     state = switch (plan) {
       FreePracticePlan() => FreePracticeSession(initialFreePracticeState()),
-      CheckoutPracticePlan(:final startScore) => CheckoutPracticeSession(
-        leg: initialLegState(
-          GameConfig(
-            startScore: startScore,
-            playerIds: const [soloTrainingSeat],
-          ),
-        ),
-        checkoutsCompleted: 0,
-      ),
       CheckoutChallengePlan(:final config) => _challenge(
         config,
         const [],
@@ -339,21 +263,13 @@ class TrainingController extends Notifier<TrainingSession> {
     };
   }
 
-  /// Goes again with the same settings: for checkout practice, a fresh
-  /// attempt at the same score that keeps
-  /// [CheckoutPracticeSession.checkoutsCompleted]; for the other drills, a
-  /// whole new session.
+  /// Goes again with the same settings: a whole new session.
   ///
   /// No-op for free practice, which has no finished state to reset from.
   void throwAgain() {
     switch (state) {
       case FreePracticeSession():
         break;
-      case CheckoutPracticeSession(:final leg, :final checkoutsCompleted):
-        state = CheckoutPracticeSession(
-          leg: initialLegState(leg.config),
-          checkoutsCompleted: checkoutsCompleted,
-        );
       case CheckoutChallengeSession(state: final s):
         start(CheckoutChallengePlan(s.config));
       case Ladder121Session(state: final s):

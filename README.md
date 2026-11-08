@@ -43,7 +43,7 @@ or with nothing but the keypad.
 | **Around the Clock** | 1 to 20, then the outer bull and the bullseye; any segment counts, or only doubles and triples (masters), or only doubles |
 | **Bulling** | Points on the bull (outer 1, bullseye 2 or 3), first to 21, 31 or 41 |
 | **Higher/Lower** | Elimination: every turn must beat the higher value or undercut the lower one, last one standing wins |
-| **Training** | Free practice, checkout practice, Checkout Challenge (random finishes, adaptive range), 121 Ladder, Bob's 27, and a Weak-spot Trainer that picks your weakest targets from your saved games. Nothing recorded |
+| **Training** | Free practice, Checkout Challenge (random finishes, adaptive range), 121 Ladder, Bob's 27, and a Weak-spot Trainer that picks your weakest targets from your saved games. Nothing recorded |
 | **Board** | GranBoard 132 over BLE: one icon in the app bar to connect, auto-reconnect, and the keypad as a fallback |
 | **LED ring** | Dart flashes, the checkout route or the next target lit on the ring, celebrations for a 180 or a won leg |
 | **Sound** | A cue per dart and every three-dart total spoken aloud — 186 lines rendered offline at build time, no TTS engine on the phone |
