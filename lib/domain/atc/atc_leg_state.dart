@@ -1,4 +1,4 @@
-import '../x01/leg_state.dart' show dartsPerTurn;
+import '../x01/leg_state.dart' show LegState, dartsPerTurn;
 import '../x01/thrown_dart.dart';
 import 'atc_config.dart';
 import 'atc_stop.dart';
@@ -35,11 +35,8 @@ class AtcTurn {
       '$stopBefore->$stopAfter)';
 }
 
-/// Everything derivable about an Around the Clock leg, produced entirely by
-/// folding the dart log - the same idea as x01's `LegState`.
-///
-/// Never mutated and never constructed by hand outside the reducer: undoing
-/// a dart means dropping it from the log and folding again.
+/// Everything derivable about an Around the Clock leg, folded from the dart
+/// log the same way as [LegState].
 class AtcLegState {
   const AtcLegState({
     required this.config,

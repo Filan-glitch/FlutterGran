@@ -24,7 +24,7 @@ abstract final class GranBoardGatt {
   static final Guid write = Guid('442f1572-8a00-9a28-cbe1-e1d4212d53eb');
 
   /// Advertised name prefix, used only as a fallback when the service filter
-  /// finds nothing. The full name is not documented anywhere.
+  /// finds nothing. The 132 advertises the full name `GRANBOARD`.
   static const String namePrefix = 'GRAN';
 }
 
@@ -136,9 +136,6 @@ class BleBoardSource implements BoardSource {
 
   @override
   bool get wantsConnection => _wantConnection;
-
-  /// The board this source last connected to, for display.
-  BluetoothDevice? get device => _device;
 
   void _setState(BoardConnectionState state) {
     if (_disposed || _current == state) return;

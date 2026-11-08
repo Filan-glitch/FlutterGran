@@ -26,20 +26,20 @@ X01Stats statsFor(List<LegState> legs, {int playerId = 1}) =>
     computeX01Stats(playerId, legs);
 
 void main() {
-  group('isOneDartFinish', () {
+  group('isOneDartFinishFor under double-out', () {
     test('even scores up to 40, and the bull', () {
-      expect(isOneDartFinish(40), isTrue);
-      expect(isOneDartFinish(32), isTrue);
-      expect(isOneDartFinish(2), isTrue);
-      expect(isOneDartFinish(50), isTrue);
+      expect(isOneDartFinishFor(40, X01OutRule.double), isTrue);
+      expect(isOneDartFinishFor(32, X01OutRule.double), isTrue);
+      expect(isOneDartFinishFor(2, X01OutRule.double), isTrue);
+      expect(isOneDartFinishFor(50, X01OutRule.double), isTrue);
     });
 
     test('odd scores, and anything above 40 that is not the bull', () {
-      expect(isOneDartFinish(41), isFalse);
-      expect(isOneDartFinish(33), isFalse);
-      expect(isOneDartFinish(42), isFalse);
-      expect(isOneDartFinish(1), isFalse);
-      expect(isOneDartFinish(0), isFalse);
+      expect(isOneDartFinishFor(41, X01OutRule.double), isFalse);
+      expect(isOneDartFinishFor(33, X01OutRule.double), isFalse);
+      expect(isOneDartFinishFor(42, X01OutRule.double), isFalse);
+      expect(isOneDartFinishFor(1, X01OutRule.double), isFalse);
+      expect(isOneDartFinishFor(0, X01OutRule.double), isFalse);
     });
   });
 
@@ -148,13 +148,12 @@ void main() {
     });
 
     test('missing the double costs an attempt', () {
-      // On 40: a single 20 leaves 20, a triple 5 leaves 5, then D... all three
-      // darts are thrown from finishable scores except the last.
+      // Three single 1s from 40 are thrown on 40, 39 and 38: the first and
+      // third are at a finish, the second is not.
       final stats = statsFor([
         leg(40, [s(1), s(1), s(1)], players: 2),
       ]);
 
-      // 40 and 38 are finishable, 39 is not.
       expect(stats.checkoutsByRule[X01OutRule.double], (
         dartsAtFinish: 2,
         finishesHit: 0,

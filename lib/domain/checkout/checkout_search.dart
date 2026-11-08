@@ -48,27 +48,47 @@ final Map<int, List<Segment>> _byValue = () {
   return Map<int, List<Segment>>.unmodifiable(map);
 }();
 
+/// Cost of a small target: a double or bull as a setup dart, or the extra
+/// cost of finishing on the bull or (under master-out) a triple.
+const int _smallTargetCost = 6000;
+
+/// Setup cost per number a triple sits below T20.
+const int _tripleStepCost = 600;
+
+/// Setup cost of any single other than S20.
+const int _singleCost = 1500;
+
+/// Numerator of the finish cost: dividing it by the finish's value makes
+/// low doubles expensive and high ones cheap.
+const int _finishScale = 40000;
+
+/// Finish penalty for an odd double: a miss leaves an odd score that no
+/// double can finish.
+const int _oddDoubleCost = 3000;
+
 /// Cost of aiming a setup dart - any dart before the finish. Lower is better.
 ///
-/// Doubles and bulls are terrible setup targets: they are small, and missing one
-/// usually scores nothing useful.
+/// Doubles and bulls are terrible setup targets: they are small, and missing
+/// one usually scores nothing useful.
 ///
-/// Singles are all equally easy - a single 3 is no harder than a single 15 - so
-/// they cost a flat amount. Triples are not: the board is practised from the 20
-/// downwards, so a route through T7 is worse advice than one through T15 even
-/// though both are triples. Without that gradient, 61 reads as `T7 D20` instead
-/// of `T15 D8`.
+/// Singles are all equally easy - a single 3 is no harder than a single 15 -
+/// so they cost a flat amount, except S20, which is free: the 20 is the
+/// target every player practises most, so a route through S20 beats an equal
+/// one through any other single. Triples cost more the further they sit from
+/// the 20, for the same reason, so a route through T7 is worse advice than one
+/// through T15. Without that gradient, 61 reads as `T7 D20` instead of
+/// `T15 D8`.
 int _setupCost(Segment segment) {
   switch (segment.ring) {
     case Ring.doubleRing:
     case Ring.outerBull:
     case Ring.innerBull:
-      return 6000;
+      return _smallTargetCost;
     case Ring.triple:
-      return (20 - segment.number) * 600;
+      return (20 - segment.number) * _tripleStepCost;
     case Ring.innerSingle:
     case Ring.outerSingle:
-      return segment.number == 20 ? 0 : 1500;
+      return segment.number == 20 ? 0 : _singleCost;
   }
 }
 
@@ -92,9 +112,10 @@ int _setupCost(Segment segment) {
 int _finishCost(Segment finish, X01OutRule outRule) {
   if (outRule == X01OutRule.straight) return _setupCost(finish);
   if (finish.ring == Ring.innerBull || finish.ring == Ring.triple) {
-    return 40000 ~/ finish.value + 6000;
+    return _finishScale ~/ finish.value + _smallTargetCost;
   }
-  return 40000 ~/ finish.value + (finish.number.isOdd ? 3000 : 0);
+  return _finishScale ~/ finish.value +
+      (finish.number.isOdd ? _oddDoubleCost : 0);
 }
 
 int _routeCost(CheckoutRoute route, X01OutRule outRule) {
@@ -139,8 +160,7 @@ List<CheckoutRoute> findCheckouts(
   int limit = 3,
   X01OutRule outRule = X01OutRule.double,
 }) {
-  final minScore = outRule == X01OutRule.straight ? 1 : 2;
-  if (score < minScore || dartsLeft < 1) return const [];
+  if (score < minCheckoutFor(outRule) || dartsLeft < 1) return const [];
 
   final routes = <CheckoutRoute>[];
 
@@ -173,14 +193,17 @@ List<CheckoutRoute> findCheckouts(
   );
 }
 
-/// The highest score that can be checked out with three darts under
-/// double-out: T20 T20 DB.
+/// The highest score checkable in three darts under double-out: T20 T20 DB.
 const int maxCheckout = 170;
 
 /// The highest score checkable in three darts under [outRule].
 ///
-/// Double-out tops out at [maxCheckout] (T20 T20 DB). Master-out and
-/// straight-out both reach 180 - T20 T20 T20 - since neither requires the
-/// last dart to be a double.
+/// Master-out and straight-out both reach 180 - T20 T20 T20 - since neither
+/// requires the last dart to be a double.
 int maxCheckoutFor(X01OutRule outRule) =>
     outRule == X01OutRule.double ? maxCheckout : 180;
+
+/// The lowest score checkable under [outRule]: 1 under straight-out, 2 (D1)
+/// otherwise.
+int minCheckoutFor(X01OutRule outRule) =>
+    outRule == X01OutRule.straight ? 1 : 2;

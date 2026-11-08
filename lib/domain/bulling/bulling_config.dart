@@ -4,7 +4,7 @@ import 'bulling_variant.dart';
 /// The rules a Bulling leg is played under.
 ///
 /// No `startingSeat`, unlike [GameConfig]: a leg always opens on the first
-/// seat, since v1 has no match wrapping to rotate the lead across.
+/// seat, since this mode has no matches to rotate the lead across.
 class BullingConfig {
   BullingConfig({
     required this.playerIds,
@@ -29,7 +29,7 @@ class BullingConfig {
   final BullseyeValue bullseyeValue;
 
   /// Points needed to win. A leg ends the instant a player reaches or
-  /// passes this, mid-turn — darts thrown after that in the same turn do
+  /// passes this, mid-turn - darts thrown after that in the same turn do
   /// not count.
   final int target;
 }

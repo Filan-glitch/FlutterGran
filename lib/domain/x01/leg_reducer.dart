@@ -5,9 +5,9 @@ import 'x01_rules.dart';
 
 /// Replays a dart log under [config] and returns the resulting leg state.
 ///
-/// This is the whole x01 engine. It is a pure function of the log, which is what
-/// makes undo trivial - drop the last dart and fold again - and what lets the
-/// same code reconstruct any historical leg from the database.
+/// This is the whole x01 engine. It is a pure function of the log, which is
+/// what makes undo trivial - drop the last dart and fold again - and what lets
+/// the same code reconstruct any historical leg from the database.
 LegState foldLeg(GameConfig config, List<ThrownDart> darts) {
   final remaining = <int, int>{
     for (final id in config.playerIds) id: config.startScore,

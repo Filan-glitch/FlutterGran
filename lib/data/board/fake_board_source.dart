@@ -19,9 +19,8 @@ final Map<Segment, String> segmentToCode = Map<Segment, String>.unmodifiable({
 ///
 /// It emits the same raw byte chunks real hardware does, through the same
 /// [FrameAssembler] and [SegmentCodec], rather than handing clean segments to
-/// the game. That matters: framing is the most failure-prone part of this
-/// integration, and it is the part that would otherwise go completely
-/// unexercised until hardware arrives.
+/// the game, so framing - the most failure-prone part of the integration - is
+/// exercised without hardware.
 class FakeBoardSource implements BoardSource {
   FakeBoardSource({this.greeting = 'GB8;102', this.name = 'GRANBOARD'});
 
@@ -40,14 +39,6 @@ class FakeBoardSource implements BoardSource {
   BoardConnectionState _current = BoardConnectionState.disconnected;
   bool _wantConnection = false;
   bool _adapterOn = true;
-
-  /// How many times each entry point was called, for tests of whoever
-  /// drives the connection.
-  int connectCalls = 0;
-  int disconnectCalls = 0;
-  int retryCalls = 0;
-  int turnOnCalls = 0;
-  int forgetCalls = 0;
 
   @override
   Stream<List<int>> get rawFrames => _raw.stream;
@@ -71,7 +62,6 @@ class FakeBoardSource implements BoardSource {
 
   @override
   Future<void> connect() async {
-    connectCalls++;
     _wantConnection = true;
     _attempt();
   }
@@ -89,30 +79,24 @@ class FakeBoardSource implements BoardSource {
 
   @override
   Future<void> disconnect() async {
-    disconnectCalls++;
     _wantConnection = false;
     _setState(BoardConnectionState.disconnected);
   }
 
   @override
   Future<void> retryNow() async {
-    retryCalls++;
     if (!_wantConnection || _current.isConnected) return;
     _attempt();
   }
 
   @override
   Future<bool> turnOnBluetooth() async {
-    turnOnCalls++;
     setAdapterOn();
     return true;
   }
 
   @override
-  Future<void> forgetBoard() async => forgetCalls++;
-
-  /// Puts the source in [state] directly, for tests of how a state looks.
-  void forceState(BoardConnectionState state) => _setState(state);
+  Future<void> forgetBoard() async {}
 
   /// The board fell away while still wanted: a retry is now pending.
   void dropConnection() => _setState(

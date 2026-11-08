@@ -45,8 +45,8 @@ final class ButtonPress extends BoardEvent {
 /// A well-formed frame whose body is not in the segment table.
 ///
 /// [body] is the raw payload with the `@` terminator already stripped. It is
-/// carried verbatim because it is the only useful diagnostic when bringing up
-/// a board whose segment map has not been verified.
+/// carried verbatim because it is the only useful diagnostic for a frame an
+/// unexpected board or firmware sends.
 final class UnknownFrame extends BoardEvent {
   const UnknownFrame(this.body);
 

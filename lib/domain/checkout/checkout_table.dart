@@ -4,12 +4,11 @@ import 'checkout_search.dart';
 /// A memoising view over [findCheckouts].
 ///
 /// The search itself is cheap, but the UI asks for advice on every rebuild and
-/// there are only a few hundred distinct questions to answer, so the answers are
-/// kept once they are computed.
+/// there are only a few hundred distinct questions to answer, so the answers
+/// are kept once they are computed.
 ///
-/// Scoped to one [outRule] for its whole lifetime - build a separate table per
-/// rule rather than passing the rule to each call, so the cache key stays as
-/// simple as it always was.
+/// Scoped to one [outRule] for its whole lifetime: build a separate table per
+/// rule rather than passing the rule to each call.
 class CheckoutTable {
   CheckoutTable({this.limit = 3, this.outRule = X01OutRule.double});
 
@@ -30,6 +29,8 @@ class CheckoutTable {
       return const [];
     }
     return _cache.putIfAbsent(
+      // Unique per (remaining, dartsLeft) only while dartsLeft <= 3, which a
+      // turn guarantees.
       remaining * 4 + dartsLeft,
       () => findCheckouts(remaining, dartsLeft, limit: limit, outRule: outRule),
     );
@@ -42,8 +43,7 @@ class CheckoutTable {
   }
 
   /// Whether a score is low enough to be worth showing advice for at all.
-  bool isCheckoutRange(int remaining) {
-    final minScore = outRule == X01OutRule.straight ? 1 : 2;
-    return remaining >= minScore && remaining <= maxCheckoutFor(outRule);
-  }
+  bool isCheckoutRange(int remaining) =>
+      remaining >= minCheckoutFor(outRule) &&
+      remaining <= maxCheckoutFor(outRule);
 }

@@ -145,7 +145,11 @@ class HitFlash extends LedCommand {
 
   final int number;
   final HitFlashKind kind;
+
+  /// Colour slot A of the effect frame.
   final Rgb primary;
+
+  /// Colour slot B of the effect frame.
   final Rgb secondary;
 
   /// 0 (slow) to 255 (fast).
@@ -166,6 +170,9 @@ class EffectFrame extends LedCommand {
   });
 
   final LedEffect effect;
+
+  /// Colour slots A, B and C. What each slot does depends on the effect; a
+  /// slot the effect does not use is left black.
   final Rgb a;
   final Rgb b;
   final Rgb c;
@@ -188,6 +195,11 @@ const List<int> _hitTargetIds = [
 const int maxEffectSpeed = 35;
 
 /// The bytes for [command], ready for the board's write characteristic.
+///
+/// A ring paint is 20 palette codes, one per number. An effect frame is 16
+/// bytes: `[0]` op-code, `[1..3]` colour A, `[4..6]` colour B, `[7..9]`
+/// colour C, `[10..11]` hit-flash target id (little-endian), `[12]` speed,
+/// `[15]` always `0x01`.
 Uint8List encodeLedCommand(LedCommand command) => switch (command) {
   RingPaint(:final byNumber) => Uint8List.fromList([
     for (final colour in byNumber) colour.code,
@@ -195,6 +207,7 @@ Uint8List encodeLedCommand(LedCommand command) => switch (command) {
   HitFlash() => _effectFrame(command.kind.op, (frame) {
     _putRgb(frame, 1, command.primary);
     _putRgb(frame, 4, command.secondary);
+    // Target id, little-endian in bytes 10-11.
     final target = _hitTargetIds[command.number - 1];
     frame[10] = target & 0xFF;
     frame[11] = (target >> 8) & 0xFF;

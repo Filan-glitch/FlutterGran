@@ -58,6 +58,7 @@ class AppRelease {
     return assets.containsKey(universal) ? universal : null;
   }
 
+  /// The release's `SHA256SUMS.txt`, or null when it has none.
   Uri? get checksumsUrl => assets['SHA256SUMS.txt'];
 }
 

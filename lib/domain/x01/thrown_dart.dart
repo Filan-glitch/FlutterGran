@@ -15,9 +15,6 @@ class ThrownDart {
   /// Points scored. A miss scores zero.
   int get value => segment?.value ?? 0;
 
-  /// Whether this dart may legally finish a leg under double-out.
-  bool get isDouble => segment?.isDouble ?? false;
-
   String get label => segment?.label ?? 'MISS';
 
   @override

@@ -45,9 +45,8 @@ class X01Stats extends ModeStats {
 
   /// Matches entered, whether or not they are decided yet.
   ///
-  /// Deliberately a separate count from [legsPlayed] rather than a
-  /// reinterpretation of it: a best of five is one match and up to five legs,
-  /// and both numbers are worth knowing.
+  /// Separate from [legsPlayed]: a best of five is one match and up to five
+  /// legs.
   final int matchesPlayed;
 
   final int matchesWon;
@@ -64,9 +63,8 @@ class X01Stats extends ModeStats {
   final int turnsOf60Plus;
 
   /// Darts thrown while on a finish, and of those the ones that actually
-  /// finished the leg - kept separate per out-rule, rather than one figure
-  /// mixing legs played under different rules together, since "on a finish"
-  /// means something different under each one.
+  /// finished the leg, per out-rule - "on a finish" means something different
+  /// under each one.
   final Map<X01OutRule, ({int dartsAtFinish, int finishesHit})> checkoutsByRule;
 
   /// Highest score ever checked out from.
@@ -96,8 +94,7 @@ class X01Stats extends ModeStats {
     return entry.finishesHit / entry.dartsAtFinish;
   }
 
-  /// Share of legs won, 0 to 1. Legs, not matches - this is what it has always
-  /// meant and what the rest of the app reads it as.
+  /// Share of legs won, 0 to 1. Legs, not matches - see [matchWinRate].
   double? get winRate => legsPlayed == 0 ? null : legsWon / legsPlayed;
 
   double? get matchWinRate =>

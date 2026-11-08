@@ -3,7 +3,7 @@ import 'x01_rules.dart';
 /// The rules a leg is played under.
 ///
 /// The variables are the starting score, who is playing, the in-rule and
-/// out-rule (each independently single/straight, double, or master - see
+/// out-rule (each independently straight, double, or master - see
 /// [X01InRule]/[X01OutRule]), and which seat throws first.
 class GameConfig {
   GameConfig({
@@ -29,6 +29,7 @@ class GameConfig {
   /// Start values offered in the UI. The engine accepts any value above 1.
   static const List<int> offeredStartScores = [301, 501, 701];
 
+  /// Most seats any leg, in any mode, can have.
   static const int maxPlayers = 4;
 
   /// Points each player starts on.

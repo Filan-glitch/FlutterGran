@@ -5,6 +5,7 @@
 /// throttle. An interface so the data layer need not know how it is stored;
 /// the app backs it with shared_preferences.
 abstract interface class KnownBoardStore {
+  /// The remembered device id, or null when no board is remembered.
   Future<String?> read();
 
   /// Stores [deviceId], or forgets the board when it is null.
@@ -20,17 +21,4 @@ class NoKnownBoardStore implements KnownBoardStore {
 
   @override
   Future<void> write(String? deviceId) async {}
-}
-
-/// Remembers in memory only, for tests that need to see what was stored.
-class MemoryKnownBoardStore implements KnownBoardStore {
-  MemoryKnownBoardStore([this.deviceId]);
-
-  String? deviceId;
-
-  @override
-  Future<String?> read() async => deviceId;
-
-  @override
-  Future<void> write(String? deviceId) async => this.deviceId = deviceId;
 }

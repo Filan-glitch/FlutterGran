@@ -29,7 +29,7 @@ class BullingStats extends ModeStats {
 
   final int dartsThrown;
 
-  /// Darts that landed on either bull ring — the only ones worth anything.
+  /// Darts that landed on either bull ring - the only ones worth anything.
   final int scoringDarts;
 
   final int pointsScored;
