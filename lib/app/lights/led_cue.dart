@@ -83,6 +83,8 @@ final class DartMissed extends LedCue {
   String toString() => 'DartMissed()';
 }
 
+/// A turn ended without counting: an x01 bust, or a Higher/Lower player
+/// going out.
 final class TurnBusted extends LedCue {
   const TurnBusted();
 
@@ -118,6 +120,7 @@ final class NextThrower extends LedCue {
   String toString() => 'NextThrower($seat)';
 }
 
+/// A board has just connected.
 final class BoardConnected extends LedCue {
   const BoardConnected();
 
@@ -168,6 +171,7 @@ final class TonPlus extends LedCue {
   String toString() => 'TonPlus()';
 }
 
+/// A turn of 180.
 final class Maximum extends LedCue {
   const Maximum();
 

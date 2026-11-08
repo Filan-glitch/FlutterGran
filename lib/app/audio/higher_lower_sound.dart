@@ -3,7 +3,7 @@ import 'sound_controller.dart';
 
 /// What a change in a Higher/Lower leg should sound like.
 ///
-/// The same shape as `soundsForBulling`: every dart clicks and the first
+/// The same shape as [soundsFor]: every dart clicks and the first
 /// calls "game on". A turn that stays in has its total read out the way an
 /// x01 total is; a turn that puts the player out is a bust; and the turn
 /// that leaves one player standing is the game shot.
@@ -16,7 +16,7 @@ List<Sound> soundsForHigherLower(
   final before = previous.leg;
   final after = next.leg;
 
-  // Same guard as `soundsFor`: only a single thrown dart is heard.
+  // Only a single new dart is heard - see [soundsFor].
   if (after.darts.length != before.darts.length + 1) return const [];
 
   final sounds = <Sound>[const Sound.cue(SoundAssets.dartCue)];

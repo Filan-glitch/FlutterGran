@@ -14,17 +14,17 @@ void main() {
   runApp(const ProviderScope(child: FlutterGranApp()));
 }
 
+/// The app root: one dark theme, the chosen locale, device-scaled type, and
+/// the app-wide board, lights and update providers kept running.
 class FlutterGranApp extends ConsumerWidget {
   const FlutterGranApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Nothing is read from it. Watching keeps the board's LED scheduler, and
-    // its connect sweep, alive for the whole app rather than one screen.
+    // Listen-only, watched to run for the whole app - see
+    // soundControllerProvider.
     ref.watch(ledSchedulerProvider);
-    // Same idiom: auto-connect, the resume retry and connection toasts.
     ref.watch(boardLifecycleProvider);
-    // And the launch update check.
     ref.watch(updateLifecycleProvider);
 
     return MaterialApp(
@@ -34,18 +34,13 @@ class FlutterGranApp extends ConsumerWidget {
       // has no business being white, and a light variant would mean a second
       // set of decisions for a situation that does not arise.
       theme: buildTheme(),
-      // Null follows the device's own language when it is one of
-      // [AppLocalizations.supportedLocales], and falls back to the first
-      // supported locale (English) otherwise - exactly the default the
-      // Settings screen's Language section offers as "System". Picking
-      // English or German there stores a concrete `Locale` here instead.
+      // Null follows the device's language when it is supported, and falls
+      // back to the first supported locale (English) otherwise - the
+      // Settings screen's "System" choice.
       locale: ref.watch(localeProvider),
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
-      // The child is the navigator MaterialApp builds around `home`, and is
-      // null only for an app that has no routes at all. This one always has
-      // one, so the empty case is a placeholder for a state that cannot arise
-      // rather than a screen anybody sees.
+      // `child` is null only for an app with no routes, which this is not.
       builder: (context, child) =>
           _Scaled(child: child ?? const SizedBox.shrink()),
       home: const SplashScreen(),
@@ -57,12 +52,10 @@ class FlutterGranApp extends ConsumerWidget {
 /// itself is set to, and locks the device to landscape once it earns the hero
 /// layout.
 ///
-/// Applied once around the whole app rather than per screen: every screen wants
-/// the same thing, and a number that changed size between the scoreboard and
-/// the statistics that explain it would read as two different numbers. The
-/// same reasoning covers orientation - a scoreboard is mounted once, not
-/// screen by screen, and a tablet that rotated between them would be a
-/// different scoreboard each time.
+/// Applied once around the whole app rather than per screen: a number that
+/// changed size between the scoreboard and the statistics that explain it
+/// would read as two different numbers, and a tablet that rotated between
+/// screens would be a different scoreboard each time.
 ///
 /// The platform's own preference is folded in by measuring what it does to a
 /// nominal size and multiplying. That flattens a non-linear curve into a linear

@@ -9,13 +9,11 @@ import '../domain/higher_lower/higher_lower_config.dart';
 import '../domain/higher_lower/higher_lower_leg_state.dart';
 import '../domain/higher_lower/higher_lower_reducer.dart';
 import '../domain/x01/thrown_dart.dart';
+import 'game_controller.dart' show GameController, GameSession;
 import 'providers.dart';
 
-/// The leg, plus the one piece of state the rules do not care about:
-/// whether the player has acknowledged the turn that just ended.
-///
-/// Mirrors Bulling's `BullingSession` exactly - see x01's `GameSession` for
-/// why acknowledgement lives here rather than in the leg.
+/// A Higher/Lower leg plus how many of its turns have been acknowledged -
+/// the counterpart of x01's [GameSession].
 class HigherLowerSession {
   const HigherLowerSession({
     required this.leg,
@@ -32,13 +30,11 @@ class HigherLowerSession {
       awaitingTurnConfirm ? leg.turns[acknowledgedTurns] : null;
 }
 
-/// Owns the dart log for a Higher/Lower leg and turns board events into
-/// turns.
+/// Owns the dart log for a Higher/Lower leg, the way [GameController] does
+/// for x01, folding it through [foldHigherLower] - so undo replays
+/// eliminations away too.
 ///
-/// Structured exactly like `BullingController` - every mutation goes
-/// through [foldHigherLower], so the leg is always a pure function of the
-/// darts thrown, and undo replays a shorter log rather than reversing
-/// anything, eliminations included.
+/// Differences: this mode has no matches, and a turn ends on its first miss.
 class HigherLowerController extends Notifier<HigherLowerSession> {
   bool _live = false;
   bool _manualOverrideOpen = false;
@@ -61,6 +57,8 @@ class HigherLowerController extends Notifier<HigherLowerSession> {
     );
   }
 
+  /// Applies one event from the board, gated as in
+  /// [GameController.handleBoardEvent].
   void handleBoardEvent(BoardEvent event) {
     if (!_live) return;
 
@@ -148,9 +146,9 @@ class HigherLowerController extends Notifier<HigherLowerSession> {
 
   /// Ends the turn now and hands over: the next dart not thrown is a miss.
   ///
-  /// The board button's job, the same as `GameController.endTurn`. In this
-  /// mode a miss ends the turn on its own and puts the player out, so one is
-  /// all it takes.
+  /// The board button's job, as in [GameController.endTurn]. In this mode a
+  /// miss ends the turn on its own and puts the player out, so one is all it
+  /// takes.
   void endTurn() {
     if (state.leg.isFinished) return;
     if (!state.awaitingTurnConfirm) addDart(const ThrownDart.miss());
@@ -171,8 +169,8 @@ class HigherLowerController extends Notifier<HigherLowerSession> {
 
   /// Picks a leg back up from its stored dart log.
   ///
-  /// Callers must set [higherLowerConfigProvider] before calling this, the
-  /// same requirement `BullingController.resume` documents.
+  /// Callers must set [higherLowerConfigProvider] first - see
+  /// [GameController.resume].
   void resume(HigherLowerConfig config, List<ThrownDart> darts) {
     _live = true;
     final leg = foldHigherLower(config, darts);

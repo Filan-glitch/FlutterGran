@@ -9,13 +9,11 @@ import '../domain/bulling/bulling_config.dart';
 import '../domain/bulling/bulling_leg_state.dart';
 import '../domain/bulling/bulling_reducer.dart';
 import '../domain/x01/thrown_dart.dart';
+import 'game_controller.dart' show GameController, GameSession;
 import 'providers.dart';
 
-/// The leg, plus the one piece of state the rules do not care about:
-/// whether the player has acknowledged the turn that just ended.
-///
-/// Mirrors x01's `GameSession` and Around the Clock's `AtcSession` exactly —
-/// see either type's own doc.
+/// A Bulling leg plus how many of its turns have been acknowledged - the
+/// counterpart of x01's [GameSession].
 class BullingSession {
   const BullingSession({required this.leg, required this.acknowledgedTurns});
 
@@ -29,12 +27,11 @@ class BullingSession {
       awaitingTurnConfirm ? leg.turns[acknowledgedTurns] : null;
 }
 
-/// Owns the dart log for a Bulling leg and turns board events into points.
+/// Owns the dart log for a Bulling leg, the way [GameController] does for
+/// x01, folding it through [foldBulling].
 ///
-/// Structured exactly like `AtcController` — every mutation goes through
-/// [foldBulling], so the leg is always a pure function of the darts thrown,
-/// and undo replays a shorter log rather than reversing anything. Like
-/// Around the Clock, this mode has no match wrapping yet.
+/// The one difference: this mode has no matches, so no result is reported
+/// to one.
 class BullingController extends Notifier<BullingSession> {
   bool _live = false;
   bool _manualOverrideOpen = false;
@@ -57,6 +54,8 @@ class BullingController extends Notifier<BullingSession> {
     );
   }
 
+  /// Applies one event from the board, gated as in
+  /// [GameController.handleBoardEvent].
   void handleBoardEvent(BoardEvent event) {
     if (!_live) return;
 
@@ -142,11 +141,9 @@ class BullingController extends Notifier<BullingSession> {
     );
   }
 
-  /// Ends the turn now and hands over: every dart not thrown is a miss.
-  ///
-  /// The board button's job, the same as `GameController.endTurn` - see its
-  /// doc. A miss never finishes this leg either, so the last one always
-  /// closes the turn.
+  /// Ends the turn now and hands over: every dart not thrown is a miss, as
+  /// in [GameController.endTurn]. A miss never finishes this leg either, so
+  /// the last one always closes the turn.
   void endTurn() {
     if (state.leg.isFinished) return;
     if (!state.awaitingTurnConfirm) {
@@ -171,8 +168,8 @@ class BullingController extends Notifier<BullingSession> {
 
   /// Picks a leg back up from its stored dart log.
   ///
-  /// Callers must set [bullingConfigProvider] before calling this, the same
-  /// requirement `AtcController.resume` documents.
+  /// Callers must set [bullingConfigProvider] first - see
+  /// [GameController.resume].
   void resume(BullingConfig config, List<ThrownDart> darts) {
     _live = true;
     final leg = foldBulling(config, darts);

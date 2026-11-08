@@ -9,12 +9,11 @@ import '../domain/atc/atc_leg_state.dart';
 import '../domain/atc/atc_reducer.dart';
 import '../domain/board_event.dart';
 import '../domain/x01/thrown_dart.dart';
+import 'game_controller.dart' show GameController, GameSession;
 import 'providers.dart';
 
-/// The leg, plus the one piece of state the rules do not care about: whether
-/// the player has acknowledged the turn that just ended.
-///
-/// Mirrors x01's `GameSession` exactly - see that type's own doc.
+/// An Around the Clock leg plus how many of its turns have been
+/// acknowledged - the counterpart of x01's [GameSession].
 class AtcSession {
   const AtcSession({required this.leg, required this.acknowledgedTurns});
 
@@ -28,14 +27,11 @@ class AtcSession {
       awaitingTurnConfirm ? leg.turns[acknowledgedTurns] : null;
 }
 
-/// Owns the dart log for an Around the Clock leg and turns board events into
-/// progress round the track.
+/// Owns the dart log for an Around the Clock leg, the way [GameController]
+/// does for x01, folding it through [foldAroundTheClock].
 ///
-/// Structured exactly like `GameController` - every mutation goes through
-/// [foldAroundTheClock], so the leg is always a pure function of the darts
-/// thrown, and undo replays a shorter log rather than reversing anything.
-/// The one real difference: there is no match to tell about a result, since
-/// this mode has no match wrapping yet.
+/// The one difference: this mode has no matches, so no result is reported
+/// to one.
 class AtcController extends Notifier<AtcSession> {
   bool _live = false;
   bool _manualOverrideOpen = false;
@@ -55,6 +51,8 @@ class AtcController extends Notifier<AtcSession> {
     return AtcSession(leg: initialAtcLegState(config), acknowledgedTurns: 0);
   }
 
+  /// Applies one event from the board, gated as in
+  /// [GameController.handleBoardEvent].
   void handleBoardEvent(BoardEvent event) {
     if (!_live) return;
 
@@ -140,11 +138,9 @@ class AtcController extends Notifier<AtcSession> {
     );
   }
 
-  /// Ends the turn now and hands over: every dart not thrown is a miss.
-  ///
-  /// The board button's job, the same as `GameController.endTurn` - see its
-  /// doc. A miss never finishes this leg either, so the last one always
-  /// closes the turn.
+  /// Ends the turn now and hands over: every dart not thrown is a miss, as
+  /// in [GameController.endTurn]. A miss never finishes this leg either, so
+  /// the last one always closes the turn.
   void endTurn() {
     if (state.leg.isFinished) return;
     if (!state.awaitingTurnConfirm) {
@@ -169,8 +165,8 @@ class AtcController extends Notifier<AtcSession> {
 
   /// Picks a leg back up from its stored dart log.
   ///
-  /// Callers must set [atcConfigProvider] before calling this, the same
-  /// requirement `GameController.resume` documents.
+  /// Callers must set [atcConfigProvider] first - see
+  /// [GameController.resume].
   void resume(AtcConfig config, List<ThrownDart> darts) {
     _live = true;
     final leg = foldAroundTheClock(config, darts);
