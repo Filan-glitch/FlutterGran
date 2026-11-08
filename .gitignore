@@ -58,3 +58,9 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Local-only material that must never be committed: the vendor APK used for
+# protocol research (hundreds of MB) and per-machine agent skill installs.
+/original_apk/
+/.agents/
+/skills-lock.json
