@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fluttergran/app/screens/main_menu_screen.dart';
 import 'package:fluttergran/data/db/database.dart';
 
 import 'support/database.dart';
@@ -26,7 +27,7 @@ void main() {
       'roster', (tester) async {
     await launchApp(tester, database);
 
-    expect(find.text('CHALK'), findsOneWidget);
+    expect(find.byType(MainMenuScreen), findsOneWidget);
     expect(find.byKey(const Key('menu-play-button')), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('menu-play-button')));
@@ -141,7 +142,7 @@ void main() {
     expect(find.text('SELECT GAME MODE'), findsOneWidget);
     await popRoute(tester, find.text('SELECT GAME MODE'));
 
-    expect(find.text('CHALK'), findsOneWidget);
+    expect(find.byType(MainMenuScreen), findsOneWidget);
     expect(find.text('LEG IN PROGRESS'), findsOneWidget);
     expect(find.text('441'), findsOneWidget);
 

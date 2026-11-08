@@ -15,6 +15,8 @@ import '../labels.dart';
 import '../providers.dart';
 import '../theme.dart';
 import '../update/update_controller.dart';
+import '../widgets/board_connection_button.dart';
+import '../widgets/chalk_mark.dart';
 import '../widgets/update_card.dart';
 import 'atc_game_screen.dart';
 import 'bulling_game_screen.dart';
@@ -124,133 +126,201 @@ class MainMenuScreen extends ConsumerWidget {
         ? null
         : resumableLeg;
 
-    return Scaffold(
-      body: SafeArea(
-        child: CenteredContent(
-          child: _FullHeightScrollView(
-            padding: const EdgeInsets.all(Gap.lg),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  'CHALK',
-                  textAlign: TextAlign.center,
-                  style: Type.eyebrow.copyWith(
-                    color: Palette.chalkDim,
-                    fontSize: 13,
-                  ),
-                ),
-                const SizedBox(height: Gap.xxl),
-                // Above the resume card: a release is news, a leg in
-                // progress is already known. Empty while there is none.
-                if (ref.watch(updateProvider).release != null &&
-                    !ref.watch(updateCardDismissedProvider)) ...[
-                  UpdateCard(
-                    compact: true,
-                    onDismiss: ref
-                        .read(updateCardDismissedProvider.notifier)
-                        .dismiss,
-                  ),
-                  const SizedBox(height: Gap.xl),
-                ],
-                if (resumable != null) ...[
-                  StaggeredEntry(
-                    index: 0,
-                    child: _ResumeBanner(
-                      resumable: resumable,
-                      names: ref.watch(playerNamesProvider),
-                      onResume: () => _resume(context, ref, resumable),
-                    ),
-                  ),
-                  const SizedBox(height: Gap.xl),
-                ],
-                StaggeredEntry(
-                  index: 1,
-                  child: SizedBox(
-                    height: 56,
-                    child: FilledButton(
-                      key: const Key('menu-play-button'),
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (context) => const SelectGameModeScreen(),
-                        ),
-                      ),
-                      child: Text(l10n.playButton),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: Gap.xl),
-                StaggeredEntry(
-                  index: 2,
-                  child: _MenuRow(
-                    key: const Key('menu-training-row'),
-                    icon: Icons.fitness_center,
-                    label: l10n.trainingMenuLabel,
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (context) => const TrainingSetupScreen(),
-                      ),
-                    ),
-                  ),
-                ),
-                StaggeredEntry(
-                  index: 3,
-                  child: _MenuRow(
-                    key: const Key('menu-rules-row'),
-                    icon: Icons.help_outline,
-                    label: l10n.rulesMenuLabel,
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (context) => const RulesScreen(),
-                      ),
-                    ),
-                  ),
-                ),
-                StaggeredEntry(
-                  index: 4,
-                  child: _MenuRow(
-                    key: const Key('menu-statistics-row'),
-                    icon: Icons.insights,
-                    label: l10n.statisticsMenuLabel,
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (context) => const StatsScreen(),
-                      ),
-                    ),
-                  ),
-                ),
-                StaggeredEntry(
-                  index: 5,
-                  child: _MenuRow(
-                    key: const Key('menu-roster-row'),
-                    icon: Icons.people_outline,
-                    label: l10n.rosterMenuLabel,
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (context) => const RosterScreen(),
-                      ),
-                    ),
-                  ),
-                ),
-                StaggeredEntry(
-                  index: 6,
-                  child: _MenuRow(
-                    key: const Key('menu-settings-row'),
-                    icon: Icons.settings_outlined,
-                    label: l10n.settingsMenuLabel,
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (context) => const SettingsScreen(),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+    final hero = isHeroDevice(context);
+
+    // Each piece is built once; the phone and hero layouts only arrange them.
+    // Stagger indexes follow reading order in both.
+    final header = _BrandHeader(large: hero);
+
+    // A release is news, a leg in progress is already known, so the update
+    // card goes above the resume card where they share a column.
+    final update =
+        ref.watch(updateProvider).release != null &&
+            !ref.watch(updateCardDismissedProvider)
+        ? UpdateCard(
+            compact: true,
+            onDismiss: ref.read(updateCardDismissedProvider.notifier).dismiss,
+          )
+        : null;
+
+    final resume = resumable == null
+        ? null
+        : StaggeredEntry(
+            index: 0,
+            child: _ResumeBanner(
+              resumable: resumable,
+              names: ref.watch(playerNamesProvider),
+              onResume: () => _resume(context, ref, resumable),
             ),
-          ),
+          );
+
+    final play = StaggeredEntry(
+      index: 1,
+      child: SizedBox(
+        height: hero ? 72 : 56,
+        child: FilledButton(
+          key: const Key('menu-play-button'),
+          onPressed: () => _open(context, const SelectGameModeScreen()),
+          child: Text(l10n.playButton),
         ),
       ),
+    );
+
+    final rows = [
+      for (final (index, (key, icon, label, screen)) in [
+        (
+          'menu-training-row',
+          Icons.fitness_center,
+          l10n.trainingMenuLabel,
+          const TrainingSetupScreen(),
+        ),
+        (
+          'menu-rules-row',
+          Icons.help_outline,
+          l10n.rulesMenuLabel,
+          const RulesScreen(),
+        ),
+        (
+          'menu-statistics-row',
+          Icons.insights,
+          l10n.statisticsMenuLabel,
+          const StatsScreen(),
+        ),
+        (
+          'menu-roster-row',
+          Icons.people_outline,
+          l10n.rosterMenuLabel,
+          const RosterScreen(),
+        ),
+        (
+          'menu-settings-row',
+          Icons.settings_outlined,
+          l10n.settingsMenuLabel,
+          const SettingsScreen(),
+        ),
+      ].indexed)
+        StaggeredEntry(
+          index: 2 + index,
+          child: _MenuRow(
+            key: Key(key),
+            icon: icon,
+            label: label,
+            large: hero,
+            onTap: () => _open(context, screen),
+          ),
+        ),
+    ];
+
+    const padding = EdgeInsets.all(Gap.lg);
+    final Widget body;
+    if (hero) {
+      // Brand and PLAY on the left, everything else on the right: on a
+      // tablet or desktop window one phone-width column would leave most of
+      // the screen empty and push the rows below PLAY out of easy reach.
+      body = CenteredContent(
+        maxWidth: _heroMenuWidth,
+        child: Row(
+          children: [
+            Expanded(
+              flex: 5,
+              child: _FullHeightScrollView(
+                padding: padding,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    header,
+                    const SizedBox(height: Gap.xxl),
+                    if (resume != null) ...[
+                      resume,
+                      const SizedBox(height: Gap.xl),
+                    ],
+                    play,
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: Gap.xl),
+            Expanded(
+              flex: 4,
+              child: _FullHeightScrollView(
+                padding: padding,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (update != null) ...[
+                      update,
+                      const SizedBox(height: Gap.xl),
+                    ],
+                    ...rows,
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    } else {
+      body = CenteredContent(
+        child: _FullHeightScrollView(
+          padding: padding,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              header,
+              const SizedBox(height: Gap.xxl),
+              if (update != null) ...[update, const SizedBox(height: Gap.xl)],
+              if (resume != null) ...[resume, const SizedBox(height: Gap.xl)],
+              play,
+              const SizedBox(height: Gap.xl),
+              ...rows,
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Scaffold(
+      // No title and, as the root route, no back button: only the board
+      // light, in the same corner as on every other screen, so the board can
+      // be connected before a mode is even picked.
+      appBar: AppBar(
+        actions: const [BoardConnectionButton(key: Key('menu-board-button'))],
+      ),
+      body: SafeArea(top: false, child: body),
+    );
+  }
+
+  Future<void> _open(BuildContext context, Widget screen) =>
+      Navigator.of(context)
+          .push(MaterialPageRoute<void>(builder: (context) => screen));
+}
+
+/// How wide the hero menu's two panes may get together, before
+/// [CenteredContent] scales it up for a desktop.
+const double _heroMenuWidth = 1100;
+
+/// The tally mark and the app's name, at the top of the menu. The mark is the
+/// one the splash screen drew; it flies here under [chalkMarkHeroTag].
+class _BrandHeader extends StatelessWidget {
+  const _BrandHeader({required this.large});
+
+  final bool large;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Hero(
+          tag: chalkMarkHeroTag,
+          child: ChalkMark(size: large ? 96 : 56),
+        ),
+        const SizedBox(height: Gap.md),
+        ChalkWordmark(fontSize: large ? 15 : 13),
+      ],
     );
   }
 }
@@ -289,11 +359,15 @@ class _MenuRow extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onTap,
+    this.large = false,
   });
 
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+
+  /// Roomier, for the hero layout, where the rows have a pane to themselves.
+  final bool large;
 
   @override
   Widget build(BuildContext context) {
@@ -309,9 +383,9 @@ class _MenuRow extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.symmetric(
+            padding: EdgeInsets.symmetric(
               horizontal: Gap.lg,
-              vertical: Gap.md,
+              vertical: large ? Gap.lg : Gap.md,
             ),
             child: Row(
               children: [
