@@ -1,6 +1,7 @@
 import 'package:fluttergran/domain/higher_lower/higher_lower_config.dart';
 import 'package:fluttergran/domain/higher_lower/higher_lower_leg_state.dart';
 import 'package:fluttergran/domain/higher_lower/higher_lower_reducer.dart';
+import 'package:fluttergran/domain/higher_lower/higher_lower_scoring.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
 import 'package:test/test.dart';
@@ -30,21 +31,21 @@ void main() {
     });
   });
 
-  group('pointsFor', () {
+  group('higherLowerPointsFor', () {
     test('a miss scores nothing at all', () {
-      expect(pointsFor(null), isNull);
+      expect(higherLowerPointsFor(null), isNull);
     });
 
     test('treble 1 counts as 0', () {
-      expect(pointsFor(const Segment(1, Ring.triple)), 0);
+      expect(higherLowerPointsFor(const Segment(1, Ring.triple)), 0);
     });
 
     test('every other segment scores its usual value', () {
-      expect(pointsFor(const Segment(1, Ring.outerSingle)), 1);
-      expect(pointsFor(const Segment(1, Ring.doubleRing)), 2);
-      expect(pointsFor(const Segment(20, Ring.triple)), 60);
-      expect(pointsFor(Segment.outerBull), 25);
-      expect(pointsFor(Segment.innerBull), 50);
+      expect(higherLowerPointsFor(const Segment(1, Ring.outerSingle)), 1);
+      expect(higherLowerPointsFor(const Segment(1, Ring.doubleRing)), 2);
+      expect(higherLowerPointsFor(const Segment(20, Ring.triple)), 60);
+      expect(higherLowerPointsFor(Segment.outerBull), 25);
+      expect(higherLowerPointsFor(Segment.innerBull), 50);
     });
   });
 

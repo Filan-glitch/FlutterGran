@@ -22,30 +22,23 @@ import 'database.dart';
 /// Reads and writes games, players, and the dart log.
 ///
 /// Nothing here scores anything. The log is stored exactly as thrown and
-/// replayed through [foldLeg] when a game is loaded, so there is one
-/// implementation of the rules rather than one in Dart and another in SQL.
+/// replayed through its mode's fold (such as [foldLeg]) when a game is
+/// loaded, so there is one implementation of the rules rather than one in
+/// Dart and another in SQL.
 class GameRepository {
   GameRepository(this.db);
 
   final AppDatabase db;
 
-  /// The stored form of [GameMode.x01], for filtering `gameMode` columns.
+  // The stored form of each GameMode, for filtering `gameMode` columns.
   static final String _x01 = GameMode.x01.name;
-
-  /// The stored form of [GameMode.aroundTheClock], for filtering `gameMode`
-  /// columns.
   static final String _aroundTheClock = GameMode.aroundTheClock.name;
-
-  /// The stored form of [GameMode.bulling], for filtering `gameMode`
-  /// columns.
   static final String _bulling = GameMode.bulling.name;
-
-  /// The stored form of [GameMode.higherLower], for filtering `gameMode`
-  /// columns.
   static final String _higherLower = GameMode.higherLower.name;
 
   // Players
 
+  /// Every player, by name, re-emitted on any change to the roster.
   Stream<List<Player>> watchPlayers() => (db.select(
     db.players,
   )..orderBy([(p) => OrderingTerm(expression: p.name)])).watch();
@@ -54,6 +47,8 @@ class GameRepository {
     db.players,
   )..orderBy([(p) => OrderingTerm(expression: p.name)])).get();
 
+  /// Creates a player under [name], trimmed. The caller checks it is not
+  /// blank.
   Future<Player> addPlayer(String name) => db
       .into(db.players)
       .insertReturning(PlayersCompanion.insert(name: name.trim()));
@@ -91,8 +86,7 @@ class GameRepository {
 
   /// Creates a leg and seats its players in throwing order.
   ///
-  /// [matchId] and [legNumber] are left off for a leg played on its own, which
-  /// is every leg the app recorded before matches existed.
+  /// [matchId] and [legNumber] are left off for a leg played on its own.
   Future<int> startGame(
     GameConfig config, {
     int? matchId,
@@ -119,9 +113,8 @@ class GameRepository {
     });
   }
 
-  /// Seats a game's players in throwing order. Pure plumbing shared by every
-  /// mode's `start*Game` - unlike the fold or the queries built around it,
-  /// there is no rule here for a second mode to disagree with.
+  /// Seats a game's players in throwing order. Shared by every mode's start
+  /// method.
   Future<void> _seatPlayers(int gameId, List<int> playerIds) async {
     for (var seat = 0; seat < playerIds.length; seat++) {
       await db
@@ -136,6 +129,7 @@ class GameRepository {
     }
   }
 
+  /// Records [winnerPlayerId] as the winner and stamps the finish time.
   Future<void> finishGame(int gameId, int winnerPlayerId) =>
       (db.update(db.games)..where((g) => g.id.equals(gameId))).write(
         GamesCompanion(
@@ -153,26 +147,10 @@ class GameRepository {
         ),
       );
 
+  /// Deletes a game's row. Only that row: foreign keys are not enforced (see
+  /// [removePlayer]), so its seats and darts are not cascaded.
   Future<void> deleteGame(int gameId) =>
       (db.delete(db.games)..where((g) => g.id.equals(gameId))).go();
-
-  /// Games that were abandoned before anyone won.
-  Future<void> deleteEmptyGames() async {
-    final counts = db.dartEvents.gameId.count();
-    final played =
-        await (db.selectOnly(db.dartEvents)
-              ..addColumns([db.dartEvents.gameId, counts])
-              ..groupBy([db.dartEvents.gameId]))
-            .get();
-    final withDarts = played
-        .map((row) => row.read(db.dartEvents.gameId))
-        .whereType<int>()
-        .toSet();
-
-    await (db.delete(
-      db.games,
-    )..where((g) => g.id.isNotIn(withDarts) & g.finishedAt.isNull())).go();
-  }
 
   // Matches
 
@@ -324,6 +302,8 @@ class GameRepository {
 
   // Darts
 
+  /// Records one dart at position [ordinal] of a game's log. The log is
+  /// stored as thrown; nothing is scored here.
   Future<void> appendDart({
     required int gameId,
     required int ordinal,
@@ -352,6 +332,7 @@ class GameRepository {
           ))
           .go();
 
+  /// A game's dart log in throwing order, ready to fold.
   Future<List<ThrownDart>> loadLog(int gameId) async {
     final rows =
         await (db.select(db.dartEvents)
@@ -410,10 +391,10 @@ class GameRepository {
   /// Emits again whenever a game changes, so statistics refresh themselves
   /// after a leg finishes.
   ///
-  /// Only x01 legs are folded here - [foldLeg] is the x01 engine, and a row
-  /// stored under a future mode would not mean what it assumes. A second
-  /// mode gets its own `watchAllLegsFor`-shaped method alongside this one,
-  /// not a rewrite of it.
+  /// Only x01 legs are folded here. Each mode has its own sibling method
+  /// ([watchAllAtcLegs], [watchAllBullingLegs], [watchAllHigherLowerLegs])
+  /// rather than one parameterised one: they fold through different engines
+  /// and share no rule worth entangling.
   Stream<List<LegState>> watchAllLegs() =>
       (db.select(
         db.games,
@@ -468,7 +449,7 @@ class GameRepository {
 
     return GameConfig(
       // Only ever called for an x01 row, which always populates these -
-      // Around the Clock leaves them null (see the columns' own docs).
+      // other modes leave them null (see the columns' own docs).
       startScore: game.startScore!,
       playerIds: seats,
       inRule: game.inRule!,
@@ -481,6 +462,7 @@ class GameRepository {
     );
   }
 
+  /// The `Games` row for [gameId], or null if there is not one.
   Future<Game?> loadGame(int gameId) => (db.select(
     db.games,
   )..where((g) => g.id.equals(gameId))).getSingleOrNull();
@@ -499,9 +481,7 @@ class GameRepository {
 
   /// Creates an Around the Clock leg and seats its players.
   ///
-  /// No `matchId`/`legNumber` - this mode has no match wrapping yet, so
-  /// every leg stands on its own, the same as every x01 leg recorded before
-  /// matches existed.
+  /// No `matchId`/`legNumber`: this mode has no matches.
   Future<int> startAtcGame(AtcConfig config) {
     return db.transaction(() async {
       final gameId = await db
@@ -555,11 +535,7 @@ class GameRepository {
   }
 
   /// Every stored Around the Clock leg, replayed. Refreshes itself when a
-  /// game changes.
-  ///
-  /// A sibling to [watchAllLegs], not a parameterisation of it - the two
-  /// fold through different engines and there is no rule shared between them
-  /// worth entangling.
+  /// game changes. See [watchAllLegs].
   Stream<List<AtcLegState>> watchAllAtcLegs() =>
       (db.select(db.games)..where((g) => g.gameMode.equals(_aroundTheClock)))
           .watch()
@@ -577,8 +553,7 @@ class GameRepository {
 
   /// Creates a Bulling leg and seats its players.
   ///
-  /// No `matchId`/`legNumber` — this mode has no match wrapping yet, so
-  /// every leg stands on its own, the same as Around the Clock.
+  /// No `matchId`/`legNumber`: this mode has no matches.
   Future<int> startBullingGame(BullingConfig config) {
     return db.transaction(() async {
       final gameId = await db
@@ -633,11 +608,7 @@ class GameRepository {
   }
 
   /// Every stored Bulling leg, replayed. Refreshes itself when a game
-  /// changes.
-  ///
-  /// A sibling to [watchAllLegs]/[watchAllAtcLegs], not a parameterisation
-  /// of either — the three fold through different engines and there is no
-  /// rule shared between them worth entangling.
+  /// changes. See [watchAllLegs].
   Stream<List<BullingLegState>> watchAllBullingLegs() =>
       (db.select(db.games)..where((g) => g.gameMode.equals(_bulling)))
           .watch()
@@ -687,10 +658,7 @@ class GameRepository {
   }
 
   /// Every stored Higher/Lower leg, replayed. Refreshes itself when a game
-  /// changes.
-  ///
-  /// A sibling to [watchAllBullingLegs], for the same reason that one is a
-  /// sibling to [watchAllLegs].
+  /// changes. See [watchAllLegs].
   Stream<List<HigherLowerLegState>> watchAllHigherLowerLegs() =>
       (db.select(db.games)..where((g) => g.gameMode.equals(_higherLower)))
           .watch()

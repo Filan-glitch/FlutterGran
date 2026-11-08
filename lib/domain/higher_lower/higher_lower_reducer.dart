@@ -1,28 +1,12 @@
-import '../segment.dart';
+import '../x01/leg_reducer.dart' show foldLeg;
 import '../x01/leg_state.dart' show dartsPerTurn;
 import '../x01/thrown_dart.dart';
 import 'higher_lower_config.dart';
 import 'higher_lower_leg_state.dart';
+import 'higher_lower_scoring.dart';
 
-/// Points a dart is worth in Higher/Lower, or null for a miss.
-///
-/// Every segment scores its usual value except treble 1, which counts as 0 -
-/// the one way to bring a turn in under 3. A miss is null rather than 0
-/// because it is not a low score: it ends the turn and puts the player out.
-///
-/// Exported for `computeHigherLowerStats` and the game screen's ledger, which
-/// total darts the same way the engine does.
-int? pointsFor(Segment? segment) {
-  if (segment == null) return null;
-  if (segment.number == 1 && segment.ring == Ring.triple) return 0;
-  return segment.value;
-}
-
-/// Replays a dart log under [config] and returns the resulting leg state.
-///
-/// This is the whole Higher/Lower engine, structured like Bulling's
-/// `foldBulling`: a pure function of the log, so undo is dropping the last
-/// dart and folding again.
+/// The Higher/Lower engine: replays a dart log under [config], the same way
+/// [foldLeg] does for x01.
 HigherLowerLegState foldHigherLower(
   HigherLowerConfig config,
   List<ThrownDart> darts,
@@ -42,13 +26,14 @@ HigherLowerLegState foldHigherLower(
     if (winnerId != null) break;
 
     turnDarts.add(dart);
-    final points = pointsFor(dart.segment);
+    final points = higherLowerPointsFor(dart.segment);
     if (points != null) total += points;
 
     final HigherLowerOutcome outcome;
     if (points == null) {
       outcome = HigherLowerOutcome.missed;
     } else if (turnDarts.length < dartsPerTurn) {
+      // The turn is not over yet: only a miss or the third dart decides it.
       continue;
     } else if (total > higher) {
       outcome = HigherLowerOutcome.higher;
@@ -91,6 +76,8 @@ HigherLowerLegState foldHigherLower(
       continue;
     }
 
+    // Next seat round the table, skipping anyone already out. At least two
+    // players are still in here, so this always stops.
     do {
       playerIndex = (playerIndex + 1) % config.playerIds.length;
     } while (eliminated.contains(config.playerIds[playerIndex]));

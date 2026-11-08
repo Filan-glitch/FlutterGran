@@ -1,15 +1,12 @@
+import '../x01/leg_reducer.dart' show foldLeg;
 import '../x01/leg_state.dart' show dartsPerTurn;
 import '../x01/thrown_dart.dart';
 import 'atc_config.dart';
 import 'atc_leg_state.dart';
 import 'atc_stop.dart';
 
-/// Replays a dart log under [config] and returns the resulting leg state.
-///
-/// This is the whole Around the Clock engine, structured like x01's
-/// `foldLeg`: a pure function of the log, so undo is dropping the last dart
-/// and folding again, and the same code reconstructs any historical leg from
-/// the database.
+/// The Around the Clock engine: replays a dart log under [config], the same
+/// way [foldLeg] does for x01.
 AtcLegState foldAroundTheClock(AtcConfig config, List<ThrownDart> darts) {
   final stopIndex = <int, int>{for (final id in config.playerIds) id: 0};
   final turns = <AtcTurn>[];

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/bulling/bulling_config.dart';
 import '../../domain/bulling/bulling_leg_state.dart';
-import '../../domain/bulling/bulling_reducer.dart' show pointsFor;
+import '../../domain/bulling/bulling_reducer.dart' show bullingPointsFor;
 import '../../domain/segment.dart';
 import '../../domain/stats/player_stats.dart';
 import '../../domain/x01/thrown_dart.dart';
@@ -88,7 +88,8 @@ class BullingGameScreen extends ConsumerWidget {
                     leg.currentTurnDarts.fold<int>(
                       0,
                       (sum, dart) =>
-                          sum + pointsFor(dart.segment, config.bullseyeValue),
+                          sum +
+                          bullingPointsFor(dart.segment, config.bullseyeValue),
                     ),
               ),
             ),
