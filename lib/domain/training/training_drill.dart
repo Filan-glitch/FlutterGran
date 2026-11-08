@@ -16,10 +16,6 @@ enum TrainingDrill {
   /// running session numbers.
   freePractice,
 
-  /// Practice finishing a chosen start score under double-out, the same
-  /// rules as an x01 leg, with the checkout suggestion visible throughout.
-  checkoutPractice,
-
   /// A random finish each round, one visit to take it out; the range adapts
   /// to how often you do.
   checkoutChallenge,

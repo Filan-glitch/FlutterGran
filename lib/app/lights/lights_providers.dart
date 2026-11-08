@@ -176,11 +176,6 @@ final higherLowerLightsProvider = Provider.autoDispose<void>((ref) {
 /// drills the target.
 final trainingLightsProvider = Provider.autoDispose<void>((ref) {
   RingPaint ring() => switch (ref.read(trainingProvider)) {
-    CheckoutPracticeSession(:final leg) => x01Ring(
-      leg,
-      awaitingTurnConfirm: false,
-      bestRoute: ref.read(checkoutTableProvider(leg.config.outRule)).bestFor,
-    ),
     FreePracticeSession() => RingPaint.off,
     CheckoutChallengeSession(:final state) =>
       state.config.showRoute && state.current != null

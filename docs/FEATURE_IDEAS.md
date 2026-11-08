@@ -5,8 +5,8 @@ is committed or scheduled — this exists so a future session doesn't have to
 re-derive the same list.
 
 Current modes: X01, Around the Clock, Bulling, Higher/Lower, plus training
-(free practice, checkout practice, Checkout Challenge, 121 Ladder, Bob's 27,
-Weak-spot Trainer; `lib/domain/training/`).
+(free practice, Checkout Challenge, 121 Ladder, Bob's 27, Weak-spot Trainer;
+`lib/domain/training/`).
 `select_game_mode_screen.dart` renders a "coming soon" tile after the registry
 entries, deliberately not naming a specific next mode.
 

@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/app/providers.dart';
 import 'package:fluttergran/app/screens/training_game_screen.dart';
-import 'package:fluttergran/app/theme.dart';
 import 'package:fluttergran/app/training_controller.dart';
 import 'package:fluttergran/app/widgets/checkout_card.dart';
 import 'package:fluttergran/data/board/fake_board_source.dart';
@@ -73,24 +72,18 @@ void main() {
     });
   });
 
-  group('checkout practice', () {
-    /// The big remaining score, not the same figure repeated in the
-    /// checkout card's header and on its D20 chip.
-    Finder remainingScore(String score) => find.byWidgetPredicate(
-      (widget) =>
-          widget is Text &&
-          widget.data == score &&
-          widget.style?.fontSize == Type.score.fontSize,
+  group('a single checkout at 40', () {
+    setUp(
+      () => controller().start(
+        const CheckoutChallengePlan(
+          CheckoutChallengeConfig(band: CheckoutBand(40, 40), rounds: 1),
+        ),
+      ),
     );
 
-    setUp(() => controller().start(const CheckoutPracticePlan(startScore: 40)));
-
-    testWidgets('shows the remaining score and the checkout suggestion', (
-      tester,
-    ) async {
+    testWidgets('shows the checkout suggestion', (tester) async {
       await pump(tester);
 
-      expect(remainingScore('40'), findsOneWidget);
       expect(find.text('CHECKOUT'), findsOneWidget);
       expect(
         find.descendant(
@@ -99,32 +92,6 @@ void main() {
         ),
         findsOneWidget,
       );
-    });
-
-    testWidgets('checking out shows the completion panel', (tester) async {
-      await pump(tester);
-
-      controller().addDart(const ThrownDart(Segment(20, Ring.doubleRing)));
-      await tester.pump();
-
-      expect(find.text('CHECKED OUT'), findsOneWidget);
-      expect(find.text('in 1 dart'), findsOneWidget);
-      expect(find.text('CHECKOUTS THIS SESSION: 1'), findsOneWidget);
-    });
-
-    testWidgets('throw again resets the attempt and keeps the count', (
-      tester,
-    ) async {
-      await pump(tester);
-
-      controller().addDart(const ThrownDart(Segment(20, Ring.doubleRing)));
-      await tester.pump();
-      await tester.tap(find.byKey(const Key('throw-again-button')));
-      await tester.pump();
-
-      expect(find.text('CHECKED OUT'), findsNothing);
-      expect(remainingScore('40'), findsOneWidget);
-      expect(find.text('CHECKOUTS THIS SESSION: 1'), findsOneWidget);
     });
 
     testWidgets('done leaves the screen', (tester) async {

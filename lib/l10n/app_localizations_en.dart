@@ -255,9 +255,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rulesLegendBulling => 'ONLY THE LIT BULLS SCORE';
 
   @override
-  String get rulesLegendCheckout => 'LIT SEGMENTS CAN FINISH';
-
-  @override
   String get rulesInStraight =>
       'Every dart counts, right from the first throw.';
 
@@ -367,10 +364,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get rulesTrainingFreeBody =>
       'No target and no win condition. Throw and watch your numbers.';
-
-  @override
-  String get rulesTrainingCheckoutBody =>
-      'Pick a start score and finish it under double out, the same rule as an X01 leg. The checkout route stays on screen the whole way.';
 
   @override
   String get rulesStatTotal => 'TOTAL';
@@ -491,12 +484,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get freePracticeTagline => 'throw and see what you hit';
-
-  @override
-  String get checkoutPracticeLabel => 'CHECKOUT PRACTICE';
-
-  @override
-  String get checkoutPracticeTagline => 'pick a score, practice finishing it';
 
   @override
   String get startButton => 'START';
@@ -892,11 +879,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shadedAgainstBusiest => 'Shaded against the busiest segment.';
 
   @override
-  String checkoutPracticeWithScore(int score) {
-    return '$score · CHECKOUT PRACTICE';
-  }
-
-  @override
   String get statDarts => 'DARTS';
 
   @override
@@ -904,25 +886,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get statBestTurn => 'BEST TURN';
-
-  @override
-  String checkoutsThisSession(int count) {
-    return 'CHECKOUTS THIS SESSION: $count';
-  }
-
-  @override
-  String get checkedOutLabel => 'CHECKED OUT';
-
-  @override
-  String inDartsCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count darts',
-      one: '$count dart',
-    );
-    return 'in $_temp0';
-  }
 
   @override
   String get throwAgainButton => 'THROW AGAIN';

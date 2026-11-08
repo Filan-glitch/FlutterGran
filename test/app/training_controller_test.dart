@@ -118,62 +118,14 @@ void main() {
     });
   });
 
-  group('checkout practice', () {
-    setUp(() => controller().start(const CheckoutPracticePlan(startScore: 40)));
-
-    test('starts a solo leg at the chosen score', () {
-      final s = session() as CheckoutPracticeSession;
-      expect(s.leg.currentRemaining, 40);
-      expect(s.checkoutsCompleted, 0);
-    });
-
-    test('a checkout finishes the attempt and counts it', () {
-      controller().addDart(d(20));
-      final s = session() as CheckoutPracticeSession;
-      expect(s.leg.isFinished, isTrue);
-      expect(s.checkoutsCompleted, 1);
-    });
-
-    test('a stray dart after checkout does not restart the attempt', () {
-      controller()
-        ..addDart(d(20))
-        ..addDart(d(20));
-      final s = session() as CheckoutPracticeSession;
-      expect(s.leg.darts, hasLength(1));
-      expect(s.checkoutsCompleted, 1);
-    });
-
-    test('throwAgain resets the attempt but keeps the count', () {
-      controller()
-        ..addDart(d(20))
-        ..throwAgain();
-      final s = session() as CheckoutPracticeSession;
-      expect(s.leg.darts, isEmpty);
-      expect(s.leg.currentRemaining, 40);
-      expect(s.checkoutsCompleted, 1);
-    });
-
-    test('undoing the checkout dart un-completes the attempt', () {
-      controller()
-        ..addDart(d(20))
-        ..undo();
-      final s = session() as CheckoutPracticeSession;
-      expect(s.leg.isFinished, isFalse);
-      expect(s.checkoutsCompleted, 0);
-    });
-
-    test('a bust does not count as a checkout', () {
-      controller().addDart(t(20)); // 40 - 60, busts
-      final s = session() as CheckoutPracticeSession;
-      expect(s.leg.currentRemaining, 40);
-      expect(s.checkoutsCompleted, 0);
-    });
-  });
-
   group('never persisted', () {
-    test('a full checkout-practice session never touches the game repository '
+    test('a full checkout session never touches the game repository '
         'or the current-game id', () {
-      controller().start(const CheckoutPracticePlan(startScore: 40));
+      controller().start(
+        const CheckoutChallengePlan(
+          CheckoutChallengeConfig(band: CheckoutBand(40, 40), rounds: 2),
+        ),
+      );
       controller()
         ..addDart(d(20))
         ..throwAgain()

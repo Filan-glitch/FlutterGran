@@ -255,9 +255,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get rulesLegendBulling => 'NUR DIE LEUCHTENDEN BULLS ZÄHLEN';
 
   @override
-  String get rulesLegendCheckout => 'LEUCHTENDE FELDER BEENDEN';
-
-  @override
   String get rulesInStraight => 'Jeder Dart zählt, schon ab dem ersten Wurf.';
 
   @override
@@ -365,10 +362,6 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get rulesTrainingFreeBody =>
       'Kein Ziel und keine Gewinnbedingung. Werfen und die eigenen Zahlen im Blick behalten.';
-
-  @override
-  String get rulesTrainingCheckoutBody =>
-      'Startpunktzahl wählen und unter Double-out beenden, nach derselben Regel wie ein X01-Leg. Der Checkout-Weg bleibt die ganze Zeit sichtbar.';
 
   @override
   String get rulesStatTotal => 'GESAMT';
@@ -492,13 +485,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get freePracticeTagline => 'werfen und sehen, was du triffst';
-
-  @override
-  String get checkoutPracticeLabel => 'CHECKOUT-TRAINING';
-
-  @override
-  String get checkoutPracticeTagline =>
-      'eine Punktzahl wählen und das Finish üben';
 
   @override
   String get startButton => 'START';
@@ -898,11 +884,6 @@ class AppLocalizationsDe extends AppLocalizations {
       'Eingefärbt relativ zum meistgetroffenen Feld.';
 
   @override
-  String checkoutPracticeWithScore(int score) {
-    return '$score · CHECKOUT-TRAINING';
-  }
-
-  @override
   String get statDarts => 'DARTS';
 
   @override
@@ -910,25 +891,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get statBestTurn => 'BESTE AUFNAHME';
-
-  @override
-  String checkoutsThisSession(int count) {
-    return 'CHECKOUTS DIESE SITZUNG: $count';
-  }
-
-  @override
-  String get checkedOutLabel => 'AUSGECHECKT';
-
-  @override
-  String inDartsCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count Darts',
-      one: '$count Dart',
-    );
-    return 'in $_temp0';
-  }
 
   @override
   String get throwAgainButton => 'NOCHMAL WERFEN';

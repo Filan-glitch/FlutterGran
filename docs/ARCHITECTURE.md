@@ -107,7 +107,7 @@ entry. Training has its own engine (`lib/domain/training/`) but is not a
 
 ### Training drills
 
-`TrainingDrill` lists six drills. `TrainingController.start` takes a sealed
+`TrainingDrill` lists five drills. `TrainingController.start` takes a sealed
 `TrainingPlan` (one per drill, carrying its settings) and holds a sealed
 `TrainingSession` (one per drill, wrapping its folded state). Every drill is a
 pure fold:
@@ -115,7 +115,6 @@ pure fold:
 | Drill | Fold | Built from |
 | --- | --- | --- |
 | Free practice | `foldFreePractice` | darts in threes |
-| Checkout practice | `foldLeg` | a solo x01 leg |
 | Checkout Challenge | `foldCheckoutChallenge(config, targets, darts)` | one-visit `CheckoutAttempt`s |
 | 121 Ladder | `foldLadder121` | three-visit `CheckoutAttempt`s |
 | Bob's 27 | `foldBobs27` | visits at D1-D20 and the bull |
