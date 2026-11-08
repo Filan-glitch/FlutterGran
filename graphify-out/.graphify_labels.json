@@ -20,10 +20,8 @@
   "37": "app_localizations_de.dart",
   "41": "frame_assembler.dart",
   "46": "Development",
-  "47": "main.dart",
   "48": "Data model",
   "50": "app_localizations_en.dart",
-  "52": "DateTime",
   "53": "Architecture",
   "54": "The board protocol",
   "55": "return",
@@ -48,8 +46,6 @@
   "216": "led_scheduler.dart",
   "217": "Feature ideas (not yet built)",
   "230": "AppLocalizations",
-  "238": "lights_providers.dart",
   "273": "_FakeAudioPlatform",
-  "274": "_FakeGlobalAudioPlatform",
-  "277": "_FakeAudioCache"
+  "274": "_FakeGlobalAudioPlatform"
 }
