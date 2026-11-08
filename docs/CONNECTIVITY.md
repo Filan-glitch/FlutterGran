@@ -20,10 +20,9 @@ what lets the fake and real Bluetooth go through *exactly* the same parsing
 path, and it means `BleBoardSource` is the only class that has to be verified
 against hardware.
 
-Swapping the two is one provider override (`boardSourceProvider`) - the
-in-app default is always `BleBoardSource` now that hardware day has confirmed
-it works; tests override the provider with `FakeBoardSource` directly, and
-there is no runtime switch between the two any more.
+Swapping the two is one provider override (`boardSourceProvider`). The app
+always builds a `BleBoardSource`; tests override the provider with
+`FakeBoardSource`. There is no runtime switch between them.
 
 ## GATT
 
@@ -159,7 +158,8 @@ pulled in automatically). Three things behave differently:
 
 ## Licensing note
 
-`flutter_blue_plus` is **not open source**. The connect call passes
+`flutter_blue_plus` is **not open source** (the constraint is in
+[CONTRIBUTING.md](../CONTRIBUTING.md#golden-rules)). The connect call passes
 `License.nonprofit`, which is the tier this project is distributed under:
 
 ```dart
@@ -184,32 +184,33 @@ first frame after it.
 
 ## Playing without a board
 
-`FakeBoardSource` emits the same raw byte chunks real hardware does, through
-the same code path, and can reproduce every protocol quirk on demand. It is no
-longer the in-app default - `boardSourceProvider` always builds a real
-`BleBoardSource` - but tests still override the provider with it directly:
+With no board connected, the keypad scores every dart, so the app is fully
+playable without hardware. For tests, `FakeBoardSource` emits the same raw byte
+chunks real hardware does, through the same code path, and can reproduce every
+protocol quirk on demand:
 
 | Method | Reproduces |
 |---|---|
-| `emitBody('3.4')` | a normal frame |
+| `emitBody('3.4')` / `hit(segment)` | a normal frame |
 | `emitBatch([...])` | several frames glued into one notification |
 | `emitSplit('3.4')` | one frame split across two notifications |
 | `emitDuplicate('3.4')` | the same frame twice inside the dedupe window |
 | `emitGreetingGluedTo('3.4')` | the connect greeting stuck to the first hit |
 | `pressButton()` / `emitMiss()` | `BTN@` / `OUT@` |
 
-That is why the whole app — including every parser edge case — is developed and
-tested with no hardware present.
+It can also drop the connection, switch the adapter off and record LED
+writes, which is how reconnect and lighting behaviour are tested. That is why
+the whole app — including every parser edge case — is developed and tested
+with no hardware present.
 
 ## Connecting from the app
 
-The setup screen's `BoardConnectionButton` is the whole interface: one icon,
-tap to connect or disconnect, coloured by state (white unclicked, blue
-connecting, green connected, red disconnected). The live diagnostics screen
-this replaced - switch source, watch each frame's raw body and decoded
-meaning, confirm or correct it - existed to verify the protocol against real
-hardware; hardware day (2026-09-04) finished that verification, so the screen
-is gone. See `BOARD_PROTOCOL.md` for what it found.
+`BoardConnectionButton`, in the setup and game app bars, is the whole
+interface: one icon, tap to connect or disconnect, coloured by state (white
+unclicked, blue connecting, green connected, red disconnected). With
+auto-connect on (`autoConnectProvider`), `boardLifecycleProvider` connects at
+launch, retries on return to the foreground, and announces connects and drops
+in a toast.
 
 If a real board will not appear, in order of likelihood:
 

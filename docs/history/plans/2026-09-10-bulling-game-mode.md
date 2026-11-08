@@ -26,7 +26,7 @@ suite.
 **Spec:** None — no separate spec doc exists for this feature. Requirements
 were pinned down by direct user Q&A in the session that produced this plan;
 that decision record is reproduced in full under "Design, precisely" below,
-in the same style as `docs/superpowers/specs/2026-09-07-around-the-clock-design.md`
+in the same style as `docs/history/specs/2026-09-07-around-the-clock-design.md`
 (Around the Clock's own design doc, which this plan's structure mirrors
 throughout — read it alongside this plan for the pattern being followed).
 

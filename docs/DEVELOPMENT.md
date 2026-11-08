@@ -1,33 +1,26 @@
 # Development
 
-## Setup
-
-```bash
-flutter pub get
-dart run build_runner build --delete-conflicting-outputs   # drift codegen
-flutter run
-```
-
-Requires the Dart SDK matching `environment: sdk: ^3.13.7` in `pubspec.yaml`.
-No board is needed — the app starts on the simulated source.
+Running the app on real devices, the test layout, the layout breakpoints and
+the asset generators. Setup, the golden rules and the recipes are in
+[CONTRIBUTING.md](../CONTRIBUTING.md), which is the place to start.
 
 ## Commands
 
 ```bash
+tool/check.sh                                              # what CI runs; --quick skips codegen, l10n, dartdoc
 flutter analyze                                            # must be clean
-flutter test                                               # everything, 304 tests
+flutter test                                               # everything
 dart test test/domain test/data                            # engine, checkout, protocol
+dart format lib test                                       # the whole tree is formatted; CI checks it
+flutter gen-l10n                                           # after editing an .arb file
 dart run build_runner build --delete-conflicting-outputs   # after any table change
-dart format lib test                                       # note the caveat below
+dart pub global run dartdoc                                # API docs to doc/api/ (dartdoc 9.0.11)
 ```
 
 `test/domain` and `test/data` run under plain `dart test` because neither layer
 imports Flutter, which makes the engine fast to iterate on. `test/app` needs
-`flutter test`.
-
-> **`dart format` caveat.** The tree is not uniformly formatted, so
-> `dart format lib test` will rewrite files you did not touch. Format only the
-> files you changed, or check `git diff --stat` before committing.
+`flutter test`. No board is needed for any of it: with nothing connected, the
+keypad scores, and tests drive `FakeBoardSource`.
 
 ## Running on a device
 
@@ -66,6 +59,7 @@ What differs from Android:
 - **Layout.** The window opens maximised, cannot be dragged below 960x600
   logical, and gets the desktop tiers in `lib/app/theme.dart`
   (`isDesktop`, `desktopHeroLayout`, `typeScaleFor`) — see
+  [Layout breakpoints](#layout-breakpoints) and
   [ARCHITECTURE.md](ARCHITECTURE.md#layout).
 - **Data.** The database lives in `%APPDATA%\de.bot.filan\Chalk\`
   (`getApplicationSupportDirectory`, named from `CompanyName`/`ProductName` in
@@ -81,14 +75,57 @@ What differs from Android:
 
 | Directory | Runner | Covers |
 |---|---|---|
-| `test/domain/` | `dart test` | x01 fold, checkout search, match fold, statistics, **and the purity rule** |
-| `test/data/` | `dart test` | frame assembly, segment codec, the GranBoard table |
-| `test/app/` | `flutter test` | persistence, migrations, controllers, audio mapping, keypad, board widget, end screen, responsive layout |
-| `test/widget_test.dart` | `flutter test` | the app end to end: roster → leg → leave → resume |
+| `test/domain/` | `dart test` | x01 fold, match fold, checkout search and table, x01 rules, segments, game modes, player statistics, **and the purity rule** |
+| `test/domain/atc/`, `bulling/`, `higher_lower/`, `training/` | `dart test` | each mode's config, fold and statistics |
+| `test/data/` | `dart test` | frame assembly, board reader, segment codec, the GranBoard table, LED command encoding |
+| `test/data/update/` | `dart test` | release lookup, version comparison, verified APK download |
+| `test/app/` | `flutter test` | controllers, persistence, migrations, sound and LED mappings, LED scheduler, keypad, board widget, every screen, responsive and per-mode layout, update flow |
+| `test/support/` | - | shared helpers: in-memory database, sound-player fakes, lights-off overrides, pump helpers, `ThrownDart` shorthands, device sizes, `BoardClock`, fake update platform |
+| `test/widget_test.dart` | `flutter test` | x01 end to end: roster → leg → leave → resume |
+| `test/atc_widget_test.dart` | `flutter test` | Around the Clock end to end |
+
+How to write one (which folder, Windows variants, `FakeBoardSource`) is in
+[CONTRIBUTING.md](../CONTRIBUTING.md#add-a-test).
 
 `test/domain/domain_purity_test.dart` fails if anything under `lib/domain/`
 imports `package:flutter`. If it goes red, move the offending code out of
 `domain/` — do not relax the test.
+
+## Layout breakpoints
+
+All in `lib/app/theme.dart`, and what
+[ARCHITECTURE.md](ARCHITECTURE.md#layout) builds on. These are the reasons
+behind each number, so a change can be checked against the device it was
+measured on.
+
+| Constant | Value | Why |
+|---|---|---|
+| `wideLayout` | 600 | Where a phone on its side lands and a tablet always is. Below it a column is the only arrangement that fits a keypad; above it a column would leave the score marooned at the top of a wide screen |
+| `heroLayout` | 780 (shortest side) | A Samsung Galaxy Tab S6 Lite, the tablet the layout is built for, measures 800dp at its shipped display size (`adb shell wm size` / `adb shell wm density`: 1200x2000 physical at 240dpi). The threshold has to clear that with room to spare, or that tablet gets the phone treatment |
+| `desktopHeroLayout` | 900x580 | A 1080p laptop at Windows' default 150% is 1280x720 logical, about 640 high after the title bar and taskbar: short of `heroLayout`, but plenty for the hero cards side by side. Set just under the runner's 960x600 client-area floor (`windows/runner/flutter_window.cpp`), so the smallest window the runner allows always qualifies. Change one, check the other |
+| `formContentWidth` | 640 | A setup or statistics column a hand can take in at a glance; the rest of a tablet's width becomes margin. On desktop the cap grows with `typeScaleFor`, so 1.75-sized labels do not wrap into a phone-width strip |
+
+**Why a desktop is sized by its window.** A desktop window has width to spare
+and never enough height: a laptop is landscape, the title bar and taskbar take
+their share, and the window can be any size its owner drags it to. So
+`isDesktop` devices qualify for the hero layout by window size (`isHeroSize`),
+and call sites ask `isHeroDevice(context)` rather than comparing
+`shortestSide` themselves.
+
+**`typeScaleFor` tiers.** The sizes in `Type` are for a phone at arm's length.
+A tablet is further away, on a table or a stand, so the same 62px score reads
+as ordinary across a room. Keyed to the shortest side, which says how big the
+device is rather than which way up it is held.
+
+| | 1.0 | 1.25 | 1.5 | 1.75 |
+|---|---|---|---|---|
+| Mobile | below 700 | from 700 | from 780 (`heroLayout`) | - |
+| Desktop | below 580 | from 580 (`desktopHeroLayout.height`) | from 780 | from 1000 |
+
+The desktop's extra bottom tier gives a laptop's ~640-high window bigger type
+along with the hero layout; the extra top tier is for a full-height window on a
+monitor at 100% scaling, where a logical pixel is physically the smallest on
+any screen the app runs on.
 
 ## Generated assets
 
@@ -144,37 +181,15 @@ confused, so they sit three octaves apart with opposite contours.
 > `lib/app/audio/sound_controller.dart` to match. The generator is the
 > authority; the two files cannot see each other.
 
-## Dependency constraints, learned the hard way
+## Dependency constraints and conventions
 
-- **`flutter_blue_plus` is not open source.** Free for personal use only; any
-  for-profit use requires a purchased commercial licence. If this ships
-  commercially, swap it for `flutter_blue_ultra` or `universal_ble` (both
-  BSD-3).
-- **No Riverpod codegen.** `riverpod_generator` requires `analyzer ^13` while
-  `drift_dev` pins an older analyzer — they cannot coexist. Providers are
-  written by hand.
-- **No `riverpod_lint` / `custom_lint`.** `riverpod_lint` caps
-  `riverpod_annotation <4.0.0` and so is incompatible with Riverpod 3. Provider
-  mistakes are not caught by tooling; keep providers few and small.
-- **Write only LED frames to the board.** Every write goes through
-  `BoardSource.sendLed(LedCommand)`, and `LedCommand` has no way to express the
-  12-byte settings frames (`…34 35`, `…36 37`, `…3A 3B`) that change how the
-  board scores. Never add a raw-bytes write path. All audio is app-side.
-
-## Conventions
-
-- **Nothing counts incrementally.** State is folded from the dart log. A patch
-  that introduces a running total, a cached derived value, or a counter updated
-  as darts land is going the wrong way — that is what makes undo work.
-- **Comments say why, not what.** The existing comments explain decisions and
-  the things that bit somebody; match that density rather than narrating the
-  code.
-- **Every PR leaves `flutter analyze` clean and the full suite green.**
-- **A schema change ships with its migration and a migration test** that has
-  rows in the table before the upgrade.
+The dependency constraints (`flutter_blue_plus` licence, no Riverpod codegen
+or lints, audioplayers position polling, LED-only writes) and the code
+conventions are in [CONTRIBUTING.md](../CONTRIBUTING.md#golden-rules), which
+is their one home.
 
 ## Working with the board
 
 See [BOARD_PROTOCOL.md](BOARD_PROTOCOL.md) for the frame format and
-[BOARD_PROTOCOL.md#hardware-day](BOARD_PROTOCOL.md#hardware-day) for the list of
-questions only a connected 132 can answer.
+[BOARD_PROTOCOL.md#hardware-day](BOARD_PROTOCOL.md#hardware-day) for what a
+connected 132 confirmed.

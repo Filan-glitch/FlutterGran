@@ -8,13 +8,13 @@
 [![Dart SDK](https://img.shields.io/badge/Dart-%5E3.13-0175C2?logo=dart&logoColor=white)](https://dart.dev)
 [![Platform](https://img.shields.io/badge/platform-Android%20%7C%20Windows-3D9C64)](#)
 [![Release](https://img.shields.io/github/v/release/Filan-glitch/FlutterGran?color=3D9C64)](https://github.com/Filan-glitch/FlutterGran/releases/latest)
-[![Tests](https://img.shields.io/badge/tests-304%20passing-3D9C64)](#testing)
-[![Schema](https://img.shields.io/badge/schema-v5-8A9A8E)](docs/DATA_MODEL.md)
+[![CI](https://github.com/Filan-glitch/FlutterGran/actions/workflows/ci.yml/badge.svg)](https://github.com/Filan-glitch/FlutterGran/actions/workflows/ci.yml)
 
 x01 for up to four players, best of 1/3/5/7, live checkout suggestions, spoken
-commentary rendered at build time, and per-player statistics across every dart
-ever thrown — with the board connected over Bluetooth, or with nothing but the
-keypad.
+commentary rendered at build time, reactions on the board's LED ring, and
+per-player statistics across every dart ever thrown — plus Around the Clock,
+Bulling, Higher/Lower and training. With the board connected over Bluetooth,
+or with nothing but the keypad.
 
 </div>
 
@@ -36,13 +36,20 @@ keypad.
 
 | | |
 |---|---|
-| **x01** | 301 / 501 / 701, straight in, double out, two to four players |
+| **x01** | 301 / 501 / 701, straight, double or master in and out, one to four players |
 | **Matches** | Best of 1, 3, 5 or 7. The throw rotates every leg, because throwing first is a real advantage |
-| **Checkouts** | Every route from 170 down, live, with the suggested keys outlined on the keypad |
-| **Board** | GranBoard 132 over BLE, with a calibration screen for the segments no public source has ever verified |
+| **Checkouts** | Every route out under the leg's out-rule, live, with the suggested keys outlined on the keypad |
+| **Around the Clock** | 1 to 20, then the outer bull and the bullseye; any segment counts, or only doubles and triples (masters), or only doubles |
+| **Bulling** | Points on the bull (outer 1, bullseye 2 or 3), first to 21, 31 or 41 |
+| **Higher/Lower** | Elimination: every turn must beat the higher value or undercut the lower one, last one standing wins |
+| **Training** | Free practice and checkout practice, nothing recorded |
+| **Board** | GranBoard 132 over BLE: one icon in the app bar to connect, auto-reconnect, and the keypad as a fallback |
+| **LED ring** | Dart flashes, the checkout route or the next target lit on the ring, celebrations for a 180 or a won leg |
 | **Sound** | A cue per dart and every three-dart total spoken aloud — 186 lines rendered offline at build time, no TTS engine on the phone |
-| **Statistics** | Three-dart average, first nine, 180s, best checkout, best leg, checkout rate, and a heatmap of where the darts landed |
-| **Layout** | One column on a phone, scoreboard beside keypad on a tablet or a phone on its side |
+| **Statistics** | Per mode: three-dart average, first nine, 180s, best checkout, checkout rate by out-rule, per-stop hit rates, and a heatmap of where the darts landed |
+| **Languages** | English and German, following the device or picked in Settings |
+| **Updates** | Checks GitHub for a new release at launch; Android downloads, verifies and installs it, Windows opens the release page |
+| **Layout** | One column on a phone, scoreboard beside keypad on a phone on its side, hero cards on a tablet, and a resizable Windows window |
 
 Everything is stored as **the darts that were thrown**, never as a running
 total. Undo is folding a shorter list; there is nothing to retract.
@@ -55,18 +62,23 @@ dart run build_runner build --delete-conflicting-outputs   # drift codegen
 flutter run                # or: flutter run -d windows
 ```
 
-No board required — the app starts on a **simulated** source. Switch it to
-Bluetooth from **Board diagnostics** on the setup screen when you have hardware
-in front of you.
+No board required — with nothing connected, the keypad scores every dart.
+With a GranBoard 132 in range, tap the board icon in the app bar to connect.
+
+Before pushing, `tool/check.sh` runs everything CI does. The full developer
+handbook is **[CONTRIBUTING.md](CONTRIBUTING.md)**.
 
 ## How it is put together
 
 ```
 lib/
-├── domain/     pure Dart, no Flutter — the x01 fold, the checkout search,
-│               the match fold, the statistics
-├── data/       the board protocol and the drift database
-└── app/        Riverpod providers, screens, widgets, audio
+├── domain/     pure Dart, no Flutter — one folder per mode (x01, atc,
+│               bulling, higher_lower, training), the checkout search,
+│               the statistics
+├── data/       the board protocol, the drift database, the update check
+├── app/        Riverpod providers, controllers, screens, widgets, audio,
+│               LED ring
+└── l10n/       English and German strings
 ```
 
 The one rule enforced mechanically: **`lib/domain/` must not import
@@ -92,18 +104,22 @@ Full detail: **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
 
 | Document | What is in it |
 |---|---|
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Layers, the folds, the provider graph, audio, responsive layout |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | **Start here.** Setup, the golden rules, the project map, recipes, style, workflow |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Layers, the folds, the provider graph, audio, lights, responsive layout |
 | [HARDWARE.md](docs/HARDWARE.md) | What the GranBoard 132 is, its sensor matrix, the segment table, and what is verified versus assumed |
 | [CONNECTIVITY.md](docs/CONNECTIVITY.md) | GATT service, scanning and Android's throttle, reconnect backoff, permissions, playing without a board |
-| [BOARD_PROTOCOL.md](docs/BOARD_PROTOCOL.md) | Frame format, the greeting, dedupe, calibration, hardware day |
-| [DATA_MODEL.md](docs/DATA_MODEL.md) | Every table, schema v1 → v4, and what the migrations do and deliberately do not do |
-| [DEVELOPMENT.md](docs/DEVELOPMENT.md) | Commands, codegen, the asset generators, dependency constraints, test layout |
+| [BOARD_PROTOCOL.md](docs/BOARD_PROTOCOL.md) | Frame format, the greeting, dedupe, hardware day, LED control |
+| [DATA_MODEL.md](docs/DATA_MODEL.md) | Every table, schema v1 → v8, and what the migrations do and deliberately do not do |
+| [DEVELOPMENT.md](docs/DEVELOPMENT.md) | Devices, Windows, test layout, layout breakpoints, the asset generators |
 | [RELEASING.md](docs/RELEASING.md) | How a merged release PR becomes a GitHub release with APKs and a Windows build, and the one-time signing setup |
+| [RULES_SCREENS.md](docs/RULES_SCREENS.md) | The in-app rules section: painted boards, callouts, worked examples |
+| [FEATURE_IDEAS.md](docs/FEATURE_IDEAS.md) | Modes and features discussed but not built |
 
 ## Testing
 
 ```bash
-flutter test                      # everything, 292 tests
+tool/check.sh                     # what CI runs: codegen, l10n, format, analyze, tests, dartdoc
+flutter test                      # everything
 dart test test/domain test/data   # engine, checkout and protocol — no Flutter needed
 flutter analyze
 ```
@@ -113,13 +129,15 @@ imports Flutter. `test/app` needs `flutter test`.
 
 What the suite pins:
 
-- the x01 rules, including bust, double-out and the darts left in a turn
-- every checkout route from 170 down, and the bogey numbers that have none
+- the x01 rules, including bust, every in- and out-rule and the darts left in a turn
+- every checkout route under each out-rule, and the bogey numbers that have none
 - the match fold, the win threshold, and the leg-by-leg rotation of the throw
+- every mode's fold and statistics, including undo bringing an eliminated player back
 - frame assembly: split frames, glued frames, duplicates inside 50 ms, the greeting
-- the v2 → v3 migration, with rows already in the table
-- the exact mapping from a game-state transition to a sound
-- the layout at phone portrait, phone landscape, tablet and desktop-window sizes
+- every migration from schema 2 onwards, with rows already in the tables
+- the exact mapping from a game-state transition to a sound and to an LED cue
+- the layout at phone portrait, phone landscape, tablet and desktop-window sizes,
+  in English and German
 
 ## Generated assets
 
@@ -139,6 +157,6 @@ See [DEVELOPMENT.md](docs/DEVELOPMENT.md#generated-assets) for how to re-run the
 - **`flutter_blue_plus` is not open source.** Free for personal use; any
   for-profit use needs a purchased commercial licence. Shipping this
   commercially means swapping it for `flutter_blue_ultra` or `universal_ble`
-  (both BSD-3).
+  (both BSD-3); see [CONTRIBUTING.md](CONTRIBUTING.md#golden-rules).
 - The Piper voice output is **CC BY-SA 4.0**; the attribution lives beside the
   audio in `assets/sounds/SPEECH-VOICE-LICENCE.txt`.

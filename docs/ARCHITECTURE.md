@@ -6,14 +6,20 @@ How Chalk is put together, and why the seams are where they are.
 
 ```
 lib/
-├── domain/   pure Dart. The x01 fold, the checkout search, the match fold,
-│             the statistics. Imports nothing from Flutter.
-├── data/     the board protocol and the drift database.
-└── app/      Riverpod providers, screens, widgets, audio.
+├── domain/   pure Dart. One folder per mode with its config and fold, the
+│             match fold, the checkout search, the statistics. Imports
+│             nothing from Flutter.
+├── data/     the board protocol, the drift database, the update check.
+└── app/      Riverpod providers, controllers, screens, widgets, audio,
+              lights, the update flow.
 ```
 
+The full file map and naming conventions are in
+[CONTRIBUTING.md](../CONTRIBUTING.md#project-map).
+
 **`lib/domain/` must not import `package:flutter`.**
-`test/domain/domain_purity_test.dart` asserts this mechanically. If it ever
+`test/domain/domain_purity_test.dart` asserts this mechanically (it also
+rejects `dart:ui` and `package:drift`). If it ever
 fails, the fix is to move the Flutter-dependent code out of `domain/`, not to
 relax the test. The rules of x01 and the search for a checkout are the parts
 worth testing hardest, so they live somewhere a widget cannot reach and a test
@@ -61,20 +67,26 @@ Two consequences worth naming:
 ### x01
 
 `GameConfig` holds the rules of one leg: start score, seats in throwing order,
-double-out, and which seat throws first. Its constructor asserts the
+the in-rule and out-rule, and which seat throws first. The rules are two
+independent enums, `X01InRule` and `X01OutRule` (`straight`, `double`,
+`master`), in `lib/domain/x01/x01_rules.dart`; `opens` and `checksOut` are the
+predicates for a legal first and last dart. Its constructor asserts the
 invariants — score above 1, one to four seats, no player in two seats, a
 starting seat that exists.
 
 `foldLeg` walks the darts, opening a turn every three darts (or on a bust or a
 checkout), and produces `LegState`: `remaining` per player, the list of
 completed `Turn`s, whose turn it is, how many darts are left in it, and the
-winner if there is one. Bust rules are applied inside the fold — a turn that
-goes below zero, to exactly one, or to zero without a double scores nothing and
-the player returns to where they started it.
+winner if there is one. The in-rule and bust rules are applied inside the
+fold: nothing scores until a dart `opens` under the in-rule, and a turn that
+goes below zero, leaves 1 under any out-rule but straight, or reaches zero on
+a dart that does not `checksOut` scores nothing and the player returns to where
+they started it.
 
 ### Matches
 
-`MatchConfig` is the format: start score, seats, double-out, `legsToPlay`.
+`MatchConfig` is the format: start score, seats, in- and out-rule,
+`legsToPlay`.
 The rule it actually plays is **first to `legsToWin`**, where
 `legsToWin = legsToPlay ~/ 2 + 1`.
 
@@ -87,34 +99,36 @@ is not playing.
 
 ### Game modes
 
-`GameMode` (`lib/domain/game_mode.dart`) is the seam a second mode plugs
-into. Today it has one member, `x01`, and `gameModeRegistry` has one
-`GameModeDescriptor` describing it - the select-mode screen renders one
-tile per registry entry, so a future mode is an added entry with
-`isAvailable: false` until it has an engine, not a new screen.
+`GameMode` (`lib/domain/game_mode.dart`) has four members: `x01`,
+`aroundTheClock`, `bulling` and `higherLower`. `gameModeRegistry` holds a
+`GameModeDescriptor` for each, and the select-mode screen renders one tile per
+entry. Training has its own engine (`lib/domain/training/`) but is not a
+`GameMode`: nothing about it is stored.
 
-This is deliberately a thin seam, not a rewrite of the x01 engine into a
-generic one: `GameConfig`, `LegState`, and `foldLeg` all stay x01-specific,
-because x01 is still the only mode with rules to generalise from.
-Guessing at a `GameEngine` interface's shape before a second mode exists
-to test it against would be guessing, not designing. What the seam
-actually threads through today is storage and statistics:
+Each mode has its own config, leg state and fold, in its own folder
+(`lib/domain/atc/`, `bulling/`, `higher_lower/`, `x01/`), rather than a generic
+`GameEngine` interface: the modes share the shape "a pure fold over the dart
+log" and nothing else worth abstracting. The mode is threaded through storage
+and statistics:
 
-- `Games.gameMode` / `Matches.gameMode` (schema v5) record which mode a
-  leg or match was played under, stored by name like `DartEvents.ring`.
-  Every row ever written is `x01` - it is the only mode that has ever had
-  an engine - and `GameRepository.watchAllLegs`/`loadMatchLegs` filter to
-  it explicitly, so a future mode's rows would not be silently folded
-  through the x01 reducer they do not mean.
-- `ModeStats` (`lib/domain/stats/mode_stats.dart`) is a sealed base type
-  with `X01Stats` as its only variant (`part`/`part of` the same library,
-  so the `sealed` exhaustiveness check actually holds). `computePlayerStats`
-  returns `Map<GameMode, ModeStats>` - one entry per mode a player has a
-  record in - built by composing per-mode calculators
-  (`computeX01Stats` today) rather than one function that tries to know
-  about every mode at once. The statistics screen sections itself the
-  same way: one block per entry in the map, nothing rendered for a mode
-  with nothing in it.
+- `Games.gameMode` / `Matches.gameMode` record which mode a leg or match was
+  played under, stored by name like `DartEvents.ring`. Every
+  `GameRepository.watchAll*Legs` filters on it, so a row is only ever folded
+  through the reducer of the mode it was played in.
+- `ModeStats` (`lib/domain/stats/mode_stats.dart`) is a sealed base type with
+  four variants, `X01Stats`, `AtcStats`, `BullingStats` and `HigherLowerStats`,
+  each in its own `part` file so the `sealed` exhaustiveness check holds.
+  `computePlayerStats` returns `Map<GameMode, ModeStats>` - one entry per mode
+  a player has a record in - built from per-mode calculators
+  (`computeX01Stats`, `computeAtcStats`, ...). The statistics screen sections
+  itself the same way: one block per entry, nothing for a mode with nothing in
+  it.
+
+Around the Clock (`lib/domain/atc/`) walks 1 to 20 and then the two bulls;
+`AtcVariant` decides which rings count on a wedge (`AtcStop.clears`).
+
+Bulling (`lib/domain/bulling/`) scores only the bull: the outer bull is 1, the
+bullseye 2 or 3 (`BullseyeValue`), first to the target (21, 31 or 41) wins.
 
 Higher/Lower (`lib/domain/higher_lower/`) is the elimination mode: every turn
 must total more than the higher value or less than the lower one (45 and 26 to
@@ -124,42 +138,70 @@ does neither, puts the player out, and the last one standing wins.
 the dart log, so undo brings an eliminated player back for free. It is the one
 mode without a config table, because its seats are its whole configuration.
 
+Adding a fifth mode is a checklist, in
+[CONTRIBUTING.md](../CONTRIBUTING.md#add-a-game-mode).
+
 ### Checkouts
 
-`findCheckouts(score, dartsLeft, {limit})`
+`findCheckouts(score, dartsLeft, {limit, outRule})`
 (`lib/domain/checkout/checkout_search.dart`) finds the routes out from any score
-up to `maxCheckout = 170`, respecting the darts left in the turn and the
-double-out requirement. `CheckoutTable.routesFor` caches the answers so the
-search does not re-run on every dart. The
+between `minCheckoutFor(outRule)` and `maxCheckoutFor(outRule)` (170 under
+double-out, 180 otherwise), respecting the darts left in the turn and what the
+out-rule accepts as a last dart. `CheckoutTable` caches the answers per
+out-rule (`checkoutTableProvider` is a family over `X01OutRule`) so the search
+does not re-run on every dart. The
 game screen shows the best route and the alternates, and passes the route's
 segments to the keypad, which outlines the matching keys — so the advice can be
 followed without reading it.
 
 ## The app layer
 
-Providers are written **by hand**. `riverpod_generator` needs `analyzer ^13`
-while `drift_dev` pins an older one, and `riverpod_lint` caps
-`riverpod_annotation <4.0.0`, so neither codegen nor the lints are available.
-That makes provider mistakes uncaught by tooling and is why they are kept few
-and small.
+Providers are written **by hand**, with no codegen and no provider lints; why
+is in [CONTRIBUTING.md](../CONTRIBUTING.md#golden-rules). Almost all of them
+are in `lib/app/providers.dart`; the lights providers are in
+`lib/app/lights/lights_providers.dart` and the update ones in
+`lib/app/update/update_controller.dart`.
 
 ```
-boardSourceProvider ──▶ boardReaderProvider ──▶ boardEventsProvider
-                                                      │
-gameConfigProvider ──────────────┐                    ▼
-                                 ├──▶ gameProvider (GameController)
-currentGameIdProvider ───────────┘         │
-                                           ├──▶ matchStateProvider ──▶ game screen
-matchProvider (MatchController) ───────────┘
-                                           └──▶ soundControllerProvider ──▶ SoundPlayer
+boardSourceProvider ──▶ boardReaderProvider ──▶ boardEventsProvider (a Stream)
+   │                                                 │ listened to by every controller
+   ├──▶ boardConnectionProvider ──▶ keypad visibility, BoardConnectionButton
+   └──▶ ledSchedulerProvider ──▶ BoardSource.sendLed
 
-gameRepositoryProvider ──▶ allLegsProvider ──┐
-                       └──▶ allMatchesProvider ├──▶ playerStatsProvider
-                                              ┘
+keypadOverrideProvider ──▶ every controller (drops board darts while open)
+currentGameIdProvider  ──▶ every controller but training (the row it writes to)
+
+gameConfigProvider ──▶ gameProvider (GameController) ──┬──▶ matchStateProvider
+matchProvider (MatchController) ───────────────────────┘
+atcConfigProvider ──▶ atcGameProvider (AtcController)
+bullingConfigProvider ──▶ bullingGameProvider (BullingController)
+higherLowerConfigProvider ──▶ higherLowerGameProvider (HigherLowerController)
+trainingProvider (TrainingController)        never persisted
+
+each game provider ──▶ <mode>SoundControllerProvider ──▶ soundPlayerProvider
+                   └──▶ <mode>LightsProvider ──▶ ledSchedulerProvider
+
+databaseProvider ──▶ gameRepositoryProvider ──┬──▶ allLegsProvider, allMatchesProvider,
+                                              │    allAtcLegsProvider, allBullingLegsProvider,
+                                              │    allHigherLowerLegsProvider ──▶ playerStatsProvider
+                                              ├──▶ resumableLegProvider ──▶ main menu, splash
+                                              └──▶ segmentCountsProvider ──▶ heatmap
+
+updateProvider (UpdateController) ◀── githubReleasesProvider, updatePlatformProvider
 ```
 
-- **`GameController`** owns the leg on screen. It appends darts, holds each turn
-  for confirmation, undoes, and persists as it goes.
+Settings are `NotifierProvider<BoolSetting, bool>`s backed by
+shared_preferences (`soundEnabledProvider`, `speechEnabledProvider`, the four
+`led*Provider`s, `autoConnectProvider`, `updateAutoCheckProvider`), plus
+`localeProvider` for the language. `main.dart` keeps the app-lifetime
+providers alive by watching them: `ledSchedulerProvider`,
+`boardLifecycleProvider` (auto-connect, reconnect on resume, connection
+toasts) and `updateLifecycleProvider` (the launch-time update check).
+
+- **`GameController`** owns the x01 leg on screen. It appends darts, holds each
+  turn for confirmation, undoes, and persists as it goes. `AtcController`,
+  `BullingController` and `HigherLowerController` do the same for their modes;
+  `TrainingController` does it without the database.
 - **`MatchController`** owns the match around it: `start`, `startNextLeg`,
   `resumeFrom`, `rematch`, `leave`. It deliberately holds only the legs *behind*
   the current one; the leg being played is read from `gameProvider`, which is
@@ -169,7 +211,8 @@ gameRepositoryProvider ──▶ allLegsProvider ──┐
 ### Screens
 
 Plain `Navigator.push`/`MaterialPageRoute` throughout - no named routes, no
-router package. Six-odd screens with a linear tree does not earn one.
+router package. Eighteen screens (`lib/app/screens/`) in a shallow, linear tree
+do not earn one.
 
 ```
 SplashScreen                                  (MaterialApp's home)
@@ -244,7 +287,7 @@ not matter. The four cues are warmed at startup; the 186 spoken lines are not,
 because they are needed once a turn rather than three times. Neither player
 has a position updater: audioplayers' default one leaks a per-frame polling
 loop on every play of a sound that never completes, which a SoundPool cue
-never does - see CLAUDE.md.
+never does - see [CONTRIBUTING.md](../CONTRIBUTING.md#golden-rules).
 
 Spoken lines wait for the cue under them — `SoundTiming.afterBustCue` and
 friends — so the pair reads as one event instead of two sounds fighting.
@@ -295,9 +338,9 @@ shortest side rather than a `LayoutBuilder`'s local width — the same question
   in both arrangements; only where it sits moves. Nothing shrinks to fit,
   because the size of the score is what makes it readable from the oche.
 - `heroLayout = 780` — measured against a Samsung Galaxy Tab S6 Lite
-  (800dp shortest side at its shipped display size; see the doc comment on
-  `heroLayout` for the `adb shell wm size`/`wm density` numbers), a real
-  tablet's threshold rather than a round guess. At or above it: the
+  (800dp shortest side at its shipped display size; the measurement is in
+  [DEVELOPMENT.md](DEVELOPMENT.md#layout-breakpoints)), a real tablet's
+  threshold rather than a round guess. At or above it: the
   scoreboard becomes per-player hero cards instead of a thin row, a turn's
   result becomes a full-screen takeover (`Positioned.fill` in the same
   `Stack` the game-over card uses) instead of sharing the play slot, and the
@@ -319,7 +362,8 @@ the same treatment:
 - `isHeroSize` also lets in any desktop window of at least
   `desktopHeroLayout` (900x580). The Windows runner refuses to shrink the
   window below 960x600, so on Windows every window is a hero window.
-  `isHeroDevice(context)` is the one call sites use.
+  `isHeroDevice(context)` (also in `theme.dart`) is the one call sites use;
+  never compare `shortestSide` against `heroLayout` directly.
 - `typeScaleFor` uses desktop tiers by window height: 1.25 from 580, 1.5
   from 780, 1.75 from 1000 (a full-height window on a monitor at 100%).
 - Beside the keypad, the seat cards fill the column's height instead of
@@ -330,9 +374,11 @@ the same treatment:
 - No orientation lock is ever requested, and `buildTheme` pins
   `VisualDensity.standard` and padded tap targets, which Flutter would
   otherwise shrink for a mouse.
- The
-panels built around `Spacer`s are wrapped in `FitOrScroll`, which gives them
-the height when there is height and a scroll when there is not.
+
+The panels built around `Spacer`s are wrapped in `FitOrScroll`, which gives
+them the height when there is height and a scroll when there is not. The
+measurements behind each breakpoint are in
+[DEVELOPMENT.md](DEVELOPMENT.md#layout-breakpoints).
 
 Every game screen - x01, Around the Clock, Bulling, Higher/Lower and both
 training drills -
@@ -377,20 +423,18 @@ that override is open, every mode's controller suppresses board-driven
 once from the board's own frame. `ButtonPress` (`BTN@`) is never suppressed —
 confirming a turn is not scoring, and stays useful with the keypad pulled up.
 
-This is unrelated to `boardSourceProvider`/`FakeBoardSource`: that picks which
-`BoardSource` implementation feeds the app, and in-app is always
-`BleBoardSource` now that hardware day has confirmed it works — only tests
-still reach for the scripted `FakeBoardSource`, by overriding the provider
-directly. There is no runtime switch between them any more.
+This is unrelated to `boardSourceProvider`: that picks which `BoardSource`
+implementation feeds the app. In the app it is always `BleBoardSource`; tests
+override it with the scripted `FakeBoardSource`.
 
 ## Where to start reading
 
 | If you want to understand… | Read |
 |---|---|
-| the rules of the game | `lib/domain/x01/leg_reducer.dart` |
+| the rules of the game | `lib/domain/x01/leg_reducer.dart`, then each mode's `*_reducer.dart` |
 | what a match is | `lib/domain/x01/match_state.dart` |
-| how a dart gets from the board to the screen | `lib/data/board/frame_assembler.dart`, then `segment_codec.dart`, then `lib/app/game_controller.dart` |
+| how a dart gets from the board to the screen | `lib/data/board/frame_assembler.dart`, then `segment_codec.dart`, then `lib/app/game_controller.dart` (`handleBoardEvent`) |
 | what is stored | [DATA_MODEL.md](DATA_MODEL.md) |
 | why a sound plays | `lib/app/audio/sound_controller.dart` |
 | how the screens connect | "Screens" above, or start at `lib/main.dart` |
-| how a second game mode would plug in | "Game modes" above, then `lib/domain/game_mode.dart` |
+| how to add a game mode | [CONTRIBUTING.md](../CONTRIBUTING.md#add-a-game-mode) |

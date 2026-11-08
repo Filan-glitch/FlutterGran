@@ -13,17 +13,27 @@ five post-MVP features (multi-leg matches, sound, app icon, end screen,
 responsive/tablet layout) have all shipped. Now polishing. Architecture and
 protocol reference: `docs/`.
 
+**The full developer handbook is [CONTRIBUTING.md](CONTRIBUTING.md)**: setup,
+golden rules, project map, recipes (add a mode, provider, string, sound, LED
+cue, DB column, test), code and comment style, workflow. This file is the
+condensed version of its hard rules.
+
 ## Commands
 
 ```
+tool/check.sh                         # everything CI runs; --quick skips codegen/l10n/dartdoc
 flutter analyze
 flutter test                          # everything
 dart test test/domain test/data       # engine, checkout and protocol, no Flutter
+dart format lib test                  # the tree is fully formatted; CI checks it
+flutter gen-l10n                      # after editing lib/l10n/*.arb; commit the output
 dart run build_runner build --delete-conflicting-outputs   # drift codegen
 ```
 
 `test/domain` and `test/data` run under plain `dart test` because neither layer
-imports Flutter. `test/app` needs `flutter test`.
+imports Flutter. `test/app` needs `flutter test`. Shared test helpers (in-memory
+database, sound and lights fakes, pump helpers, `BoardClock`) live in
+`test/support/`; use them rather than writing new copies.
 
 ## Parallel work: one worktree per worker
 
@@ -52,11 +62,11 @@ Added 2026-10-26 (Flutter 3.47). Only builds on Windows; CI's `build / windows`
 job is the compile check from Linux. The desktop layout is the tablet's hero
 treatment re-keyed for a wide, short window: `isDesktop`, `desktopHeroLayout`,
 `isHeroSize` and the desktop tiers of `typeScaleFor` in `lib/app/theme.dart`.
-Call sites ask `isHeroDevice(context)`, never `shortestSide >= heroLayout`
-directly, or a laptop window falls back to the phone layout. The runner
-(`windows/runner/flutter_window.cpp`) opens maximised and floors the client
-area at 960x600, kept just above `desktopHeroLayout` (900x580) — change one,
-check the other. Tests run Windows behaviour with
+Call sites ask `isHeroDevice(context)` (also in `theme.dart`), never
+`shortestSide >= heroLayout` directly, or a laptop window falls back to the
+phone layout. The runner (`windows/runner/flutter_window.cpp`) opens
+maximised and floors the client area at 960x600, kept just above
+`desktopHeroLayout` (900x580) — change one, check the other. Tests run Windows behaviour with
 `variant: TargetPlatformVariant.only(TargetPlatform.windows)`. The database
 sits in `%APPDATA%\<CompanyName>\<ProductName>` from `Runner.rc`, so renaming
 either string orphans it. Ogg audio needs the Web Media Extensions codec
@@ -121,27 +131,19 @@ preceded on connect by a `GB<n>;<ddd>` greeting with no terminator. The parser m
 buffer, strip the greeting, split on `@`, and dedupe before lookup. Unknown frames must
 log the **raw body**, never the failed lookup result.
 
-The segment table shipped is derived from the **GRANBOARD 3s**. Hardware day
-(2026-09-04) verified it against a real 132: all 82 scoring segments decoded
-correctly, with nothing to correct. The table is settled, not provisional.
+The segment table shipped is derived from the **GRANBOARD 3s** and was verified
+against a real 132 (below). It is settled, not provisional.
 
 ## Hardware day (done)
 
-Connecting, framing, and decoding were all verified end to end against a real
-132 on 2026-09-04. Findings: the 3s segment table matches the 132 exactly
-(zero corrections needed), the touch sensor does emit `BTN@`, `OUT@` does fire
-(unlike the 3s, which reportedly never sends it), and the full advertised name
-is `GRANBOARD`. Details and the connect-path bug that had to be fixed first
-are in `docs/BOARD_PROTOCOL.md`.
-
-The calibration screen this needed (diagnostics, tap-to-correct, the coverage
-checklist, the `SegmentCalibrations` table and the codec's override layer)
-existed only to answer those questions and has been removed now that they're
-answered. What's left in the UI is a single connection icon
-(`BoardConnectionButton`): tap to connect, tap again to disconnect, coloured
-by state.
+Verified end to end against a real 132 on 2026-09-04: the 3s table matched with
+zero corrections, `BTN@` and `OUT@` both fire, and the advertised name is
+`GRANBOARD`. The calibration screen built for it is gone; the board UI is one
+`BoardConnectionButton`. Details: `docs/BOARD_PROTOCOL.md`, "Hardware day".
 
 ## Dependency constraints (learned the hard way)
+
+Canonical, with the reasons: `CONTRIBUTING.md`, "Golden rules".
 
 - **`flutter_blue_plus` is not open source.** Free for personal use only; any for-profit
   use requires a purchased commercial license. If this app ever ships commercially,
@@ -170,6 +172,5 @@ This project has a knowledge graph at graphify-out/ with god nodes, community st
 
 Rules:
 - Before grepping or exploring for a symbol, file, or relationship, run `graphify query "<question>"` first when graphify-out/graph.json exists — cheaper and more scoped than raw search. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts.
-- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
 - Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
 - After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost). Commit the graphify-out diff as its own separate commit (e.g. `chore: update graphify knowledge graph`) — never squashed into the code change.
