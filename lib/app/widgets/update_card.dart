@@ -63,9 +63,15 @@ class UpdateCard extends ConsumerWidget {
         l10n.updateRetryButton,
         true,
       ),
+      // A release from before the Windows installer is only on its page.
+      _ when windows && release.windowsInstallerName == null => (
+        l10n.updateWindowsDetail,
+        l10n.updateDownloadButton,
+        false,
+      ),
       _ => (
-        windows ? l10n.updateWindowsDetail : l10n.updateAndroidDetail,
-        windows ? l10n.updateDownloadButton : l10n.updateInstallButton,
+        windows ? l10n.updateWindowsInstallerDetail : l10n.updateAndroidDetail,
+        l10n.updateInstallButton,
         false,
       ),
     };

@@ -19,8 +19,10 @@ bumps a version or writes a changelog by hand.
    2. builds, from the tagged commit, in `build.yml`:
       - `chalk-X.Y.Z-android-arm64-v8a.apk`, `-armeabi-v7a.apk`, `-x86_64.apk`
         (one per ABI) and `chalk-X.Y.Z-android.apk` (universal);
-      - `chalk-X.Y.Z-windows-x64.zip` (the whole app folder, with the Visual
-        C++ runtime DLLs beside `fluttergran.exe`).
+      - `chalk-X.Y.Z-windows-x64-setup.exe`, the installer
+        (`windows/installer/chalk.iss`, built with Inno Setup), and
+        `chalk-X.Y.Z-windows-x64.zip`, the same app folder portable (the
+        Visual C++ runtime DLLs beside `fluttergran.exe` in both).
 
       The APKs are built with the debug key and re-signed with the release
       key by `apksigner` in a separate `sign-android` job, which runs no
@@ -111,7 +113,13 @@ gh attestation verify chalk-X.Y.Z-android.apk --repo Filan-glitch/FlutterGran
 The app checks `releases/latest` on GitHub at launch (Settings → Updates
 turns that off, and has a by-hand check) and offers anything newer. Android
 downloads the APK for the device's ABI, checks it against `SHA256SUMS.txt`
-and hands it to the system installer; Windows opens the release page. Code:
+and hands it to the system installer. Windows downloads
+`chalk-<version>-windows-x64-setup.exe`, checks it the same way, runs it with
+`/SILENT` and quits; the installer replaces the app and starts it again (its
+`[Run]` entry). A release with no installer (anything before 1.4.0) gets its
+page opened instead. A file the app downloads itself carries no
+Mark-of-the-Web, so SmartScreen never stops an update, only the first,
+browser-downloaded setup.exe. Code:
 `lib/data/update/` (GitHub, versions, the verified download) and
 `lib/app/update/` (the controller and the platform seam, whose Android half
 is the `update` channel in `MainActivity.kt`).
@@ -120,9 +128,17 @@ That makes parts of this pipeline a contract with every install already out
 there:
 
 - **File names.** The app looks for `chalk-<version>-android-<abi>.apk`, then
-  `chalk-<version>-android.apk`, from `NAME` in `build.yml`. Rename them and
-  installs stop finding their update.
-- **`SHA256SUMS.txt`.** An APK it does not list is never installed.
+  `chalk-<version>-android.apk`, and on Windows for
+  `chalk-<version>-windows-x64-setup.exe`, from `NAME` in `build.yml`. Rename
+  them and installs stop finding their update.
+- **`SHA256SUMS.txt`.** A file it does not list is never installed.
+- **The installer's `AppId`** in `windows/installer/chalk.iss`. Inno Setup
+  finds the existing install, its folder and its uninstall entry by it; a new
+  GUID would install a second Chalk beside the first.
+- **A silent installer.** Self-update runs it with `/SILENT
+  /SUPPRESSMSGBOXES`, so it must never need an answer, and its `[Run]` entry
+  must keep running in silent mode (no `skipifsilent`) or the app quits and
+  never comes back.
 - **Tags.** `vX.Y.Z`, compared with the running `versionName` on
   major.minor.patch only; the `+build` number is ignored.
 - **Drafts and prereleases** are never offered - `releases/latest` skips them.

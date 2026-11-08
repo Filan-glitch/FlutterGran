@@ -1072,6 +1072,10 @@ class AppLocalizationsDe extends AppLocalizations {
       'Öffnet die Release-Seite zum Herunterladen';
 
   @override
+  String get updateWindowsInstallerDetail =>
+      'Lädt es herunter, installiert es und startet Chalk neu – alle Spiele bleiben erhalten';
+
+  @override
   String get updateInstallButton => 'AKTUALISIEREN';
 
   @override

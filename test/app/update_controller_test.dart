@@ -137,18 +137,62 @@ void main() {
     });
   });
 
-  test('on Windows, opens the release page and downloads nothing', () async {
-    debugDefaultTargetPlatformOverride = TargetPlatform.windows;
-    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+  group('on Windows', () {
+    setUp(() => debugDefaultTargetPlatformOverride = TargetPlatform.windows);
+    tearDown(() => debugDefaultTargetPlatformOverride = null);
 
-    final container = containerWith(github());
-    final updates = container.read(updateProvider.notifier);
-    await updates.check();
-    await updates.apply();
+    test('downloads, verifies and runs the installer', () async {
+      final container = containerWith(github());
+      final updates = container.read(updateProvider.notifier);
+      await updates.check();
+      await updates.apply();
 
-    expect(platform.opened, [Uri.parse('$base/tag/v1.1.0')]);
-    expect(platform.installed, isEmpty);
-    expect(await Directory('${directory.path}/updates').exists(), isFalse);
+      final path = '${directory.path}/updates/$installerName';
+      expect(platform.ranInstallers, [path]);
+      expect(await File(path).readAsBytes(), installerBytes);
+      expect(platform.opened, isEmpty);
+      expect(platform.installed, isEmpty);
+    });
+
+    test('never runs an installer that fails its checksum', () async {
+      final container = containerWith(github(installerChecksum: 'f' * 64));
+      final updates = container.read(updateProvider.notifier);
+      await updates.check();
+      await updates.apply();
+
+      final state = container.read(updateProvider);
+      expect(state, isA<UpdateFailed>());
+      expect((state as UpdateFailed).failure, UpdateFailure.download);
+      expect(platform.ranInstallers, isEmpty);
+      expect(
+        await File('${directory.path}/updates/$installerName').exists(),
+        isFalse,
+      );
+    });
+
+    test('reports an installer that would not start', () async {
+      platform.installerStarts = false;
+      final container = containerWith(github());
+      final updates = container.read(updateProvider.notifier);
+      await updates.check();
+      await updates.apply();
+
+      final state = container.read(updateProvider);
+      expect(state, isA<UpdateFailed>());
+      expect((state as UpdateFailed).failure, UpdateFailure.install);
+      expect(state.release, isNotNull);
+    });
+
+    test('opens the page of a release that has no installer', () async {
+      final container = containerWith(github(withInstaller: false));
+      final updates = container.read(updateProvider.notifier);
+      await updates.check();
+      await updates.apply();
+
+      expect(platform.opened, [Uri.parse('$base/tag/v1.1.0')]);
+      expect(platform.ranInstallers, isEmpty);
+      expect(await Directory('${directory.path}/updates').exists(), isFalse);
+    });
   });
 
   test('on Linux, never asks GitHub', () async {

@@ -20,6 +20,11 @@ class FakeUpdatePlatform implements UpdatePlatform {
   bool browserOpens = true;
   final installed = <String>[];
   final opened = <Uri>[];
+  final ranInstallers = <String>[];
+
+  /// Whether a Windows installer starts; false throws, as `Process.start`
+  /// does for a file that will not run.
+  bool installerStarts = true;
 
   @override
   bool checksAtLaunch = true;
@@ -45,6 +50,12 @@ class FakeUpdatePlatform implements UpdatePlatform {
   }
 
   @override
+  Future<void> runInstaller(String path) async {
+    if (!installerStarts) throw ProcessException(path, const [], 'blocked');
+    ranInstallers.add(path);
+  }
+
+  @override
   Future<bool> openPage(Uri url) async {
     opened.add(url);
     return browserOpens;
@@ -53,11 +64,22 @@ class FakeUpdatePlatform implements UpdatePlatform {
 
 final apkBytes = utf8.encode('the new apk');
 const apkName = 'chalk-1.1.0-android-arm64-v8a.apk';
+final installerBytes = utf8.encode('the new setup.exe');
+const installerName = 'chalk-1.1.0-windows-x64-setup.exe';
 const base = 'https://github.com/Filan-glitch/FlutterGran/releases';
 
-/// GitHub as the v1.1.0 release left it, with [checksum] for the APK.
-MockClient github({String? checksum, int status = 200}) {
+/// GitHub as the v1.1.0 release left it, with [checksum] for the APK and
+/// [installerChecksum] for the Windows installer. Without [withInstaller] it
+/// is a release from before there was one: the APKs and the portable zip.
+MockClient github({
+  String? checksum,
+  String? installerChecksum,
+  bool withInstaller = true,
+  int status = 200,
+}) {
   final sum = checksum ?? sha256.convert(apkBytes).toString();
+  final installerSum =
+      installerChecksum ?? sha256.convert(installerBytes).toString();
   return MockClient((request) async {
     final path = request.url.path;
     if (path.endsWith('/releases/latest')) {
@@ -67,7 +89,11 @@ MockClient github({String? checksum, int status = 200}) {
           'html_url': '$base/tag/v1.1.0',
           'body': '',
           'assets': [
-            for (final name in [apkName, 'SHA256SUMS.txt'])
+            for (final name in [
+              apkName,
+              if (withInstaller) installerName,
+              'SHA256SUMS.txt',
+            ])
               {
                 'name': name,
                 'browser_download_url': '$base/download/v1.1.0/$name',
@@ -78,9 +104,15 @@ MockClient github({String? checksum, int status = 200}) {
       );
     }
     if (path.endsWith('SHA256SUMS.txt')) {
-      return http.Response('$sum  $apkName\n', 200);
+      return http.Response(
+        '$sum  $apkName\n${withInstaller ? '$installerSum  $installerName\n' : ''}',
+        200,
+      );
     }
     if (path.endsWith(apkName)) return http.Response.bytes(apkBytes, 200);
+    if (withInstaller && path.endsWith(installerName)) {
+      return http.Response.bytes(installerBytes, 200);
+    }
     return http.Response('', 404);
   });
 }

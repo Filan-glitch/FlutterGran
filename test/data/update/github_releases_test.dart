@@ -15,6 +15,7 @@ String releaseJson({
     'chalk-1.1.0-android-x86_64.apk',
     'chalk-1.1.0-android.apk',
     'chalk-1.1.0-windows-x64.zip',
+    'chalk-1.1.0-windows-x64-setup.exe',
     'SHA256SUMS.txt',
   ],
 }) => jsonEncode({
@@ -56,7 +57,7 @@ void main() {
         'https://github.com/Filan-glitch/FlutterGran/releases/tag/v1.1.0',
       );
       expect(release.notes, contains('Features'));
-      expect(release.assets, hasLength(6));
+      expect(release.assets, hasLength(7));
     });
 
     for (final status in [403, 404, 500]) {
@@ -120,6 +121,22 @@ void main() {
         releaseJson(files: ['chalk-1.1.0-windows-x64.zip']),
       );
       expect(windowsOnly.apkNameFor(['arm64-v8a']), isNull);
+    });
+  });
+
+  group('windowsInstallerName', () {
+    test('names the installer the release ships', () {
+      expect(
+        parseRelease(releaseJson()).windowsInstallerName,
+        'chalk-1.1.0-windows-x64-setup.exe',
+      );
+    });
+
+    test('is null for a release with only the portable zip', () {
+      final zipOnly = parseRelease(
+        releaseJson(files: ['chalk-1.1.0-windows-x64.zip']),
+      );
+      expect(zipOnly.windowsInstallerName, isNull);
     });
   });
 

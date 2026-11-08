@@ -70,6 +70,21 @@ What differs from Android:
   silent until it is installed from the Microsoft Store. `PlayerMode.lowLatency`
   is a no-op on Windows.
 - **Bluetooth.** See [CONNECTIVITY.md](CONNECTIVITY.md#windows).
+- **Installer.** Releases ship `chalk-X.Y.Z-windows-x64-setup.exe`, an
+  [Inno Setup](https://jrsoftware.org/isinfo.php) wizard from
+  `windows/installer/chalk.iss`: per-user into `%LOCALAPPDATA%\Programs\Chalk`
+  with no admin rights (the wizard offers all users too), a Start-menu entry,
+  an uninstaller that leaves the database alone. To build it locally, install
+  Inno Setup 6, build release, copy the three VC++ DLLs in as `build.yml`'s
+  Package step does, then from the repo root:
+
+  ```bat
+  "%ProgramFiles(x86)%\Inno Setup 6\ISCC.exe" /DAppVersion=1.4.0 /DSourceDir=%CD%\build\windows\x64\runner\Release windows\installer\chalk.iss
+  ```
+
+  It lands in `build\installer\`. The app updates itself by downloading the
+  next one and running it silently: see
+  [RELEASING.md](RELEASING.md#in-app-updates).
 
 ## Test layout
 
@@ -78,7 +93,7 @@ What differs from Android:
 | `test/domain/` | `dart test` | x01 fold, match fold, checkout search and table, x01 rules, segments, game modes, player statistics, **and the purity rule** |
 | `test/domain/atc/`, `bulling/`, `higher_lower/`, `training/` | `dart test` | each mode's config, fold and statistics |
 | `test/data/` | `dart test` | frame assembly, board reader, segment codec, the GranBoard table, LED command encoding |
-| `test/data/update/` | `dart test` | release lookup, version comparison, verified APK download |
+| `test/data/update/` | `dart test` | release lookup (APK and Windows installer names), version comparison, verified download |
 | `test/app/` | `flutter test` | controllers, persistence, migrations, sound and LED mappings, LED scheduler, keypad, board widget, every screen, responsive and per-mode layout, update flow |
 | `test/support/` | - | shared helpers: `darts.dart`, `async.dart`, `database.dart`, `sound.dart`, `lights.dart`, `devices.dart`, `pump.dart`, `board_clock.dart`, `fake_update.dart` |
 | `test/widget_test.dart` | `flutter test` | x01 end to end: roster → leg → leave → resume |

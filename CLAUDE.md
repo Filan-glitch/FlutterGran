@@ -94,8 +94,11 @@ with its tag. `build.yml` is the one build definition, called by `ci.yml`
 At launch the app asks GitHub's `releases/latest` for a newer version; Android
 downloads the per-ABI APK, verifies it against `SHA256SUMS.txt` and opens the
 system installer (`update` MethodChannel in `MainActivity.kt`, FileProvider on
-`cache/updates/`), Windows opens the release page. Asset names, the checksum
-file and `vX.Y.Z` tags are a contract with installed apps: see
+`cache/updates/`). Windows downloads and verifies the Inno Setup installer
+(`windows/installer/chalk.iss`), runs it `/SILENT` and quits; the installer
+relaunches the app (release page only for releases without one). Asset names,
+the checksum file, `vX.Y.Z` tags and the installer's `AppId` are a contract
+with installed apps: see
 `docs/RELEASING.md`, "In-app updates", before touching `NAME` in `build.yml`.
 
 ## Layering rule

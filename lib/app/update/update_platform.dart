@@ -1,5 +1,6 @@
 /// [UpdatePlatform], the device side of updating behind one seam: the running
-/// version, opening a link and handing an APK to the installer.
+/// version, opening a link, and handing a download to Android's installer or
+/// running the Windows one.
 ///
 /// {@category App}
 library;
@@ -36,8 +37,9 @@ abstract interface class UpdatePlatform {
   /// The device's ABIs, most preferred first. Android only.
   Future<List<String>> supportedAbis();
 
-  /// Where downloaded APKs go. Must sit under `cache/updates/`, the one
-  /// directory `res/xml/update_paths.xml` lets the installer read.
+  /// Where downloaded updates go. On Android it must sit under
+  /// `cache/updates/`, the one directory `res/xml/update_paths.xml` lets the
+  /// installer read.
   Future<Directory> downloadDirectory();
 
   /// Whether Chalk may install apps right now. Android only.
@@ -45,6 +47,12 @@ abstract interface class UpdatePlatform {
 
   /// Hands the APK at [path] to the system installer. Android only.
   Future<InstallResult> installApk(String path);
+
+  /// Runs the Windows installer at [path] silently and quits Chalk, which the
+  /// installer starts again once the new version is in place
+  /// (`windows/installer/chalk.iss`). Windows only; throws a
+  /// [ProcessException] when the installer could not be started.
+  Future<void> runInstaller(String path);
 
   /// Opens [url] in the browser. False when nothing could.
   Future<bool> openPage(Uri url);
@@ -84,6 +92,22 @@ class DeviceUpdatePlatform implements UpdatePlatform {
     return result == 'needsPermission'
         ? InstallResult.needsPermission
         : InstallResult.started;
+  }
+
+  @override
+  Future<void> runInstaller(String path) async {
+    // /SILENT shows only a progress bar, no wizard pages to click through;
+    // /SUPPRESSMSGBOXES answers any message box with its default; /NORESTART
+    // never reboots Windows. Detached, so the installer outlives this process,
+    // which it then replaces.
+    await Process.start(path, const [
+      '/SILENT',
+      '/SUPPRESSMSGBOXES',
+      '/NORESTART',
+    ], mode: ProcessStartMode.detached);
+    // Quit straight away rather than leave the installer to close Chalk: the
+    // files it is about to overwrite are this process's own.
+    exit(0);
   }
 
   @override
