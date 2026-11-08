@@ -137,6 +137,24 @@ void main() {
     await closeApp(tester);
   });
 
+  testWidgets('every visit opens on the whole record', (tester) async {
+    final finn = await repository.addPlayer('Finn');
+    final old = await recordLeg([finn.id], [s(1), s(1), s(1)]);
+    await backdate(old, const Duration(days: 60));
+    await recordLeg([finn.id], [t(20), t(20), t(20)]);
+
+    await open(tester);
+    await tester.tap(find.text('7 days'));
+    await pumpFrames(tester);
+    expect(find.text('3 darts over 1 leg'), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await open(tester);
+    expect(find.text('6 darts over 2 legs'), findsOneWidget);
+
+    await closeApp(tester);
+  });
+
   testWidgets('an empty range keeps its tab and explains itself', (
     tester,
   ) async {

@@ -376,26 +376,13 @@ final allHigherLowerLegsProvider =
       (ref) => ref.watch(gameRepositoryProvider).watchAllHigherLowerLegs(),
     );
 
-/// How far back the statistics screen looks. Not persisted: the screen
-/// opens on the whole record every time.
-class StatsRangeController extends Notifier<StatsRange> {
-  @override
-  StatsRange build() => StatsRange.allTime;
-
-  void set(StatsRange range) => state = range;
-}
-
-final statsRangeProvider = NotifierProvider<StatsRangeController, StatsRange>(
-  StatsRangeController.new,
-);
-
-/// The earliest moment [statsRangeProvider] covers, or null for all time.
+/// Which player's record, and from when: the key of every statistics
+/// provider.
 ///
-/// Read from the wall clock when the range is picked, so a screen left open
-/// past midnight keeps the window it was opened with.
-final statsSinceProvider = Provider<DateTime?>(
-  (ref) => ref.watch(statsRangeProvider).since(DateTime.now()),
-);
+/// `since` comes from the screen's own [StatsRange], read against the clock
+/// each time the screen builds, so the range starts on today's date even in
+/// an app left open for days. Null means all time.
+typedef StatsKey = ({int playerId, DateTime? since});
 
 /// The modes a player has ever played a leg in, in [GameMode] order - the
 /// statistics screen's tabs. All time, whatever the range, so a tab does not
@@ -425,39 +412,40 @@ final playedModesProvider = Provider.family<List<GameMode>, int>((
   ];
 });
 
-/// A player's record inside [statsRangeProvider], one entry per mode.
+/// A player's record from the key's `since` on, one entry per mode.
 ///
 /// See [computePlayerStats] for why the grouping happens here rather than
 /// inside the domain function.
-final playerStatsProvider = Provider.family<Map<GameMode, ModeStats>, int>((
-  ref,
-  playerId,
-) {
-  final since = ref.watch(statsSinceProvider);
-  return computePlayerStats(
-    playerId,
-    x01Legs: playedSince(ref.watch(allLegsProvider).value ?? const [], since),
-    x01Matches: playedSince(
-      ref.watch(allMatchesProvider).value ?? const [],
-      since,
-    ),
-    atcLegs: playedSince(
-      ref.watch(allAtcLegsProvider).value ?? const [],
-      since,
-    ),
-    bullingLegs: playedSince(
-      ref.watch(allBullingLegsProvider).value ?? const [],
-      since,
-    ),
-    higherLowerLegs: playedSince(
-      ref.watch(allHigherLowerLegsProvider).value ?? const [],
-      since,
-    ),
-  );
-});
+final playerStatsProvider = Provider.autoDispose
+    .family<Map<GameMode, ModeStats>, StatsKey>((ref, key) {
+      final since = key.since;
+      return computePlayerStats(
+        key.playerId,
+        x01Legs: playedSince(
+          ref.watch(allLegsProvider).value ?? const [],
+          since,
+        ),
+        x01Matches: playedSince(
+          ref.watch(allMatchesProvider).value ?? const [],
+          since,
+        ),
+        atcLegs: playedSince(
+          ref.watch(allAtcLegsProvider).value ?? const [],
+          since,
+        ),
+        bullingLegs: playedSince(
+          ref.watch(allBullingLegsProvider).value ?? const [],
+          since,
+        ),
+        higherLowerLegs: playedSince(
+          ref.watch(allHigherLowerLegsProvider).value ?? const [],
+          since,
+        ),
+      );
+    });
 
-/// A player's record day by day inside [statsRangeProvider], per mode, for
-/// the trend charts. Days the player did not play in that mode are dropped.
+/// A player's record day by day from the key's `since` on, per mode, for the
+/// trend charts. Days the player did not play in that mode are dropped.
 typedef PlayerTrend = ({
   List<Daily<X01Stats>> x01,
   List<Daily<AtcStats>> atc,
@@ -465,8 +453,11 @@ typedef PlayerTrend = ({
   List<Daily<HigherLowerStats>> higherLower,
 });
 
-final playerTrendProvider = Provider.family<PlayerTrend, int>((ref, playerId) {
-  final since = ref.watch(statsSinceProvider);
+final playerTrendProvider = Provider.autoDispose.family<PlayerTrend, StatsKey>((
+  ref,
+  key,
+) {
+  final (:playerId, :since) = key;
   List<Dated<T>> inRange<T>(List<Dated<T>>? items) =>
       datedSince(items ?? const [], since);
 
@@ -502,19 +493,20 @@ final playerTrendProvider = Provider.family<PlayerTrend, int>((ref, playerId) {
   );
 });
 
-/// A player's record at each double inside [statsRangeProvider]: darts
+/// A player's record at each double from the key's `since` on: darts
 /// thrown on a one-dart finish under double out, which is the one time the
 /// rules say what a dart was aimed at. See [inferAimRecords].
-final doublesRecordProvider = Provider.family<Map<AimTarget, AimRecord>, int>((
-  ref,
-  playerId,
-) {
-  final since = ref.watch(statsSinceProvider);
-  return inferAimRecords(
-    playerId,
-    x01Legs: playedSince(ref.watch(allLegsProvider).value ?? const [], since),
-  );
-});
+final doublesRecordProvider = Provider.autoDispose
+    .family<Map<AimTarget, AimRecord>, StatsKey>((ref, key) {
+      final since = key.since;
+      return inferAimRecords(
+        key.playerId,
+        x01Legs: playedSince(
+          ref.watch(allLegsProvider).value ?? const [],
+          since,
+        ),
+      );
+    });
 
 /// What a player's saved games say about each target they were clearly
 /// aiming at - see [inferAimRecords]. Seeds the Weak-spot Trainer.
@@ -535,27 +527,23 @@ final aimRecordsProvider = Provider.family<Map<AimTarget, AimRecord>, int>((
   );
 });
 
-/// Where a player's darts have landed in one mode inside
-/// [statsRangeProvider], for that mode's heatmap.
+/// Where a player's darts have landed in one mode, in games started from
+/// `since` on, for that mode's heatmap.
 ///
 /// Depends on every mode's leg stream purely to know when to refresh, not to
 /// change what it reads: the counts come straight from SQL.
-final segmentCountsProvider =
-    FutureProvider.family<Map<Segment, int>, ({int playerId, GameMode mode})>((
-      ref,
-      key,
-    ) {
+final segmentCountsProvider = FutureProvider.autoDispose
+    .family<
+      Map<Segment, int>,
+      ({int playerId, GameMode mode, DateTime? since})
+    >((ref, key) {
       ref.watch(allLegsProvider);
       ref.watch(allAtcLegsProvider);
       ref.watch(allBullingLegsProvider);
       ref.watch(allHigherLowerLegsProvider);
       return ref
           .watch(gameRepositoryProvider)
-          .segmentCounts(
-            key.playerId,
-            mode: key.mode,
-            since: ref.watch(statsSinceProvider),
-          );
+          .segmentCounts(key.playerId, mode: key.mode, since: key.since);
     });
 
 /// A leg that was left unfinished, ready to be picked back up.

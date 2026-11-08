@@ -85,17 +85,31 @@ class _TrendCardState extends State<TrendCard> {
 /// Where a player's darts in [mode] have landed, shaded against the busiest
 /// segment.
 class HeatmapCard extends ConsumerWidget {
-  const HeatmapCard({super.key, required this.playerId, required this.mode});
+  const HeatmapCard({
+    super.key,
+    required this.playerId,
+    required this.mode,
+    required this.since,
+  });
 
   final int playerId;
   final GameMode mode;
+
+  /// Start of the range shown, or null for all time.
+  final DateTime? since;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final counts =
         ref
-            .watch(segmentCountsProvider((playerId: playerId, mode: mode)))
+            .watch(
+              segmentCountsProvider((
+                playerId: playerId,
+                mode: mode,
+                since: since,
+              )),
+            )
             .value ??
         const <Segment, int>{};
 

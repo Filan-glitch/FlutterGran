@@ -235,8 +235,8 @@ databaseProvider ──▶ gameRepositoryProvider ──┬──▶ allLegsProv
                                               │    allAtcLegsProvider, allBullingLegsProvider,
                                               │    allHigherLowerLegsProvider ──▶ playerStatsProvider,
                                               │    playerTrendProvider, doublesRecordProvider,
-                                              │    playedModesProvider   (all but the last cut
-                                              │    to statsRangeProvider via statsSinceProvider)
+                                              │    playedModesProvider   (all but the last keyed by
+                                              │    StatsKey: player + range start, screen-owned)
                                               ├──▶ resumableLegProvider ──▶ main menu, splash
                                               └──▶ segmentCountsProvider ──▶ per-mode heatmap
 

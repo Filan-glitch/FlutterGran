@@ -32,19 +32,29 @@ import 'stats_format.dart';
 const int minDoubleSample = 5;
 
 class X01StatsTab extends ConsumerWidget {
-  const X01StatsTab({super.key, required this.playerId});
+  const X01StatsTab({super.key, required this.playerId, required this.since});
 
   final int playerId;
+
+  /// Start of the range shown, or null for all time.
+  final DateTime? since;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final stats =
-        ref.watch(playerStatsProvider(playerId))[GameMode.x01] as X01Stats?;
+        ref.watch(
+              playerStatsProvider((playerId: playerId, since: since)),
+            )[GameMode.x01]
+            as X01Stats?;
     if (stats == null || stats.legsPlayed == 0) return const RangeEmpty();
 
-    final trend = ref.watch(playerTrendProvider(playerId)).x01;
-    final doubles = ref.watch(doublesRecordProvider(playerId));
+    final trend = ref
+        .watch(playerTrendProvider((playerId: playerId, since: since)))
+        .x01;
+    final doubles = ref.watch(
+      doublesRecordProvider((playerId: playerId, since: since)),
+    );
     final start = stats.mainStartScore;
     final checkout = stats.checkoutTotals;
 
@@ -138,7 +148,7 @@ class X01StatsTab extends ConsumerWidget {
                 StatRow(l10n.winRateLabel, percent(stats.matchWinRate)),
               ],
             ),
-          HeatmapCard(playerId: playerId, mode: GameMode.x01),
+          HeatmapCard(playerId: playerId, since: since, mode: GameMode.x01),
         ],
       ),
     );

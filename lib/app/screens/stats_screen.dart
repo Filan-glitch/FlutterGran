@@ -30,11 +30,16 @@ class StatsScreen extends ConsumerStatefulWidget {
 class _StatsScreenState extends ConsumerState<StatsScreen> {
   int? _playerId;
 
+  /// Screen state, not a provider: every visit opens on the whole record,
+  /// and the start date is re-read from the clock on every build.
+  StatsRange _range = StatsRange.allTime;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final players = ref.watch(playersProvider).value ?? const <Player>[];
     final selected = _playerId ?? (players.isEmpty ? null : players.first.id);
+    final since = _range.since(DateTime.now());
     final modes = selected == null
         ? const <GameMode>[]
         : ref.watch(playedModesProvider(selected));
@@ -106,7 +111,10 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
                       Tab(text: _modeLabel(context, mode)),
                   ],
                 ),
-                const _RangePicker(),
+                _RangePicker(
+                  range: _range,
+                  onChanged: (range) => setState(() => _range = range),
+                ),
               ],
             ),
           ),
@@ -116,11 +124,18 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
             children: [
               for (final mode in modes)
                 switch (mode) {
-                  GameMode.x01 => X01StatsTab(playerId: selected),
-                  GameMode.aroundTheClock => AtcStatsTab(playerId: selected),
-                  GameMode.bulling => BullingStatsTab(playerId: selected),
+                  GameMode.x01 => X01StatsTab(playerId: selected, since: since),
+                  GameMode.aroundTheClock => AtcStatsTab(
+                    playerId: selected,
+                    since: since,
+                  ),
+                  GameMode.bulling => BullingStatsTab(
+                    playerId: selected,
+                    since: since,
+                  ),
                   GameMode.higherLower => HigherLowerStatsTab(
                     playerId: selected,
+                    since: since,
                   ),
                 },
             ],
@@ -142,13 +157,15 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
 }
 
 /// All time, 30 days, 7 days: how far back every tab looks.
-class _RangePicker extends ConsumerWidget {
-  const _RangePicker();
+class _RangePicker extends StatelessWidget {
+  const _RangePicker({required this.range, required this.onChanged});
+
+  final StatsRange range;
+  final ValueChanged<StatsRange> onChanged;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final range = ref.watch(statsRangeProvider);
     return SizedBox(
       height: 52,
       child: Padding(
@@ -177,8 +194,7 @@ class _RangePicker extends ConsumerWidget {
               ),
             ],
             selected: {range},
-            onSelectionChanged: (picked) =>
-                ref.read(statsRangeProvider.notifier).set(picked.first),
+            onSelectionChanged: (picked) => onChanged(picked.first),
           ),
         ),
       ),

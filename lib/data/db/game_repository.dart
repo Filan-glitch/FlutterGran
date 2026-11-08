@@ -431,7 +431,9 @@ class GameRepository {
   /// does not depend on any rule, so it needs no replay.
   ///
   /// [mode] keeps only darts from games of that mode, and [since] only darts
-  /// thrown at or after it; either left null counts everything.
+  /// from games started at or after it - the same cut the rest of the
+  /// statistics make, so a leg that ran past midnight is in both or neither.
+  /// Either left null counts everything.
   Future<Map<Segment, int>> segmentCounts(
     int playerId, {
     GameMode? mode,
@@ -444,14 +446,14 @@ class GameRepository {
         db.dartEvents.ring.isNotNull();
     if (mode != null) filter &= db.games.gameMode.equals(mode.name);
     if (since != null) {
-      filter &= db.dartEvents.thrownAt.isBiggerOrEqualValue(since);
+      filter &= db.games.startedAt.isBiggerOrEqualValue(since);
     }
 
     final query = db.selectOnly(db.dartEvents)
       ..addColumns([db.dartEvents.number, db.dartEvents.ring, hits])
       ..where(filter)
       ..groupBy([db.dartEvents.number, db.dartEvents.ring]);
-    if (mode != null) {
+    if (mode != null || since != null) {
       query.join([
         innerJoin(
           db.games,

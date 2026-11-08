@@ -34,20 +34,25 @@ List<TrendPoint> _ratePoints<S>(
 String _percentAxis(double v) => '${v.round()}%';
 
 class AtcStatsTab extends ConsumerWidget {
-  const AtcStatsTab({super.key, required this.playerId});
+  const AtcStatsTab({super.key, required this.playerId, required this.since});
 
   final int playerId;
+
+  /// Start of the range shown, or null for all time.
+  final DateTime? since;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final stats =
-        ref.watch(playerStatsProvider(playerId))[GameMode.aroundTheClock]
+        ref.watch(
+              playerStatsProvider((playerId: playerId, since: since)),
+            )[GameMode.aroundTheClock]
             as AtcStats?;
     if (stats == null || stats.legsPlayed == 0) return const RangeEmpty();
 
     final points = _ratePoints(
-      ref.watch(playerTrendProvider(playerId)).atc,
+      ref.watch(playerTrendProvider((playerId: playerId, since: since))).atc,
       (AtcStats s) => s.hitRate,
     );
 
@@ -141,7 +146,11 @@ class AtcStatsTab extends ConsumerWidget {
               ),
             ],
           ),
-          HeatmapCard(playerId: playerId, mode: GameMode.aroundTheClock),
+          HeatmapCard(
+            playerId: playerId,
+            since: since,
+            mode: GameMode.aroundTheClock,
+          ),
         ],
       ),
     );
@@ -149,20 +158,31 @@ class AtcStatsTab extends ConsumerWidget {
 }
 
 class BullingStatsTab extends ConsumerWidget {
-  const BullingStatsTab({super.key, required this.playerId});
+  const BullingStatsTab({
+    super.key,
+    required this.playerId,
+    required this.since,
+  });
 
   final int playerId;
+
+  /// Start of the range shown, or null for all time.
+  final DateTime? since;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final stats =
-        ref.watch(playerStatsProvider(playerId))[GameMode.bulling]
+        ref.watch(
+              playerStatsProvider((playerId: playerId, since: since)),
+            )[GameMode.bulling]
             as BullingStats?;
     if (stats == null || stats.legsPlayed == 0) return const RangeEmpty();
 
     final points = _ratePoints(
-      ref.watch(playerTrendProvider(playerId)).bulling,
+      ref
+          .watch(playerTrendProvider((playerId: playerId, since: since)))
+          .bulling,
       (BullingStats s) => s.hitRate,
     );
     final darts = stats.dartsThrown;
@@ -244,7 +264,7 @@ class BullingStatsTab extends ConsumerWidget {
               ),
             ],
           ),
-          HeatmapCard(playerId: playerId, mode: GameMode.bulling),
+          HeatmapCard(playerId: playerId, since: since, mode: GameMode.bulling),
         ],
       ),
     );
@@ -252,20 +272,31 @@ class BullingStatsTab extends ConsumerWidget {
 }
 
 class HigherLowerStatsTab extends ConsumerWidget {
-  const HigherLowerStatsTab({super.key, required this.playerId});
+  const HigherLowerStatsTab({
+    super.key,
+    required this.playerId,
+    required this.since,
+  });
 
   final int playerId;
+
+  /// Start of the range shown, or null for all time.
+  final DateTime? since;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final stats =
-        ref.watch(playerStatsProvider(playerId))[GameMode.higherLower]
+        ref.watch(
+              playerStatsProvider((playerId: playerId, since: since)),
+            )[GameMode.higherLower]
             as HigherLowerStats?;
     if (stats == null || stats.legsPlayed == 0) return const RangeEmpty();
 
     final points = _ratePoints(
-      ref.watch(playerTrendProvider(playerId)).higherLower,
+      ref
+          .watch(playerTrendProvider((playerId: playerId, since: since)))
+          .higherLower,
       (HigherLowerStats s) => s.survivalRate,
     );
     final survived = stats.higherCalls + stats.lowerCalls;
@@ -342,7 +373,11 @@ class HigherLowerStatsTab extends ConsumerWidget {
               StatRow(l10n.longestRunRow, l10n.turnsCount(stats.longestRun)),
             ],
           ),
-          HeatmapCard(playerId: playerId, mode: GameMode.higherLower),
+          HeatmapCard(
+            playerId: playerId,
+            since: since,
+            mode: GameMode.higherLower,
+          ),
         ],
       ),
     );
