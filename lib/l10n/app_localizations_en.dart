@@ -1329,4 +1329,140 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get rulesTrainingWeakSpotWhy =>
       'Time goes where it helps most, and knowing how you miss tells you what to fix.';
+
+  @override
+  String get statsRangeAllTime => 'All time';
+
+  @override
+  String get statsRange30Days => '30 days';
+
+  @override
+  String get statsRange7Days => '7 days';
+
+  @override
+  String get checkoutRateLabel => 'Checkout rate';
+
+  @override
+  String fastLegsLabel(int darts) {
+    return 'Legs in ≤$darts darts';
+  }
+
+  @override
+  String fastLegsDetail(int won, int finished, int start) {
+    return '$won of $finished legs from $start';
+  }
+
+  @override
+  String needsMoreDarts(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count more darts needed',
+      one: '1 more dart needed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get formSectionTitle => 'Form';
+
+  @override
+  String get trendAverageOption => 'Average';
+
+  @override
+  String get trendCheckoutOption => 'Checkout';
+
+  @override
+  String get trendNeedsMoreDays => 'Play on two or more days to see a trend.';
+
+  @override
+  String get trendLegend =>
+      'Each dot is a day · line: last 5 days · dashed: range average';
+
+  @override
+  String get scoringAverageRow => 'Scoring average';
+
+  @override
+  String get trebleRateRow => 'Treble rate';
+
+  @override
+  String get visitSpreadRow => 'Visit spread (±)';
+
+  @override
+  String perLegValue(int count, String perLeg) {
+    return '$count · $perLeg/leg';
+  }
+
+  @override
+  String get visitScoresTitle => 'Scoring visits';
+
+  @override
+  String get visitScoresCaption => 'Every visit too high to finish, by score.';
+
+  @override
+  String ruleCheckoutVisitRow(String rule) {
+    return '$rule checkout per visit';
+  }
+
+  @override
+  String get tonPlusCheckoutsRow => '100+ checkouts';
+
+  @override
+  String get doublesSectionTitle => 'Doubles';
+
+  @override
+  String get doublesCaption =>
+      'Shaded by hit rate on a one-dart finish, double out.';
+
+  @override
+  String get noDoublesYet => 'No darts at a double yet.';
+
+  @override
+  String get bestDoublesLabel => 'Best';
+
+  @override
+  String get worstDoublesLabel => 'Weakest';
+
+  @override
+  String doubleHitsRate(int hits, int attempts, String rate) {
+    return '$hits/$attempts · $rate';
+  }
+
+  @override
+  String get onThrowLabel => 'On the throw';
+
+  @override
+  String get againstThrowLabel => 'Against the throw';
+
+  @override
+  String get throwSplitTitle => 'Legs won by who threw first';
+
+  @override
+  String get dartsPerLegWonRow => 'Darts per leg won';
+
+  @override
+  String dartsPerLegTitle(int start) {
+    return 'Darts per leg won · $start';
+  }
+
+  @override
+  String get stopHeatCaption => 'Shaded by hit rate at each stop.';
+
+  @override
+  String get bullSplitTitle => 'Bull hits';
+
+  @override
+  String get noLegsInRangeHeadline => 'Nothing in this range';
+
+  @override
+  String get noLegsInRangeDetail => 'Pick a longer range to see older legs.';
+
+  @override
+  String get callsSplitTitle => 'Calls that survived';
+
+  @override
+  String get stopsSectionTitle => 'Stops';
+
+  @override
+  String get statsRangeLabel => 'Range';
 }

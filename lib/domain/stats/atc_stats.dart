@@ -6,6 +6,7 @@ class AtcStats extends ModeStats {
   const AtcStats({
     required this.legsPlayed,
     required this.legsWon,
+    this.legsFinished = 0,
     required this.dartsThrown,
     required this.qualifyingDarts,
     required this.fewestDartsToWin,
@@ -24,6 +25,10 @@ class AtcStats extends ModeStats {
   final int legsPlayed;
   final int legsWon;
 
+  /// Legs that reached a winner, the denominator for [winRate]: a leg left
+  /// unfinished was neither won nor lost.
+  final int legsFinished;
+
   final int dartsThrown;
 
   /// Darts that cleared whatever stop was current when they were thrown.
@@ -41,5 +46,5 @@ class AtcStats extends ModeStats {
       dartsThrown == 0 ? null : qualifyingDarts / dartsThrown;
 
   /// Share of legs won, 0 to 1.
-  double? get winRate => legsPlayed == 0 ? null : legsWon / legsPlayed;
+  double? get winRate => legsFinished == 0 ? null : legsWon / legsFinished;
 }

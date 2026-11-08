@@ -4,6 +4,8 @@
 /// {@category Domain}
 library;
 
+import 'dart:math' as math;
+
 import '../atc/atc_stop.dart';
 import '../x01/leg_state.dart';
 import '../x01/x01_rules.dart';

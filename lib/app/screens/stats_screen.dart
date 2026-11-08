@@ -1,5 +1,7 @@
-/// [StatsScreen], a player's record in every mode they have played, with the
-/// accuracy heatmap.
+/// [StatsScreen], a player's record: one tab per mode they have played, cut
+/// to a time range.
+///
+/// The tabs themselves live in `stats/`; this file is the frame around them.
 ///
 /// {@category App}
 library;
@@ -8,19 +10,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/db/database.dart';
-import '../../domain/atc/atc_stop.dart';
 import '../../domain/game_mode.dart';
-import '../../domain/segment.dart';
-import '../../domain/stats/mode_stats.dart';
-import '../../domain/x01/x01_rules.dart';
+import '../../domain/stats/dated.dart';
 import '../l10n_extensions.dart';
-import '../labels.dart';
 import '../providers.dart';
 import '../theme.dart';
-import '../widgets/board_widget.dart';
-import '../widgets/setup_controls.dart';
+import 'stats/practice_stats_tabs.dart';
+import 'stats/stats_format.dart';
+import 'stats/x01_stats_tab.dart';
 
-/// A player's record across every leg they have played.
+/// A player's record, mode by mode.
 class StatsScreen extends ConsumerStatefulWidget {
   const StatsScreen({super.key});
 
@@ -36,480 +35,145 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
     final l10n = context.l10n;
     final players = ref.watch(playersProvider).value ?? const <Player>[];
     final selected = _playerId ?? (players.isEmpty ? null : players.first.id);
+    final modes = selected == null
+        ? const <GameMode>[]
+        : ref.watch(playedModesProvider(selected));
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.statisticsTitle),
-        actions: [
-          if (players.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(right: Gap.md),
-              child: DropdownButton<int>(
-                value: selected,
-                underline: const SizedBox.shrink(),
-                dropdownColor: Palette.raised,
-                iconEnabledColor: Palette.chalkDim,
-                style: Type.body.copyWith(color: Palette.chalk),
-                items: [
-                  for (final player in players)
-                    DropdownMenuItem(
-                      value: player.id,
-                      child: Text(player.name),
-                    ),
-                ],
-                onChanged: (id) => setState(() => _playerId = id),
-              ),
+    final playerPicker = players.isEmpty
+        ? null
+        : Padding(
+            padding: const EdgeInsets.only(right: Gap.md),
+            child: DropdownButton<int>(
+              key: const Key('stats-player-picker'),
+              value: selected,
+              underline: const SizedBox.shrink(),
+              dropdownColor: Palette.raised,
+              iconEnabledColor: Palette.chalkDim,
+              style: Type.body.copyWith(color: Palette.chalk),
+              items: [
+                for (final player in players)
+                  DropdownMenuItem(value: player.id, child: Text(player.name)),
+              ],
+              onChanged: (id) => setState(() => _playerId = id),
             ),
-        ],
-      ),
-      body: SafeArea(
-        child: selected == null
-            ? _Empty(
-                headline: l10n.noPlayersYetHeadline,
-                detail: l10n.noPlayersYetDetail,
-              )
-            : _Body(playerId: selected),
+          );
+
+    if (selected == null || modes.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(l10n.statisticsTitle),
+          actions: [?playerPicker],
+        ),
+        body: SafeArea(
+          child: selected == null
+              ? StatsEmpty(
+                  headline: l10n.noPlayersYetHeadline,
+                  detail: l10n.noPlayersYetDetail,
+                )
+              : StatsEmpty(
+                  headline: l10n.noLegsYetHeadline,
+                  detail: l10n.noLegsYetDetail,
+                ),
+        ),
+      );
+    }
+
+    // Keyed by player and modes: a different set of tabs is a different
+    // controller, so a player with fewer modes never inherits an index past
+    // the end.
+    return DefaultTabController(
+      key: ValueKey((selected, modes.join(','))),
+      length: modes.length,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(l10n.statisticsTitle),
+          actions: [?playerPicker],
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(kTextTabBarHeight + 52),
+            child: Column(
+              children: [
+                TabBar(
+                  isScrollable: modes.length > 2,
+                  tabAlignment: modes.length > 2 ? TabAlignment.start : null,
+                  tabs: [
+                    for (final mode in modes)
+                      Tab(text: _modeLabel(context, mode)),
+                  ],
+                ),
+                const _RangePicker(),
+              ],
+            ),
+          ),
+        ),
+        body: SafeArea(
+          child: TabBarView(
+            children: [
+              for (final mode in modes)
+                switch (mode) {
+                  GameMode.x01 => X01StatsTab(playerId: selected),
+                  GameMode.aroundTheClock => AtcStatsTab(playerId: selected),
+                  GameMode.bulling => BullingStatsTab(playerId: selected),
+                  GameMode.higherLower => HigherLowerStatsTab(
+                    playerId: selected,
+                  ),
+                },
+            ],
+          ),
+        ),
       ),
     );
   }
+
+  static String _modeLabel(BuildContext context, GameMode mode) {
+    final l10n = context.l10n;
+    return switch (mode) {
+      GameMode.x01 => l10n.x01Label,
+      GameMode.aroundTheClock => l10n.aroundTheClockLabel,
+      GameMode.bulling => l10n.bullingLabel,
+      GameMode.higherLower => l10n.higherLowerLabel,
+    };
+  }
 }
 
-class _Body extends ConsumerWidget {
-  const _Body({required this.playerId});
-
-  final int playerId;
+/// All time, 30 days, 7 days: how far back every tab looks.
+class _RangePicker extends ConsumerWidget {
+  const _RangePicker();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final statsByMode = ref.watch(playerStatsProvider(playerId));
-    // A mode with no data for this player is an absent key, not an error.
-    final x01 = statsByMode[GameMode.x01] as X01Stats?;
-    final atc = statsByMode[GameMode.aroundTheClock] as AtcStats?;
-    final bulling = statsByMode[GameMode.bulling] as BullingStats?;
-    final higherLower = statsByMode[GameMode.higherLower] as HigherLowerStats?;
-    final counts =
-        ref.watch(segmentCountsProvider(playerId)).value ??
-        const <Segment, int>{};
-
-    final hasX01 = x01 != null && x01.legsPlayed > 0;
-    final hasAtc = atc != null && atc.legsPlayed > 0;
-    final hasBulling = bulling != null && bulling.legsPlayed > 0;
-    final hasHigherLower = higherLower != null && higherLower.legsPlayed > 0;
-
-    if (!hasX01 && !hasAtc && !hasBulling && !hasHigherLower) {
-      return _Empty(
-        headline: l10n.noLegsYetHeadline,
-        detail: l10n.noLegsYetDetail,
-      );
-    }
-
-    return CenteredContent(
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.sm, Gap.lg, Gap.xxl),
-        children: [
-          if (hasX01) ...[
-            // A mode label above each section, so each mode reads as its own
-            // record rather than more rows appended to the one above.
-            SectionLabel(l10n.x01Label),
-            const SizedBox(height: Gap.sm),
-            // The three-dart average is the number a darts player quotes when
-            // asked how they play, so it is the headline and everything else
-            // is supporting evidence.
-            _Headline(
-              value: x01.average == null
-                  ? '—'
-                  : x01.average!.toStringAsFixed(2),
-              label: l10n.threeDartAverageLabel,
-              detail: l10n.dartsOverLegs(x01.dartsThrown, x01.legsPlayed),
-            ),
-            const SizedBox(height: Gap.xl),
-            _Section(
-              title: l10n.scoringSectionTitle,
-              rows: [
-                _Row(l10n.firstNineAverageRow, _decimal(x01.firstNineAverage)),
-                _Row(l10n.bestTurnRow, '${x01.bestTurn}'),
-                _Row(
-                  l10n.figure180s,
-                  '${x01.turnsOf180}',
-                  milestone: x01.turnsOf180 > 0,
-                ),
-                _Row(l10n.oneFortyPlusRow, '${x01.turnsOf140Plus}'),
-                _Row(l10n.oneHundredPlusRow, '${x01.turnsOf100Plus}'),
-                _Row(l10n.sixtyPlusRow, '${x01.turnsOf60Plus}'),
-              ],
-            ),
-            _Section(
-              title: l10n.finishingSectionTitle,
-              rows: [
-                // One row pair per out-rule the player has actually played a
-                // leg under, rather than one aggregate figure mixing
-                // single/double/master-out legs together - "on a finish"
-                // means something different under each rule.
-                for (final rule in X01OutRule.values)
-                  if (x01.checkoutsByRule[rule] case final checkout?) ...[
-                    _Row(
-                      l10n.ruleCheckoutRow(x01OutRuleLabel(context, rule)),
-                      _percent(x01.checkoutRateFor(rule)),
-                    ),
-                    _Row(
-                      l10n.ruleDartsAtFinishRow(x01OutRuleLabel(context, rule)),
-                      '${checkout.finishesHit}/${checkout.dartsAtFinish}',
-                    ),
-                  ],
-                _Row(
-                  l10n.bestCheckoutRow,
-                  _optional(x01.bestCheckout),
-                  milestone: x01.bestCheckout != null,
-                ),
-                _Row(
-                  l10n.bestLegRow,
-                  x01.fewestDartsToWin == null
-                      ? '—'
-                      : l10n.dartsCount(x01.fewestDartsToWin!),
-                ),
-              ],
-            ),
-            _Section(
-              title: l10n.legsSectionTitle,
-              rows: [
-                _Row(l10n.wonLabel, l10n.wonRatio(x01.legsWon, x01.legsPlayed)),
-                _Row(l10n.winRateLabel, _percent(x01.winRate)),
-              ],
-            ),
-            // Its own section, under the legs rather than mixed into them: a
-            // leg and a match are different things to have won, and the
-            // figures above count legs.
-            if (x01.matchesPlayed > 0)
-              _Section(
-                title: l10n.matchesSectionTitle,
-                rows: [
-                  _Row(
-                    l10n.wonLabel,
-                    l10n.wonRatio(x01.matchesWon, x01.matchesPlayed),
-                  ),
-                  _Row(l10n.winRateLabel, _percent(x01.matchWinRate)),
-                ],
-              ),
-          ],
-          if (hasAtc) ...[
-            if (hasX01) const SizedBox(height: Gap.xl),
-            SectionLabel(l10n.aroundTheClockLabel),
-            const SizedBox(height: Gap.sm),
-            _Headline(
-              value: _percent(atc.hitRate),
-              label: l10n.hitRateLabel,
-              detail: l10n.xOfYDarts(atc.qualifyingDarts, atc.dartsThrown),
-            ),
-            const SizedBox(height: Gap.xl),
-            _Section(
-              title: l10n.legsSectionTitle,
-              rows: [
-                _Row(l10n.wonLabel, l10n.wonRatio(atc.legsWon, atc.legsPlayed)),
-                _Row(l10n.winRateLabel, _percent(atc.winRate)),
-                _Row(
-                  l10n.bestLegRow,
-                  atc.fewestDartsToWin == null
-                      ? '—'
-                      : l10n.dartsCount(atc.fewestDartsToWin!),
-                ),
-              ],
-            ),
-            if (_weakestStops(atc.perStop) case final weak when weak.isNotEmpty)
-              _Section(
-                title: l10n.weakSpotsSectionTitle,
-                rows: [
-                  for (final entry in weak)
-                    _Row(
-                      entry.key.label,
-                      '${entry.value.hits}/${entry.value.attempts}',
-                    ),
-                ],
-              ),
-          ],
-          if (hasBulling) ...[
-            if (hasX01 || hasAtc) const SizedBox(height: Gap.xl),
-            SectionLabel(l10n.bullingLabel),
-            const SizedBox(height: Gap.sm),
-            _Headline(
-              value: _percent(bulling.hitRate),
-              label: l10n.hitRateLabel,
-              detail: l10n.xOfYDarts(bulling.scoringDarts, bulling.dartsThrown),
-            ),
-            const SizedBox(height: Gap.xl),
-            _Section(
-              title: l10n.legsSectionTitle,
-              rows: [
-                _Row(
-                  l10n.wonLabel,
-                  l10n.wonRatio(bulling.legsWon, bulling.legsPlayed),
-                ),
-                _Row(l10n.winRateLabel, _percent(bulling.winRate)),
-                _Row(
-                  l10n.bestLegRow,
-                  bulling.fewestDartsToWin == null
-                      ? '—'
-                      : l10n.dartsCount(bulling.fewestDartsToWin!),
-                ),
-              ],
-            ),
-            _Section(
-              title: l10n.scoringSectionTitle,
-              rows: [
-                _Row(l10n.pointsScoredRow, '${bulling.pointsScored}'),
-                _Row(l10n.outerBullHitsRow, '${bulling.outerBullHits}'),
-                _Row(l10n.bullseyeHitsRow, '${bulling.innerBullHits}'),
-              ],
-            ),
-          ],
-          if (hasHigherLower) ...[
-            if (hasX01 || hasAtc || hasBulling) const SizedBox(height: Gap.xl),
-            SectionLabel(l10n.higherLowerLabel),
-            const SizedBox(height: Gap.sm),
-            _Headline(
-              value: _percent(higherLower.survivalRate),
-              label: l10n.survivalRateLabel,
-              detail: l10n.xOfYTurns(
-                higherLower.turnsSurvived,
-                higherLower.turnsPlayed,
-              ),
-            ),
-            const SizedBox(height: Gap.xl),
-            _Section(
-              title: l10n.legsSectionTitle,
-              rows: [
-                _Row(
-                  l10n.wonLabel,
-                  l10n.wonRatio(higherLower.legsWon, higherLower.legsPlayed),
-                ),
-                _Row(l10n.winRateLabel, _percent(higherLower.winRate)),
-                _Row(
-                  l10n.longestRunRow,
-                  l10n.turnsCount(higherLower.longestRun),
-                ),
-              ],
-            ),
-            _Section(
-              title: l10n.scoringSectionTitle,
-              rows: [
-                _Row(l10n.higherCallsRow, '${higherLower.higherCalls}'),
-                _Row(l10n.lowerCallsRow, '${higherLower.lowerCalls}'),
-                _Row(l10n.statDarts, '${higherLower.dartsThrown}'),
-              ],
-            ),
-          ],
-          const SizedBox(height: Gap.lg),
-          Text(
-            l10n.whereDartsLandTitle,
-            style: Type.eyebrow.copyWith(color: Palette.chalkDim),
-          ),
-          const SizedBox(height: Gap.xs),
-          Text(
-            counts.isEmpty ? l10n.noDartsRecorded : l10n.shadedAgainstBusiest,
-            style: Type.label.copyWith(color: Palette.chalkDim),
-          ),
-          const SizedBox(height: Gap.md),
-          AspectRatio(
-            aspectRatio: 1,
-            child: BoardWidget(heat: _normalise(counts), showNumbers: false),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Scales hit counts to 0..1 against the busiest segment, so the board reads
-  /// as relative accuracy rather than raw volume.
-  Map<Segment, double> _normalise(Map<Segment, int> counts) {
-    if (counts.isEmpty) return const {};
-    final busiest = counts.values.reduce((a, b) => a > b ? a : b);
-    if (busiest == 0) return const {};
-    return {
-      for (final entry in counts.entries) entry.key: entry.value / busiest,
-    };
-  }
-
-  /// The stops with the worst hit rate, capped to a handful and only
-  /// counting ones actually attempted - a stop nobody has reached yet has
-  /// nothing to say about how well it is thrown at.
-  List<MapEntry<AtcStop, ({int attempts, int hits})>> _weakestStops(
-    Map<AtcStop, ({int attempts, int hits})> perStop,
-  ) {
-    final attempted =
-        perStop.entries.where((e) => e.value.attempts > 0).toList()..sort(
-          (a, b) => (a.value.hits / a.value.attempts).compareTo(
-            b.value.hits / b.value.attempts,
-          ),
-        );
-    return attempted.take(5).toList();
-  }
-
-  static String _decimal(double? value) =>
-      value == null ? '—' : value.toStringAsFixed(2);
-
-  static String _percent(double? value) =>
-      value == null ? '—' : '${(value * 100).toStringAsFixed(0)}%';
-
-  static String _optional(int? value) => value == null ? '—' : '$value';
-}
-
-class _Headline extends StatelessWidget {
-  const _Headline({
-    required this.value,
-    required this.label,
-    required this.detail,
-  });
-
-  final String value;
-  final String label;
-  final String detail;
-
-  @override
-  Widget build(BuildContext context) {
-    return _FadeIn(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label.toUpperCase(),
-            style: Type.eyebrow.copyWith(color: Palette.live),
-          ),
-          const SizedBox(height: Gap.sm),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              value,
-              style: Type.score.copyWith(color: Palette.chalk),
-            ),
-          ),
-          const SizedBox(height: Gap.sm),
-          Text(detail, style: Type.label.copyWith(color: Palette.chalkDim)),
-        ],
-      ),
-    );
-  }
-}
-
-/// Rows rather than tiles: these are label-and-number pairs, and a row of them
-/// under one heading is easier to scan down than a grid of boxes.
-class _Section extends StatelessWidget {
-  const _Section({required this.title, required this.rows});
-
-  final String title;
-  final List<_Row> rows;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: Gap.xl),
-      child: _FadeIn(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title.toUpperCase(),
-              style: Type.eyebrow.copyWith(color: Palette.chalkDim),
-            ),
-            const SizedBox(height: Gap.sm),
-            const Divider(),
-            for (final row in rows) row,
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// A plain fade+rise on first build, for a record that otherwise appears
-/// fully formed the moment its player is selected.
-class _FadeIn extends StatelessWidget {
-  const _FadeIn({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0, end: 1),
-      duration: Motion.scale(Motion.base),
-      curve: Motion.enter,
-      builder: (context, t, child) => Opacity(
-        opacity: t,
-        child: Transform.translate(
-          offset: Offset(0, (1 - t) * 8),
-          child: child,
-        ),
-      ),
-      child: child,
-    );
-  }
-}
-
-class _Row extends StatelessWidget {
-  const _Row(this.label, this.value, {this.milestone = false});
-
-  final String label;
-  final String value;
-
-  /// Marks a figure worth a second look - a 180, a personal-best checkout -
-  /// rather than just another number in the record. Presentation only: it
-  /// reads no differently to `computeX01Stats`, just a touch louder here.
-  final bool milestone;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Palette.edge)),
-      ),
-      padding: const EdgeInsets.symmetric(vertical: Gap.md),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              label,
-              style: Type.body.copyWith(color: Palette.chalkDim),
-            ),
-          ),
-          if (milestone) ...[
-            const Icon(Icons.bolt, size: 15, color: Palette.live),
-            const SizedBox(width: Gap.xs),
-          ],
-          Text(
-            value,
-            style: Type.notation.copyWith(
-              color: milestone ? Palette.live : Palette.chalk,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Empty extends StatelessWidget {
-  const _Empty({required this.headline, required this.detail});
-
-  final String headline;
-  final String detail;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
+    final range = ref.watch(statsRangeProvider);
+    return SizedBox(
+      height: 52,
       child: Padding(
-        padding: const EdgeInsets.all(Gap.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(headline, style: Type.title.copyWith(color: Palette.chalk)),
-            const SizedBox(height: Gap.sm),
-            Text(
-              detail,
-              textAlign: TextAlign.center,
-              style: Type.body.copyWith(color: Palette.chalkDim),
-            ),
-          ],
+        padding: const EdgeInsets.symmetric(
+          horizontal: Gap.lg,
+          vertical: Gap.sm,
+        ),
+        child: Semantics(
+          label: l10n.statsRangeLabel,
+          child: SegmentedButton<StatsRange>(
+            key: const Key('stats-range'),
+            showSelectedIcon: false,
+            style: const ButtonStyle(visualDensity: VisualDensity.compact),
+            segments: [
+              ButtonSegment(
+                value: StatsRange.allTime,
+                label: Text(l10n.statsRangeAllTime),
+              ),
+              ButtonSegment(
+                value: StatsRange.days30,
+                label: Text(l10n.statsRange30Days),
+              ),
+              ButtonSegment(
+                value: StatsRange.days7,
+                label: Text(l10n.statsRange7Days),
+              ),
+            ],
+            selected: {range},
+            onSelectionChanged: (picked) =>
+                ref.read(statsRangeProvider.notifier).set(picked.first),
+          ),
         ),
       ),
     );

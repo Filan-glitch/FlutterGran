@@ -17,6 +17,7 @@ import '../../domain/higher_lower/higher_lower_config.dart';
 import '../../domain/higher_lower/higher_lower_leg_state.dart';
 import '../../domain/higher_lower/higher_lower_reducer.dart';
 import '../../domain/segment.dart';
+import '../../domain/stats/dated.dart';
 import '../../domain/x01/game_config.dart';
 import '../../domain/x01/leg_reducer.dart';
 import '../../domain/x01/leg_state.dart';
@@ -282,7 +283,7 @@ class GameRepository {
   /// leg being won re-emits the tally: a stream over `select(matches)` is only
   /// invalidated by writes to matches, and a match in progress never touches
   /// its own row.
-  Stream<List<MatchState>> watchAllMatches() =>
+  Stream<List<Dated<MatchState>>> watchAllMatches() =>
       (db.select(db.matches).join([
         innerJoin(
           db.games,
@@ -290,12 +291,17 @@ class GameRepository {
           useColumns: false,
         ),
       ])..groupBy([db.matches.id])).watch().asyncMap((rows) async {
-        final states = <MatchState>[];
+        final states = <Dated<MatchState>>[];
         for (final row in rows) {
-          final id = row.readTable(db.matches).id;
-          final config = await loadMatchConfig(id);
+          final match = row.readTable(db.matches);
+          final config = await loadMatchConfig(match.id);
           if (config == null) continue;
-          states.add(foldMatch(config, await legWinners(id)));
+          states.add(
+            Dated(
+              foldMatch(config, await legWinners(match.id)),
+              match.startedAt,
+            ),
+          );
         }
         return states;
       });
@@ -401,15 +407,20 @@ class GameRepository {
   /// ([watchAllAtcLegs], [watchAllBullingLegs], [watchAllHigherLowerLegs])
   /// rather than one parameterised one: they fold through different engines
   /// and share no rule worth entangling.
-  Stream<List<LegState>> watchAllLegs() =>
+  ///
+  /// Each leg comes [Dated] by its game's `startedAt`, so statistics can be
+  /// cut to a time range or plotted by day.
+  Stream<List<Dated<LegState>>> watchAllLegs() =>
       (db.select(
         db.games,
       )..where((g) => g.gameMode.equals(_x01))).watch().asyncMap((games) async {
-        final legs = <LegState>[];
+        final legs = <Dated<LegState>>[];
         for (final game in games) {
           final config = await loadConfig(game.id);
           if (config == null) continue;
-          legs.add(foldLeg(config, await loadLog(game.id)));
+          legs.add(
+            Dated(foldLeg(config, await loadLog(game.id)), game.startedAt),
+          );
         }
         return legs;
       });
@@ -418,18 +429,38 @@ class GameRepository {
   ///
   /// The one statistic that is genuinely a SQL aggregate: where a dart landed
   /// does not depend on any rule, so it needs no replay.
-  Future<Map<Segment, int>> segmentCounts(int playerId) async {
+  ///
+  /// [mode] keeps only darts from games of that mode, and [since] only darts
+  /// thrown at or after it; either left null counts everything.
+  Future<Map<Segment, int>> segmentCounts(
+    int playerId, {
+    GameMode? mode,
+    DateTime? since,
+  }) async {
     final hits = db.dartEvents.id.count();
-    final rows =
-        await (db.selectOnly(db.dartEvents)
-              ..addColumns([db.dartEvents.number, db.dartEvents.ring, hits])
-              ..where(
-                db.dartEvents.playerId.equals(playerId) &
-                    db.dartEvents.number.isNotNull() &
-                    db.dartEvents.ring.isNotNull(),
-              )
-              ..groupBy([db.dartEvents.number, db.dartEvents.ring]))
-            .get();
+    var filter =
+        db.dartEvents.playerId.equals(playerId) &
+        db.dartEvents.number.isNotNull() &
+        db.dartEvents.ring.isNotNull();
+    if (mode != null) filter &= db.games.gameMode.equals(mode.name);
+    if (since != null) {
+      filter &= db.dartEvents.thrownAt.isBiggerOrEqualValue(since);
+    }
+
+    final query = db.selectOnly(db.dartEvents)
+      ..addColumns([db.dartEvents.number, db.dartEvents.ring, hits])
+      ..where(filter)
+      ..groupBy([db.dartEvents.number, db.dartEvents.ring]);
+    if (mode != null) {
+      query.join([
+        innerJoin(
+          db.games,
+          db.games.id.equalsExp(db.dartEvents.gameId),
+          useColumns: false,
+        ),
+      ]);
+    }
+    final rows = await query.get();
 
     return {
       for (final row in rows)
@@ -542,15 +573,20 @@ class GameRepository {
 
   /// Every stored Around the Clock leg, replayed. Refreshes itself when a
   /// game changes. See [watchAllLegs].
-  Stream<List<AtcLegState>> watchAllAtcLegs() =>
+  Stream<List<Dated<AtcLegState>>> watchAllAtcLegs() =>
       (db.select(db.games)..where((g) => g.gameMode.equals(_aroundTheClock)))
           .watch()
           .asyncMap((games) async {
-            final legs = <AtcLegState>[];
+            final legs = <Dated<AtcLegState>>[];
             for (final game in games) {
               final config = await loadAtcConfig(game.id);
               if (config == null) continue;
-              legs.add(foldAroundTheClock(config, await loadLog(game.id)));
+              legs.add(
+                Dated(
+                  foldAroundTheClock(config, await loadLog(game.id)),
+                  game.startedAt,
+                ),
+              );
             }
             return legs;
           });
@@ -615,18 +651,22 @@ class GameRepository {
 
   /// Every stored Bulling leg, replayed. Refreshes itself when a game
   /// changes. See [watchAllLegs].
-  Stream<List<BullingLegState>> watchAllBullingLegs() =>
-      (db.select(db.games)..where((g) => g.gameMode.equals(_bulling)))
-          .watch()
-          .asyncMap((games) async {
-            final legs = <BullingLegState>[];
-            for (final game in games) {
-              final config = await loadBullingConfig(game.id);
-              if (config == null) continue;
-              legs.add(foldBulling(config, await loadLog(game.id)));
-            }
-            return legs;
-          });
+  Stream<List<Dated<BullingLegState>>> watchAllBullingLegs() =>
+      (db.select(
+        db.games,
+      )..where((g) => g.gameMode.equals(_bulling))).watch().asyncMap((
+        games,
+      ) async {
+        final legs = <Dated<BullingLegState>>[];
+        for (final game in games) {
+          final config = await loadBullingConfig(game.id);
+          if (config == null) continue;
+          legs.add(
+            Dated(foldBulling(config, await loadLog(game.id)), game.startedAt),
+          );
+        }
+        return legs;
+      });
 
   // Higher/Lower
 
@@ -665,15 +705,20 @@ class GameRepository {
 
   /// Every stored Higher/Lower leg, replayed. Refreshes itself when a game
   /// changes. See [watchAllLegs].
-  Stream<List<HigherLowerLegState>> watchAllHigherLowerLegs() =>
+  Stream<List<Dated<HigherLowerLegState>>> watchAllHigherLowerLegs() =>
       (db.select(db.games)..where((g) => g.gameMode.equals(_higherLower)))
           .watch()
           .asyncMap((games) async {
-            final legs = <HigherLowerLegState>[];
+            final legs = <Dated<HigherLowerLegState>>[];
             for (final game in games) {
               final config = await loadHigherLowerConfig(game.id);
               if (config == null) continue;
-              legs.add(foldHigherLower(config, await loadLog(game.id)));
+              legs.add(
+                Dated(
+                  foldHigherLower(config, await loadLog(game.id)),
+                  game.startedAt,
+                ),
+              );
             }
             return legs;
           });

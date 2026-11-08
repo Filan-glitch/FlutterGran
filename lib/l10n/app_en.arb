@@ -548,5 +548,65 @@
   "rulesTrainingBobsBody": "Start on 27. Throw one visit at each double from D1 to D20, then the bull. Every hit adds the double; a visit without one takes it away. Drop to zero or below and you are out.",
   "rulesTrainingBobsWhy": "Practising with something at stake helps you hold up when it counts.",
   "rulesTrainingWeakSpotBody": "The app picks one target per visit, more often the ones you hit least - in your saved games and in this session - but never the same one twice in a row. At the end you see your weakest targets and which way the misses go.",
-  "rulesTrainingWeakSpotWhy": "Time goes where it helps most, and knowing how you miss tells you what to fix."
+  "rulesTrainingWeakSpotWhy": "Time goes where it helps most, and knowing how you miss tells you what to fix.",
+
+  "statsRangeAllTime": "All time",
+  "statsRange30Days": "30 days",
+  "statsRange7Days": "7 days",
+  "checkoutRateLabel": "Checkout rate",
+  "fastLegsLabel": "Legs in ≤{darts} darts",
+  "@fastLegsLabel": {
+    "placeholders": {"darts": {"type": "int"}}
+  },
+  "fastLegsDetail": "{won} of {finished} legs from {start}",
+  "@fastLegsDetail": {
+    "placeholders": {"won": {"type": "int"}, "finished": {"type": "int"}, "start": {"type": "int"}}
+  },
+  "needsMoreDarts": "{count, plural, =1{1 more dart needed} other{{count} more darts needed}}",
+  "@needsMoreDarts": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "formSectionTitle": "Form",
+  "trendAverageOption": "Average",
+  "trendCheckoutOption": "Checkout",
+  "trendNeedsMoreDays": "Play on two or more days to see a trend.",
+  "trendLegend": "Each dot is a day · line: last 5 days · dashed: range average",
+  "scoringAverageRow": "Scoring average",
+  "trebleRateRow": "Treble rate",
+  "visitSpreadRow": "Visit spread (±)",
+  "perLegValue": "{count} · {perLeg}/leg",
+  "@perLegValue": {
+    "placeholders": {"count": {"type": "int"}, "perLeg": {"type": "String"}}
+  },
+  "visitScoresTitle": "Scoring visits",
+  "visitScoresCaption": "Every visit too high to finish, by score.",
+  "ruleCheckoutVisitRow": "{rule} checkout per visit",
+  "@ruleCheckoutVisitRow": {
+    "placeholders": {"rule": {"type": "String"}}
+  },
+  "tonPlusCheckoutsRow": "100+ checkouts",
+  "doublesSectionTitle": "Doubles",
+  "doublesCaption": "Shaded by hit rate on a one-dart finish, double out.",
+  "noDoublesYet": "No darts at a double yet.",
+  "bestDoublesLabel": "Best",
+  "worstDoublesLabel": "Weakest",
+  "doubleHitsRate": "{hits}/{attempts} · {rate}",
+  "@doubleHitsRate": {
+    "placeholders": {"hits": {"type": "int"}, "attempts": {"type": "int"}, "rate": {"type": "String"}}
+  },
+  "onThrowLabel": "On the throw",
+  "againstThrowLabel": "Against the throw",
+  "throwSplitTitle": "Legs won by who threw first",
+  "dartsPerLegWonRow": "Darts per leg won",
+  "dartsPerLegTitle": "Darts per leg won · {start}",
+  "@dartsPerLegTitle": {
+    "placeholders": {"start": {"type": "int"}}
+  },
+  "stopHeatCaption": "Shaded by hit rate at each stop.",
+  "bullSplitTitle": "Bull hits",
+  "noLegsInRangeHeadline": "Nothing in this range",
+  "noLegsInRangeDetail": "Pick a longer range to see older legs.",
+  "callsSplitTitle": "Calls that survived",
+  "stopsSectionTitle": "Stops",
+  "statsRangeLabel": "Range"
 }

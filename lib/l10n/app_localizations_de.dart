@@ -1338,4 +1338,143 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get rulesTrainingWeakSpotWhy =>
       'Die Zeit geht dahin, wo sie am meisten hilft, und zu wissen, wie du danebenwirfst, zeigt, was zu ändern ist.';
+
+  @override
+  String get statsRangeAllTime => 'Gesamt';
+
+  @override
+  String get statsRange30Days => '30 Tage';
+
+  @override
+  String get statsRange7Days => '7 Tage';
+
+  @override
+  String get checkoutRateLabel => 'Checkout-Quote';
+
+  @override
+  String fastLegsLabel(int darts) {
+    return 'Legs in ≤$darts Darts';
+  }
+
+  @override
+  String fastLegsDetail(int won, int finished, int start) {
+    return '$won von $finished Legs ab $start';
+  }
+
+  @override
+  String needsMoreDarts(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Noch $count Darts nötig',
+      one: 'Noch 1 Dart nötig',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get formSectionTitle => 'Form';
+
+  @override
+  String get trendAverageOption => 'Schnitt';
+
+  @override
+  String get trendCheckoutOption => 'Checkout';
+
+  @override
+  String get trendNeedsMoreDays =>
+      'Spiel an mindestens zwei Tagen, um einen Verlauf zu sehen.';
+
+  @override
+  String get trendLegend =>
+      'Jeder Punkt ein Tag · Linie: letzte 5 Tage · gestrichelt: Schnitt im Zeitraum';
+
+  @override
+  String get scoringAverageRow => 'Scoring-Schnitt';
+
+  @override
+  String get trebleRateRow => 'Triple-Quote';
+
+  @override
+  String get visitSpreadRow => 'Streuung je Aufnahme (±)';
+
+  @override
+  String perLegValue(int count, String perLeg) {
+    return '$count · $perLeg/Leg';
+  }
+
+  @override
+  String get visitScoresTitle => 'Scoring-Aufnahmen';
+
+  @override
+  String get visitScoresCaption =>
+      'Jede Aufnahme über dem Finish-Bereich, nach Punkten.';
+
+  @override
+  String ruleCheckoutVisitRow(String rule) {
+    return '$rule-Checkout je Aufnahme';
+  }
+
+  @override
+  String get tonPlusCheckoutsRow => '100+-Checkouts';
+
+  @override
+  String get doublesSectionTitle => 'Doppel';
+
+  @override
+  String get doublesCaption =>
+      'Eingefärbt nach Trefferquote bei Ein-Dart-Finish, Double Out.';
+
+  @override
+  String get noDoublesYet => 'Noch keine Darts auf ein Doppel.';
+
+  @override
+  String get bestDoublesLabel => 'Beste';
+
+  @override
+  String get worstDoublesLabel => 'Schwächste';
+
+  @override
+  String doubleHitsRate(int hits, int attempts, String rate) {
+    return '$hits/$attempts · $rate';
+  }
+
+  @override
+  String get onThrowLabel => 'Mit Anwurf';
+
+  @override
+  String get againstThrowLabel => 'Ohne Anwurf';
+
+  @override
+  String get throwSplitTitle => 'Gewonnene Legs nach Anwurf';
+
+  @override
+  String get dartsPerLegWonRow => 'Darts je gewonnenem Leg';
+
+  @override
+  String dartsPerLegTitle(int start) {
+    return 'Darts je gewonnenem Leg · $start';
+  }
+
+  @override
+  String get stopHeatCaption => 'Eingefärbt nach Trefferquote je Station.';
+
+  @override
+  String get bullSplitTitle => 'Bull-Treffer';
+
+  @override
+  String get noLegsInRangeHeadline => 'Nichts in diesem Zeitraum';
+
+  @override
+  String get noLegsInRangeDetail =>
+      'Wähle einen längeren Zeitraum für ältere Legs.';
+
+  @override
+  String get callsSplitTitle => 'Überstandene Ansagen';
+
+  @override
+  String get stopsSectionTitle => 'Stationen';
+
+  @override
+  String get statsRangeLabel => 'Zeitraum';
 }

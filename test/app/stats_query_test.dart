@@ -1,6 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/data/db/database.dart';
 import 'package:fluttergran/data/db/game_repository.dart';
+import 'package:fluttergran/domain/bulling/bulling_config.dart';
+import 'package:fluttergran/domain/bulling/bulling_variant.dart';
+import 'package:fluttergran/domain/game_mode.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/stats/player_stats.dart';
 import 'package:fluttergran/domain/x01/game_config.dart';
@@ -50,7 +53,7 @@ void main() {
 
     await recordLeg([finn.id, sam.id], [t(20), t(20), t(20), t(1), t(1), t(1)]);
 
-    final legs = await repository.watchAllLegs().first;
+    final legs = playedSince(await repository.watchAllLegs().first, null);
     final stats = computeX01Stats(finn.id, legs);
 
     expect(stats.legsPlayed, 1);
@@ -70,7 +73,7 @@ void main() {
       winner: finn.id,
     );
 
-    final legs = await repository.watchAllLegs().first;
+    final legs = playedSince(await repository.watchAllLegs().first, null);
     final stats = computeX01Stats(finn.id, legs);
 
     expect(stats.legsWon, 1);
@@ -109,7 +112,7 @@ void main() {
     await recordLeg([finn.id], [t(20), t(20), t(20)]);
     await recordLeg([finn.id], [t(20), t(20), t(20)]);
 
-    final legs = await repository.watchAllLegs().first;
+    final legs = playedSince(await repository.watchAllLegs().first, null);
     final stats = computeX01Stats(finn.id, legs);
 
     expect(stats.legsPlayed, 2);
@@ -120,11 +123,60 @@ void main() {
   test('a player with no games reads as empty, not as an error', () async {
     final newcomer = await repository.addPlayer('Newcomer');
 
-    final legs = await repository.watchAllLegs().first;
+    final legs = playedSince(await repository.watchAllLegs().first, null);
     final stats = computeX01Stats(newcomer.id, legs);
 
     expect(stats.legsPlayed, 0);
     expect(stats.average, isNull);
     expect(await repository.segmentCounts(newcomer.id), isEmpty);
+  });
+
+  test('every leg comes dated by when its game started', () async {
+    final finn = await repository.addPlayer('Finn');
+    final before = DateTime.now().subtract(const Duration(seconds: 2));
+    await recordLeg([finn.id], [t(20)]);
+
+    final legs = await repository.watchAllLegs().first;
+    expect(legs.single.playedAt.isAfter(before), isTrue);
+  });
+
+  test('the heatmap can be cut to one mode', () async {
+    final finn = await repository.addPlayer('Finn');
+    await recordLeg([finn.id], [t(20)]);
+    final bulling = await repository.startBullingGame(
+      BullingConfig(
+        playerIds: [finn.id],
+        bullseyeValue: BullseyeValue.two,
+        target: 21,
+      ),
+    );
+    await repository.appendDart(
+      gameId: bulling,
+      ordinal: 0,
+      playerId: finn.id,
+      dart: const ThrownDart(Segment.innerBull),
+    );
+
+    final x01 = await repository.segmentCounts(finn.id, mode: GameMode.x01);
+    expect(x01.keys, [const Segment(20, Ring.triple)]);
+
+    final bull = await repository.segmentCounts(
+      finn.id,
+      mode: GameMode.bulling,
+    );
+    expect(bull.keys, [Segment.innerBull]);
+
+    expect(await repository.segmentCounts(finn.id), hasLength(2));
+  });
+
+  test('the heatmap can be cut to darts thrown since a moment', () async {
+    final finn = await repository.addPlayer('Finn');
+    await recordLeg([finn.id], [t(20)]);
+
+    final future = DateTime.now().add(const Duration(days: 1));
+    expect(await repository.segmentCounts(finn.id, since: future), isEmpty);
+
+    final past = DateTime.now().subtract(const Duration(days: 1));
+    expect(await repository.segmentCounts(finn.id, since: past), hasLength(1));
   });
 }

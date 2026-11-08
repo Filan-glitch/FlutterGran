@@ -250,6 +250,163 @@ void main() {
     });
   });
 
+  group('scoring visits, the turns that could not have finished', () {
+    test('average, trebles, bands and spread over scoring visits', () {
+      final stats = statsFor([
+        leg(501, [
+          t(20), t(20), t(20), // 501 -> 321, a 180
+          s(20), s(20), s(20), // 321 -> 261, a 60
+        ]),
+      ]);
+
+      expect(stats.scoringVisits, 2);
+      expect(stats.scoringAverage, 120.0);
+      expect(stats.trebleRate, 0.5);
+      expect(stats.scoringVisitBands[X01Stats.bandFor(180)], 1);
+      expect(stats.scoringVisitBands[X01Stats.bandFor(60)], 1);
+      // Sample standard deviation of 180 and 60.
+      expect(stats.visitScoreStdDev, closeTo(84.85, 0.01));
+    });
+
+    test('a visit starting on a finish is not a scoring visit', () {
+      final stats = statsFor([
+        leg(301, [
+          t(20), t(20), t(20), // 301 -> 121, scoring
+          s(1), s(1), s(1), //   121 is on a finish
+        ]),
+      ]);
+      expect(stats.scoringVisits, 1);
+      expect(stats.scoringDarts, 3);
+    });
+
+    test('under straight out, 180 left is a finish, not a scoring visit', () {
+      final stats = computeX01Stats(1, [
+        foldLeg(
+          GameConfig(
+            startScore: 180,
+            playerIds: const [1, 2],
+            outRule: X01OutRule.straight,
+          ),
+          [s(1), s(1), s(1)],
+        ),
+      ]);
+      expect(stats.scoringVisits, 0);
+      expect(stats.scoringAverage, isNull);
+    });
+
+    test('a visit left unfinished is not a three-dart score', () {
+      final stats = statsFor([
+        leg(501, [t(20), t(20)]),
+      ]);
+      expect(stats.scoringVisits, 0);
+    });
+
+    test('bands put each visit under its lower bound', () {
+      expect(X01Stats.bandFor(0), 0);
+      expect(X01Stats.bandFor(19), 0);
+      expect(X01Stats.bandFor(20), 1);
+      expect(X01Stats.bandFor(99), 4);
+      expect(X01Stats.bandFor(100), 5);
+      expect(X01Stats.bandFor(179), 6);
+      expect(X01Stats.bandFor(180), 7);
+    });
+  });
+
+  group('visits at a finish', () {
+    test('counts every visit on a three-dart finish, and the one won', () {
+      final stats = statsFor([
+        leg(100, [
+          s(20), s(20), s(20), // player 1 on 100: a visit, not won
+          s(1), s(1), s(1), //    player 2
+          d(20), //               player 1 on 40: won
+        ], players: 2),
+      ]);
+
+      expect(stats.checkoutVisitsByRule[X01OutRule.double], (
+        visits: 2,
+        won: 1,
+      ));
+      expect(stats.checkoutVisitRateFor(X01OutRule.double), 0.5);
+    });
+
+    test('a bogey number is not on a finish', () {
+      final stats = statsFor([
+        leg(169, [s(1), s(1), s(1)], players: 2),
+      ]);
+      expect(stats.checkoutVisitsByRule, isEmpty);
+      expect(stats.checkoutVisitRateFor(X01OutRule.double), isNull);
+    });
+  });
+
+  group('legs', () {
+    test('win rate counts finished legs only', () {
+      final stats = statsFor([
+        leg(40, [d(20)], players: 2),
+        leg(501, [t(20)], players: 2), // abandoned
+      ]);
+      expect(stats.legsPlayed, 2);
+      expect(stats.legsFinished, 1);
+      expect(stats.winRate, 1.0);
+    });
+
+    test('a fast leg is a hundred-average pace for its start score', () {
+      expect(X01Stats.fastLegDarts(501), 15);
+      expect(X01Stats.fastLegDarts(301), 9);
+      expect(X01Stats.fastLegDarts(701), 21);
+    });
+
+    test('fast legs and their rate', () {
+      final stats = statsFor([
+        leg(40, [d(20)], players: 2), // 1 dart, inside the 1-dart pace
+        leg(40, [
+          s(1), s(1), s(1), // 3 darts
+          s(1), s(1), s(1),
+          s(1), d(18), //      5 darts, outside it
+        ], players: 2),
+      ]);
+
+      expect(X01Stats.fastLegDarts(40), 1);
+      expect(stats.dartsToWinByStart[40], [1, 5]);
+      expect(stats.fastLegs(40), 1);
+      expect(stats.fastLegRate(40), 0.5);
+      expect(stats.averageDartsPerLegWon(40), 3.0);
+      expect(stats.mainStartScore, 40);
+      expect(stats.averageDartsPerLegWon(501), isNull);
+    });
+
+    test('on the throw and against it, from the starting seat', () {
+      final leg2Starts = foldLeg(
+        GameConfig(startScore: 40, playerIds: const [1, 2], startingSeat: 1),
+        [d(20)],
+      );
+
+      final starter = computeX01Stats(2, [leg2Starts]);
+      expect(starter.legsOnThrow, 1);
+      expect(starter.winRateOnThrow, 1.0);
+      expect(starter.legsAgainstThrow, 0);
+
+      final other = computeX01Stats(1, [leg2Starts]);
+      expect(other.legsAgainstThrow, 1);
+      expect(other.winRateAgainstThrow, 0.0);
+      expect(other.winRateOnThrow, isNull);
+    });
+
+    test('a solo leg is neither on nor against the throw', () {
+      final stats = statsFor([
+        leg(40, [d(20)]),
+      ]);
+      expect(stats.legsOnThrow + stats.legsAgainstThrow, 0);
+    });
+
+    test('ton-plus checkouts', () {
+      final stats = statsFor([
+        leg(101, [t(17), const ThrownDart(Segment.innerBull)], players: 2),
+        leg(40, [d(20)], players: 2),
+      ]);
+      expect(stats.tonPlusCheckouts, 1);
+    });
+  });
+
   group('matches, counted alongside legs and never instead of them', () {
     MatchState match(List<int> legWinners, {int legsToPlay = 3}) => foldMatch(
       MatchConfig(
