@@ -382,11 +382,26 @@ exhaustive switches below.
 
 - `test/domain` and `test/data` must not import Flutter, so they run under plain
   `dart test`.
-- Shared helpers live in `test/support/`: an in-memory database, muted and
-  recording sound players, overrides that switch the LED ring off, pump helpers
-  (`pumpApp` wraps a widget in `MaterialApp` with localizations), `ThrownDart`
-  shorthands (`s(20)`, `t(20)`, `d(20)`), device sizes, `BoardClock` and the
-  fake update platform. Use them rather than writing another copy.
+- Shared helpers live in `test/support/`. Use them rather than writing
+  another copy:
+
+  | File | Gives you |
+  | --- | --- |
+  | `darts.dart` | `s(20)`, `d(20)`, `t(20)`, `miss` |
+  | `async.dart` | `settle()`, a zero-delay wait for un-awaited work |
+  | `database.dart` | `memoryDatabase()`, an empty in-memory `AppDatabase` |
+  | `sound.dart` | `MuteSoundPlayer`, `RecordingSoundPlayer` |
+  | `lights.dart` | `lightsOff()`, an override that keeps the LED ring dark |
+  | `devices.dart` | `phonePortrait`, `tablet`, `tabS6Lite`, `laptop` and the other sizes, `windows`, `setViewSize` |
+  | `pump.dart` | `pumpApp` (a localized `MaterialApp`, optionally themed, type-scaled and on a container), `pumpFrames`, `launchApp`, `popRoute`, `closeApp` |
+  | `board_clock.dart` | `BoardClock` |
+  | `fake_update.dart` | `FakeUpdatePlatform`, a `github` mock client |
+
+  `darts.dart` and `async.dart` are pure Dart, so `test/domain` and
+  `test/data` may import them; the rest need `flutter test`.
+- Anything that opens an `AppDatabase` stays in `test/app/`, even with no
+  widget in it: `database.dart` imports `drift_flutter`, which plain
+  `dart test` cannot load.
 - Drive the board with `FakeBoardSource`
   (`lib/data/board/fake_board_source.dart`), overriding `boardSourceProvider`;
   it reproduces split, glued and duplicated frames and the greeting.

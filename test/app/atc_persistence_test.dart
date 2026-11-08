@@ -1,4 +1,3 @@
-import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/data/db/database.dart';
 import 'package:fluttergran/data/db/game_repository.dart';
@@ -6,21 +5,20 @@ import 'package:fluttergran/domain/atc/atc_config.dart';
 import 'package:fluttergran/domain/atc/atc_reducer.dart';
 import 'package:fluttergran/domain/atc/atc_variant.dart';
 import 'package:fluttergran/domain/game_mode.dart';
-import 'package:fluttergran/domain/segment.dart';
-import 'package:fluttergran/domain/x01/thrown_dart.dart';
+
+import '../support/darts.dart';
+import '../support/database.dart';
 
 void main() {
   late AppDatabase database;
   late GameRepository repository;
 
   setUp(() {
-    database = AppDatabase(NativeDatabase.memory());
+    database = memoryDatabase();
     repository = GameRepository(database);
   });
 
   tearDown(() => database.close());
-
-  ThrownDart s(int n) => ThrownDart(Segment(n, Ring.outerSingle));
 
   Future<AtcConfig> seedAtcGame({
     int players = 2,

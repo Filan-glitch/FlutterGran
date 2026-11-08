@@ -6,10 +6,10 @@ import 'package:fluttergran/app/rules_topic.dart';
 import 'package:fluttergran/app/screens/rules_detail_screen.dart';
 import 'package:fluttergran/app/screens/training_game_screen.dart';
 import 'package:fluttergran/app/screens/training_setup_screen.dart';
-import 'package:fluttergran/app/theme.dart';
 import 'package:fluttergran/app/training_controller.dart';
 import 'package:fluttergran/data/board/fake_board_source.dart';
-import 'package:fluttergran/l10n/app_localizations.dart';
+
+import '../support/pump.dart';
 
 void main() {
   late FakeBoardSource board;
@@ -28,17 +28,7 @@ void main() {
   });
 
   Future<void> pump(WidgetTester tester) async {
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          theme: buildTheme(),
-          home: const TrainingSetupScreen(),
-        ),
-      ),
-    );
+    await pumpApp(tester, const TrainingSetupScreen(), container: container);
   }
 
   testWidgets('the rules icon opens the training rules, scoped to it alone', (

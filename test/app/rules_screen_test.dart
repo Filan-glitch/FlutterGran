@@ -4,21 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/app/rules_topic.dart';
 import 'package:fluttergran/app/screens/rules_detail_screen.dart';
 import 'package:fluttergran/app/screens/rules_screen.dart';
-import 'package:fluttergran/app/theme.dart';
 import 'package:fluttergran/app/widgets/rules/rules_body.dart';
-import 'package:fluttergran/l10n/app_localizations.dart';
 
-/// The shapes the rules section is laid out for, as
-/// `responsive_layout_test.dart` measures them.
-const phonePortrait = Size(411, 923);
-const phoneLandscape = Size(923, 411);
-const tabletPortrait = Size(834, 1194);
-const tabS6Lite = Size(1333, 800);
-const laptop = Size(1280, 641);
-const monitor = Size(1920, 1009);
-const smallestWindow = Size(960, 600);
-
-final windows = TargetPlatformVariant.only(TargetPlatform.windows);
+import '../support/devices.dart';
+import '../support/pump.dart';
 
 void main() {
   late ProviderContainer container;
@@ -33,30 +22,14 @@ void main() {
     Widget home, {
     Locale? locale,
   }) async {
-    tester.view.physicalSize = size;
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
+    setViewSize(tester, size);
 
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          locale: locale,
-          theme: buildTheme(),
-          builder: (context, child) {
-            final media = MediaQuery.of(context);
-            return MediaQuery(
-              data: media.copyWith(
-                textScaler: TextScaler.linear(typeScaleFor(media.size)),
-              ),
-              child: child ?? const SizedBox.shrink(),
-            );
-          },
-          home: home,
-        ),
-      ),
+    await pumpApp(
+      tester,
+      home,
+      container: container,
+      locale: locale,
+      typeScaled: true,
     );
     await tester.pumpAndSettle();
   }
@@ -217,7 +190,7 @@ void main() {
     for (final (name, size) in [
       ('phone', phonePortrait),
       ('phone landscape', phoneLandscape),
-      ('tablet portrait', tabletPortrait),
+      ('tablet portrait', tablet),
       ('tablet landscape', tabS6Lite),
     ]) {
       testWidgets('on a $name', (tester) async {

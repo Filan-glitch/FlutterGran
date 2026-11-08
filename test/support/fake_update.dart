@@ -1,3 +1,7 @@
+/// The updater's outside world, faked: a [FakeUpdatePlatform] device and a
+/// [github] that serves the v1.1.0 release.
+library;
+
 import 'dart:convert';
 import 'dart:io';
 

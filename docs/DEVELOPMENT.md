@@ -80,7 +80,7 @@ What differs from Android:
 | `test/data/` | `dart test` | frame assembly, board reader, segment codec, the GranBoard table, LED command encoding |
 | `test/data/update/` | `dart test` | release lookup, version comparison, verified APK download |
 | `test/app/` | `flutter test` | controllers, persistence, migrations, sound and LED mappings, LED scheduler, keypad, board widget, every screen, responsive and per-mode layout, update flow |
-| `test/support/` | - | shared helpers: in-memory database, sound-player fakes, lights-off overrides, pump helpers, `ThrownDart` shorthands, device sizes, `BoardClock`, fake update platform |
+| `test/support/` | - | shared helpers: `darts.dart`, `async.dart`, `database.dart`, `sound.dart`, `lights.dart`, `devices.dart`, `pump.dart`, `board_clock.dart`, `fake_update.dart` |
 | `test/widget_test.dart` | `flutter test` | x01 end to end: roster → leg → leave → resume |
 | `test/atc_widget_test.dart` | `flutter test` | Around the Clock end to end |
 

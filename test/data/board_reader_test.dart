@@ -4,8 +4,7 @@ import 'package:fluttergran/domain/board_event.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:test/test.dart';
 
-/// Lets queued stream events be delivered before assertions run.
-Future<void> settle() => Future<void>.delayed(Duration.zero);
+import '../support/async.dart';
 
 void main() {
   late FakeBoardSource board;

@@ -1,11 +1,7 @@
-import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/training/free_practice_state.dart';
-import 'package:fluttergran/domain/x01/thrown_dart.dart';
 import 'package:test/test.dart';
 
-ThrownDart s(int n) => ThrownDart(Segment(n, Ring.outerSingle));
-ThrownDart t(int n) => ThrownDart(Segment(n, Ring.triple));
-const ThrownDart miss = ThrownDart.miss();
+import '../../support/darts.dart';
 
 void main() {
   group('opening state', () {

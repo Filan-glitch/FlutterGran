@@ -1,4 +1,3 @@
-import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/app/higher_lower_controller.dart';
@@ -10,14 +9,13 @@ import 'package:fluttergran/domain/higher_lower/higher_lower_leg_state.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
 
-import 'board_clock.dart';
-
-/// Lets queued stream events reach the controller before assertions run.
-Future<void> settle() => Future<void>.delayed(Duration.zero);
+import '../support/async.dart';
+import '../support/board_clock.dart';
+import '../support/darts.dart';
+import '../support/database.dart';
 
 const ThrownDart s20 = ThrownDart(Segment(20, Ring.outerSingle));
 const ThrownDart s10 = ThrownDart(Segment(10, Ring.outerSingle));
-const ThrownDart miss = ThrownDart.miss();
 
 void main() {
   late FakeBoardSource board;
@@ -191,7 +189,7 @@ void main() {
     late AppDatabase database;
 
     setUp(() {
-      database = AppDatabase(NativeDatabase.memory());
+      database = memoryDatabase();
       container.dispose();
       container = ProviderContainer(
         overrides: [

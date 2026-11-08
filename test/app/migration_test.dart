@@ -8,11 +8,12 @@ import 'package:fluttergran/data/db/game_repository.dart';
 import 'package:fluttergran/domain/atc/atc_config.dart';
 import 'package:fluttergran/domain/atc/atc_variant.dart';
 import 'package:fluttergran/domain/game_mode.dart';
-import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/leg_reducer.dart';
 import 'package:fluttergran/domain/x01/match_state.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
 import 'package:fluttergran/domain/x01/x01_rules.dart';
+
+import '../support/darts.dart';
 
 /// The games table exactly as schema 2 wrote it: no match, no leg number.
 ///
@@ -255,10 +256,6 @@ void main() {
   });
 
   tearDown(() => directory.deleteSync(recursive: true));
-
-  ThrownDart t(int n) => ThrownDart(Segment(n, Ring.triple));
-  ThrownDart d(int n) => ThrownDart(Segment(n, Ring.doubleRing));
-  ThrownDart s(int n) => ThrownDart(Segment(n, Ring.outerSingle));
 
   /// Writes one leg the way schema 2 stored legs, and returns its id.
   Future<int> seedV2({

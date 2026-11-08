@@ -23,11 +23,9 @@ import 'package:fluttergran/domain/x01/leg_reducer.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
 import 'package:fluttergran/domain/x01/x01_rules.dart';
 
+import '../support/darts.dart';
+
 void main() {
-  ThrownDart t(int n) => ThrownDart(Segment(n, Ring.triple));
-  ThrownDart d(int n) => ThrownDart(Segment(n, Ring.doubleRing));
-  ThrownDart s(int n) => ThrownDart(Segment(n, Ring.outerSingle));
-  const miss = ThrownDart.miss();
   const bull = ThrownDart(Segment.innerBull);
 
   GameConfig config(int startScore, {int players = 2}) => GameConfig(
