@@ -342,14 +342,26 @@ class SplitBar extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
+                      flex: 3,
                       child: Text(
                         row.label,
                         style: Type.body.copyWith(color: Palette.chalkDim),
                       ),
                     ),
-                    Text(
-                      row.value,
-                      style: Type.notation.copyWith(color: Palette.chalk),
+                    const SizedBox(width: Gap.sm),
+                    // Shrinks rather than overflows, as in StatRow.
+                    Flexible(
+                      flex: 2,
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            row.value,
+                            style: Type.notation.copyWith(color: Palette.chalk),
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),

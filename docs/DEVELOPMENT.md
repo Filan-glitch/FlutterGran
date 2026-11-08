@@ -118,7 +118,7 @@ measured on.
 | `wideLayout` | 600 | Where a phone on its side lands and a tablet always is. Below it a column is the only arrangement that fits a keypad; above it a column would leave the score marooned at the top of a wide screen |
 | `heroLayout` | 780 (shortest side) | A Samsung Galaxy Tab S6 Lite, the tablet the layout is built for, measures 800dp at its shipped display size (`adb shell wm size` / `adb shell wm density`: 1200x2000 physical at 240dpi). The threshold has to clear that with room to spare, or that tablet gets the phone treatment |
 | `desktopHeroLayout` | 900x580 | A 1080p laptop at Windows' default 150% is 1280x720 logical, about 640 high after the title bar and taskbar: short of `heroLayout`, but plenty for the hero cards side by side. Set just under the runner's 960x600 client-area floor (`windows/runner/flutter_window.cpp`), so the smallest window the runner allows always qualifies. Change one, check the other |
-| `formContentWidth` | 640 | A setup or statistics column a hand can take in at a glance; the rest of a tablet's width becomes margin. On desktop the cap grows with `typeScaleFor`, so 1.75-sized labels do not wrap into a phone-width strip |
+| `formContentWidth` | 640 | A setup column a hand can take in at a glance; the rest of a tablet's width becomes margin. On desktop the cap grows with `typeScaleFor`, so 1.75-sized labels do not wrap into a phone-width strip |
 
 **Why a desktop is sized by its window.** A desktop window has width to spare
 and never enough height: a laptop is landscape, the title bar and taskbar take

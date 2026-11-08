@@ -377,7 +377,7 @@ double typeScaleFor(Size size, {bool? desktop}) {
 
 /// How wide a form-shaped screen's content is allowed to get.
 ///
-/// Setup and statistics screens are one column of controls sized for a
+/// Setup screens are one column of controls sized for a
 /// phone; past 640 it only gets sparser, so the rest becomes margin. On a
 /// desktop [CenteredContent] multiplies it by [typeScaleFor], so larger type
 /// still gets as many words per line.

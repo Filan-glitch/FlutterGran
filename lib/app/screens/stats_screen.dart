@@ -93,6 +93,12 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
             child: Column(
               children: [
                 TabBar(
+                  labelStyle: Type.eyebrow.copyWith(fontSize: 12),
+                  unselectedLabelStyle: Type.eyebrow.copyWith(fontSize: 12),
+                  labelColor: Palette.live,
+                  unselectedLabelColor: Palette.chalkDim,
+                  indicatorColor: Palette.live,
+                  dividerColor: Palette.edge,
                   isScrollable: modes.length > 2,
                   tabAlignment: modes.length > 2 ? TabAlignment.start : null,
                   tabs: [

@@ -60,7 +60,10 @@ Two consequences worth naming:
 - **Statistics are computed from replayed legs**, not from counters updated as
   darts land. `computePlayerStats` takes `Iterable<LegState>`, so a figure on
   the statistics screen and the same figure on the match card are produced by
-  the same code.
+  the same code. The repository hands legs out as `Dated<LegState>`
+  (`lib/domain/stats/dated.dart`), stamped with their game's `startedAt`, so a
+  time range is a filter (`playedSince`) and a trend point is the same
+  calculator run over one day's legs (`byDay`).
 
 ## The domain in detail
 
@@ -157,8 +160,19 @@ and statistics:
   `computePlayerStats` returns `Map<GameMode, ModeStats>` - one entry per mode
   a player has a record in - built from per-mode calculators
   (`computeX01Stats`, `computeAtcStats`, ...). The statistics screen sections
-  itself the same way: one block per entry, nothing for a mode with nothing in
-  it.
+  itself the same way: one tab per mode the player has ever played
+  (`playedModesProvider`), nothing for a mode with nothing in it.
+
+Which x01 figures the statistics screen leads with follows the research on
+what decides matches: three-dart average and checkout rate are the two
+strongest predictors (Liebscher & Kirschstein 2017), checkout per *visit* and
+the scoring average (visits that could not finish) predict better still, and
+legs won inside a hundred-average pace (15 darts at 501,
+`X01Stats.fastLegDarts`) beats the plain average as a single figure. A rate
+from fewer than ten attempts reads `—` with how many more are needed
+(`minRateSample`), since one double from two is not "50%". Win rates divide by
+finished legs (`legsFinished`), never by legs entered: an abandoned leg was
+neither won nor lost.
 
 Around the Clock (`lib/domain/atc/`) walks 1 to 20 and then the two bulls;
 `AtcVariant` decides which rings count on a wedge (`AtcStop.clears`).
@@ -219,9 +233,12 @@ each game provider ──▶ <mode>SoundControllerProvider ──▶ soundPlayer
 
 databaseProvider ──▶ gameRepositoryProvider ──┬──▶ allLegsProvider, allMatchesProvider,
                                               │    allAtcLegsProvider, allBullingLegsProvider,
-                                              │    allHigherLowerLegsProvider ──▶ playerStatsProvider
+                                              │    allHigherLowerLegsProvider ──▶ playerStatsProvider,
+                                              │    playerTrendProvider, doublesRecordProvider,
+                                              │    playedModesProvider   (all but the last cut
+                                              │    to statsRangeProvider via statsSinceProvider)
                                               ├──▶ resumableLegProvider ──▶ main menu, splash
-                                              └──▶ segmentCountsProvider ──▶ heatmap
+                                              └──▶ segmentCountsProvider ──▶ per-mode heatmap
 
 updateProvider (UpdateController) ◀── githubReleasesProvider, updatePlatformProvider
 ```
@@ -451,7 +468,7 @@ toggle while a board is connected, undo), and `LeaveGuard` the same
 game that needs something new asks `GameLayout` for a slot rather than
 growing its own arrangement.
 
-Setup and statistics are both one column of controls sized for a phone,
+Setup screens are one column of controls sized for a phone,
 built from the same pieces (`lib/app/widgets/setup_controls.dart`):
 `SectionLabel`, `NumeralChoiceRow` for numbers (a start score, a target),
 `ChoiceRow` for named options as equal-width tiles, and `StartBar`.
@@ -459,6 +476,15 @@ built from the same pieces (`lib/app/widgets/setup_controls.dart`):
 `formContentWidth` (640) and centers it, so a tablet's extra width becomes
 margin rather than a stretched, sparse form — invisible on any screen
 narrower than the cap.
+
+Statistics is the exception that outgrew that column. Each tab is a row of
+headline `StatTile`s (two abreast on a phone, four from 700 wide) over a
+`StatsGrid` of `StatCard`s (`lib/app/widgets/stats/`), dealt into one, two or
+three columns by the width a `LayoutBuilder` sees (`statsColumnsFor`: 700 and
+1100), inside `CenteredContent(maxWidth: 1200)`. Charts are drawn by hand
+(`stats_charts.dart`): no chart package for four small charts. Figures in a
+row or a split bar shrink to fit rather than overflow, so desktop type sizes
+and German labels fit a narrow card.
 
 ### The keypad and a connected board
 

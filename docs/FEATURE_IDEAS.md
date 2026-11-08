@@ -38,10 +38,11 @@ the LED cues, is the "Add a game mode" recipe in
 
 ## Stats / data features
 
-- Checkout-percentage trend over time; per-double hit rate (the segment-level
-  throw data already captures which double a player struggles with).
-- Heatmap overlay on the board graphic per player.
 - Head-to-head record between two specific players.
+- Checkout % by score left (2-40 vs 41-100 vs 101-170) and on match darts
+  versus the rest: a pressure check, cheap to add to `computeX01Stats`.
+- Cricket MPR / soft-tip PPD once Cricket exists - the ratings soft-tip
+  players already know.
 - Session/match history list with leg-by-leg replay.
 - Local export of stats (CSV/JSON). No cloud sync: there is no online/backend
   component planned.
@@ -62,7 +63,11 @@ the LED cues, is the "Add a game mode" recipe in
 - A personal "aim here" heatmap: fit the player's scatter from where their
   darts land (Tibshirani, Price & Taylor, "A statistician plays darts", JRSS A
   2011, an EM fit on score-only data) and show where to aim for the most
-  points.
+  points, plus the spread in mm as a trend. Segment *and* ring data beats the
+  paper's score-only input; the per-target, empirical-Bayes version is Haugh &
+  Wang (arXiv 2302.10750). The fit needs darts with a known aim (Bulling, Bob's
+  27, one-dart finishes - not guessed T20s) and the GranBoard 132's exact
+  ring dimensions, which are not steel-tip ones; find those first.
 
 ## Process note
 

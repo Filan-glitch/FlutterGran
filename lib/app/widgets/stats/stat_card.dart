@@ -102,9 +102,13 @@ class StatRow extends StatelessWidget {
         border: Border(top: BorderSide(color: Palette.edge)),
       ),
       padding: const EdgeInsets.symmetric(vertical: Gap.md),
+      // The label takes three fifths, and the figure shrinks to fit the
+      // rest rather than overflow: a narrow card at desktop type sizes has
+      // no room for "12 · 0.25/leg" at full size beside a long label.
       child: Row(
         children: [
           Expanded(
+            flex: 3,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -124,10 +128,19 @@ class StatRow extends StatelessWidget {
             const Icon(Icons.bolt, size: 15, color: Palette.live),
             const SizedBox(width: Gap.xs),
           ],
-          Text(
-            value,
-            style: Type.notation.copyWith(
-              color: milestone ? Palette.live : Palette.chalk,
+          Flexible(
+            flex: 2,
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  value,
+                  style: Type.notation.copyWith(
+                    color: milestone ? Palette.live : Palette.chalk,
+                  ),
+                ),
+              ),
             ),
           ),
         ],
