@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../domain/x01/thrown_dart.dart';
 import '../l10n_extensions.dart';
 import '../theme.dart';
-import 'game_layout.dart';
 
 /// Lays its child out at the height it is given, and scrolls it when that is
 /// not enough.

@@ -9,6 +9,7 @@ import '../../l10n/app_localizations.dart';
 import '../l10n_extensions.dart';
 import '../lights/lights_providers.dart';
 import '../providers.dart';
+import '../theme.dart';
 import '../training_controller.dart';
 import '../widgets/checkout_card.dart';
 import '../widgets/dart_keypad.dart';
@@ -34,9 +35,7 @@ class TrainingGameScreen extends ConsumerWidget {
     final controller = ref.read(trainingProvider.notifier);
     final hero = isHeroDevice(context);
 
-    // Nothing is read from it - watching is what keeps the training sound
-    // listener alive for as long as this screen is on, the same idiom
-    // `soundControllerProvider` uses for a real leg.
+    // Keeps the sound and the board lights alive while this screen is up.
     ref.watch(trainingSoundControllerProvider);
     ref.watch(trainingLightsProvider);
 
@@ -62,9 +61,7 @@ class TrainingGameScreen extends ConsumerWidget {
     return PopScope(
       canPop: true,
       onPopInvokedWithResult: (didPop, _) {
-        // There is nothing to confirm before leaving - unlike a real leg,
-        // nothing here is saved, so there is nothing to lose that the player
-        // was not already choosing to lose by leaving.
+        // No leave confirmation: nothing here is saved, so nothing is lost.
         if (!didPop) return;
         controller.leave();
         // A checkout just completed can still have a delayed "game shot"

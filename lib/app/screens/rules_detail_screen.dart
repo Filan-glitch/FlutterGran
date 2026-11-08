@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../l10n_extensions.dart';
 import '../rules_topic.dart';
 import '../theme.dart';
-import '../widgets/game_layout.dart' show isHeroDevice;
 import '../widgets/rules/rules_body.dart';
 
 /// How wide a rules page may get on a device with the hero treatment: wide

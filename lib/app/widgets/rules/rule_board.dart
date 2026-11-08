@@ -78,6 +78,9 @@ class _RuleBoardState extends State<RuleBoard>
           child: AnimatedBuilder(
             animation: _curve,
             builder: (context, _) {
+              // Crossfade: a segment only in the old set fades from full
+              // glow to none as t runs 0 to 1, one only in the new set fades
+              // in, and one in both stays at full glow throughout.
               final t = _curve.value;
               final heat = <Segment, double>{
                 for (final segment in {..._from, ...widget.lit})

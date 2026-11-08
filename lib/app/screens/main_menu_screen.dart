@@ -5,14 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/game_mode.dart';
 import '../l10n_extensions.dart';
+import '../labels.dart';
 import '../providers.dart';
 import '../theme.dart';
 import '../update/update_controller.dart';
 import '../widgets/update_card.dart';
 import 'atc_game_screen.dart';
-import 'atc_setup_screen.dart';
 import 'bulling_game_screen.dart';
-import 'bulling_setup_screen.dart' show bullseyeValueLabel;
 import 'game_screen.dart';
 import 'higher_lower_game_screen.dart';
 import 'roster_screen.dart';
@@ -22,21 +21,17 @@ import 'settings_screen.dart';
 import 'stats_screen.dart';
 import 'training_setup_screen.dart';
 
-/// The app's front door. Everything else hangs off one of the actions here,
-/// in the order a returning player actually wants them: pick a leg back up
-/// if one is open, otherwise start a new one; training sits right below Play
-/// because it is the other place darts actually get thrown; rules follows
-/// it as the reference you reach for mid-session, not a routine visit;
-/// statistics is a routine visit so it outranks roster, which is mostly a
-/// once-per-guest chore; settings is last because it is rarely touched at
-/// all.
+/// The app's front door; every other screen hangs off an action here.
+///
+/// Actions are ordered by how often a returning player wants them: resume an
+/// open leg, play, training (the other place darts get thrown), rules,
+/// statistics, roster (mostly a once-per-guest chore), settings.
 class MainMenuScreen extends ConsumerWidget {
   const MainMenuScreen({super.key});
 
   /// Loads a stored leg back up and hands off to the right game screen.
   ///
-  /// The same sequence the setup screen used to run before resuming moved
-  /// here: each mode's config has to land before its log, because its
+  /// Each mode's config must be set before its log is resumed: the
   /// controller's `build` watches the config provider and rebuilds to an
   /// empty leg whenever it changes.
   Future<void> _resume(
@@ -126,7 +121,7 @@ class MainMenuScreen extends ConsumerWidget {
     return Scaffold(
       body: SafeArea(
         child: CenteredContent(
-          child: _FitOrScroll(
+          child: _FullHeightScrollView(
             padding: const EdgeInsets.all(Gap.lg),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -254,10 +249,11 @@ class MainMenuScreen extends ConsumerWidget {
   }
 }
 
-/// Centres the menu when it fits and scrolls it when it does not: a phone on
-/// its side, or the update and resume cards both up on a short screen.
-class _FitOrScroll extends StatelessWidget {
-  const _FitOrScroll({required this.padding, required this.child});
+/// Scrolls the menu, with [child] at least as tall as the viewport so the
+/// column can centre itself when it fits: it only scrolls on a phone on its
+/// side, or with the update and resume cards both up on a short screen.
+class _FullHeightScrollView extends StatelessWidget {
+  const _FullHeightScrollView({required this.padding, required this.child});
 
   final EdgeInsets padding;
   final Widget child;
@@ -334,27 +330,12 @@ class _MenuRow extends StatelessWidget {
   }
 }
 
-/// Offers the leg that was left unfinished.
+/// Offers the leg that was left unfinished - the only place one is offered.
 ///
-/// Moved here from the setup screen, which trimmed down to `X01SetupScreen`
-/// and no longer makes this offer - the main menu is now the only place a
-/// leg in progress gets surfaced. Shows the scores rather than just a
-/// button, so the leg can be
-/// recognised before committing to it - there is no point resuming the
-/// wrong one.
-///
-/// The outer card - border, header, tap target - is shared by every mode;
-/// only the format eyebrow and the per-player figures switch on which kind
-/// of [resumable] this is.
+/// Shows the scores rather than just a button, so the leg can be recognised
+/// before committing to it. The card is shared by every mode; only the format
+/// eyebrow and the per-player figures switch on the kind of [resumable].
 class _ResumeBanner extends StatelessWidget {
-  /// [mode]'s name as shown on the mode-select tile - `X01`, `AROUND THE
-  /// CLOCK`, `BULLING` - read straight from [gameModeRegistry] rather than
-  /// duplicated here, so a leg being resumed always names its game the same
-  /// way picking that game does.
-  static String _modeName(GameMode mode) => gameModeRegistry
-      .firstWhere((descriptor) => descriptor.id == mode)
-      .displayName;
-
   const _ResumeBanner({
     required this.resumable,
     required this.names,
@@ -371,7 +352,7 @@ class _ResumeBanner extends StatelessWidget {
     final resumable = this.resumable;
     final (format, playerIds, currentPlayerId, figures) = switch (resumable) {
       ResumableX01Leg(:final leg) => (
-        '${_modeName(GameMode.x01)} · ${leg.config.startScore}',
+        '${gameModeName(GameMode.x01)} · ${leg.config.startScore}',
         leg.config.playerIds,
         leg.currentPlayerId,
         <int, String>{
@@ -379,7 +360,7 @@ class _ResumeBanner extends StatelessWidget {
         },
       ),
       ResumableAtcLeg(:final leg) => (
-        '${_modeName(GameMode.aroundTheClock)} · '
+        '${gameModeName(GameMode.aroundTheClock)} · '
             '${atcVariantLabel(context, leg.config.variant)}',
         leg.config.playerIds,
         leg.currentPlayerId,
@@ -389,7 +370,7 @@ class _ResumeBanner extends StatelessWidget {
         },
       ),
       ResumableBullingLeg(:final leg) => (
-        '${_modeName(GameMode.bulling)} · '
+        '${gameModeName(GameMode.bulling)} · '
             '${bullseyeValueLabel(context, leg.config.bullseyeValue)} · '
             '${leg.config.target}',
         leg.config.playerIds,
@@ -399,7 +380,7 @@ class _ResumeBanner extends StatelessWidget {
         },
       ),
       ResumableHigherLowerLeg(:final leg) => (
-        '${_modeName(GameMode.higherLower)} · ${leg.higher} · ${leg.lower}',
+        '${gameModeName(GameMode.higherLower)} · ${leg.higher} · ${leg.lower}',
         leg.config.playerIds,
         leg.currentPlayerId,
         <int, String>{

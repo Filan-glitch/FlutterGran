@@ -12,6 +12,7 @@ import '../audio/sound_controller.dart' show maximumTurn;
 import '../l10n_extensions.dart';
 import '../lights/lights_providers.dart';
 import '../providers.dart';
+import '../theme.dart';
 import '../widgets/checkout_card.dart';
 import '../widgets/dart_keypad.dart';
 import '../widgets/game_layout.dart';
@@ -24,6 +25,11 @@ import '../widgets/turn_result.dart';
 /// The block of per-player figures on the match card.
 const Key matchFiguresKey = Key('match-figures');
 
+/// Plays an x01 leg inside its match, from [gameProvider] and
+/// [matchStateProvider], ending in the match-won card.
+///
+/// The canonical game screen: the other modes reuse its [GameLayout]
+/// arrangement with their own figures in place of the remaining score.
 class GameScreen extends ConsumerWidget {
   const GameScreen({super.key});
 
@@ -37,11 +43,8 @@ class GameScreen extends ConsumerWidget {
     final l10n = context.l10n;
     final hero = isHeroDevice(context);
 
-    // Nothing is read from it. Watching is what keeps the sound controller
-    // alive for as long as a leg is on screen, and its own listener on the game
-    // does the rest - which is the point: this screen never asks for a sound.
+    // Keeps the sound and the board lights alive while this screen is up.
     ref.watch(soundControllerProvider);
-    // Same idiom for the board's lights, which also go dark when this leaves.
     ref.watch(x01LightsProvider);
 
     final routes = leg.isFinished || session.awaitingTurnConfirm
@@ -50,8 +53,7 @@ class GameScreen extends ConsumerWidget {
               .watch(checkoutTableProvider(leg.config.outRule))
               .routesFor(leg.currentRemaining, leg.dartsLeftThisTurn);
 
-    // Only a real match says so. A best of one is the single leg the app has
-    // always played, and labelling it would be noise.
+    // Only a multi-leg match is labelled; on a best of one it is noise.
     final format = match != null && match.config.isMultiLeg
         ? ' · ${match.config.formatLabel}'
         : '';

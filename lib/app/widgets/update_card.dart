@@ -32,6 +32,9 @@ class UpdateCard extends ConsumerWidget {
     if (release == null) return const SizedBox.shrink();
 
     final windows = defaultTargetPlatform == TargetPlatform.windows;
+    // `news` marks a status that reports what is happening (progress, a
+    // permission to grant, a failure) rather than the standing description
+    // of what the button does; only news is shown on the compact card.
     final (status, action, news) = switch (state) {
       UpdateDownloading() => (l10n.updateDownloadingStatus, null, true),
       UpdateDownloaded(needsPermission: true) => (

@@ -14,10 +14,9 @@ import 'higher_lower_game_screen.dart';
 
 /// Picks who is playing, then starts a persisted leg.
 ///
-/// Mirrors `BullingSetupScreen`'s shape, minus every choice: a Higher/Lower
-/// leg always opens on the same two values, so the roster is all there is
-/// to set up - and it needs two players, since last one standing needs
-/// somebody to outlast.
+/// Laid out like `X01SetupScreen`, with no format choices: a Higher/Lower leg
+/// always opens on the same two values. Needs at least two players, since
+/// last one standing needs somebody to outlast.
 class HigherLowerSetupScreen extends ConsumerStatefulWidget {
   const HigherLowerSetupScreen({super.key});
 

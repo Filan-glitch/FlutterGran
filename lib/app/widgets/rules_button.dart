@@ -4,14 +4,8 @@ import '../l10n_extensions.dart';
 import '../rules_topic.dart';
 import '../screens/rules_detail_screen.dart';
 
-/// One tap to the rules reference for [topic], from wherever a setup
-/// screen's rule choices (in/out rule, ATC variant, bullseye value) are
-/// actually made.
-///
-/// A shared widget rather than a `Navigator.push` repeated on every setup
-/// screen's `AppBar`, the same reasoning as `BoardConnectionButton`: one
-/// place to own the icon, with only the destination's topic varying by
-/// caller.
+/// An app-bar button that opens the rules page for [topic], on each setup
+/// screen next to the choices those rules explain.
 class RulesButton extends StatelessWidget {
   const RulesButton({super.key, required this.topic});
 

@@ -36,8 +36,8 @@ abstract final class Palette {
   /// ground so it recedes into it rather than sitting on top of it.
   static const Color chalkDim = Color(0xFF8A9A8E);
 
-  /// The treble bed. Brighter than the ground it now sits on, or a treble key
-  /// would disappear into the background.
+  /// The treble bed. Brighter than the ground, or a treble key would
+  /// disappear into the background.
   static const Color trebleBed = Color(0xFF3D9C64);
 
   /// The double bed. Also a bust.
@@ -299,34 +299,19 @@ abstract final class Width {
 }
 
 /// Width at which the game screen stops stacking and puts the keypad beside
-/// the scoreboard.
-///
-/// 600 is where a phone on its side lands and a tablet always is. Below it a
-/// column is the only arrangement that fits a keypad; above it the column would
-/// leave the score marooned at the top of a very wide screen.
+/// the scoreboard: a phone on its side lands above it, a tablet always does.
 const double wideLayout = 600;
 
 /// Shortest side at which a device gets the hero treatment: per-player score
-/// cards instead of a thin column, the turn result as a full-screen takeover,
-/// checkout as its own panel rather than a strip - and the top [typeScaleFor]
-/// tier.
+/// cards, the turn result as a full-screen takeover, checkout as its own
+/// panel, and the top [typeScaleFor] tier.
 ///
-/// 780 rather than a rounder 800 or 900: a Samsung Galaxy Tab S6 Lite, a real
-/// 10.4" tablet and the device this was built against, measures 800dp on its
-/// shortest side at the display size Android ships it at (`adb shell wm size`
-/// / `wm density`: 1200x2000 physical @ 240dpi). The threshold has to clear
-/// that with room to spare, not sit above it, or the tablet this app is for
-/// gets the phone treatment.
+/// Must stay below the 800dp shortest side of a Galaxy Tab S6 Lite, the
+/// tablet the layout is built for (see `docs/DEVELOPMENT.md`).
 const double heroLayout = 780;
 
-/// Whether the app is running in a desktop window rather than on a device
-/// held in the hand or stood on a table.
-///
-/// A desktop window is the opposite shape to a tablet's problem: there is
-/// width to spare and never enough height, since a laptop is landscape, the
-/// title bar and the taskbar both come out of what is left, and the window
-/// can be any size its owner drags it to. So it is sized by its window, not
-/// by the screen it happens to be on - see [isHeroSize] and [typeScaleFor].
+/// Whether the app is running in a desktop window. A desktop is sized by its
+/// window, not its screen - see [isHeroSize] and [typeScaleFor].
 bool get isDesktop => switch (defaultTargetPlatform) {
   TargetPlatform.windows ||
   TargetPlatform.linux ||
@@ -336,20 +321,12 @@ bool get isDesktop => switch (defaultTargetPlatform) {
   TargetPlatform.fuchsia => false,
 };
 
-/// The smallest desktop window that gets the hero treatment.
+/// The smallest desktop window that gets the hero treatment, since a laptop
+/// window rarely reaches [heroLayout] on its shortest side.
 ///
-/// [heroLayout] asks for 780 on the shortest side, which a laptop window
-/// almost never has: a 1080p panel at the 150% scaling Windows defaults it to
-/// is 1280x720 logical before the title bar and taskbar take theirs, leaving
-/// about 640. It is still a big screen read from the oche, and the hero cards
-/// fit it with room to spare once the width is there to put them side by
-/// side.
-///
-/// Set a little under the 960x600 floor the Windows runner puts on the
-/// window (`windows/runner/flutter_window.cpp`), so the smallest window it
-/// allows is always in, whatever fractional scaling does to the last pixel. A
-/// desktop below this is one without that floor, made deliberately small,
-/// and gets the arrangement that fits it.
+/// Kept just under the 960x600 client-area floor in
+/// `windows/runner/flutter_window.cpp`, so the smallest window the runner
+/// allows always qualifies. Change one, check the other.
 const Size desktopHeroLayout = Size(900, 580);
 
 /// Whether a viewport of [size] earns the hero treatment. See [heroLayout].
@@ -363,23 +340,22 @@ bool isHeroSize(Size size, {bool? desktop}) {
       size.height >= desktopHeroLayout.height;
 }
 
+/// Whether this device earns the hero treatment. See [isHeroSize].
+///
+/// Asks about the whole viewport, not the local width a `LayoutBuilder` would
+/// give, so it moves together with [typeScaleFor]. Call sites use this rather
+/// than comparing against [heroLayout] directly, or a desktop window falls
+/// back to the phone layout.
+bool isHeroDevice(BuildContext context) =>
+    isHeroSize(MediaQuery.sizeOf(context));
+
 /// How much larger type should be on a viewport of [size].
 ///
-/// The sizes in [Type] are chosen for a phone at arm's length. A tablet is not
-/// a big phone: it is further away, on a table or a stand, so the same 62px
-/// score that reads as a headline in the hand reads as ordinary across a room.
-/// Keyed to the shortest side, because that is what says how big the device is
-/// rather than which way up it is being held. The top tier lines up with
-/// [heroLayout]: the device that earns the hero layout earns the hero type
-/// scale with it.
-///
-/// A desktop window is keyed to the same shortest side - its height, in
-/// practice, and the dimension that runs out first - but on tiers of its own:
-/// one more at the bottom, so a laptop's 640-high window gets bigger type
-/// along with the hero layout [desktopHeroLayout] gives it, and one more at
-/// the top for a full-height window on a desktop monitor at 100% scaling,
-/// where a logical pixel is physically the smallest it gets on any screen
-/// this app runs on.
+/// The sizes in [Type] are for a phone at arm's length; a tablet or desktop
+/// is read from further away. Keyed to the shortest side, so the tier does
+/// not change with orientation; the top tier lines up with [heroLayout].
+/// Desktop has its own tiers: one at [desktopHeroLayout]'s height for a
+/// laptop window, and one at 1000 for a full-height monitor window.
 double typeScaleFor(Size size, {bool? desktop}) {
   final short = size.shortestSide;
   if (desktop ?? isDesktop) {
@@ -395,24 +371,15 @@ double typeScaleFor(Size size, {bool? desktop}) {
 
 /// How wide a form-shaped screen's content is allowed to get.
 ///
-/// Setup, statistics, and diagnostics are all one column of controls sized
-/// for a phone in the hand. Stretched across a tablet's full width that column
-/// does not become more readable, just sparser - a text field wide enough for
-/// a sentence, a row of numbers with the space of a paragraph between them.
-/// 640 keeps a column a hand can still take in at a glance; the rest of the
-/// width becomes margin, which is what a form on a big screen is supposed to
-/// do with the room it does not need.
-///
-/// On a desktop the column grows with [typeScaleFor] instead, so it holds as
-/// many words a line as it does on a tablet: there the type tiers run higher
-/// against a window that is always wide, and a fixed 640 would wrap
-/// 1.75-sized labels into a phone-width strip down the middle of a monitor.
+/// Setup and statistics screens are one column of controls sized for a
+/// phone; past 640 it only gets sparser, so the rest becomes margin. On a
+/// desktop [CenteredContent] multiplies it by [typeScaleFor], so larger type
+/// still gets as many words per line.
 const double formContentWidth = 640;
 
 /// Wraps a form-shaped screen's body so it caps at [formContentWidth] and
-/// centers what is left over, without doing anything at all below that width
-/// - a phone screen is already narrower than the cap, so this is invisible on
-/// every device the app shipped for before a tablet.
+/// centers it in what is left over. Below the cap it does nothing, so it is
+/// invisible on a phone.
 class CenteredContent extends StatelessWidget {
   const CenteredContent({
     super.key,
@@ -553,6 +520,7 @@ abstract final class Type {
     ],
   );
 
+  /// Running text: sentences, list tiles, rules prose.
   static const TextStyle body = TextStyle(
     fontFamily: 'UbuntuSans',
     fontSize: 14,
@@ -563,6 +531,7 @@ abstract final class Type {
     ],
   );
 
+  /// Short labels on controls and figures; smaller and heavier than [body].
   static const TextStyle label = TextStyle(
     fontFamily: 'UbuntuSans',
     fontSize: 13,
@@ -573,7 +542,8 @@ abstract final class Type {
     ],
   );
 
-  /// Raw board data - frame codes - where digits must line up between rows.
+  /// Monospaced figures that must line up between rows, such as the
+  /// end-of-game figures in `FigureRow`.
   static const TextStyle data = TextStyle(
     fontFamily: 'UbuntuSansMono',
     fontSize: 14,
@@ -609,6 +579,9 @@ const ColorScheme _scheme = ColorScheme(
   scrim: Color(0xFF000000),
 );
 
+/// The app's [ThemeData]: Material 3 on the hand-written colour scheme above,
+/// with [Type] roles mapped onto the text theme and controls styled from
+/// [Palette].
 ThemeData buildTheme() {
   final base = ThemeData(
     colorScheme: _scheme,

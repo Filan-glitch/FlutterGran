@@ -55,9 +55,8 @@ abstract final class BoardGeometry {
 
 /// A dartboard that can be tapped, highlighted, and shaded.
 ///
-/// One widget covers three jobs: entering a dart by hand when the board misread
-/// one, showing where darts actually land, and picking the segment a frame code
-/// really means during calibration.
+/// Used as the statistics screen's heatmap of where darts land and as the
+/// rules pages' board (`RuleBoard`); manual entry is the keypad's job.
 class BoardWidget extends StatelessWidget {
   const BoardWidget({
     super.key,

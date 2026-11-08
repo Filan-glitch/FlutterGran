@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../l10n_extensions.dart';
 import '../rules_topic.dart';
 import '../theme.dart';
-import '../widgets/game_layout.dart' show isHeroDevice;
 import '../widgets/mode_glyph.dart';
 import '../widgets/rules/rules_body.dart';
 import '../widgets/rules/rules_hero.dart' show rulesGlyphTag, RulesHero;
@@ -94,6 +93,8 @@ class _RulesScreenState extends State<RulesScreen> {
         ),
       );
 
+      // One row when every poster gets at least 200 logical pixels at 1x
+      // text, scaled with the type so larger names still fit.
       final allAcross = constraints.maxWidth >= 200 * scale * posters.length;
       // Otherwise two rows, the longer one first.
       final split = (posters.length + 1) ~/ 2;
