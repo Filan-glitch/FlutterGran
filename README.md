@@ -49,7 +49,7 @@ or with nothing but the keypad.
 | **Sound** | A cue per dart and every three-dart total spoken aloud — 186 lines rendered offline at build time, no TTS engine on the phone |
 | **Statistics** | Per mode: three-dart average, first nine, 180s, best checkout, checkout rate by out-rule, per-stop hit rates, and a heatmap of where the darts landed |
 | **Languages** | English and German, following the device or picked in Settings |
-| **Updates** | Checks GitHub for a new release at launch; Android downloads, verifies and installs it, Windows opens the release page |
+| **Updates** | Checks GitHub for a new release at launch; Android and Windows download, verify and install it (Windows through its installer) |
 | **Layout** | One column on a phone, scoreboard beside keypad on a phone on its side, hero cards on a tablet, and a resizable Windows window |
 
 Everything is stored as **the darts that were thrown**, never as a running

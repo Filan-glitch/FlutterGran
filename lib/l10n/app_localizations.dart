@@ -1880,6 +1880,12 @@ abstract class AppLocalizations {
   /// **'Opens the release page to download it'**
   String get updateWindowsDetail;
 
+  /// No description provided for @updateWindowsInstallerDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads and installs it, then restarts Chalk, keeping every game played'**
+  String get updateWindowsInstallerDetail;
+
   /// No description provided for @updateInstallButton.
   ///
   /// In en, this message translates to:

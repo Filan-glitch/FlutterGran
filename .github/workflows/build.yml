@@ -1,7 +1,7 @@
-# Builds the Android APKs and the Windows app. Not triggered on its own:
-# ci.yml calls it in debug for every PR, release.yml in release for every
-# version release-please cuts. One definition, so what CI proves builds is
-# exactly what gets released.
+# Builds the Android APKs and the Windows app (portable zip and installer).
+# Not triggered on its own: ci.yml calls it in debug for every PR, release.yml
+# in release for every version release-please cuts. One definition, so what
+# CI proves builds is exactly what gets released.
 name: Build
 
 on:
@@ -195,6 +195,37 @@ jobs:
           $suffix = if ($env:MODE -eq 'release') { '' } else { '-debug' }
           New-Item -ItemType Directory -Force dist | Out-Null
           Compress-Archive -Path "$app\*" -DestinationPath "dist\$env:NAME-windows-x64$suffix.zip"
+
+      # Pinned rather than whatever the runner image happens to ship, so a
+      # release is reproducible from its tag. The image already carries this
+      # version, in which case choco only confirms it.
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --version 6.7.1 -y --no-progress
+
+      # The same folder the zip was made from, wrapped in the wizard from
+      # windows/installer/chalk.iss. Its file name is a contract with
+      # installed apps, which download it to update themselves: see
+      # docs/RELEASING.md, "In-app updates".
+      - name: Installer
+        shell: pwsh
+        run: |
+          $mode = if ($env:MODE -eq 'release') { 'Release' } else { 'Debug' }
+          $suffix = if ($env:MODE -eq 'release') { '' } else { '-debug' }
+          # A debug build has no VERSION; the installer still wants a real
+          # version number, so take pubspec.yaml's, without the build number.
+          $version = $env:VERSION
+          if (-not $version) {
+            $line = Select-String -Path pubspec.yaml -Pattern '^version:\s*([0-9]+\.[0-9]+\.[0-9]+)' | Select-Object -First 1
+            $version = $line.Matches[0].Groups[1].Value
+          }
+          $iscc = Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6\ISCC.exe'
+          & $iscc "/DAppVersion=$version" `
+            "/DSourceDir=$PWD\build\windows\x64\runner\$mode" `
+            "/O$PWD\dist" `
+            "/F$env:NAME-windows-x64$suffix-setup" `
+            windows\installer\chalk.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:

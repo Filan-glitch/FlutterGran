@@ -121,7 +121,47 @@ void main() {
       expect(find.byKey(const Key('update-check-now')), findsNothing);
     });
 
-    testWidgets('sends Windows to the release page', (tester) async {
+    testWidgets('updates Windows through the installer', (tester) async {
+      await pump(tester, const SettingsScreen());
+      await scrollToUpdates(tester);
+      await check(tester);
+
+      await tester.drag(find.byType(ListView), const Offset(0, -2000));
+      await tester.pump();
+      // UPDATE is also the card's eyebrow; this is the button's.
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('update-card-action')),
+          matching: find.text('UPDATE'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.textContaining('restarts Chalk'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('update-card-action')));
+      // The download is real file I/O, which only advances outside the fake
+      // clock, and takes a few hops through it.
+      for (var i = 0; i < 50 && platform.ranInstallers.isEmpty; i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 10)),
+        );
+        await tester.pump();
+      }
+
+      expect(platform.ranInstallers, hasLength(1));
+      expect(platform.opened, isEmpty);
+    }, variant: TargetPlatformVariant.only(TargetPlatform.windows));
+
+    testWidgets('sends Windows to the page of a release with no installer', (
+      tester,
+    ) async {
+      container.updateOverrides([
+        databaseProvider.overrideWithValue(database),
+        boardSourceProvider.overrideWithValue(board),
+        updatePlatformProvider.overrideWithValue(platform),
+        updateHttpClientProvider.overrideWithValue(
+          github(withInstaller: false),
+        ),
+      ]);
       await pump(tester, const SettingsScreen());
       await scrollToUpdates(tester);
       await check(tester);
@@ -133,6 +173,7 @@ void main() {
       await tester.runAsync(() => Future<void>.delayed(Duration.zero));
 
       expect(platform.opened, [Uri.parse('$base/tag/v1.1.0')]);
+      expect(platform.ranInstallers, isEmpty);
     }, variant: TargetPlatformVariant.only(TargetPlatform.windows));
   });
 }

@@ -37,11 +37,14 @@ cat <<NOTES
 | Android, older 32-bit devices | \`$name-android-armeabi-v7a.apk\` |
 | Android, x86_64 (emulators, some Chromebooks) | \`$name-android-x86_64.apk\` |
 | Android, if unsure which of the above | \`$name-android.apk\` (universal, larger) |
-| Windows 10 / 11, 64-bit | \`$name-windows-x64.zip\`: unzip anywhere and run \`fluttergran.exe\` |
+| Windows 10 / 11, 64-bit | \`$name-windows-x64-setup.exe\`: the installer, recommended; Chalk then updates itself |
+| Windows, portable | \`$name-windows-x64.zip\`: unzip anywhere and run \`fluttergran.exe\` |
 
 The Android APKs are sideloaded: allow installs from your browser or file
-manager when Android asks. Windows SmartScreen may warn about an unrecognised
-app on first launch: **More info → Run anyway**.
+manager when Android asks. The Windows installer is not code-signed, so
+SmartScreen may warn about an unrecognised app when you run it:
+**More info → Run anyway**. That is once: the installed app, and the updates
+it installs itself, open without it. The installer needs no admin rights.
 
 ## Verifying
 

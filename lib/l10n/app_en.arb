@@ -433,6 +433,7 @@
   },
   "updateAndroidDetail": "Downloads and installs it, keeping every game played",
   "updateWindowsDetail": "Opens the release page to download it",
+  "updateWindowsInstallerDetail": "Downloads and installs it, then restarts Chalk, keeping every game played",
   "updateInstallButton": "UPDATE",
   "updateDownloadButton": "DOWNLOAD",
   "updateDownloadingStatus": "Downloading…",

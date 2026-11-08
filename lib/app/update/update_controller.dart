@@ -1,5 +1,5 @@
 /// The in-app update flow: [UpdateController] checks GitHub for a newer release
-/// and, asked to, installs its APK on Android or opens the release page on
+/// and, asked to, installs its APK on Android or runs its installer on
 /// Windows.
 ///
 /// {@category App}
@@ -53,7 +53,7 @@ class UpdateAvailable extends UpdateState {
   final AppRelease release;
 }
 
-/// Downloading the APK for [release]. Android only.
+/// Downloading the APK or the Windows installer for [release].
 class UpdateDownloading extends UpdateState {
   const UpdateDownloading(this.release, [this.progress]);
 
@@ -88,7 +88,7 @@ enum UpdateFailure {
   /// GitHub could not be asked, or answered with nothing usable.
   check,
 
-  /// The APK did not download, or did not match its checksum.
+  /// The APK or installer did not download, or did not match its checksum.
   download,
 
   /// Nothing could take the update: no installer, no browser.
@@ -107,8 +107,8 @@ class UpdateFailed extends UpdateState {
   final AppRelease? release;
 }
 
-/// The two platforms that ship releases: Android installs the APK itself,
-/// Windows has no installer and is sent to the release page.
+/// The two platforms that ship releases: Android installs the APK, Windows
+/// runs the installer (or, for a release that has none, opens its page).
 bool get platformCanUpdate =>
     defaultTargetPlatform == TargetPlatform.android ||
     defaultTargetPlatform == TargetPlatform.windows;
@@ -140,16 +140,15 @@ class UpdateController extends Notifier<UpdateState> {
     }
   }
 
-  /// Takes the release on offer: installs it on Android, opens its page on
-  /// Windows.
+  /// Takes the release on offer: installs its APK on Android, runs its
+  /// installer on Windows.
   Future<void> apply() async {
     final current = state;
     final release = current.release;
     if (release == null || current is UpdateDownloading) return;
 
     if (defaultTargetPlatform == TargetPlatform.windows) {
-      final opened = await _platform.openPage(release.pageUrl);
-      if (!opened) state = UpdateFailed(UpdateFailure.install, release);
+      await _applyOnWindows(release);
       return;
     }
 
@@ -160,7 +159,9 @@ class UpdateController extends Notifier<UpdateState> {
 
     final String apkPath;
     try {
-      apkPath = await _download(release);
+      final name = release.apkNameFor(await _platform.supportedAbis());
+      if (name == null) throw const UpdateCheckException('release has no APK');
+      apkPath = await _download(release, name);
     } on Exception catch (error) {
       debugPrint('update download failed: $error');
       state = UpdateFailed(UpdateFailure.download, release);
@@ -180,14 +181,40 @@ class UpdateController extends Notifier<UpdateState> {
     await _install(current.release, current.apkPath);
   }
 
-  Future<String> _download(AppRelease release) async {
+  /// Downloads and runs the installer, which quits Chalk and starts the new
+  /// version. A release from before there was an installer is only on its
+  /// page, so that is opened instead.
+  Future<void> _applyOnWindows(AppRelease release) async {
+    final name = release.windowsInstallerName;
+    if (name == null) {
+      final opened = await _platform.openPage(release.pageUrl);
+      if (!opened) state = UpdateFailed(UpdateFailure.install, release);
+      return;
+    }
+
+    final String path;
+    try {
+      path = await _download(release, name);
+    } on Exception catch (error) {
+      debugPrint('update download failed: $error');
+      state = UpdateFailed(UpdateFailure.download, release);
+      return;
+    }
+    try {
+      await _platform.runInstaller(path);
+    } on ProcessException catch (error) {
+      debugPrint('update install failed: $error');
+      state = UpdateFailed(UpdateFailure.install, release);
+    }
+  }
+
+  /// Downloads the release's file [name] and checks it against the release's
+  /// `SHA256SUMS.txt`, returning where it landed.
+  Future<String> _download(AppRelease release, String name) async {
     state = UpdateDownloading(release);
     final releases = ref.read(githubReleasesProvider);
-    final name = release.apkNameFor(await _platform.supportedAbis());
-    final url = name == null ? null : release.assets[name];
-    if (name == null || url == null) {
-      throw const UpdateCheckException('release has no APK');
-    }
+    final url = release.assets[name];
+    if (url == null) throw UpdateCheckException('release has no $name');
     final expected = (await releases.checksums(release))[name];
     if (expected == null) {
       throw UpdateCheckException('SHA256SUMS.txt does not list $name');

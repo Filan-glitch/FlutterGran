@@ -326,6 +326,7 @@
   "updateAvailableTitle": "Chalk {version} ist verfügbar",
   "updateAndroidDetail": "Lädt es herunter und installiert es – alle Spiele bleiben erhalten",
   "updateWindowsDetail": "Öffnet die Release-Seite zum Herunterladen",
+  "updateWindowsInstallerDetail": "Lädt es herunter, installiert es und startet Chalk neu – alle Spiele bleiben erhalten",
   "updateInstallButton": "AKTUALISIEREN",
   "updateDownloadButton": "HERUNTERLADEN",
   "updateDownloadingStatus": "Wird heruntergeladen…",

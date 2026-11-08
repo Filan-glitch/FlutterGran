@@ -1066,6 +1066,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get updateWindowsDetail => 'Opens the release page to download it';
 
   @override
+  String get updateWindowsInstallerDetail =>
+      'Downloads and installs it, then restarts Chalk, keeping every game played';
+
+  @override
   String get updateInstallButton => 'UPDATE';
 
   @override

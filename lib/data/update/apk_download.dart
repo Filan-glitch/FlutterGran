@@ -1,5 +1,6 @@
-/// Downloads a release APK and checks it against the SHA-256 the release lists,
-/// keeping the file only when they match.
+/// Downloads a release file (an APK, or the Windows installer) and checks it
+/// against the SHA-256 the release lists, keeping the file only when they
+/// match.
 ///
 /// {@category Data}
 library;
