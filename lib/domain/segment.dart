@@ -1,3 +1,10 @@
+/// The board's scoring areas, [Ring] and [Segment]: the value every dart,
+/// checkout and statistic is expressed in, shared by the engines and the board
+/// protocol.
+///
+/// {@category Domain}
+library;
+
 /// Which ring of the board a dart landed in.
 ///
 /// The board reports inner and outer singles as distinct physical segments even
@@ -68,10 +75,8 @@ class Segment {
     Ring.innerBull => 'DB',
   };
 
-  /// Every scoring area on the board: 20 wedges x 4 rings, plus both bulls.
-  ///
-  /// This is the full set the board can report and the full search space for
-  /// checkout routes.
+  /// Every scoring area on the board: 20 wedges x 4 rings, plus both bulls -
+  /// the full set the board can report.
   static final List<Segment> all = List.unmodifiable([
     for (var number = 1; number <= 20; number++)
       for (final ring in const [

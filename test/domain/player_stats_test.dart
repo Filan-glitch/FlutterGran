@@ -9,10 +9,7 @@ import 'package:fluttergran/domain/x01/thrown_dart.dart';
 import 'package:fluttergran/domain/x01/x01_rules.dart';
 import 'package:test/test.dart';
 
-ThrownDart s(int n) => ThrownDart(Segment(n, Ring.outerSingle));
-ThrownDart d(int n) => ThrownDart(Segment(n, Ring.doubleRing));
-ThrownDart t(int n) => ThrownDart(Segment(n, Ring.triple));
-const ThrownDart miss = ThrownDart.miss();
+import '../support/darts.dart';
 
 LegState leg(int start, List<ThrownDart> darts, {int players = 1}) => foldLeg(
   GameConfig(
@@ -26,20 +23,20 @@ X01Stats statsFor(List<LegState> legs, {int playerId = 1}) =>
     computeX01Stats(playerId, legs);
 
 void main() {
-  group('isOneDartFinish', () {
+  group('isOneDartFinishFor under double-out', () {
     test('even scores up to 40, and the bull', () {
-      expect(isOneDartFinish(40), isTrue);
-      expect(isOneDartFinish(32), isTrue);
-      expect(isOneDartFinish(2), isTrue);
-      expect(isOneDartFinish(50), isTrue);
+      expect(isOneDartFinishFor(40, X01OutRule.double), isTrue);
+      expect(isOneDartFinishFor(32, X01OutRule.double), isTrue);
+      expect(isOneDartFinishFor(2, X01OutRule.double), isTrue);
+      expect(isOneDartFinishFor(50, X01OutRule.double), isTrue);
     });
 
     test('odd scores, and anything above 40 that is not the bull', () {
-      expect(isOneDartFinish(41), isFalse);
-      expect(isOneDartFinish(33), isFalse);
-      expect(isOneDartFinish(42), isFalse);
-      expect(isOneDartFinish(1), isFalse);
-      expect(isOneDartFinish(0), isFalse);
+      expect(isOneDartFinishFor(41, X01OutRule.double), isFalse);
+      expect(isOneDartFinishFor(33, X01OutRule.double), isFalse);
+      expect(isOneDartFinishFor(42, X01OutRule.double), isFalse);
+      expect(isOneDartFinishFor(1, X01OutRule.double), isFalse);
+      expect(isOneDartFinishFor(0, X01OutRule.double), isFalse);
     });
   });
 
@@ -55,7 +52,9 @@ void main() {
     });
 
     test('a player who was not in the leg is skipped entirely', () {
-      final stats = computeX01Stats(9, [leg(501, [t(20)])]);
+      final stats = computeX01Stats(9, [
+        leg(501, [t(20)]),
+      ]);
       expect(stats.legsPlayed, 0);
       expect(stats.dartsThrown, 0);
     });
@@ -121,7 +120,11 @@ void main() {
 
     test('a leg shorter than nine darts still averages correctly', () {
       final stats = statsFor([
-        leg(170, [t(20), t(20), ThrownDart(Segment.innerBull)], players: 2),
+        leg(170, [
+          t(20),
+          t(20),
+          const ThrownDart(Segment.innerBull),
+        ], players: 2),
       ]);
       expect(stats.firstNineDarts, 3);
     });
@@ -142,13 +145,12 @@ void main() {
     });
 
     test('missing the double costs an attempt', () {
-      // On 40: a single 20 leaves 20, a triple 5 leaves 5, then D... all three
-      // darts are thrown from finishable scores except the last.
+      // Three single 1s from 40 are thrown on 40, 39 and 38: the first and
+      // third are at a finish, the second is not.
       final stats = statsFor([
         leg(40, [s(1), s(1), s(1)], players: 2),
       ]);
 
-      // 40 and 38 are finishable, 39 is not.
       expect(stats.checkoutsByRule[X01OutRule.double], (
         dartsAtFinish: 2,
         finishesHit: 0,
@@ -158,7 +160,7 @@ void main() {
 
     test('the bull counts as a double', () {
       final stats = statsFor([
-        leg(50, [ThrownDart(Segment.innerBull)], players: 2),
+        leg(50, [const ThrownDart(Segment.innerBull)], players: 2),
       ]);
 
       expect(stats.checkoutsByRule[X01OutRule.double], (
@@ -209,7 +211,7 @@ void main() {
   group('winning', () {
     test('records the checkout and the darts it took', () {
       final stats = statsFor([
-        leg(101, [t(17), ThrownDart(Segment.innerBull)], players: 2),
+        leg(101, [t(17), const ThrownDart(Segment.innerBull)], players: 2),
       ]);
 
       expect(stats.legsWon, 1);
@@ -220,7 +222,7 @@ void main() {
 
     test('keeps the best of each across legs', () {
       final stats = statsFor([
-        leg(101, [t(17), ThrownDart(Segment.innerBull)], players: 2),
+        leg(101, [t(17), const ThrownDart(Segment.innerBull)], players: 2),
         leg(40, [d(20)], players: 2),
       ]);
 
@@ -303,7 +305,13 @@ void main() {
     });
 
     test('a match still running counts as played', () {
-      final stats = computeX01Stats(1, const [], matches: [match(const [1])]);
+      final stats = computeX01Stats(
+        1,
+        const [],
+        matches: [
+          match(const [1]),
+        ],
+      );
 
       expect(stats.matchesPlayed, 1);
       expect(stats.matchesWon, 0);
@@ -313,7 +321,9 @@ void main() {
       final stats = computeX01Stats(
         9,
         const [],
-        matches: [match(const [1, 1])],
+        matches: [
+          match(const [1, 1]),
+        ],
       );
 
       expect(stats.matchesPlayed, 0);
@@ -324,7 +334,9 @@ void main() {
     test('keys x01 legs under GameMode.x01', () {
       final stats = computePlayerStats(
         1,
-        x01Legs: [leg(501, [t(20), t(20), t(20)])],
+        x01Legs: [
+          leg(501, [t(20), t(20), t(20)]),
+        ],
       );
 
       expect((stats[GameMode.x01]! as X01Stats).dartsThrown, 3);

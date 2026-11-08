@@ -1,3 +1,9 @@
+/// The look of the LED ring: seat colours, priorities, timings and the
+/// [LedShow] each [LedCue] plays.
+///
+/// {@category App}
+library;
+
 import '../../data/board/led_command.dart';
 import '../../domain/segment.dart';
 import 'led_cue.dart';
@@ -40,6 +46,7 @@ const List<(Rgb, RingColor)> seatColours = [
   (Rgb(120, 255, 40), RingColor.lightGreen),
 ];
 
+/// [seat]'s flash colour, wrapping round past the last seat.
 Rgb seatRgb(int seat) => seatColours[seat % seatColours.length].$1;
 
 const Rgb _white = Rgb(255, 255, 255);

@@ -11,7 +11,7 @@ import 'package:fluttergran/data/update/release_version.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
-import 'fake_update.dart';
+import '../support/fake_update.dart';
 
 void main() {
   // The launch hook listens for the app resuming, which needs a binding.

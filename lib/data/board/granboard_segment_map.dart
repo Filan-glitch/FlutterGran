@@ -1,3 +1,9 @@
+/// The GranBoard's sensor-matrix table: which `column.row` frame body is which
+/// segment, and the codes for a miss and the button.
+///
+/// {@category Data}
+library;
+
 import '../../domain/segment.dart';
 
 /// Frame bodies the board sends for things that are not darts.
@@ -11,8 +17,7 @@ const String missCode = 'OUT';
 /// The codes are physical `column.row` coordinates, not scores.
 ///
 /// Derived from the GRANBOARD 3s, on which six independent implementations
-/// agree exactly. **No public source has verified the GRANBOARD 132.** Treat
-/// this as a provisional default that the calibration screen may override.
+/// agree, and verified segment by segment against a real GRANBOARD 132.
 const Map<int, List<String>> wedgeCodes = {
   1: ['2.3', '2.4', '2.5', '2.6'],
   2: ['9.1', '9.0', '9.2', '8.2'],
@@ -49,13 +54,14 @@ const List<Ring> _ringOrder = [
 ];
 
 /// Frame body to board segment, for a standard board.
-final Map<String, Segment> granboardSegmentMap = Map<String, Segment>.unmodifiable({
-  for (final entry in wedgeCodes.entries)
-    for (var ring = 0; ring < _ringOrder.length; ring++)
-      entry.value[ring]: Segment(entry.key, _ringOrder[ring]),
-  outerBullCode: Segment.outerBull,
-  innerBullCode: Segment.innerBull,
-});
+final Map<String, Segment> granboardSegmentMap =
+    Map<String, Segment>.unmodifiable({
+      for (final entry in wedgeCodes.entries)
+        for (var ring = 0; ring < _ringOrder.length; ring++)
+          entry.value[ring]: Segment(entry.key, _ringOrder[ring]),
+      outerBullCode: Segment.outerBull,
+      innerBullCode: Segment.innerBull,
+    });
 
 /// Matrix slots that exist in the hardware but carry no segment.
 ///

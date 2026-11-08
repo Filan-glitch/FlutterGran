@@ -65,7 +65,8 @@ void main() {
         expect(
           inColumn.where(
             (segment) =>
-                segment.ring == Ring.outerBull || segment.ring == Ring.innerBull,
+                segment.ring == Ring.outerBull ||
+                segment.ring == Ring.innerBull,
           ),
           hasLength(1),
           reason: 'column $column',

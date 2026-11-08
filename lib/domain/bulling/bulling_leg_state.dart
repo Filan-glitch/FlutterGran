@@ -1,10 +1,16 @@
-import '../x01/leg_state.dart' show dartsPerTurn;
+/// [BullingLegState], everything derivable about a Bulling leg from its dart
+/// log: each player's points, completed turns and the winner.
+///
+/// {@category Game modes}
+library;
+
+import '../x01/leg_state.dart' show LegState, dartsPerTurn;
 import '../x01/thrown_dart.dart';
 import 'bulling_config.dart';
 
 /// A completed turn in a Bulling leg.
 ///
-/// A turn ends after three darts or on the winning dart — so [darts] may
+/// A turn ends after three darts or on the winning dart - so [darts] may
 /// hold fewer than three. Unlike x01's `Turn`, nothing here busts: every
 /// dart either scores its points or scores zero.
 class BullingTurn {
@@ -21,7 +27,7 @@ class BullingTurn {
   /// Points the player had when the turn started.
   final int scoreBefore;
 
-  /// Points the turn left them on. Never less than [scoreBefore] — nothing
+  /// Points the turn left them on. Never less than [scoreBefore] - nothing
   /// in this mode can take points away.
   final int scoreAfter;
 
@@ -34,12 +40,8 @@ class BullingTurn {
       '$scoreBefore->$scoreAfter)';
 }
 
-/// Everything derivable about a Bulling leg, produced entirely by folding
-/// the dart log — the same idea as x01's `LegState` and Around the Clock's
-/// `AtcLegState`.
-///
-/// Never mutated and never constructed by hand outside the reducer: undoing
-/// a dart means dropping it from the log and folding again.
+/// Everything derivable about a Bulling leg, folded from the dart log the
+/// same way as [LegState].
 class BullingLegState {
   const BullingLegState({
     required this.config,

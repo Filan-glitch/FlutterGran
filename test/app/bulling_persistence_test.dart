@@ -1,4 +1,3 @@
-import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/data/db/database.dart';
 import 'package:fluttergran/data/db/game_repository.dart';
@@ -9,18 +8,20 @@ import 'package:fluttergran/domain/game_mode.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
 
+import '../support/database.dart';
+
 void main() {
   late AppDatabase database;
   late GameRepository repository;
 
   setUp(() {
-    database = AppDatabase(NativeDatabase.memory());
+    database = memoryDatabase();
     repository = GameRepository(database);
   });
 
   tearDown(() => database.close());
 
-  final ThrownDart sbull = ThrownDart(Segment.outerBull);
+  const ThrownDart sbull = ThrownDart(Segment.outerBull);
 
   Future<BullingConfig> seedBullingGame({
     int players = 2,
@@ -56,17 +57,20 @@ void main() {
       expect(loaded.target, config.target);
     });
 
-    test('the bullseye value and target round-trip through BullingGames', () async {
-      final config = await seedBullingGame(
-        bullseyeValue: BullseyeValue.three,
-        target: 31,
-      );
-      final gameId = await repository.startBullingGame(config);
+    test(
+      'the bullseye value and target round-trip through BullingGames',
+      () async {
+        final config = await seedBullingGame(
+          bullseyeValue: BullseyeValue.three,
+          target: 31,
+        );
+        final gameId = await repository.startBullingGame(config);
 
-      final loaded = await repository.loadBullingConfig(gameId);
-      expect(loaded!.bullseyeValue, BullseyeValue.three);
-      expect(loaded.target, 31);
-    });
+        final loaded = await repository.loadBullingConfig(gameId);
+        expect(loaded!.bullseyeValue, BullseyeValue.three);
+        expect(loaded.target, 31);
+      },
+    );
   });
 
   group('replaying a stored game', () {
@@ -111,18 +115,21 @@ void main() {
       expect(legs, hasLength(1));
     });
 
-    test('appears in the resumable-leg query the same as any other mode', () async {
-      final config = await seedBullingGame();
-      final gameId = await repository.startBullingGame(config);
-      await repository.appendDart(
-        gameId: gameId,
-        ordinal: 0,
-        playerId: config.playerIds[0],
-        dart: sbull,
-      );
+    test(
+      'appears in the resumable-leg query the same as any other mode',
+      () async {
+        final config = await seedBullingGame();
+        final gameId = await repository.startBullingGame(config);
+        await repository.appendDart(
+          gameId: gameId,
+          ordinal: 0,
+          playerId: config.playerIds[0],
+          dart: sbull,
+        );
 
-      expect(await repository.findResumableGameId(), gameId);
-    });
+        expect(await repository.findResumableGameId(), gameId);
+      },
+    );
 
     test('finishGame/reopenGame work unchanged for a Bulling row', () async {
       final config = await seedBullingGame();

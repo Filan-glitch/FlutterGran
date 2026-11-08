@@ -1,3 +1,9 @@
+/// The app's Riverpod provider graph: the board, the database, each mode's
+/// setup and game state, stored legs and statistics, settings and sound.
+///
+/// {@category App}
+library;
+
 import 'dart:async';
 
 import 'package:flutter/services.dart';
@@ -45,12 +51,9 @@ import 'higher_lower_controller.dart';
 import 'match_controller.dart';
 import 'training_controller.dart';
 
-/// The board the app is reading.
+/// The board the app is reading: a real GranBoard over Bluetooth.
 ///
-/// Always a real GranBoard over Bluetooth - there is no in-app switch for it
-/// any more. Hardware day (2026-09-04) confirmed the real connection works
-/// end to end, so scripted bytes are a test-only concern from here on; tests
-/// override this provider directly with a `FakeBoardSource`.
+/// Tests override this with a `FakeBoardSource`.
 final boardSourceProvider = Provider<BoardSource>((ref) {
   final source = BleBoardSource(store: ref.read(knownBoardProvider.notifier));
   ref.onDispose(source.dispose);
@@ -95,12 +98,16 @@ class KnownBoardController extends Notifier<String?>
   }
 }
 
+/// The remembered board's device id - see [KnownBoardController].
 final knownBoardProvider = NotifierProvider<KnownBoardController, String?>(
   KnownBoardController.new,
 );
 
+/// Maps the board's sensor-matrix frames to segments - see [SegmentCodec].
 final segmentCodecProvider = Provider<SegmentCodec>((ref) => SegmentCodec());
 
+/// The board source framed and decoded into board events - see
+/// [BoardReader]. Read its events through [boardEventsProvider].
 final boardReaderProvider = Provider<BoardReader>((ref) {
   final reader = BoardReader(
     source: ref.watch(boardSourceProvider),
@@ -112,12 +119,12 @@ final boardReaderProvider = Provider<BoardReader>((ref) {
 
 /// Everything the board says, as a plain stream to subscribe to.
 ///
-/// Deliberately not a `StreamProvider`. That would make each event the
-/// provider's *state*, and Riverpod only tells listeners about a state that
-/// differs from the last one. Every miss is the same `const BoardMiss()` and
-/// every press the same `const ButtonPress()`, so a second miss in a row
-/// equalled the first and was silently dropped. These are events, not state:
-/// each one has to arrive, however much it looks like the one before.
+/// Must not be a `StreamProvider`. That would make each event the provider's
+/// *state*, and Riverpod only tells listeners about a state that differs from
+/// the last one. Every miss is the same `const BoardMiss()` and every press
+/// the same `const ButtonPress()`, so a second miss in a row would equal the
+/// first and be dropped. These are events, not state: each one has to arrive,
+/// however much it looks like the one before.
 final boardEventsProvider = Provider<Stream<BoardEvent>>(
   (ref) => ref.watch(boardReaderProvider).events,
 );
@@ -126,8 +133,8 @@ final boardEventsProvider = Provider<Stream<BoardEvent>>(
 ///
 /// A [Notifier] seeded from the source's current state rather than a
 /// `StreamProvider` over its broadcast stream: a stream provider first watched
-/// *after* the connect event had nothing to show until the next event, so a
-/// screen opened mid-session read a connected board as absent. This is
+/// *after* the connect event has nothing to show until the next event, so a
+/// screen opened mid-session would read a connected board as absent. This is
 /// correct from the first read, on any screen, at any time.
 class BoardConnectionController extends Notifier<BoardConnectionState> {
   @override
@@ -157,11 +164,9 @@ final checkoutTableProvider = Provider.family<CheckoutTable, X01OutRule>(
 
 /// Whether the keypad is being shown by hand over a connected board.
 ///
-/// Separate from [boardSourceProvider]: that decides which board the app is
-/// reading from. This is a mid-game visibility switch a player reaches for
-/// from the corner of the game screen - "let me key one in" - and it means
-/// nothing until there is a real board connected for the keypad to be hidden
-/// behind in the first place.
+/// A mid-game switch a player reaches for from the corner of the game screen
+/// - "let me key one in". It means nothing until a board is connected for the
+/// keypad to be hidden behind.
 class KeypadOverrideController extends Notifier<bool> {
   @override
   bool build() => false;
@@ -175,6 +180,10 @@ final keypadOverrideProvider = NotifierProvider<KeypadOverrideController, bool>(
   KeypadOverrideController.new,
 );
 
+/// The x01 leg the setup screen is building, and the one [gameProvider]
+/// plays.
+///
+/// [GameController] watches this, so changing it starts an empty leg.
 class GameConfigController extends Notifier<GameConfig> {
   @override
   GameConfig build() => GameConfig(startScore: 501, playerIds: const [1, 2]);
@@ -203,10 +212,13 @@ final gameConfigProvider = NotifierProvider<GameConfigController, GameConfig>(
   GameConfigController.new,
 );
 
+/// The x01 leg on screen - see [GameController].
 final gameProvider = NotifierProvider<GameController, GameSession>(
   GameController.new,
 );
 
+/// The Around the Clock leg the setup screen is building. [AtcController]
+/// watches this, so changing it starts an empty leg.
 class AtcConfigController extends Notifier<AtcConfig> {
   @override
   AtcConfig build() =>
@@ -219,10 +231,13 @@ final atcConfigProvider = NotifierProvider<AtcConfigController, AtcConfig>(
   AtcConfigController.new,
 );
 
+/// The Around the Clock leg on screen - see [AtcController].
 final atcGameProvider = NotifierProvider<AtcController, AtcSession>(
   AtcController.new,
 );
 
+/// The Bulling leg the setup screen is building. [BullingController]
+/// watches this, so changing it starts an empty leg.
 class BullingConfigController extends Notifier<BullingConfig> {
   @override
   BullingConfig build() => BullingConfig(
@@ -239,10 +254,13 @@ final bullingConfigProvider =
       BullingConfigController.new,
     );
 
+/// The Bulling leg on screen - see [BullingController].
 final bullingGameProvider = NotifierProvider<BullingController, BullingSession>(
   BullingController.new,
 );
 
+/// The Higher/Lower leg the setup screen is building.
+/// [HigherLowerController] watches this, so changing it starts an empty leg.
 class HigherLowerConfigController extends Notifier<HigherLowerConfig> {
   @override
   HigherLowerConfig build() => HigherLowerConfig(playerIds: const [1, 2]);
@@ -255,6 +273,7 @@ final higherLowerConfigProvider =
       HigherLowerConfigController.new,
     );
 
+/// The Higher/Lower leg on screen - see [HigherLowerController].
 final higherLowerGameProvider =
     NotifierProvider<HigherLowerController, HigherLowerSession>(
       HigherLowerController.new,
@@ -267,6 +286,8 @@ final trainingProvider = NotifierProvider<TrainingController, TrainingSession>(
   TrainingController.new,
 );
 
+/// The x01 match the leg on screen belongs to, or null for a lone leg - see
+/// [MatchController].
 final matchProvider = NotifierProvider<MatchController, MatchSession?>(
   MatchController.new,
 );
@@ -310,10 +331,12 @@ final databaseProvider = Provider<AppDatabase>((ref) {
   return database;
 });
 
+/// Every read and write of stored games, matches and players.
 final gameRepositoryProvider = Provider<GameRepository>(
   (ref) => GameRepository(ref.watch(databaseProvider)),
 );
 
+/// Every saved player, updated live.
 final playersProvider = StreamProvider<List<Player>>(
   (ref) => ref.watch(gameRepositoryProvider).watchPlayers(),
 );
@@ -386,16 +409,15 @@ final segmentCountsProvider = FutureProvider.family<Map<Segment, int>, int>((
 
 /// A leg that was left unfinished, ready to be picked back up.
 ///
-/// Sealed, the same pattern [ModeStats] uses: every call site that reads
-/// [leg] has to switch on the concrete type, which is what makes a third
-/// mode's leg impossible to fall through unhandled the way an x01-only
-/// resume path once would have.
+/// Sealed: every reader of `leg` switches on the concrete type, so a new
+/// mode's leg cannot fall through unhandled.
 sealed class ResumableLeg {
   const ResumableLeg({required this.gameId});
 
   final int gameId;
 }
 
+/// An unfinished x01 leg.
 class ResumableX01Leg extends ResumableLeg {
   const ResumableX01Leg({required super.gameId, required this.leg});
 
@@ -403,18 +425,21 @@ class ResumableX01Leg extends ResumableLeg {
   final LegState leg;
 }
 
+/// An unfinished Around the Clock leg.
 class ResumableAtcLeg extends ResumableLeg {
   const ResumableAtcLeg({required super.gameId, required this.leg});
 
   final AtcLegState leg;
 }
 
+/// An unfinished Bulling leg.
 class ResumableBullingLeg extends ResumableLeg {
   const ResumableBullingLeg({required super.gameId, required this.leg});
 
   final BullingLegState leg;
 }
 
+/// An unfinished Higher/Lower leg.
 class ResumableHigherLowerLeg extends ResumableLeg {
   const ResumableHigherLowerLeg({required super.gameId, required this.leg});
 
@@ -499,23 +524,14 @@ final currentGameIdProvider = NotifierProvider<CurrentGameId, int?>(
   CurrentGameId.new,
 );
 
-/// One remembered on/off switch.
-///
-/// Kept in shared_preferences rather than in the drift database, and the reason
-/// is not that a table would be hard. The database is the history of every dart
-/// ever thrown - relational, migrated, replayed through the scoring engine - and
-/// a pair of booleans is none of those things. Giving them a table costs a
-/// schema version, and `feat/multi-leg` has already claimed version 3 for
-/// `Matches`. That branch and this one were meant to run in parallel; two
-/// branches minting the same schema version is a merge nobody enjoys, over two
-/// bits of state that have no business being in a games database anyway.
-/// Null when there is no platform behind the channel.
+/// The app's shared_preferences, or null when there is no platform behind
+/// the channel.
 ///
 /// That is the test binding, where no preference has ever been written and
 /// the defaults are exactly what the tests want. It is the only case this
-/// swallows - a genuine read failure on a device would still surface. Shared
-/// by every [Notifier] in this file that persists to shared_preferences, so
-/// the try/catch lives in exactly one place.
+/// swallows - a genuine read failure on a device would still surface.
+/// Everything in this file that persists goes through it, so the try/catch
+/// lives in one place.
 Future<SharedPreferences?> _preferences() async {
   try {
     return await SharedPreferences.getInstance();
@@ -524,6 +540,11 @@ Future<SharedPreferences?> _preferences() async {
   }
 }
 
+/// One remembered on/off switch, on by default.
+///
+/// Kept in shared_preferences, not the drift database: the database is the
+/// history of every dart thrown - relational, migrated, replayed through the
+/// scoring engine - and a switch is none of those things.
 class BoolSetting extends Notifier<bool> {
   BoolSetting(this._key);
 
@@ -537,7 +558,7 @@ class BoolSetting extends Notifier<bool> {
 
   @override
   bool build() {
-    // Both settings default on, and correct themselves a frame later if the
+    // Every switch defaults on, and corrects itself a frame later if the
     // stored value disagrees. Holding the first frame on a disk read to avoid
     // one frame of the default is the wrong way round: the default is right for
     // everyone who has never touched the switch.
@@ -632,6 +653,8 @@ class LocaleSetting extends Notifier<Locale?> {
   }
 }
 
+/// The app's language, or null to follow the device's - see
+/// [LocaleSetting].
 final localeProvider = NotifierProvider<LocaleSetting, Locale?>(
   LocaleSetting.new,
 );
@@ -662,8 +685,8 @@ class X01DefaultsController extends Notifier<X01Defaults> {
     if (prefs == null) return;
 
     final startScore = prefs.getInt(_startScoreKey);
-    final inRule = _parse(X01InRule.values, prefs.getString(_inRuleKey));
-    final outRule = _parse(X01OutRule.values, prefs.getString(_outRuleKey));
+    final inRule = X01InRule.values.asNameMap()[prefs.getString(_inRuleKey)];
+    final outRule = X01OutRule.values.asNameMap()[prefs.getString(_outRuleKey)];
 
     state = (
       startScore: startScore ?? state.startScore,
@@ -680,16 +703,10 @@ class X01DefaultsController extends Notifier<X01Defaults> {
     await prefs.setString(_inRuleKey, next.inRule.name);
     await prefs.setString(_outRuleKey, next.outRule.name);
   }
-
-  T? _parse<T extends Enum>(List<T> values, String? name) {
-    if (name == null) return null;
-    for (final value in values) {
-      if (value.name == name) return value;
-    }
-    return null;
-  }
 }
 
+/// The x01 setup screen's last-used start score and rules - see
+/// [X01DefaultsController].
 final x01DefaultsProvider =
     NotifierProvider<X01DefaultsController, X01Defaults>(
       X01DefaultsController.new,
@@ -702,12 +719,17 @@ final soundPlayerProvider = Provider<SoundPlayer>((ref) {
   return player;
 });
 
-/// Watches the game and plays what it hears.
+/// Watches the x01 game and plays what it hears.
 ///
-/// A listener rather than something the screens or the controller call. Audio
-/// is a consequence of the leg, not a step in it, so nothing on the scoring
-/// path - and nothing at all in `lib/domain` - has to know it exists. The game
-/// screen keeps this alive simply by watching it.
+/// A listener rather than something the screens or the controller call:
+/// audio is a consequence of the leg, not a step in it, so nothing on the
+/// scoring path - and nothing in `lib/domain` - has to know it exists.
+///
+/// Nothing reads this provider's value; it exists for its listeners. A
+/// provider is not built until something watches it, so whoever needs the
+/// listeners running - here the game screen - watches it and ignores the
+/// result. Every listen-only provider works the same way: the other modes'
+/// sound and light providers, and the app-wide ones `main.dart` watches.
 final soundControllerProvider = Provider<SoundController>((ref) {
   final controller = SoundController(ref.watch(soundPlayerProvider));
 
@@ -759,11 +781,8 @@ void _play(Ref ref, SoundPlayer player, List<Sound> sounds) {
   }
 }
 
-/// Watches the training session and plays what it hears.
-///
-/// The same "screen just watches it to keep it alive" idiom as
-/// [soundControllerProvider], with [soundsForTraining] in place of
-/// [soundsFor].
+/// Watches the training session and plays what it hears. Listen-only, like
+/// [soundControllerProvider].
 final trainingSoundControllerProvider = Provider<void>((ref) {
   final player = ref.watch(soundPlayerProvider);
   ref.listen(

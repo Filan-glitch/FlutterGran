@@ -1,3 +1,9 @@
+/// Framing for the board's byte stream: buffers split notifications, strips the
+/// connect greeting, splits on `@` and drops duplicates.
+///
+/// {@category Data}
+library;
+
 /// Turns the board's raw notification bytes into complete frame bodies.
 ///
 /// The board sends ASCII frames terminated by `@`, but the byte stream does not

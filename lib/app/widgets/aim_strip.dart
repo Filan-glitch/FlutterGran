@@ -1,3 +1,9 @@
+/// [AimStrip] and [SegmentChip], the large row of places to throw at that the
+/// checkout, aim and bounds cards share.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 
 import '../../domain/segment.dart';

@@ -5,20 +5,16 @@ import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
 import 'package:test/test.dart';
 
-ThrownDart s(int n) => ThrownDart(Segment(n, Ring.outerSingle));
-ThrownDart d(int n) => ThrownDart(Segment(n, Ring.doubleRing));
-ThrownDart t(int n) => ThrownDart(Segment(n, Ring.triple));
-const ThrownDart miss = ThrownDart.miss();
-final ThrownDart sbull = ThrownDart(Segment.outerBull);
-final ThrownDart dbull = ThrownDart(Segment.innerBull);
+import '../../support/darts.dart';
 
-AtcConfig config({
-  int players = 1,
-  AtcVariant variant = AtcVariant.anyPart,
-}) => AtcConfig(
-  playerIds: [for (var i = 1; i <= players; i++) i],
-  variant: variant,
-);
+const ThrownDart sbull = ThrownDart(Segment.outerBull);
+const ThrownDart dbull = ThrownDart(Segment.innerBull);
+
+AtcConfig config({int players = 1, AtcVariant variant = AtcVariant.anyPart}) =>
+    AtcConfig(
+      playerIds: [for (var i = 1; i <= players; i++) i],
+      variant: variant,
+    );
 
 void main() {
   group('opening state', () {
@@ -105,7 +101,11 @@ void main() {
       ];
       final state = foldAroundTheClock(config(), log);
       expect(state.winnerId, 1);
-      expect(state.turns.last.darts, hasLength(1), reason: 'the winning dart alone closes the turn');
+      expect(
+        state.turns.last.darts,
+        hasLength(1),
+        reason: 'the winning dart alone closes the turn',
+      );
     });
   });
 
@@ -115,7 +115,11 @@ void main() {
         config(players: 2, variant: AtcVariant.masters),
         [s(1), d(1)],
       );
-      expect(state.stopIndex[1], 1, reason: 'the single did nothing, the double advanced once');
+      expect(
+        state.stopIndex[1],
+        1,
+        reason: 'the single did nothing, the double advanced once',
+      );
     });
 
     test('doubles only rejects a triple', () {
@@ -123,7 +127,11 @@ void main() {
         config(players: 2, variant: AtcVariant.doublesOnly),
         [t(1), d(1)],
       );
-      expect(state.stopIndex[1], 1, reason: 'the triple did nothing, the double advanced once');
+      expect(
+        state.stopIndex[1],
+        1,
+        reason: 'the triple did nothing, the double advanced once',
+      );
     });
 
     test('bull stops ignore the variant entirely', () {
@@ -132,7 +140,11 @@ void main() {
         config(variant: AtcVariant.doublesOnly),
         [...log, sbull],
       );
-      expect(state.stopIndex[1], 21, reason: 'any hit clears a bull stop, even under doubles only');
+      expect(
+        state.stopIndex[1],
+        21,
+        reason: 'any hit clears a bull stop, even under doubles only',
+      );
     });
   });
 

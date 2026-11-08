@@ -1,3 +1,9 @@
+/// [StatsScreen], a player's record in every mode they have played, with the
+/// accuracy heatmap.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,11 +14,11 @@ import '../../domain/segment.dart';
 import '../../domain/stats/mode_stats.dart';
 import '../../domain/x01/x01_rules.dart';
 import '../l10n_extensions.dart';
+import '../labels.dart';
 import '../providers.dart';
 import '../theme.dart';
 import '../widgets/board_widget.dart';
 import '../widgets/setup_controls.dart';
-import 'x01_setup_screen.dart' show x01OutRuleLabel;
 
 /// A player's record across every leg they have played.
 class StatsScreen extends ConsumerStatefulWidget {
@@ -77,9 +83,7 @@ class _Body extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final statsByMode = ref.watch(playerStatsProvider(playerId));
-    // Read as absent keys rather than assumed present, which is the honest
-    // contract of a map keyed by mode - what keeps this code unchanged when
-    // a mode legitimately has zero data for this player.
+    // A mode with no data for this player is an absent key, not an error.
     final x01 = statsByMode[GameMode.x01] as X01Stats?;
     final atc = statsByMode[GameMode.aroundTheClock] as AtcStats?;
     final bulling = statsByMode[GameMode.bulling] as BullingStats?;
@@ -105,8 +109,8 @@ class _Body extends ConsumerWidget {
         padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.sm, Gap.lg, Gap.xxl),
         children: [
           if (hasX01) ...[
-            // A mode label above its section, so a second mode's section reads
-            // as a distinct record rather than more rows appended to this one.
+            // A mode label above each section, so each mode reads as its own
+            // record rather than more rows appended to the one above.
             SectionLabel(l10n.x01Label),
             const SizedBox(height: Gap.sm),
             // The three-dart average is the number a darts player quotes when
@@ -175,7 +179,7 @@ class _Body extends ConsumerWidget {
             ),
             // Its own section, under the legs rather than mixed into them: a
             // leg and a match are different things to have won, and the
-            // figures above have always meant legs.
+            // figures above count legs.
             if (x01.matchesPlayed > 0)
               _Section(
                 title: l10n.matchesSectionTitle,

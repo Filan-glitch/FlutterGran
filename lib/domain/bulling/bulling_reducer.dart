@@ -1,4 +1,11 @@
+/// The Bulling engine: [foldBulling] replays a dart log in which only the bulls
+/// score, and [bullingPointsFor] values a single dart.
+///
+/// {@category Game modes}
+library;
+
 import '../segment.dart';
+import '../x01/leg_reducer.dart' show foldLeg;
 import '../x01/leg_state.dart' show dartsPerTurn;
 import '../x01/thrown_dart.dart';
 import 'bulling_config.dart';
@@ -8,10 +15,9 @@ import 'bulling_variant.dart';
 /// Points a dart is worth in Bulling: 1 for the outer bull, [bullseyeValue]'s
 /// points for the inner bull, 0 for anything else including a miss.
 ///
-/// Exported for `computeBullingStats`, which re-derives the same figure per
-/// dart to classify it rather than trusting a running total — the same
-/// idiom `computeAtcStats` uses with `AtcStop.clears`.
-int pointsFor(Segment? segment, BullseyeValue bullseyeValue) {
+/// Public so the stats and the game screen total darts the same way the
+/// engine does.
+int bullingPointsFor(Segment? segment, BullseyeValue bullseyeValue) {
   if (segment == null) return 0;
   return switch (segment.ring) {
     Ring.outerBull => 1,
@@ -20,11 +26,8 @@ int pointsFor(Segment? segment, BullseyeValue bullseyeValue) {
   };
 }
 
-/// Replays a dart log under [config] and returns the resulting leg state.
-///
-/// This is the whole Bulling engine, structured like x01's `foldLeg` and
-/// Around the Clock's `foldAroundTheClock`: a pure function of the log, so
-/// undo is dropping the last dart and folding again.
+/// The Bulling engine: replays a dart log under [config], the same way
+/// [foldLeg] does for x01.
 BullingLegState foldBulling(BullingConfig config, List<ThrownDart> darts) {
   final score = <int, int>{for (final id in config.playerIds) id: 0};
   final turns = <BullingTurn>[];
@@ -42,7 +45,7 @@ BullingLegState foldBulling(BullingConfig config, List<ThrownDart> darts) {
     turnDarts.add(dart);
 
     final total =
-        score[playerId]! + pointsFor(dart.segment, config.bullseyeValue);
+        score[playerId]! + bullingPointsFor(dart.segment, config.bullseyeValue);
     score[playerId] = total;
 
     final won = total >= config.target;

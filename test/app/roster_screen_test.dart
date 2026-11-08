@@ -1,13 +1,13 @@
-import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/app/providers.dart';
 import 'package:fluttergran/app/screens/roster_screen.dart';
-import 'package:fluttergran/app/theme.dart';
 import 'package:fluttergran/data/db/database.dart';
 import 'package:fluttergran/data/db/game_repository.dart';
-import 'package:fluttergran/l10n/app_localizations.dart';
+
+import '../support/database.dart';
+import '../support/pump.dart';
 
 void main() {
   late AppDatabase database;
@@ -15,7 +15,7 @@ void main() {
   late ProviderContainer container;
 
   setUp(() {
-    database = AppDatabase(NativeDatabase.memory());
+    database = memoryDatabase();
     repository = GameRepository(database);
     container = ProviderContainer(
       overrides: [databaseProvider.overrideWithValue(database)],
@@ -27,37 +27,18 @@ void main() {
     await database.close();
   });
 
-  /// Pumps frames without settling: the roster query lands a frame or two
-  /// after the write that caused it, and a focused text field's cursor
-  /// blinks forever, so there is no settled state to wait for.
-  Future<void> frames(WidgetTester tester) async {
-    for (var i = 0; i < 12; i++) {
-      await tester.pump(const Duration(milliseconds: 20));
-    }
-  }
-
   /// Lets a delete's undo snackbar run its whole course - in, the window,
   /// out - without UNDO being tapped.
   Future<void> waitOutUndo(WidgetTester tester) async {
     for (var i = 0; i < 4; i++) {
       await tester.pump(const Duration(seconds: 2));
     }
-    await frames(tester);
+    await pumpFrames(tester, count: 12);
   }
 
   Future<void> open(WidgetTester tester) async {
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          theme: buildTheme(),
-          home: const RosterScreen(),
-        ),
-      ),
-    );
-    await frames(tester);
+    await pumpApp(tester, const RosterScreen(), container: container);
+    await pumpFrames(tester, count: 12);
   }
 
   /// Tears the widget tree down before the container is disposed, so a
@@ -77,7 +58,7 @@ void main() {
 
     await tester.enterText(find.byType(TextField), 'Finn');
     await tester.testTextInput.receiveAction(TextInputAction.done);
-    await frames(tester);
+    await pumpFrames(tester, count: 12);
 
     expect(find.text('Finn'), findsOneWidget);
     expect((await repository.allPlayers()).single.name, 'Finn');
@@ -85,9 +66,7 @@ void main() {
     await close(tester);
   });
 
-  testWidgets('the empty roster shows the empty-state prompt', (
-    tester,
-  ) async {
+  testWidgets('the empty roster shows the empty-state prompt', (tester) async {
     await open(tester);
 
     expect(
@@ -105,14 +84,14 @@ void main() {
     await open(tester);
 
     await tester.tap(find.byKey(Key('player-name-${finn.id}')));
-    await frames(tester);
+    await pumpFrames(tester, count: 12);
 
     await tester.enterText(
       find.byKey(Key('rename-field-${finn.id}')),
       'Finlay',
     );
     await tester.testTextInput.receiveAction(TextInputAction.done);
-    await frames(tester);
+    await pumpFrames(tester, count: 12);
 
     expect(find.text('Finlay'), findsOneWidget);
     expect(find.text('Finn'), findsNothing);
@@ -128,11 +107,11 @@ void main() {
     await open(tester);
 
     await tester.tap(find.byKey(Key('player-name-${finn.id}')));
-    await frames(tester);
+    await pumpFrames(tester, count: 12);
 
     await tester.enterText(find.byKey(Key('rename-field-${finn.id}')), '   ');
     await tester.testTextInput.receiveAction(TextInputAction.done);
-    await frames(tester);
+    await pumpFrames(tester, count: 12);
 
     expect(find.text('Finn'), findsOneWidget);
     expect((await repository.allPlayers()).single.name, 'Finn');
@@ -147,7 +126,7 @@ void main() {
       await open(tester);
 
       await tester.longPress(find.byKey(Key('delete-player-${finn.id}')));
-      await frames(tester);
+      await pumpFrames(tester, count: 12);
 
       expect(find.text('Finn'), findsNothing);
       expect(find.text('Removed Finn'), findsOneWidget);
@@ -156,7 +135,7 @@ void main() {
       expect(await repository.allPlayers(), hasLength(1));
 
       await tester.tap(find.text('UNDO'));
-      await frames(tester);
+      await pumpFrames(tester, count: 12);
 
       expect(find.text('Finn'), findsOneWidget);
       expect(await repository.allPlayers(), hasLength(1));
@@ -165,28 +144,27 @@ void main() {
     },
   );
 
-  testWidgets(
-    'a held delete left to time out actually removes the player',
-    (tester) async {
-      final finn = await repository.addPlayer('Finn');
-      await open(tester);
+  testWidgets('a held delete left to time out actually removes the player', (
+    tester,
+  ) async {
+    final finn = await repository.addPlayer('Finn');
+    await open(tester);
 
-      await tester.longPress(find.byKey(Key('delete-player-${finn.id}')));
-      await frames(tester);
-      expect(find.text('Finn'), findsNothing);
-      // Nothing written yet - the undo window is still open.
-      expect(await repository.allPlayers(), hasLength(1));
+    await tester.longPress(find.byKey(Key('delete-player-${finn.id}')));
+    await pumpFrames(tester, count: 12);
+    expect(find.text('Finn'), findsNothing);
+    // Nothing written yet - the undo window is still open.
+    expect(await repository.allPlayers(), hasLength(1));
 
-      // Really waits the window out. This used to call
-      // `removeCurrentSnackBar()` instead, which hid that a snackbar with an
-      // action no longer times out on its own - so the delete never landed.
-      await waitOutUndo(tester);
+    // Really waits the window out. Don't shortcut with
+    // `removeCurrentSnackBar()`: it hides that a snackbar with an action does
+    // not time out on its own, which would leave the delete never landing.
+    await waitOutUndo(tester);
 
-      expect(await repository.allPlayers(), isEmpty);
+    expect(await repository.allPlayers(), isEmpty);
 
-      await close(tester);
-    },
-  );
+    await close(tester);
+  });
 
   testWidgets('a tap on the delete icon hides the player and offers UNDO', (
     tester,
@@ -195,7 +173,7 @@ void main() {
     await open(tester);
 
     await tester.tap(find.byKey(Key('delete-player-${finn.id}')));
-    await frames(tester);
+    await pumpFrames(tester, count: 12);
 
     expect(find.text('Finn'), findsNothing);
     expect(find.text('Removed Finn'), findsOneWidget);
@@ -211,26 +189,20 @@ void main() {
     tester,
   ) async {
     final finn = await repository.addPlayer('Finn');
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          theme: buildTheme(),
-          home: const Scaffold(body: SizedBox.shrink()),
-        ),
-      ),
+    await pumpApp(
+      tester,
+      const Scaffold(body: SizedBox.shrink()),
+      container: container,
     );
     tester
         .state<NavigatorState>(find.byType(Navigator))
         .push(MaterialPageRoute<void>(builder: (_) => const RosterScreen()));
-    await frames(tester);
+    await pumpFrames(tester, count: 12);
 
     await tester.tap(find.byKey(Key('delete-player-${finn.id}')));
-    await frames(tester);
+    await pumpFrames(tester, count: 12);
     tester.state<NavigatorState>(find.byType(Navigator)).pop();
-    await frames(tester);
+    await pumpFrames(tester, count: 12);
 
     await waitOutUndo(tester);
     expect(await repository.allPlayers(), isEmpty);

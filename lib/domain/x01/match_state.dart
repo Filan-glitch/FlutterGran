@@ -1,4 +1,11 @@
+/// Best-of matches: [MatchConfig], and [foldMatch], which derives the score and
+/// the winner from the legs already won, plus who throws first in each leg.
+///
+/// {@category Domain}
+library;
+
 import 'game_config.dart';
+import 'leg_reducer.dart';
 import 'x01_rules.dart';
 
 /// Best-of formats offered in the UI. The engine accepts any positive count.
@@ -10,30 +17,22 @@ const List<int> offeredLegsToPlay = [1, 3, 5, 7];
 /// is a [MatchConfig] to ask.
 int legsToWinFor(int legsToPlay) => (legsToPlay ~/ 2) + 1;
 
-/// Which seat throws first in leg [legNumber] of a match between
-/// [playerCount] players.
+/// Which seat throws first in leg [legNumber] (from zero) of a match between
+/// [playerCount] players: the leg number modulo the field.
 ///
-/// Legs are numbered from zero, like the dart log's ordinal, so the rule is
-/// just the leg number modulo the field. It lives on its own rather than only
-/// inside [MatchConfig] because a stored leg's starting seat is rebuilt from
-/// its leg number alone: change this and history replays differently, so it
-/// would need a migration writing the seat out explicitly.
+/// A stored leg's starting seat is rebuilt from its leg number alone, so
+/// changing this rule replays history differently and would need a migration
+/// writing the seat out explicitly.
 int startingSeatForLeg(int legNumber, int playerCount) =>
     legNumber % playerCount;
 
-/// The format a match is played to.
+/// The format a match is played to: a run of legs under one set of rules, won
+/// by the first player to [legsToWin].
 ///
-/// A match is a run of legs under one set of rules, won by the first player to
-/// [legsToWin]. Best of one is a legitimate match, and is what every leg played
-/// before matches existed amounts to.
-///
-/// Head to head, first to [legsToWin] and best of [legsToPlay] are the same
-/// thing: one of the two has to take more than half. With three or more players
-/// they are not. Nobody need reach the target inside [legsToPlay] legs - three
-/// players taking one each in a best of three leaves all three on one - and the
-/// match runs on until somebody does. The target is the rule; [legsToPlay] only
-/// sets it, which is why [formatLabel] stops saying "best of" the moment a
-/// third player sits down.
+/// Head to head, that is the same as best of [legsToPlay]. With three or more
+/// players it is not - three players taking one leg each in a best of three
+/// leaves nobody on two - so the match runs on until somebody reaches the
+/// target, and [formatLabel] says "first to" instead.
 class MatchConfig {
   MatchConfig({
     required this.startScore,
@@ -63,7 +62,7 @@ class MatchConfig {
   /// Legs it takes to win: more than half of [legsToPlay].
   int get legsToWin => legsToWinFor(legsToPlay);
 
-  /// Whether this format is more than the single leg the app has always played.
+  /// Whether this format is more than a single leg.
   bool get isMultiLeg => legsToPlay > 1;
 
   /// Whether "best of" means what it says: two players, one of whom must take
@@ -77,6 +76,7 @@ class MatchConfig {
   String get formatLabel =>
       isHeadToHead ? 'BEST OF $legsToPlay' : 'FIRST TO $legsToWin';
 
+  /// Seat that throws first in leg [legNumber]. See [startingSeatForLeg].
   int startingSeatFor(int legNumber) =>
       startingSeatForLeg(legNumber, playerIds.length);
 
@@ -92,9 +92,9 @@ class MatchConfig {
 
 /// Where a match stands, derived entirely from the legs already won.
 ///
-/// The same idea as [GameConfig]'s leg fold one level up: nothing here is
-/// mutated or counted incrementally, so undoing a checkout that had won a leg
-/// only means folding a shorter list.
+/// The same idea as [foldLeg] one level up: nothing here is mutated or
+/// counted incrementally, so undoing a checkout that had won a leg only means
+/// folding a shorter list.
 class MatchState {
   const MatchState({
     required this.config,

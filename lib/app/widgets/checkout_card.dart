@@ -1,12 +1,15 @@
+/// [CheckoutCard], the best checkout route as one chip per dart, shown when
+/// there is a finish on.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 
 import '../../domain/checkout/checkout_search.dart';
 import '../l10n_extensions.dart';
 import '../theme.dart';
 import 'aim_strip.dart';
-
-/// Key on the whole card, for tests.
-const Key checkoutCardKey = Key('checkout-card');
 
 /// Key on the chip for the dart to throw next.
 const Key checkoutNextDartKey = Key('checkout-next-dart');
@@ -59,7 +62,6 @@ class CheckoutCard extends StatelessWidget {
       label: l10n.semanticCheckoutRoute(remaining, best.toString()),
       child: ExcludeSemantics(
         child: AimStrip(
-          key: checkoutCardKey,
           label: l10n.checkoutLabel,
           target: '$remaining',
           dartsLeft: dartsLeft,

@@ -1,3 +1,9 @@
+/// [SelectGameModeScreen], the tiles a player picks the next game from, drawn
+/// from [gameModeRegistry].
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 
 import '../../domain/game_mode.dart';
@@ -21,14 +27,11 @@ Widget _setupScreenFor(GameMode mode) => switch (mode) {
 
 /// Lets a player choose which game to set up next.
 ///
-/// Renders one tile per [gameModeRegistry] entry - X01, Around the Clock,
-/// Bulling and Higher/Lower today - plus a trailing tile that just signals
-/// more modes are coming, without naming one: whatever comes next isn't built yet, so naming
-/// a specific mode here would be a promise this pass has no business making.
+/// One tile per [gameModeRegistry] entry, plus a trailing tile that says
+/// more modes are coming without naming one.
 ///
-/// [modes] defaults to the real registry and exists as a constructor
-/// parameter only so a test can inject a disabled entry: production never
-/// passes it, since the registry itself has nothing disabled to show yet.
+/// [modes] defaults to the registry; tests pass it to inject a disabled
+/// entry, which the real registry does not have.
 class SelectGameModeScreen extends StatelessWidget {
   const SelectGameModeScreen({super.key, this.modes = gameModeRegistry});
 
@@ -36,10 +39,9 @@ class SelectGameModeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Device-based, not container-based: the same breakpoints
-    // `game_screen.dart` uses for its own hero/wide thresholds, so a tablet
-    // or a desktop window gets more columns even though `CenteredContent`
-    // below caps the actual rendering width on the very widest screens.
+    // Columns follow the device ([isHeroSize], [wideLayout]), not the
+    // container: `CenteredContent` caps the width, but a tablet or desktop
+    // window still gets more columns.
     final size = MediaQuery.sizeOf(context);
     final columns = isHeroSize(size)
         ? 3
@@ -86,11 +88,8 @@ class SelectGameModeScreen extends StatelessWidget {
 
 /// One game mode, tappable only if [GameModeDescriptor.isAvailable].
 ///
-/// Same tile chrome as the setup screens' choices (`setup_controls.dart`):
-/// `Material` + a 4px rounded border + `InkWell`, coloured and bordered by
-/// state rather than by a bespoke widget per screen. Stateful only to track
-/// the press-down scale below - the same short, sharper feedback
-/// `dart_keypad.dart`'s `_Key` gives before `InkWell`'s own ripple lands.
+/// Stateful only for the press-down scale, the same feedback the keypad's
+/// keys give before the ripple lands.
 class _ModeTile extends StatefulWidget {
   const _ModeTile({required this.mode});
 
@@ -120,9 +119,7 @@ class _ModeTileState extends State<_ModeTile> {
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        // Null rather than a no-op: an unavailable mode has nowhere to go
-        // yet, and `InkWell` already renders as inert (no ripple, no tap
-        // feedback) when its handler is null.
+        // Null, not a no-op, so `InkWell` renders an unavailable mode inert.
         onTap: enabled
             ? () => Navigator.of(context).push(
                 MaterialPageRoute<void>(
@@ -134,9 +131,7 @@ class _ModeTileState extends State<_ModeTile> {
         onTapCancel: enabled ? () => _setPressed(false) : null,
         onTapUp: enabled ? (_) => _setPressed(false) : null,
         child: Opacity(
-          // The visual cue that a mode is not playable yet: dimmed further
-          // than the disabled colours alone, plus the "COMING SOON" label
-          // below.
+          // Dimmed beyond the disabled colours, with "COMING SOON" below.
           opacity: enabled ? 1 : 0.4,
           child: Padding(
             padding: const EdgeInsets.all(Gap.md),
@@ -186,11 +181,8 @@ class _ModeTileState extends State<_ModeTile> {
   }
 }
 
-/// A hard-coded, generic trailing tile - not driven by [gameModeRegistry] -
-/// that signals the grid will grow without naming any specific mode that
-/// isn't built yet. Same chrome and grid cell as a real [_ModeTile], quieter
-/// inside: no name, just the dim ring family ([ModeGlyph] with no topic) and
-/// the label.
+/// The trailing "more modes coming" tile: a [_ModeTile]'s chrome with only
+/// the topic-less [ModeGlyph] and a label inside.
 class _ComingSoonTile extends StatelessWidget {
   const _ComingSoonTile();
 

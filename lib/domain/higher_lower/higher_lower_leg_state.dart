@@ -1,7 +1,14 @@
-import '../x01/leg_state.dart' show dartsPerTurn;
+/// [HigherLowerLegState], everything derivable about a Higher/Lower leg from
+/// its dart log: the values the next turn must beat, who is out, and how each
+/// turn ended.
+///
+/// {@category Game modes}
+library;
+
+import '../x01/leg_state.dart' show LegState, dartsPerTurn;
 import '../x01/thrown_dart.dart';
 import 'higher_lower_config.dart';
-import 'higher_lower_reducer.dart' show pointsFor;
+import 'higher_lower_scoring.dart';
 
 /// How a Higher/Lower turn ended.
 enum HigherLowerOutcome {
@@ -55,11 +62,8 @@ class HigherLowerTurn {
       'vs $lowerBefore/$higherBefore, ${outcome.name})';
 }
 
-/// Everything derivable about a Higher/Lower leg, produced entirely by
-/// folding the dart log - the same idea as Bulling's `BullingLegState`.
-///
-/// Never mutated and never constructed by hand outside the reducer: undoing
-/// a dart means dropping it from the log and folding again.
+/// Everything derivable about a Higher/Lower leg, folded from the dart log
+/// the same way as [LegState].
 class HigherLowerLegState {
   const HigherLowerLegState({
     required this.config,
@@ -116,7 +120,7 @@ class HigherLowerLegState {
   /// What the turn in progress has scored so far.
   int get runningTotal => currentTurnDarts.fold(
     0,
-    (sum, dart) => sum + (pointsFor(dart.segment) ?? 0),
+    (sum, dart) => sum + (higherLowerPointsFor(dart.segment) ?? 0),
   );
 
   bool get isFinished => winnerId != null;

@@ -1,4 +1,3 @@
-import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/data/db/database.dart';
 import 'package:fluttergran/data/db/game_repository.dart';
@@ -8,19 +7,19 @@ import 'package:fluttergran/domain/x01/game_config.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
 import 'package:fluttergran/domain/x01/x01_rules.dart';
 
+import '../support/darts.dart';
+import '../support/database.dart';
+
 void main() {
   late AppDatabase database;
   late GameRepository repository;
 
   setUp(() {
-    database = AppDatabase(NativeDatabase.memory());
+    database = memoryDatabase();
     repository = GameRepository(database);
   });
 
   tearDown(() => database.close());
-
-  ThrownDart t(int n) => ThrownDart(Segment(n, Ring.triple));
-  ThrownDart d(int n) => ThrownDart(Segment(n, Ring.doubleRing));
 
   /// Writes a finished leg straight through the repository.
   Future<int> recordLeg(
@@ -49,10 +48,7 @@ void main() {
     final finn = await repository.addPlayer('Finn');
     final sam = await repository.addPlayer('Sam');
 
-    await recordLeg(
-      [finn.id, sam.id],
-      [t(20), t(20), t(20), t(1), t(1), t(1)],
-    );
+    await recordLeg([finn.id, sam.id], [t(20), t(20), t(20), t(1), t(1), t(1)]);
 
     final legs = await repository.watchAllLegs().first;
     final stats = computeX01Stats(finn.id, legs);
@@ -87,10 +83,7 @@ void main() {
     final finn = await repository.addPlayer('Finn');
     final sam = await repository.addPlayer('Sam');
 
-    await recordLeg(
-      [finn.id, sam.id],
-      [t(20), t(20), d(5), t(1), t(1), t(1)],
-    );
+    await recordLeg([finn.id, sam.id], [t(20), t(20), d(5), t(1), t(1), t(1)]);
 
     final finnCounts = await repository.segmentCounts(finn.id);
     expect(finnCounts[const Segment(20, Ring.triple)], 2);

@@ -1,3 +1,9 @@
+/// Turns a change in each game mode into [LedCue]s, and works out the resting
+/// ring each mode shows between them.
+///
+/// {@category App}
+library;
+
 import '../../data/board/led_command.dart';
 import '../../domain/checkout/checkout_search.dart';
 import '../../domain/x01/leg_state.dart';
@@ -198,6 +204,11 @@ LedCue _dartCue(ThrownDart dart, {required int seat}) {
 }
 
 /// The turn summary was dismissed and play moved on to someone else.
+///
+/// [sameDarts] tells a confirm from an undo: undoing out of a summary also
+/// clears it, but changes the log. [players] is how many are still
+/// throwing; with only one, the turn goes back to the same thrower and there
+/// is no one new to announce.
 bool _turnConfirmed({
   required bool wasAwaiting,
   required bool isAwaiting,

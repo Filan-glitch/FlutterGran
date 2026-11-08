@@ -160,7 +160,9 @@ void main() {
   group('wired to a game', () {
     /// A connected fake board behind a fresh container, set up inside the
     /// test body so every timer it starts runs on the test's fake clock.
-    Future<(FakeBoardSource, ProviderContainer)> wire(WidgetTester tester) async {
+    Future<(FakeBoardSource, ProviderContainer)> wire(
+      WidgetTester tester,
+    ) async {
       final board = FakeBoardSource();
       final container = ProviderContainer(
         overrides: [boardSourceProvider.overrideWithValue(board)],

@@ -1,3 +1,10 @@
+/// The in-app update flow: [UpdateController] checks GitHub for a newer release
+/// and, asked to, installs its APK on Android or opens the release page on
+/// Windows.
+///
+/// {@category App}
+library;
+
 import 'dart:async';
 import 'dart:io';
 
@@ -26,10 +33,12 @@ class UpdateIdle extends UpdateState {
   const UpdateIdle();
 }
 
+/// Asking GitHub for the latest release.
 class UpdateChecking extends UpdateState {
   const UpdateChecking();
 }
 
+/// The running version is the newest release.
 class UpdateUpToDate extends UpdateState {
   const UpdateUpToDate(this.current);
 
@@ -44,6 +53,7 @@ class UpdateAvailable extends UpdateState {
   final AppRelease release;
 }
 
+/// Downloading the APK for [release]. Android only.
 class UpdateDownloading extends UpdateState {
   const UpdateDownloading(this.release, [this.progress]);
 
@@ -67,9 +77,13 @@ class UpdateDownloaded extends UpdateState {
   @override
   final AppRelease release;
   final String apkPath;
+
+  /// Whether the install is waiting on that permission - see
+  /// [UpdateController.resumeInstall].
   final bool needsPermission;
 }
 
+/// Which step of an update went wrong.
 enum UpdateFailure {
   /// GitHub could not be asked, or answered with nothing usable.
   check,
@@ -81,6 +95,7 @@ enum UpdateFailure {
   install,
 }
 
+/// The check, download or install failed.
 class UpdateFailed extends UpdateState {
   const UpdateFailed(this.failure, [this.release]);
 
@@ -211,6 +226,7 @@ class UpdateController extends Notifier<UpdateState> {
   }
 }
 
+/// The device side of updating; overridden in tests.
 final updatePlatformProvider = Provider<UpdatePlatform>(
   (ref) => DeviceUpdatePlatform(),
 );
@@ -222,10 +238,12 @@ final updateHttpClientProvider = Provider<http.Client>((ref) {
   return client;
 });
 
+/// GitHub's release API for this app's repository.
 final githubReleasesProvider = Provider<GitHubReleases>(
   (ref) => GitHubReleases(ref.watch(updateHttpClientProvider)),
 );
 
+/// Where the update check stands - see [UpdateController].
 final updateProvider = NotifierProvider<UpdateController, UpdateState>(
   UpdateController.new,
 );
@@ -247,6 +265,7 @@ final updateCardDismissedProvider = NotifierProvider<UpdateCardDismissed, bool>(
   UpdateCardDismissed.new,
 );
 
+/// Backs [updateCardDismissedProvider].
 class UpdateCardDismissed extends Notifier<bool> {
   @override
   bool build() => false;
@@ -256,8 +275,8 @@ class UpdateCardDismissed extends Notifier<bool> {
 
 /// Checks once at launch, if [updateAutoCheckProvider] is on, and picks a
 /// waiting install back up when the player returns from granting Chalk
-/// permission to install it. The app root keeps this alive by watching it,
-/// the same way it keeps `boardLifecycleProvider`.
+/// permission to install it. Listen-only, watched by `main.dart` - see
+/// [soundControllerProvider].
 final updateLifecycleProvider = Provider<void>((ref) {
   var disposed = false;
   ref.onDispose(() => disposed = true);

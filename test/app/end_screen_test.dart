@@ -1,36 +1,20 @@
 import 'dart:async';
 
-import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fluttergran/app/audio/sound_controller.dart';
 import 'package:fluttergran/app/providers.dart';
 import 'package:fluttergran/app/screens/game_screen.dart';
-import 'package:fluttergran/app/theme.dart';
 import 'package:fluttergran/data/board/fake_board_source.dart';
 import 'package:fluttergran/data/db/database.dart';
 import 'package:fluttergran/data/db/game_repository.dart';
-import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/leg_state.dart';
 import 'package:fluttergran/domain/x01/match_state.dart';
-import 'package:fluttergran/domain/x01/thrown_dart.dart';
-import 'package:fluttergran/l10n/app_localizations.dart';
 
-/// Silent, so the end of a leg does not go looking for an audio plugin.
-class _MutePlayer implements SoundPlayer {
-  @override
-  void playCue(String asset) {}
-
-  @override
-  void playSpeech(String asset, {Duration after = Duration.zero}) {}
-
-  @override
-  void silence() {}
-
-  @override
-  Future<void> dispose() async {}
-}
+import '../support/darts.dart';
+import '../support/database.dart';
+import '../support/pump.dart';
+import '../support/sound.dart';
 
 void main() {
   late AppDatabase database;
@@ -39,14 +23,14 @@ void main() {
   late ProviderContainer container;
 
   setUp(() {
-    database = AppDatabase(NativeDatabase.memory());
+    database = memoryDatabase();
     repository = GameRepository(database);
     board = FakeBoardSource();
     container = ProviderContainer(
       overrides: [
         databaseProvider.overrideWithValue(database),
         boardSourceProvider.overrideWithValue(board),
-        soundPlayerProvider.overrideWithValue(_MutePlayer()),
+        soundPlayerProvider.overrideWithValue(MuteSoundPlayer()),
       ],
     );
   });
@@ -56,16 +40,6 @@ void main() {
     await board.dispose();
     await database.close();
   });
-
-  ThrownDart d(int n) => ThrownDart(Segment(n, Ring.doubleRing));
-
-  /// Pumps frames without settling: the roster query and the database writes
-  /// both land a frame or two after the tap that caused them.
-  Future<void> frames(WidgetTester tester) async {
-    for (var i = 0; i < 12; i++) {
-      await tester.pump(const Duration(milliseconds: 20));
-    }
-  }
 
   /// Seats two players and puts the first leg of a [legsToPlay] match on
   /// screen, on a score that checks out with one dart.
@@ -79,29 +53,19 @@ void main() {
     );
 
     await container.read(matchProvider.notifier).start(config);
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          theme: buildTheme(),
-          home: const GameScreen(),
-        ),
-      ),
-    );
-    await frames(tester);
+    await pumpApp(tester, const GameScreen(), container: container);
+    await pumpFrames(tester, count: 12);
     return config;
   }
 
   /// Wins the leg on screen with a single double, as the player at the oche.
   Future<void> checkout(WidgetTester tester) async {
     container.read(gameProvider.notifier).addDart(d(20));
-    await frames(tester);
+    await pumpFrames(tester, count: 12);
     // The turn is held for confirmation, exactly as it is during play.
     if (container.read(gameProvider).awaitingTurnConfirm) {
       container.read(gameProvider.notifier).confirmTurn();
-      await frames(tester);
+      await pumpFrames(tester, count: 12);
     }
   }
 
@@ -131,7 +95,7 @@ void main() {
     await checkout(tester);
 
     await tester.tap(find.text('THROW LEG 2'));
-    await frames(tester);
+    await pumpFrames(tester, count: 12);
 
     expect(find.text('LEG WON'), findsNothing);
     expect(find.text('THROW LEG 2'), findsNothing);
@@ -171,7 +135,7 @@ void main() {
       overrides: [
         databaseProvider.overrideWithValue(database),
         boardSourceProvider.overrideWithValue(board),
-        soundPlayerProvider.overrideWithValue(_MutePlayer()),
+        soundPlayerProvider.overrideWithValue(MuteSoundPlayer()),
         decidedMatchLegsProvider.overrideWith((ref) => held.future),
       ],
     );
@@ -186,7 +150,7 @@ void main() {
     expect(inFigures('—'), findsNWidgets(10));
 
     held.complete(const []);
-    await frames(tester);
+    await pumpFrames(tester, count: 12);
 
     expect(inFigures('120.0'), findsWidgets, reason: '40 in one dart');
   });
@@ -199,7 +163,7 @@ void main() {
       overrides: [
         databaseProvider.overrideWithValue(database),
         boardSourceProvider.overrideWithValue(board),
-        soundPlayerProvider.overrideWithValue(_MutePlayer()),
+        soundPlayerProvider.overrideWithValue(MuteSoundPlayer()),
         decidedMatchLegsProvider.overrideWith(
           (ref) => Future<List<LegState>>.error(Exception('no database')),
         ),
@@ -235,7 +199,7 @@ void main() {
     expect(find.text('MATCH WON'), findsOneWidget);
 
     container.read(gameProvider.notifier).undo();
-    await frames(tester);
+    await pumpFrames(tester, count: 12);
 
     // Nothing had to be retracted: the tally is folded from the darts, so
     // removing the dart removes the match.
@@ -253,7 +217,7 @@ void main() {
     final decided = container.read(matchProvider)!.matchId;
 
     await tester.tap(find.text('REMATCH'));
-    await frames(tester);
+    await pumpFrames(tester, count: 12);
 
     expect(find.text('MATCH WON'), findsNothing);
 

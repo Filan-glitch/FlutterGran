@@ -1,3 +1,9 @@
+/// [AtcStop], the 22 stops of an Around the Clock track - the wedges 1 to 20,
+/// then the outer bull and the bullseye - and what clears each one.
+///
+/// {@category Game modes}
+library;
+
 import '../segment.dart';
 import 'atc_variant.dart';
 

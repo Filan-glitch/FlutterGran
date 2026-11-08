@@ -21,35 +21,14 @@ import 'package:fluttergran/domain/higher_lower/higher_lower_reducer.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
 
-/// Records what it was asked for instead of making a noise.
-class _FakePlayer implements SoundPlayer {
-  final List<String> cues = [];
-  final List<(String, Duration)> spoken = [];
-  int silenced = 0;
+import '../support/darts.dart';
+import '../support/sound.dart';
 
-  @override
-  void playCue(String asset) => cues.add(asset);
-
-  @override
-  void playSpeech(String asset, {Duration after = Duration.zero}) =>
-      spoken.add((asset, after));
-
-  @override
-  void silence() => silenced++;
-
-  @override
-  Future<void> dispose() async {}
-}
-
-const miss = ThrownDart.miss();
 const _gameOn = Sound.speech(SoundAssets.spokenGameOn);
 const _click = Sound.cue(SoundAssets.dartCue);
 const _gameShot = [
   Sound.cue(SoundAssets.checkoutCue),
-  Sound.speech(
-    SoundAssets.spokenGameShot,
-    after: SoundTiming.afterCheckoutCue,
-  ),
+  Sound.speech(SoundAssets.spokenGameShot, after: SoundTiming.afterCheckoutCue),
 ];
 
 void main() {
@@ -58,10 +37,8 @@ void main() {
   group('Around the Clock', () {
     final solo = AtcConfig(playerIds: const [1], variant: AtcVariant.anyPart);
 
-    AtcSession at(List<ThrownDart> darts) => AtcSession(
-      leg: foldAroundTheClock(solo, darts),
-      acknowledgedTurns: 0,
-    );
+    AtcSession at(List<ThrownDart> darts) =>
+        AtcSession(leg: foldAroundTheClock(solo, darts), acknowledgedTurns: 0);
 
     List<Sound> throwing(List<ThrownDart> darts) =>
         soundsForAtc(at(darts.sublist(0, darts.length - 1)), at(darts));
@@ -81,7 +58,7 @@ void main() {
     });
 
     test('a dart mid-turn just clicks', () {
-      expect(throwing([miss, ThrownDart(Segment(1, Ring.outerSingle))]), [
+      expect(throwing([miss, const ThrownDart(Segment(1, Ring.outerSingle))]), [
         _click,
       ]);
     });
@@ -94,7 +71,7 @@ void main() {
     });
 
     test('a turn that moved forward says nothing more', () {
-      final one = ThrownDart(Segment(1, Ring.outerSingle));
+      const one = ThrownDart(Segment(1, Ring.outerSingle));
       expect(throwing([one, miss, miss]), [_click]);
     });
 
@@ -115,16 +92,14 @@ void main() {
       target: 21,
     );
 
-    BullingSession at(List<ThrownDart> darts) => BullingSession(
-      leg: foldBulling(solo, darts),
-      acknowledgedTurns: 0,
-    );
+    BullingSession at(List<ThrownDart> darts) =>
+        BullingSession(leg: foldBulling(solo, darts), acknowledgedTurns: 0);
 
     List<Sound> throwing(List<ThrownDart> darts) =>
         soundsForBulling(at(darts.sublist(0, darts.length - 1)), at(darts));
 
-    final sbull = ThrownDart(Segment.outerBull);
-    final dbull = ThrownDart(Segment.innerBull);
+    const sbull = ThrownDart(Segment.outerBull);
+    const dbull = ThrownDart(Segment.innerBull);
 
     test('the first dart clicks and calls game on', () {
       expect(throwing([sbull]), [_click, _gameOn]);
@@ -206,12 +181,12 @@ void main() {
   });
 
   group('wired to the game', () {
-    late _FakePlayer player;
+    late RecordingSoundPlayer player;
     late FakeBoardSource board;
     late ProviderContainer container;
 
     setUp(() {
-      player = _FakePlayer();
+      player = RecordingSoundPlayer();
       board = FakeBoardSource();
       container = ProviderContainer(
         overrides: [
@@ -241,7 +216,7 @@ void main() {
     test('a Bulling dart clicks', () {
       container
           .read(bullingGameProvider.notifier)
-          .addDart(ThrownDart(Segment.outerBull));
+          .addDart(const ThrownDart(Segment.outerBull));
 
       expect(player.cues, [SoundAssets.dartCue]);
       expect(player.spoken, [(SoundAssets.spokenGameOn, Duration.zero)]);

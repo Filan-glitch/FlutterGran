@@ -1,9 +1,16 @@
+/// [BullingSetupScreen], which picks the bullseye value, the target score and
+/// the players and starts a stored leg.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/bulling/bulling_config.dart';
 import '../../domain/bulling/bulling_variant.dart';
 import '../l10n_extensions.dart';
+import '../labels.dart';
 import '../providers.dart';
 import '../rules_topic.dart';
 import '../theme.dart';
@@ -13,21 +20,11 @@ import '../widgets/rules_button.dart';
 import '../widgets/setup_controls.dart';
 import 'bulling_game_screen.dart';
 
-/// How each [BullseyeValue] reads on the setup tile and everywhere else a
-/// short label is needed for it.
-String bullseyeValueLabel(BuildContext context, BullseyeValue value) {
-  final l10n = context.l10n;
-  return switch (value) {
-    BullseyeValue.two => l10n.bullseyeValueTwo,
-    BullseyeValue.three => l10n.bullseyeValueThree,
-  };
-}
-
 /// Picks the bullseye value, the target score, and who is playing, then
 /// starts a persisted leg.
 ///
-/// Mirrors `AtcSetupScreen`'s shape exactly — same reasons for what
-/// belongs here and what does not.
+/// Laid out like `X01SetupScreen`, with the bullseye value and target as the
+/// format choices.
 class BullingSetupScreen extends ConsumerStatefulWidget {
   const BullingSetupScreen({super.key});
 
@@ -36,7 +33,7 @@ class BullingSetupScreen extends ConsumerStatefulWidget {
 }
 
 class _BullingSetupScreenState extends ConsumerState<BullingSetupScreen> {
-  /// Selected players, in the order they were tapped — which is throwing
+  /// Selected players, in the order they were tapped - which is throwing
   /// order.
   List<int> _seats = const [];
 

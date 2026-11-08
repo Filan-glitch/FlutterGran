@@ -1,4 +1,3 @@
-import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/data/db/database.dart';
 import 'package:fluttergran/data/db/game_repository.dart';
@@ -6,21 +5,20 @@ import 'package:fluttergran/domain/atc/atc_config.dart';
 import 'package:fluttergran/domain/atc/atc_reducer.dart';
 import 'package:fluttergran/domain/atc/atc_variant.dart';
 import 'package:fluttergran/domain/game_mode.dart';
-import 'package:fluttergran/domain/segment.dart';
-import 'package:fluttergran/domain/x01/thrown_dart.dart';
+
+import '../support/darts.dart';
+import '../support/database.dart';
 
 void main() {
   late AppDatabase database;
   late GameRepository repository;
 
   setUp(() {
-    database = AppDatabase(NativeDatabase.memory());
+    database = memoryDatabase();
     repository = GameRepository(database);
   });
 
   tearDown(() => database.close());
-
-  ThrownDart s(int n) => ThrownDart(Segment(n, Ring.outerSingle));
 
   Future<AtcConfig> seedAtcGame({
     int players = 2,
@@ -37,21 +35,24 @@ void main() {
   }
 
   group('starting a game', () {
-    test('writes a games row under aroundTheClock and seats the players', () async {
-      final config = await seedAtcGame(players: 3);
-      final gameId = await repository.startAtcGame(config);
+    test(
+      'writes a games row under aroundTheClock and seats the players',
+      () async {
+        final config = await seedAtcGame(players: 3);
+        final gameId = await repository.startAtcGame(config);
 
-      final game = await repository.loadGame(gameId);
-      expect(game!.gameMode, GameMode.aroundTheClock);
-      expect(game.startScore, isNull);
-      expect(game.doubleOut, isNull);
-      expect(game.inRule, isNull);
-      expect(game.outRule, isNull);
+        final game = await repository.loadGame(gameId);
+        expect(game!.gameMode, GameMode.aroundTheClock);
+        expect(game.startScore, isNull);
+        expect(game.doubleOut, isNull);
+        expect(game.inRule, isNull);
+        expect(game.outRule, isNull);
 
-      final loaded = await repository.loadAtcConfig(gameId);
-      expect(loaded!.playerIds, config.playerIds);
-      expect(loaded.variant, config.variant);
-    });
+        final loaded = await repository.loadAtcConfig(gameId);
+        expect(loaded!.playerIds, config.playerIds);
+        expect(loaded.variant, config.variant);
+      },
+    );
 
     test('the variant round-trips through AtcGames', () async {
       final config = await seedAtcGame(variant: AtcVariant.masters);
@@ -121,7 +122,10 @@ void main() {
       final gameId = await repository.startAtcGame(config);
 
       await repository.finishGame(gameId, config.playerIds[0]);
-      expect((await repository.loadGame(gameId))!.winnerPlayerId, config.playerIds[0]);
+      expect(
+        (await repository.loadGame(gameId))!.winnerPlayerId,
+        config.playerIds[0],
+      );
 
       await repository.reopenGame(gameId);
       expect((await repository.loadGame(gameId))!.winnerPlayerId, isNull);

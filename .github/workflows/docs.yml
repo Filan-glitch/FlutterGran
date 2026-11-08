@@ -1,0 +1,64 @@
+name: Docs
+
+# Builds the API docs (dartdoc) from main and publishes them to GitHub Pages.
+# Pull requests are already checked by ci.yml's "API docs build without
+# warnings" step; this workflow only deploys.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# One deploy at a time; a newer push replaces a queued one but never cancels
+# a deploy that is already running.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          # Same pin as build.yml and ci.yml.
+          flutter-version: 3.47.8
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      # Pinned past the SDK's bundled dartdoc 9.0.6, which crashes on drift's
+      # inherited @docImport comments. Same version as ci.yml and
+      # tool/check.sh.
+      - name: Build API docs
+        run: |
+          dart pub global activate dartdoc 9.0.11
+          dart pub global run dartdoc --output doc/api
+
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: doc/api
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Only this job can write to Pages.
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

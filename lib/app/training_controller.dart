@@ -1,4 +1,11 @@
+/// [TrainingController], which runs a solo training session - free practice or
+/// checkout practice - from board events, without storing anything.
+///
+/// {@category App}
+library;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fluttergran/app/game_controller.dart' show GameController;
 
 import '../domain/board_event.dart';
 import '../domain/training/free_practice_state.dart';
@@ -18,13 +25,13 @@ const int soloTrainingSeat = 0;
 
 /// A training session in progress: which drill, and where it stands.
 ///
-/// Sealed the same way `ResumableLeg` and `ModeStats` are, so a screen
-/// reading this has to handle both drills explicitly rather than assuming
-/// free practice.
+/// Sealed, so a screen reading this has to handle both drills explicitly
+/// rather than assuming free practice.
 sealed class TrainingSession {
   const TrainingSession();
 }
 
+/// Free practice: darts at anything, with no target and no end.
 class FreePracticeSession extends TrainingSession {
   const FreePracticeSession(this.practice);
 
@@ -55,21 +62,12 @@ class CheckoutPracticeSession extends TrainingSession {
 
 /// Owns a training session's dart log and turns board events into feedback.
 ///
-/// The one thing this type guarantees by never doing it: nothing here reads
-/// [gameRepositoryProvider] or writes [currentGameIdProvider]. There is
-/// consequently no code path from a training dart to a database row - the
-/// same guarantee [GameController] gives a real leg through its own persist
-/// step, just held here by omission rather than by a gate.
+/// Nothing here reads [gameRepositoryProvider] or writes
+/// [currentGameIdProvider], so no training dart can reach a database row.
+/// Otherwise gated like [GameController]: board input only while a training
+/// screen is open, and no board darts while the keypad override is up.
 class TrainingController extends Notifier<TrainingSession> {
-  /// Whether a training screen is open in front of someone. Mirrors
-  /// `GameController._live`: board input is ignored while this is false, so a
-  /// dart thrown after the player has walked away cannot score into a session
-  /// nobody is looking at.
   bool _live = false;
-
-  /// Whether the keypad has been pulled up over a connected board. Mirrors
-  /// `GameController`: while it is open the board's own frames are ignored, so
-  /// a dart keyed in by hand cannot also score from the board.
   bool _manualOverrideOpen = false;
 
   @override
@@ -97,16 +95,14 @@ class TrainingController extends Notifier<TrainingSession> {
         addDart(const ThrownDart.miss());
       case ButtonPress():
       case UnknownFrame():
-        // Training has no turn-confirm step and nothing diagnostic to show -
-        // there is no leg-ending consequence a training dart could reach.
+        // Training has no turn summary for the button to dismiss, and an
+        // unknown frame is never scored.
         break;
     }
   }
 
-  /// Records a dart. Public and ungated, exactly like `GameController.addDart`
-  /// - only the board path above is gated on [_live], so this stays usable
-  /// for manual keypad entry (and for tests) whether or not a board is even
-  /// connected.
+  /// Records a dart. Ungated, like [GameController.addDart]: only the board
+  /// path is gated on [_live], so the keypad and tests can always use this.
   void addDart(ThrownDart dart) {
     switch (state) {
       case FreePracticeSession(:final practice):
@@ -128,8 +124,7 @@ class TrainingController extends Notifier<TrainingSession> {
     }
   }
 
-  /// Drops the last dart thrown and replays. Same idiom as
-  /// `GameController.undo`.
+  /// Drops the last dart thrown and replays, as [GameController.undo] does.
   void undo() {
     switch (state) {
       case FreePracticeSession(:final practice):
@@ -176,7 +171,7 @@ class TrainingController extends Notifier<TrainingSession> {
   }
 
   /// Resets the current checkout-practice attempt to the same start score,
-  /// without leaving the screen or losing [CheckoutPracticeSession.checkoutsCompleted].
+  /// keeping [CheckoutPracticeSession.checkoutsCompleted].
   ///
   /// No-op for free practice, which has no finished state to reset from.
   void throwAgain() {
@@ -191,8 +186,7 @@ class TrainingController extends Notifier<TrainingSession> {
     }
   }
 
-  /// Steps away from the session without discarding it. Mirrors
-  /// `GameController.leave`, minus anything to leave resumable - there is no
-  /// database row to leave it in.
+  /// Steps away without discarding the session; the board stops scoring
+  /// into it. Nothing is stored, so there is nothing to resume later.
   void leave() => _live = false;
 }

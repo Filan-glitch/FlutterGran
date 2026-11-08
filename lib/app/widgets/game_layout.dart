@@ -1,3 +1,9 @@
+/// [GameLayout], the arrangement every game screen shares, with its app bar,
+/// the keypad switch and the guard against leaving a leg mid-way.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -5,15 +11,6 @@ import '../l10n_extensions.dart';
 import '../providers.dart';
 import '../theme.dart';
 import 'board_connection_button.dart';
-
-/// Whether this device earns the hero treatment. See [isHeroSize].
-///
-/// The whole viewport, not the local width a `LayoutBuilder` would give: this
-/// is "how big is the device", the same question [typeScaleFor] answers, and
-/// the two are meant to move together - the device that earns bigger type
-/// earns the hero layout with it.
-bool isHeroDevice(BuildContext context) =>
-    isHeroSize(MediaQuery.sizeOf(context));
 
 /// Window width from which a desktop gives the score three fifths of the
 /// screen rather than half. Below it, two fifths of the window is too narrow
@@ -87,11 +84,8 @@ class GameLayout extends ConsumerWidget {
       children: [
         LayoutBuilder(
           builder: (context, constraints) {
-            // Nothing to key in, and nothing coming from a keypad that isn't
-            // there: a board doing its own scoring has no use for the half of
-            // the screen the keypad would otherwise reserve. Give that space
-            // to the players instead of an idle placeholder standing in for a
-            // control nobody can use.
+            // A board doing its own scoring has no use for the keypad's half
+            // of the screen, so the players get it instead.
             final boardScoringAlone =
                 !showKeypad &&
                 turnResult == null &&
@@ -148,13 +142,10 @@ class GameLayout extends ConsumerWidget {
             // - which is the point, because the size of the score is what
             // makes it readable from the oche.
             if (constraints.maxWidth >= wideLayout) {
-              // A desktop window is wide and short, so beside the keypad the
-              // seat cards sized to their content float mid-height in a half
-              // that is mostly empty. There they take the whole height
-              // instead, the way they already do with the keypad gone - and
-              // once the window is wide enough that half of it would make
-              // every key the size of a hand, the score takes the bigger
-              // share. A mouse does not need a 170px key.
+              // A desktop window is wide and short: the seat cards take the
+              // whole height rather than floating mid-height, and from
+              // [_desktopScoreShareWidth] the score takes the bigger share,
+              // since a mouse does not need a hand-sized key.
               if (hero && isDesktop) {
                 final wide = constraints.maxWidth >= _desktopScoreShareWidth;
                 return Row(

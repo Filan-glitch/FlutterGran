@@ -1,3 +1,9 @@
+/// [ringColours], the board's own fill and ink for each ring, so the keypad and
+/// the aim chips colour a bed the same way.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/painting.dart';
 
 import '../../domain/segment.dart';
@@ -5,8 +11,9 @@ import '../theme.dart';
 
 /// A dart's fill and ink, by the ring it lands in: the board's own colours.
 ///
-/// Shared by the keypad and the checkout card, so a treble on the key that
-/// enters it and a treble in the route that asks for it are the same green.
+/// Shared by the keypad and the chips of `CheckoutCard` and `AimCard`, so a
+/// treble on the key that enters it and a treble on the card that asks for it
+/// are the same green.
 /// Null is a miss, which enters nothing.
 (Color fill, Color ink) ringColours(Ring? ring) => switch (ring) {
   Ring.doubleRing || Ring.innerBull => (Palette.doubleBed, Palette.chalk),

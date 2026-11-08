@@ -1,8 +1,6 @@
-import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fluttergran/app/audio/sound_controller.dart';
 import 'package:fluttergran/app/providers.dart';
 import 'package:fluttergran/app/screens/game_screen.dart';
 import 'package:fluttergran/app/theme.dart';
@@ -14,44 +12,13 @@ import 'package:fluttergran/data/db/game_repository.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/match_state.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
-import 'package:fluttergran/l10n/app_localizations.dart';
 
-/// The three shapes the app is laid out for, in logical pixels.
-const phonePortrait = Size(411, 923); // Pixel 9a
-const phoneLandscape = Size(923, 411); // the same phone, turned
-const tablet = Size(834, 1194); // a 10-inch tablet, upright
-
-/// The Samsung Galaxy Tab S6 Lite (SM-P610) connected during development,
-/// landscape - measured with `adb shell wm size`/`wm density` (1200x2000
-/// physical, 240dpi default density: 1200/1.5 x 2000/1.5 logical, then
-/// swapped for landscape) rather than guessed. This is the shape the hero
-/// treatment has to reliably trigger for, at the display-size setting most
-/// people never touch.
-const tabS6Lite = Size(1333, 800);
-
-/// Desktop windows, maximised, as Flutter measures them on Windows: the
-/// screen in logical pixels less the taskbar and the title bar.
-const laptop = Size(1280, 641); // a 1080p laptop at 150% scaling
-const monitor = Size(1920, 1009); // a 1080p monitor at 100%
-const smallestWindow = Size(960, 600); // the floor the Windows runner allows
-
-/// Runs a test as the Windows build would see it.
-final windows = TargetPlatformVariant.only(TargetPlatform.windows);
-
-/// Silent, so nothing goes looking for an audio plugin.
-class _MutePlayer implements SoundPlayer {
-  @override
-  void playCue(String asset) {}
-
-  @override
-  void playSpeech(String asset, {Duration after = Duration.zero}) {}
-
-  @override
-  void silence() {}
-
-  @override
-  Future<void> dispose() async {}
-}
+import '../support/darts.dart';
+import '../support/database.dart';
+import '../support/devices.dart';
+import '../support/lights.dart';
+import '../support/pump.dart';
+import '../support/sound.dart';
 
 void main() {
   late AppDatabase database;
@@ -60,17 +27,17 @@ void main() {
   late ProviderContainer container;
 
   setUp(() {
-    database = AppDatabase(NativeDatabase.memory());
+    database = memoryDatabase();
     repository = GameRepository(database);
     board = FakeBoardSource();
     container = ProviderContainer(
       overrides: [
         databaseProvider.overrideWithValue(database),
         boardSourceProvider.overrideWithValue(board),
-        soundPlayerProvider.overrideWithValue(_MutePlayer()),
+        soundPlayerProvider.overrideWithValue(MuteSoundPlayer()),
         // Layout is under test here, not the board's lights, whose shows
         // would otherwise leave timers running past the end of each test.
-        ledEnabledProvider.overrideWith(_LightsOff.new),
+        lightsOff(),
       ],
     );
   });
@@ -81,14 +48,6 @@ void main() {
     await database.close();
   });
 
-  ThrownDart t(int n) => ThrownDart(Segment(n, Ring.triple));
-
-  Future<void> frames(WidgetTester tester) async {
-    for (var i = 0; i < 12; i++) {
-      await tester.pump(const Duration(milliseconds: 20));
-    }
-  }
-
   /// Puts a leg on screen in a viewport of exactly [size], the way the device
   /// would - the app's own scaling included, since that is part of the layout.
   Future<void> openAt(
@@ -97,9 +56,7 @@ void main() {
     int startScore = 501,
     int legsToPlay = 1,
   }) async {
-    tester.view.physicalSize = size;
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
+    setViewSize(tester, size);
 
     final finn = await repository.addPlayer('Finn');
     final ada = await repository.addPlayer('Ada');
@@ -113,27 +70,13 @@ void main() {
           ),
         );
 
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          theme: buildTheme(),
-          builder: (context, child) {
-            final media = MediaQuery.of(context);
-            return MediaQuery(
-              data: media.copyWith(
-                textScaler: TextScaler.linear(typeScaleFor(media.size)),
-              ),
-              child: child ?? const SizedBox.shrink(),
-            );
-          },
-          home: const GameScreen(),
-        ),
-      ),
+    await pumpApp(
+      tester,
+      const GameScreen(),
+      container: container,
+      typeScaled: true,
     );
-    await frames(tester);
+    await pumpFrames(tester, count: 12);
   }
 
   /// Where a widget sits, for asking whether two things are side by side.
@@ -251,7 +194,7 @@ void main() {
       for (var i = 0; i < 3; i++) {
         controller.addDart(t(20));
       }
-      await frames(tester);
+      await pumpFrames(tester, count: 12);
 
       expect(tester.takeException(), isNull);
       expect(find.text('180'), findsWidgets);
@@ -283,7 +226,7 @@ void main() {
       for (var i = 0; i < 3; i++) {
         controller.addDart(t(20));
       }
-      await frames(tester);
+      await pumpFrames(tester, count: 12);
 
       // Covers exactly the body Scaffold gives it - the app bar stays put
       // above it, everything below disappears under the result.
@@ -313,7 +256,7 @@ void main() {
       for (var i = 0; i < 3; i++) {
         controller.addDart(t(20));
       }
-      await frames(tester);
+      await pumpFrames(tester, count: 12);
 
       expect(find.byKey(const Key('turn-result-overlay')), findsNothing);
       expect(find.text('180'), findsWidgets);
@@ -357,7 +300,7 @@ void main() {
       for (var i = 0; i < 3; i++) {
         controller.addDart(t(20));
       }
-      await frames(tester);
+      await pumpFrames(tester, count: 12);
 
       // One WRONG button, not two: the play-slot copy underneath the
       // full-screen overlay should not be built at all, not merely hidden
@@ -374,8 +317,8 @@ void main() {
       // match.isFinished become true together, before FINISH is tapped.
       container
           .read(gameProvider.notifier)
-          .addDart(ThrownDart(const Segment(1, Ring.doubleRing)));
-      await frames(tester);
+          .addDart(const ThrownDart(Segment(1, Ring.doubleRing)));
+      await pumpFrames(tester, count: 12);
 
       expect(find.text('MATCH WON'), findsOneWidget);
       // The opaque turn-result overlay would otherwise sit between the
@@ -394,12 +337,12 @@ void main() {
       // Finn (seat 0) leads leg 1 off and checks it out immediately.
       container
           .read(gameProvider.notifier)
-          .addDart(ThrownDart(const Segment(1, Ring.doubleRing)));
-      await frames(tester);
+          .addDart(const ThrownDart(Segment(1, Ring.doubleRing)));
+      await pumpFrames(tester, count: 12);
       container.read(gameProvider.notifier).confirmTurn();
-      await frames(tester);
+      await pumpFrames(tester, count: 12);
       await container.read(matchProvider.notifier).startNextLeg();
-      await frames(tester);
+      await pumpFrames(tester, count: 12);
 
       // Leg 2 starts with Ada (seat 1) throwing first, so Finn's card is
       // neither live nor the winner of the leg on screen - but still shows
@@ -421,7 +364,7 @@ void main() {
       await openAt(tester, tabS6Lite);
 
       await board.connect();
-      await frames(tester);
+      await pumpFrames(tester, count: 12);
 
       expect(find.byType(DartKeypad), findsNothing);
       expect(find.byKey(const Key('keypad-override-toggle')), findsOneWidget);
@@ -432,60 +375,58 @@ void main() {
     ) async {
       await openAt(tester, tabS6Lite);
       await board.connect();
-      await frames(tester);
+      await pumpFrames(tester, count: 12);
       expect(find.byType(DartKeypad), findsNothing);
 
       await tester.tap(find.byKey(const Key('keypad-override-toggle')));
-      await frames(tester);
+      await pumpFrames(tester, count: 12);
       expect(find.byType(DartKeypad), findsOneWidget);
 
       await tester.tap(find.byKey(const Key('keypad-override-toggle')));
-      await frames(tester);
+      await pumpFrames(tester, count: 12);
       expect(find.byType(DartKeypad), findsNothing);
     });
 
-    testWidgets(
-      'gives the players the width the keypad no longer needs',
-      (tester) async {
-        await openAt(tester, tabS6Lite);
-        final body = where(tester, find.byKey(const Key('game-body')));
-        final withKeypad = where(
-          tester,
-          find.byKey(const Key('hero-scoreboard')),
-        );
-        // Sharing the screen with the keypad, roughly half of it.
-        expect(withKeypad.width, lessThan(body.width * 0.6));
+    testWidgets('gives the players the width the keypad no longer needs', (
+      tester,
+    ) async {
+      await openAt(tester, tabS6Lite);
+      final body = where(tester, find.byKey(const Key('game-body')));
+      final withKeypad = where(
+        tester,
+        find.byKey(const Key('hero-scoreboard')),
+      );
+      // Sharing the screen with the keypad, roughly half of it.
+      expect(withKeypad.width, lessThan(body.width * 0.6));
 
-        await board.connect();
-        await frames(tester);
-        final withoutKeypad = where(
-          tester,
-          find.byKey(const Key('hero-scoreboard')),
-        );
-        // Nothing left to share it with.
-        expect(withoutKeypad.width, greaterThan(body.width * 0.9));
-      },
-    );
+      await board.connect();
+      await pumpFrames(tester, count: 12);
+      final withoutKeypad = where(
+        tester,
+        find.byKey(const Key('hero-scoreboard')),
+      );
+      // Nothing left to share it with.
+      expect(withoutKeypad.width, greaterThan(body.width * 0.9));
+    });
 
-    testWidgets(
-      'grows the score into the height the keypad no longer needs',
-      (tester) async {
-        await openAt(tester, tabS6Lite);
-        // `Text`'s own render size never changes under `FittedBox` - it is
-        // laid out at its natural size and scaled only at paint time - so
-        // the box `FittedBox` itself was given is what actually shows growth.
-        final withKeypad = tester.getSize(find.byType(FittedBox).first);
+    testWidgets('grows the score into the height the keypad no longer needs', (
+      tester,
+    ) async {
+      await openAt(tester, tabS6Lite);
+      // `Text`'s own render size never changes under `FittedBox` - it is
+      // laid out at its natural size and scaled only at paint time - so
+      // the box `FittedBox` itself was given is what actually shows growth.
+      final withKeypad = tester.getSize(find.byType(FittedBox).first);
 
-        await board.connect();
-        await frames(tester);
-        final withoutKeypad = tester.getSize(find.byType(FittedBox).first);
+      await board.connect();
+      await pumpFrames(tester, count: 12);
+      final withoutKeypad = tester.getSize(find.byType(FittedBox).first);
 
-        // Sized to its card's content before; sized to fill the card's now
-        // much taller box after - not the same number by a few pixels of
-        // padding, meaningfully bigger.
-        expect(withoutKeypad.height, greaterThan(withKeypad.height * 1.5));
-      },
-    );
+      // Sized to its card's content before; sized to fill the card's now
+      // much taller box after - not the same number by a few pixels of
+      // padding, meaningfully bigger.
+      expect(withoutKeypad.height, greaterThan(withKeypad.height * 1.5));
+    });
   });
 
   group('a desktop window', () {
@@ -523,7 +464,7 @@ void main() {
         expect(find.text('MISS'), findsOneWidget);
 
         await board.connect();
-        await frames(tester);
+        await pumpFrames(tester, count: 12);
         expect(tester.takeException(), isNull);
       }, variant: windows);
 
@@ -534,7 +475,7 @@ void main() {
         for (var i = 0; i < 3; i++) {
           controller.addDart(t(20));
         }
-        await frames(tester);
+        await pumpFrames(tester, count: 12);
 
         expect(tester.takeException(), isNull);
         expect(find.byKey(const Key('turn-result-overlay')), findsOneWidget);
@@ -575,11 +516,4 @@ void main() {
       expect(keypad.width, greaterThan(body.width * 0.4));
     }, variant: windows);
   });
-}
-
-class _LightsOff extends BoolSetting {
-  _LightsOff() : super('led.enabled');
-
-  @override
-  bool build() => false;
 }

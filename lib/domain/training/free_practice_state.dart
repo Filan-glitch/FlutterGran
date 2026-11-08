@@ -1,4 +1,11 @@
-import '../x01/leg_state.dart' show dartsPerTurn;
+/// Free practice: [foldFreePractice] groups an open-ended dart log into turns
+/// and totals, with no target and no finish.
+///
+/// {@category Game modes}
+library;
+
+import '../x01/leg_reducer.dart' show foldLeg;
+import '../x01/leg_state.dart' show LegState, dartsPerTurn;
 import '../x01/thrown_dart.dart';
 
 /// One completed group of [dartsPerTurn] darts.
@@ -17,9 +24,8 @@ class FreePracticeTurn {
 
 /// A free-practice session: every dart thrown, and what it adds up to.
 ///
-/// There is no target and no win condition, so unlike x01's `LegState` this
-/// never stops accepting darts - it just keeps folding the log into running
-/// numbers.
+/// There is no target and no win condition, so unlike [LegState] this never
+/// stops accepting darts.
 class FreePracticeState {
   const FreePracticeState({
     required this.darts,
@@ -56,12 +62,8 @@ class FreePracticeState {
   }
 }
 
-/// Folds a free-practice dart log into its running state.
-///
-/// Modeled on `foldLeg` (`../x01/leg_reducer.dart`): a pure function of the
-/// log, so undo is dropping the last dart and folding again. Simpler than
-/// `foldLeg` because there is nothing to fold toward - every group of three
-/// darts closes a turn, full stop.
+/// Folds a free-practice dart log into its running state, the same way
+/// [foldLeg] does for x01. Every group of three darts closes a turn.
 FreePracticeState foldFreePractice(List<ThrownDart> darts) {
   final turns = <FreePracticeTurn>[];
   var turnDarts = <ThrownDart>[];

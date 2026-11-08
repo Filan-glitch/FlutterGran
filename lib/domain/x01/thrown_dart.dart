@@ -1,3 +1,9 @@
+/// [ThrownDart], one entry in a leg's dart log: who threw it and where it
+/// landed. Every engine in the app folds a list of these.
+///
+/// {@category Domain}
+library;
+
 import '../segment.dart';
 
 /// One dart as recorded in a leg.
@@ -14,9 +20,6 @@ class ThrownDart {
 
   /// Points scored. A miss scores zero.
   int get value => segment?.value ?? 0;
-
-  /// Whether this dart may legally finish a leg under double-out.
-  bool get isDouble => segment?.isDouble ?? false;
 
   String get label => segment?.label ?? 'MISS';
 

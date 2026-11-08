@@ -1,3 +1,9 @@
+/// [OutcomePanel], the panel shown when something ends mid-session - a leg in a
+/// match, a checkout attempt - with its next actions.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 
 import '../theme.dart';

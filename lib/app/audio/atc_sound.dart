@@ -1,22 +1,25 @@
+/// [soundsForAtc], the cues and commentary for a change in an Around the Clock
+/// leg.
+///
+/// {@category App}
+library;
+
 import '../atc_controller.dart';
 import 'sound_controller.dart';
 
 /// What a change in an Around the Clock leg should sound like.
 ///
-/// The same shape as `soundsFor` and `soundsForTraining`, and deliberately
-/// not a call into either: there is no score to read out here, only progress
-/// round the track. So every dart clicks, the first calls "game on", a turn
-/// that moved nobody forward is "no score", and reaching the end of the track
-/// is a checkout.
+/// The same shape as [soundsFor], but not a call into it: there is no score
+/// to read out here, only progress round the track. So every dart clicks,
+/// the first calls "game on", a turn that moved nobody forward is "no score",
+/// and reaching the end of the track is a checkout.
 List<Sound> soundsForAtc(AtcSession? previous, AtcSession next) {
   if (previous == null) return const [];
 
   final before = previous.leg;
   final after = next.leg;
 
-  // Same guard as `soundsFor`: restarting, resuming and undoing move the log
-  // by anything other than exactly one dart, and none of those is someone at
-  // the oche.
+  // Only a single new dart is heard - see [soundsFor].
   if (after.darts.length != before.darts.length + 1) return const [];
 
   final sounds = <Sound>[const Sound.cue(SoundAssets.dartCue)];

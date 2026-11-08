@@ -1,4 +1,3 @@
-import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,12 +5,14 @@ import 'package:fluttergran/app/providers.dart';
 import 'package:fluttergran/app/rules_topic.dart';
 import 'package:fluttergran/app/screens/rules_detail_screen.dart';
 import 'package:fluttergran/app/screens/x01_setup_screen.dart';
-import 'package:fluttergran/app/theme.dart';
 import 'package:fluttergran/data/board/fake_board_source.dart';
 import 'package:fluttergran/data/db/database.dart';
 import 'package:fluttergran/data/db/game_repository.dart';
 import 'package:fluttergran/domain/x01/x01_rules.dart';
-import 'package:fluttergran/l10n/app_localizations.dart';
+
+import '../support/database.dart';
+import '../support/devices.dart';
+import '../support/pump.dart';
 
 /// Returns [value] without ever touching shared_preferences, so a test can
 /// seed the setup screen's starting point without depending on the plugin
@@ -32,7 +33,7 @@ void main() {
   late ProviderContainer container;
 
   setUp(() {
-    database = AppDatabase(NativeDatabase.memory());
+    database = memoryDatabase();
     repository = GameRepository(database);
     board = FakeBoardSource();
   });
@@ -49,10 +50,7 @@ void main() {
     // Two extra chip rows push the player roster further down than the
     // default 800x600 test surface comfortably fits - taller rather than
     // scrolling keeps every tap a plain, un-obscured hit.
-    tester.view.physicalSize = const Size(400, 1400);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
+    setViewSize(tester, const Size(400, 1400));
 
     container = ProviderContainer(
       overrides: [
@@ -62,17 +60,7 @@ void main() {
           x01DefaultsProvider.overrideWith(() => _FixedX01Defaults(defaults)),
       ],
     );
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          theme: buildTheme(),
-          home: const X01SetupScreen(),
-        ),
-      ),
-    );
+    await pumpApp(tester, const X01SetupScreen(), container: container);
   }
 
   testWidgets('the rules icon opens the X01 rules, scoped to X01 alone', (

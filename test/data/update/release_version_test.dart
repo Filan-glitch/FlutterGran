@@ -15,7 +15,7 @@ void main() {
   });
 
   test('compares numerically, field by field', () {
-    final v = ReleaseVersion.tryParse;
+    const v = ReleaseVersion.tryParse;
     expect(v('1.10.0')! > v('1.9.9')!, isTrue);
     expect(v('2.0.0')! > v('1.99.99')!, isTrue);
     expect(v('1.1.1')! > v('1.1.0')!, isTrue);

@@ -1,3 +1,9 @@
+/// [SettingsScreen], the preferences that outlive a leg: sound, board lights,
+/// language and updates.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,12 +14,9 @@ import '../update/update_controller.dart';
 import '../widgets/setup_controls.dart';
 import '../widgets/update_card.dart';
 
-/// App-wide preferences, away from any one game's setup.
-///
-/// Sound used to live on the setup screen because that was the only screen
-/// there was - now that there is a proper menu shell, a switch that outlives
-/// any single leg belongs here instead. More sections join this one as the
-/// app grows things worth remembering across sessions.
+/// App-wide preferences that outlive any one leg: sound, board lights,
+/// language and updates, each in one fixed place rather than on whichever
+/// screen might want it.
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -30,27 +33,25 @@ class SettingsScreen extends ConsumerWidget {
             children: [
               SectionLabel(l10n.soundSectionTitle),
               const SizedBox(height: Gap.sm),
-              _SoundToggle(
+              _SettingSwitch(
                 label: l10n.cuesAndCommentaryLabel,
                 detail: l10n.cuesAndCommentaryDetail,
                 value: ref.watch(soundEnabledProvider),
                 onChanged: ref.read(soundEnabledProvider.notifier).set,
               ),
-              _SoundToggle(
+              _SettingSwitch(
                 label: l10n.spokenTotalsLabel,
                 detail: l10n.spokenTotalsDetail,
                 value: ref.watch(speechEnabledProvider),
-                // With the master off there is nothing for this one to control,
-                // so it greys out rather than pretending. Its own setting is
-                // untouched underneath: turning sound back on returns the
-                // commentary to however the player last left it.
+                // Greyed out with the master off; its own value is kept, so
+                // turning sound back on restores it.
                 enabled: ref.watch(soundEnabledProvider),
                 onChanged: ref.read(speechEnabledProvider.notifier).set,
               ),
               const SizedBox(height: Gap.lg),
               SectionLabel(l10n.boardLightsSectionTitle),
               const SizedBox(height: Gap.sm),
-              _SoundToggle(
+              _SettingSwitch(
                 label: l10n.boardLightsLabel,
                 detail: l10n.boardLightsDetail,
                 value: ref.watch(ledEnabledProvider),
@@ -74,7 +75,7 @@ class SettingsScreen extends ConsumerWidget {
                   ledCelebrationsProvider,
                 ),
               ])
-                _SoundToggle(
+                _SettingSwitch(
                   label: label,
                   detail: detail,
                   value: ref.watch(provider),
@@ -100,7 +101,7 @@ class SettingsScreen extends ConsumerWidget {
                   },
                 ),
                 const SizedBox(height: Gap.sm),
-                _SoundToggle(
+                _SettingSwitch(
                   label: l10n.updateAutoCheckLabel,
                   detail: l10n.updateAutoCheckDetail,
                   value: ref.watch(updateAutoCheckProvider),
@@ -187,14 +188,10 @@ class _LanguageChoice extends StatelessWidget {
   }
 }
 
-/// One remembered switch, in the setup screen's idiom rather than Material's.
-///
-/// This lives on the settings screen, not behind a control on whatever screen
-/// happens to be open when you think of it, because a preference that outlives
-/// any one leg deserves one fixed address rather than a copy wherever it might
-/// be wanted.
-class _SoundToggle extends StatelessWidget {
-  const _SoundToggle({
+/// One remembered switch with a label and a line of detail, greyed out when
+/// [enabled] is false (its master switch is off).
+class _SettingSwitch extends StatelessWidget {
+  const _SettingSwitch({
     required this.label,
     required this.detail,
     required this.value,

@@ -530,13 +530,11 @@ class Match extends DataClass implements Insertable<Match> {
   /// What it takes to finish a leg.
   final X01OutRule outRule;
 
-  /// Best of this many legs. 1 is a single leg, which is what every game
-  /// recorded before matches existed is.
+  /// Best of this many legs. 1 is a single leg.
   final int legsToPlay;
 
-  /// Stored by name, like [DartEvents.ring] - see the note there. Every match
-  /// recorded before this column existed was x01, which is also the default
-  /// for a fresh insert until a second mode has a setup screen to choose from.
+  /// Stored by name, like [DartEvents.ring] - see the note there. Defaults to
+  /// x01, which also backfilled every row written before the column existed.
   final GameMode gameMode;
   final DateTime startedAt;
   final DateTime? finishedAt;
@@ -1185,14 +1183,12 @@ class $GamesTable extends Games with TableInfo<$GamesTable, Game> {
 class Game extends DataClass implements Insertable<Game> {
   final int id;
 
-  /// Null for a leg played under a mode with no such thing - Around the
-  /// Clock, today. x01 always writes a real value here.
+  /// Null for a leg played under a mode with no start score - every mode but
+  /// x01, which always writes a real value here.
   final int? startScore;
 
-  /// Null for the same reason as [startScore]: a mode with no double-out
-  /// rule leaves this empty rather than writing a value that means nothing.
-  /// Kept only as a frozen legacy mirror of [outRule] - see the note on
-  /// [Matches.doubleOut].
+  /// Null for every mode but x01. Kept only as a frozen legacy mirror of
+  /// [outRule] - see [Matches.doubleOut].
   final bool? doubleOut;
 
   /// What it takes to open a leg. Null for a mode with no in-rule.
@@ -1209,9 +1205,7 @@ class Game extends DataClass implements Insertable<Game> {
   /// column have to stay in step.
   final int? legNumber;
 
-  /// Stored by name, like [DartEvents.ring]. See the note on
-  /// [Matches.gameMode] - every leg recorded before this column existed was
-  /// x01, which is also the default for a fresh insert today.
+  /// Stored by name, like [DartEvents.ring]. See [Matches.gameMode].
   final GameMode gameMode;
   final DateTime startedAt;
   final DateTime? finishedAt;

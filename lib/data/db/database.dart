@@ -1,3 +1,9 @@
+/// The drift schema - players, matches, legs, seats, the dart log and each
+/// mode's own config - and [AppDatabase] with its migrations.
+///
+/// {@category Data}
+library;
+
 import 'dart:io' show Platform;
 
 import 'package:drift/drift.dart';
@@ -17,8 +23,7 @@ part 'database.g.dart';
 class Players extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text().withLength(min: 1, max: 40)();
-  DateTimeColumn get createdAt =>
-      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
 
 /// A run of legs played to a best-of, won by whoever takes more than half.
@@ -35,8 +40,7 @@ class Matches extends Table {
   /// Kept only as a frozen legacy mirror of [outRule] (`true` for
   /// `X01OutRule.double`), written on every insert so it never drifts out of
   /// step. Nothing but the schema-8 migration reads it back.
-  BoolColumn get doubleOut =>
-      boolean().withDefault(const Constant(true))();
+  BoolColumn get doubleOut => boolean().withDefault(const Constant(true))();
 
   /// What it takes to open a leg. Stored by name, like [DartEvents.ring].
   TextColumn get inRule =>
@@ -46,18 +50,15 @@ class Matches extends Table {
   TextColumn get outRule =>
       textEnum<X01OutRule>().withDefault(const Constant('double'))();
 
-  /// Best of this many legs. 1 is a single leg, which is what every game
-  /// recorded before matches existed is.
+  /// Best of this many legs. 1 is a single leg.
   IntColumn get legsToPlay => integer()();
 
-  /// Stored by name, like [DartEvents.ring] - see the note there. Every match
-  /// recorded before this column existed was x01, which is also the default
-  /// for a fresh insert until a second mode has a setup screen to choose from.
+  /// Stored by name, like [DartEvents.ring] - see the note there. Defaults to
+  /// x01, which also backfilled every row written before the column existed.
   TextColumn get gameMode =>
       textEnum<GameMode>().withDefault(const Constant('x01'))();
 
-  DateTimeColumn get startedAt =>
-      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get startedAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get finishedAt => dateTime().nullable()();
   IntColumn get winnerPlayerId =>
       integer().nullable().references(Players, #id)();
@@ -65,36 +66,31 @@ class Matches extends Table {
 
 /// One leg. A leg may belong to a match, or stand on its own.
 ///
-/// [matchId] and [legNumber] are nullable because they have to be: every leg
-/// stored before matches existed is a real leg with no match around it, and
-/// nothing that reads legs - statistics, the resume offer, the fold - may start
-/// depending on a match being there.
+/// [matchId] and [legNumber] are null for a leg with no match around it, and
+/// nothing that reads legs - statistics, the resume offer, the fold - may
+/// depend on a match being there.
 class Games extends Table {
   IntColumn get id => integer().autoIncrement()();
 
-  /// Null for a leg played under a mode with no such thing - Around the
-  /// Clock, today. x01 always writes a real value here.
+  /// Null for a leg played under a mode with no start score - every mode but
+  /// x01, which always writes a real value here.
   IntColumn get startScore => integer().nullable()();
 
-  /// Null for the same reason as [startScore]: a mode with no double-out
-  /// rule leaves this empty rather than writing a value that means nothing.
-  /// Kept only as a frozen legacy mirror of [outRule] - see the note on
-  /// [Matches.doubleOut].
+  /// Null for every mode but x01. Kept only as a frozen legacy mirror of
+  /// [outRule] - see [Matches.doubleOut].
   BoolColumn get doubleOut =>
       boolean().nullable().withDefault(const Constant(true))();
 
   /// What it takes to open a leg. Null for a mode with no in-rule.
-  TextColumn get inRule => textEnum<X01InRule>()
-      .nullable()
-      .withDefault(const Constant('straight'))();
+  TextColumn get inRule => textEnum<X01InRule>().nullable().withDefault(
+    const Constant('straight'),
+  )();
 
   /// What it takes to finish a leg. Null for a mode with no out-rule.
-  TextColumn get outRule => textEnum<X01OutRule>()
-      .nullable()
-      .withDefault(const Constant('double'))();
+  TextColumn get outRule =>
+      textEnum<X01OutRule>().nullable().withDefault(const Constant('double'))();
 
-  IntColumn get matchId =>
-      integer().nullable().references(Matches, #id)();
+  IntColumn get matchId => integer().nullable().references(Matches, #id)();
 
   /// Position in the match, from zero. Null for a leg outside a match.
   ///
@@ -103,14 +99,11 @@ class Games extends Table {
   /// column have to stay in step.
   IntColumn get legNumber => integer().nullable()();
 
-  /// Stored by name, like [DartEvents.ring]. See the note on
-  /// [Matches.gameMode] - every leg recorded before this column existed was
-  /// x01, which is also the default for a fresh insert today.
+  /// Stored by name, like [DartEvents.ring]. See [Matches.gameMode].
   TextColumn get gameMode =>
       textEnum<GameMode>().withDefault(const Constant('x01'))();
 
-  DateTimeColumn get startedAt =>
-      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get startedAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get finishedAt => dateTime().nullable()();
   IntColumn get winnerPlayerId =>
       integer().nullable().references(Players, #id)();
@@ -153,8 +146,7 @@ class DartEvents extends Table {
 
   IntColumn get value => integer()();
 
-  DateTimeColumn get thrownAt =>
-      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get thrownAt => dateTime().withDefault(currentDateAndTime)();
 
   @override
   List<Set<Column<Object>>> get uniqueKeys => [
@@ -164,10 +156,9 @@ class DartEvents extends Table {
 
 /// Around the Clock's own per-leg config: which variant it was played under.
 ///
-/// A sibling to [Games] rather than columns on it, the same way [Matches]
-/// stands beside [Games] for x01's own rules - x01's `startScore`/
-/// `doubleOut` mean nothing here, and this mode's `variant` means nothing
-/// there.
+/// A sibling to [Games] rather than columns on it: x01's start score and
+/// rules mean nothing here, and this mode's `variant` means nothing there.
+/// [BullingGames] is the same arrangement for Bulling.
 class AtcGames extends Table {
   IntColumn get gameId =>
       integer().references(Games, #id, onDelete: KeyAction.cascade)();
@@ -180,10 +171,7 @@ class AtcGames extends Table {
 /// Bulling's own per-leg config: the bullseye value and the target score it
 /// was played to.
 ///
-/// A sibling to [Games], the same way [AtcGames] stands beside it for
-/// Around the Clock's own rules — x01's `startScore`/`doubleOut` mean
-/// nothing here, and this mode's `bullseyeValue`/`target` mean nothing
-/// there.
+/// A sibling to [Games] for the same reason as [AtcGames].
 class BullingGames extends Table {
   IntColumn get gameId =>
       integer().references(Games, #id, onDelete: KeyAction.cascade)();
@@ -195,7 +183,15 @@ class BullingGames extends Table {
 }
 
 @DriftDatabase(
-  tables: [Players, Matches, Games, GameSeats, DartEvents, AtcGames, BullingGames],
+  tables: [
+    Players,
+    Matches,
+    Games,
+    GameSeats,
+    DartEvents,
+    AtcGames,
+    BullingGames,
+  ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
@@ -226,49 +222,35 @@ class AppDatabase extends _$AppDatabase {
     onUpgrade: (m, from, to) async {
       if (from < 3) {
         await m.createTable(matches);
-        // Added rather than backfilled: a leg thrown before matches existed
-        // belongs to no match, and inventing one for it would invent a result
-        // nobody played for.
+        // Added rather than backfilled: an existing leg belongs to no match,
+        // and inventing one for it would invent a result nobody played for.
         await m.addColumn(games, games.matchId);
         await m.addColumn(games, games.legNumber);
       }
       if (from < 4 && from >= 2) {
-        // Calibration was a hardware-bring-up feature: verify the shipped
-        // GranBoard 3s table against a real 132 and record any corrections.
-        // Hardware day (2026-09-04) found zero - the table is correct as
-        // shipped - so the table, its overrides, and the whole screen around
-        // them are gone. A database that never reached schema 2 never had
-        // this table to drop.
+        // Segment calibration was removed; only v2 and v3 had its table.
         await m.deleteTable('segment_calibrations');
       }
       if (from < 5) {
-        // Backfilled to 'x01' by the column default, which is correct: every
-        // leg and match ever recorded was x01, since it is the only mode
-        // that has ever had an engine.
+        // Backfilled to 'x01' by the column default, which is correct: x01
+        // was the only mode at schema 5.
         await m.addColumn(games, games.gameMode);
         if (from >= 3) {
-          // A database already at v3 or v4 has a `matches` table missing
-          // this column. One migrating from below v3 gets `matches`
-          // created fresh, just above, from the current table definition -
-          // which already includes it - so adding it again here would be a
-          // duplicate column.
+          // Below v3, `matches` was just created from the current
+          // definition and already has the column.
           await m.addColumn(matches, matches.gameMode);
         }
       }
       if (from < 6) {
-        // Widens startScore/doubleOut to nullable - Around the Clock has
-        // neither - via a full recreate-and-copy: SQLite cannot loosen a
-        // NOT NULL constraint in place. drift's TableMigration builds the
-        // new table from `games`' current (now-nullable) definition, so
-        // every pre-existing row is copied across unchanged; only rows
-        // written from here on can actually hold nulls in these columns.
+        // Widens startScore/doubleOut to nullable for non-x01 modes. SQLite
+        // cannot loosen NOT NULL in place, so TableMigration rebuilds
+        // `games` from its current definition and copies every row across.
         //
-        // `inRule`/`outRule` are declared as [newColumns]: this step
-        // predates them, so the on-disk table being copied from does not
-        // have them yet either, and copying a column that is not there
-        // would fail. Declaring them here just gives the rebuilt table their
-        // column defaults instead - the schema-8 step below still runs its
-        // own backfill on top for the cases the flat default gets wrong.
+        // TableMigration copies every column the current table has, so any
+        // column added after schema 6 must be listed in `newColumns`, or
+        // this step fails copying a column the old table lacks. The rebuilt
+        // table gives those columns their defaults; the schema-8 step below
+        // corrects inRule/outRule.
         await m.alterTable(
           TableMigration(games, newColumns: [games.inRule, games.outRule]),
         );
@@ -278,22 +260,15 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(bullingGames);
       }
       if (from < 8) {
-        // Every match/leg recorded before this column existed was played
-        // double-out - straight-in didn't exist as a concept, and neither
-        // did master. The flat column defaults ('straight', 'double')
-        // backfill every row correctly for the common case, the same way
-        // `gameMode`'s default did at schema 5. That default is wrong for
-        // two cases the flat backfill can't see: a row that was actually
-        // straight-out (`double_out = 0`), and a non-x01 leg (`double_out`
-        // null, meaning the in/out columns mean nothing there either) - both
-        // corrected explicitly below.
-        // A database migrating from below v3 gets `matches` created fresh at
-        // the `from < 3` step above, from the current table definition -
-        // which already includes these columns - so adding them again here
-        // would be a duplicate column, the same guard `gameMode` needed
-        // above. Likewise one migrating from below v6 already got `games`
-        // rebuilt wholesale by that step's `TableMigration`, current
-        // definition and all.
+        // Splits the old double-out flag into inRule/outRule. Every older
+        // row was straight-in, so the column defaults ('straight',
+        // 'double') are right except for straight-out rows
+        // (`double_out = 0`) and non-x01 legs (`double_out` null, so no
+        // rules at all), both corrected below.
+        //
+        // Tables created or rebuilt from the current definition by an
+        // earlier step (`matches` below v3, `games` below v6) already have
+        // the columns, and adding them again would fail.
         if (from >= 3) {
           await m.addColumn(matches, matches.inRule);
           await m.addColumn(matches, matches.outRule);

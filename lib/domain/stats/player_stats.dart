@@ -1,3 +1,9 @@
+/// Aggregates a player's replayed legs into their all-time record, one
+/// [ModeStats] per [GameMode], for the statistics screen.
+///
+/// {@category Domain}
+library;
+
 import '../atc/atc_leg_state.dart';
 import '../atc/atc_stop.dart';
 import '../bulling/bulling_leg_state.dart';
@@ -20,20 +26,12 @@ bool isOneDartFinishFor(int score, X01OutRule outRule) => Segment.all.any(
   (segment) => segment.value == score && outRule.checksOut(segment),
 );
 
-/// Whether a score can be finished with a single dart at a double.
+/// A player's whole record, one entry per [GameMode].
 ///
-/// This is the definition behind "darts at double": a dart only counts as an
-/// attempt if the player was actually on a finish when they threw it.
-bool isOneDartFinish(int score) => isOneDartFinishFor(score, X01OutRule.double);
-
-/// A player's whole record, one entry per mode they have ever played.
-///
-/// [x01Legs]/[x01Matches]/[atcLegs] are legs and matches the caller already
-/// knows belong to that mode - `LegState`/`AtcLegState` carry no mode field
-/// of their own, because each is one engine's own state. Grouping by mode
-/// happens one level up, where the rows are loaded from a `gameMode` column;
-/// this function only composes the per-mode calculators. A third mode adds a
-/// third parameter (pair) and a third entry here, not a rewrite of this one.
+/// Each parameter holds legs (or matches) the caller already knows belong to
+/// that mode: the leg states carry no mode field, so grouping by mode happens
+/// where the rows are loaded from their `gameMode` column. This only composes
+/// the per-mode calculators.
 Map<GameMode, ModeStats> computePlayerStats(
   int playerId, {
   Iterable<LegState> x01Legs = const [],
@@ -122,7 +120,8 @@ X01Stats computeX01Stats(
         playerOpened |= effectiveValue > 0;
 
         if (isOneDartFinishFor(standing, outRule)) {
-          dartsAtFinishByRule[outRule] = (dartsAtFinishByRule[outRule] ?? 0) + 1;
+          dartsAtFinishByRule[outRule] =
+              (dartsAtFinishByRule[outRule] ?? 0) + 1;
         }
         if (dart.checksOutUnder(outRule) && standing - effectiveValue == 0) {
           finishesHitByRule[outRule] = (finishesHitByRule[outRule] ?? 0) + 1;
@@ -187,9 +186,7 @@ X01Stats computeX01Stats(
 /// Aggregates a player's Around the Clock record across any number of
 /// replayed legs.
 ///
-/// Takes folded [AtcLegState]s rather than raw rows, for the same reason
-/// [computeX01Stats] does: every number here agrees with what was shown
-/// during play by construction.
+/// Takes folded [AtcLegState]s; see [computeX01Stats].
 AtcStats computeAtcStats(int playerId, Iterable<AtcLegState> legs) {
   var legsPlayed = 0;
   var legsWon = 0;
@@ -206,8 +203,7 @@ AtcStats computeAtcStats(int playerId, Iterable<AtcLegState> legs) {
       if (turn.playerId != playerId) continue;
 
       // Walk the turn dart by dart, re-deriving which stop was standing
-      // before each one - the same idiom `computeX01Stats` uses to re-derive
-      // "on a finish" for its checkout stats.
+      // before each one, as computeX01Stats does for "on a finish".
       var standing = turn.stopBefore;
       for (final dart in turn.darts) {
         dartsThrown++;
@@ -253,9 +249,7 @@ AtcStats computeAtcStats(int playerId, Iterable<AtcLegState> legs) {
 /// Aggregates a player's Bulling record across any number of replayed
 /// legs.
 ///
-/// Takes folded [BullingLegState]s rather than raw rows, for the same
-/// reason [computeX01Stats] and [computeAtcStats] do: every number here
-/// agrees with what was shown during play by construction.
+/// Takes folded [BullingLegState]s; see [computeX01Stats].
 BullingStats computeBullingStats(int playerId, Iterable<BullingLegState> legs) {
   var legsPlayed = 0;
   var legsWon = 0;
@@ -275,7 +269,7 @@ BullingStats computeBullingStats(int playerId, Iterable<BullingLegState> legs) {
 
       for (final dart in turn.darts) {
         dartsThrown++;
-        final points = pointsFor(dart.segment, leg.config.bullseyeValue);
+        final points = bullingPointsFor(dart.segment, leg.config.bullseyeValue);
         pointsScored += points;
         if (dart.segment?.ring == Ring.outerBull) outerBullHits++;
         if (dart.segment?.ring == Ring.innerBull) innerBullHits++;
@@ -307,9 +301,7 @@ BullingStats computeBullingStats(int playerId, Iterable<BullingLegState> legs) {
 /// Aggregates a player's Higher/Lower record across any number of replayed
 /// legs.
 ///
-/// Takes folded [HigherLowerLegState]s for the same reason the other modes'
-/// calculators do: every number here agrees with what was shown during play
-/// by construction.
+/// Takes folded [HigherLowerLegState]s; see [computeX01Stats].
 HigherLowerStats computeHigherLowerStats(
   int playerId,
   Iterable<HigherLowerLegState> legs,

@@ -5,11 +5,10 @@ import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
 import 'package:test/test.dart';
 
-ThrownDart s(int n) => ThrownDart(Segment(n, Ring.outerSingle));
-ThrownDart t(int n) => ThrownDart(Segment(n, Ring.triple));
-const ThrownDart miss = ThrownDart.miss();
-final ThrownDart sbull = ThrownDart(Segment.outerBull);
-final ThrownDart dbull = ThrownDart(Segment.innerBull);
+import '../../support/darts.dart';
+
+const ThrownDart sbull = ThrownDart(Segment.outerBull);
+const ThrownDart dbull = ThrownDart(Segment.innerBull);
 
 BullingConfig config({
   int players = 1,
@@ -34,21 +33,30 @@ void main() {
     });
   });
 
-  group('pointsFor', () {
+  group('bullingPointsFor', () {
     test('the outer bull is worth 1 point regardless of bullseye value', () {
-      expect(pointsFor(Segment.outerBull, BullseyeValue.two), 1);
-      expect(pointsFor(Segment.outerBull, BullseyeValue.three), 1);
+      expect(bullingPointsFor(Segment.outerBull, BullseyeValue.two), 1);
+      expect(bullingPointsFor(Segment.outerBull, BullseyeValue.three), 1);
     });
 
     test('the inner bull is worth the bullseye value', () {
-      expect(pointsFor(Segment.innerBull, BullseyeValue.two), 2);
-      expect(pointsFor(Segment.innerBull, BullseyeValue.three), 3);
+      expect(bullingPointsFor(Segment.innerBull, BullseyeValue.two), 2);
+      expect(bullingPointsFor(Segment.innerBull, BullseyeValue.three), 3);
     });
 
     test('anything off a bull is worth nothing', () {
-      expect(pointsFor(const Segment(20, Ring.triple), BullseyeValue.three), 0);
-      expect(pointsFor(const Segment(1, Ring.doubleRing), BullseyeValue.three), 0);
-      expect(pointsFor(null, BullseyeValue.three), 0);
+      expect(
+        bullingPointsFor(const Segment(20, Ring.triple), BullseyeValue.three),
+        0,
+      );
+      expect(
+        bullingPointsFor(
+          const Segment(1, Ring.doubleRing),
+          BullseyeValue.three,
+        ),
+        0,
+      );
+      expect(bullingPointsFor(null, BullseyeValue.three), 0);
     });
   });
 
@@ -101,10 +109,7 @@ void main() {
     });
 
     test('darts logged after the win cannot change the result', () {
-      final state = foldBulling(
-        config(target: 1),
-        [sbull, sbull, sbull],
-      );
+      final state = foldBulling(config(target: 1), [sbull, sbull, sbull]);
       expect(state.winnerId, 1);
       expect(
         state.turns.single.darts,

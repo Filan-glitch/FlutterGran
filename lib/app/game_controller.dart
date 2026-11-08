@@ -1,3 +1,9 @@
+/// [GameController], which owns an x01 leg's dart log, turns board and keypad
+/// darts into scoring, stores each dart and undoes by refolding.
+///
+/// {@category App}
+library;
+
 import 'dart:async';
 import 'dart:math';
 
@@ -67,6 +73,11 @@ class GameController extends Notifier<GameSession> {
     return GameSession(leg: initialLegState(config), acknowledgedTurns: 0);
   }
 
+  /// Applies one event from the board: a dart or miss is scored, the button
+  /// ends the turn.
+  ///
+  /// Ignored while no leg is open, and darts are ignored while the keypad
+  /// override is up.
   void handleBoardEvent(BoardEvent event) {
     // Only the board path is gated. `addDart` is the manual entry path, driven
     // by a screen that by definition is open.
@@ -85,7 +96,7 @@ class GameController extends Notifier<GameSession> {
         // could be double-counting, and it stays useful with the keypad up.
         endTurn();
       case UnknownFrame():
-        // Surfaced by the diagnostics screen, never scored.
+        // Not a dart or a press, so never scored.
         break;
     }
   }

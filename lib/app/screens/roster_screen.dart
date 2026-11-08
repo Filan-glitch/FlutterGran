@@ -1,3 +1,9 @@
+/// [RosterScreen], where the players shared by every game mode are added,
+/// renamed and removed.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -5,12 +11,10 @@ import '../../data/db/database.dart';
 import '../l10n_extensions.dart';
 import '../providers.dart';
 import '../theme.dart';
+import '../widgets/add_player_field.dart';
 
-/// Add, rename, and remove players - the roster shared by every game mode.
-///
-/// Player management used to live inside the x01 setup screen, but a roster
-/// is not a property of a mode: the same people play whatever is selected
-/// next, so it gets its own screen with no mode concept anywhere in it.
+/// Add, rename, and remove players - the roster shared by every game mode,
+/// so nothing here knows about modes.
 class RosterScreen extends ConsumerStatefulWidget {
   const RosterScreen({super.key});
 
@@ -106,37 +110,7 @@ class _RosterScreenState extends ConsumerState<RosterScreen> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.lg, Gap.lg, Gap.lg),
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _newPlayer,
-                      style: Type.body.copyWith(color: Palette.chalk),
-                      cursorColor: Palette.live,
-                      decoration: InputDecoration(
-                        labelText: l10n.addPlayerFieldLabel,
-                      ),
-                      textInputAction: TextInputAction.done,
-                      onSubmitted: (_) => _addPlayer(),
-                    ),
-                  ),
-                  const SizedBox(width: Gap.sm),
-                  SizedBox(
-                    height: 46,
-                    width: 46,
-                    child: FilledButton(
-                      onPressed: _addPlayer,
-                      style: FilledButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                      child: const Icon(Icons.add, size: 22),
-                    ),
-                  ),
-                ],
-              ),
+              AddPlayerField(controller: _newPlayer, onAdd: _addPlayer),
               const SizedBox(height: Gap.lg),
               switch (players) {
                 AsyncError(:final error) => Text(

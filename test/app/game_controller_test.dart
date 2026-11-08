@@ -5,13 +5,11 @@ import 'package:fluttergran/app/providers.dart';
 import 'package:fluttergran/data/board/fake_board_source.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/game_config.dart';
-import 'package:fluttergran/domain/x01/thrown_dart.dart';
 import 'package:fluttergran/domain/x01/x01_rules.dart';
 
-import 'board_clock.dart';
-
-/// Lets queued stream events reach the controller before assertions run.
-Future<void> settle() => Future<void>.delayed(Duration.zero);
+import '../support/async.dart';
+import '../support/board_clock.dart';
+import '../support/darts.dart';
 
 void main() {
   late FakeBoardSource board;
@@ -41,10 +39,6 @@ void main() {
     container.dispose();
     board.dispose();
   });
-
-  ThrownDart t(int n) => ThrownDart(Segment(n, Ring.triple));
-  ThrownDart d(int n) => ThrownDart(Segment(n, Ring.doubleRing));
-  const miss = ThrownDart.miss();
 
   group('scoring by hand', () {
     test('a dart comes off the remaining score', () {
@@ -108,9 +102,9 @@ void main() {
     });
 
     test('ending a turn after the leg is won does nothing', () {
-      container.read(gameConfigProvider.notifier).update(
-        GameConfig(startScore: 40, playerIds: const [1, 2]),
-      );
+      container
+          .read(gameConfigProvider.notifier)
+          .update(GameConfig(startScore: 40, playerIds: const [1, 2]));
       controller()
         ..addDart(d(20))
         ..endTurn();
@@ -132,9 +126,9 @@ void main() {
     });
 
     test('a bust ends the turn immediately', () {
-      container.read(gameConfigProvider.notifier).update(
-        GameConfig(startScore: 40, playerIds: const [1, 2]),
-      );
+      container
+          .read(gameConfigProvider.notifier)
+          .update(GameConfig(startScore: 40, playerIds: const [1, 2]));
 
       controller().addDart(t(20));
 
@@ -169,9 +163,9 @@ void main() {
     });
 
     test('backs out of a finished leg', () {
-      container.read(gameConfigProvider.notifier).update(
-        GameConfig(startScore: 40, playerIds: const [1, 2]),
-      );
+      container
+          .read(gameConfigProvider.notifier)
+          .update(GameConfig(startScore: 40, playerIds: const [1, 2]));
 
       controller().addDart(d(20));
       expect(session().leg.isFinished, isTrue);
@@ -383,10 +377,7 @@ void main() {
     test('reopens the leg to board input', () async {
       controller()
         ..leave()
-        ..resume(
-          GameConfig(startScore: 501, playerIds: const [1, 2]),
-          [t(20)],
-        );
+        ..resume(GameConfig(startScore: 501, playerIds: const [1, 2]), [t(20)]);
 
       board.hit(const Segment(20, Ring.triple));
       await settle();

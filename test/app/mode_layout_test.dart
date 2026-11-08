@@ -1,14 +1,11 @@
-import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fluttergran/app/audio/sound_controller.dart';
 import 'package:fluttergran/app/providers.dart';
 import 'package:fluttergran/app/screens/atc_game_screen.dart';
 import 'package:fluttergran/app/screens/bulling_game_screen.dart';
 import 'package:fluttergran/app/screens/higher_lower_game_screen.dart';
 import 'package:fluttergran/app/screens/training_game_screen.dart';
-import 'package:fluttergran/app/theme.dart';
 import 'package:fluttergran/app/widgets/aim_card.dart';
 import 'package:fluttergran/app/widgets/bounds_card.dart';
 import 'package:fluttergran/app/widgets/dart_keypad.dart';
@@ -26,41 +23,19 @@ import 'package:fluttergran/domain/higher_lower/higher_lower_config.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/training/training_drill.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
-import 'package:fluttergran/l10n/app_localizations.dart';
 
-const phonePortrait = Size(411, 923);
-const phoneLandscape = Size(923, 411);
-const tablet = Size(834, 1194);
-const tabS6Lite = Size(1333, 800);
+import '../support/database.dart';
+import '../support/devices.dart';
+import '../support/lights.dart';
+import '../support/pump.dart';
+import '../support/sound.dart';
 
-/// Maximised Windows windows: see responsive_layout_test.dart.
+/// Maximised Windows windows.
 const desktopWindows = [
-  ('the smallest window', Size(960, 600)),
-  ('a laptop', Size(1280, 641)),
-  ('a monitor', Size(1920, 1009)),
+  ('the smallest window', smallestWindow),
+  ('a laptop', laptop),
+  ('a monitor', monitor),
 ];
-
-/// Silent, so nothing goes looking for an audio plugin.
-class _MutePlayer implements SoundPlayer {
-  @override
-  void playCue(String asset) {}
-
-  @override
-  void playSpeech(String asset, {Duration after = Duration.zero}) {}
-
-  @override
-  void silence() {}
-
-  @override
-  Future<void> dispose() async {}
-}
-
-class _LightsOff extends BoolSetting {
-  _LightsOff() : super('led.enabled');
-
-  @override
-  bool build() => false;
-}
 
 /// What a test needs from a game mode to drive its screen: how to start it,
 /// how to throw at it, how to confirm a turn, and one dart that is sure to
@@ -160,15 +135,15 @@ void main() {
   late ProviderContainer container;
 
   setUp(() {
-    database = AppDatabase(NativeDatabase.memory());
+    database = memoryDatabase();
     repository = GameRepository(database);
     board = FakeBoardSource();
     container = ProviderContainer(
       overrides: [
         databaseProvider.overrideWithValue(database),
         boardSourceProvider.overrideWithValue(board),
-        soundPlayerProvider.overrideWithValue(_MutePlayer()),
-        ledEnabledProvider.overrideWith(_LightsOff.new),
+        soundPlayerProvider.overrideWithValue(MuteSoundPlayer()),
+        lightsOff(),
       ],
     );
   });
@@ -179,51 +154,29 @@ void main() {
     await database.close();
   });
 
-  Future<void> frames(WidgetTester tester) async {
-    for (var i = 0; i < 12; i++) {
-      await tester.pump(const Duration(milliseconds: 20));
-    }
-  }
-
   /// Puts [screen] on top of a home route, in a viewport of exactly [size],
   /// the app's own type scaling included.
   Future<void> pushAt(WidgetTester tester, Widget screen, Size size) async {
-    tester.view.physicalSize = size;
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
+    setViewSize(tester, size);
 
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          theme: buildTheme(),
-          builder: (context, child) {
-            final media = MediaQuery.of(context);
-            return MediaQuery(
-              data: media.copyWith(
-                textScaler: TextScaler.linear(typeScaleFor(media.size)),
-              ),
-              child: child ?? const SizedBox.shrink(),
-            );
-          },
-          home: Builder(
-            builder: (context) => Scaffold(
-              body: TextButton(
-                onPressed: () => Navigator.of(
-                  context,
-                ).push(MaterialPageRoute<void>(builder: (_) => screen)),
-                child: const Text('open'),
-              ),
-            ),
+    await pumpApp(
+      tester,
+      Builder(
+        builder: (context) => Scaffold(
+          body: TextButton(
+            onPressed: () =>
+                Navigator.of(context)
+                    .push(MaterialPageRoute<void>(builder: (_) => screen)),
+            child: const Text('open'),
           ),
         ),
       ),
+      container: container,
+      typeScaled: true,
     );
     await tester.tap(find.text('open'));
-    await frames(tester);
-    await frames(tester);
+    await pumpFrames(tester, count: 12);
+    await pumpFrames(tester, count: 12);
   }
 
   /// Starts [mode] for two players and puts its screen up.
@@ -262,12 +215,12 @@ void main() {
             expect(tester.takeException(), isNull);
 
             mode.throwDart(container, mode.scoring);
-            await frames(tester);
+            await pumpFrames(tester, count: 12);
             expect(tester.takeException(), isNull);
 
             mode.throwDart(container, const ThrownDart.miss());
             mode.throwDart(container, const ThrownDart.miss());
-            await frames(tester);
+            await pumpFrames(tester, count: 12);
             expect(tester.takeException(), isNull);
           });
         }
@@ -283,12 +236,12 @@ void main() {
             expect(find.byKey(const Key('hero-scoreboard')), findsOneWidget);
 
             mode.throwDart(container, mode.scoring);
-            await frames(tester);
+            await pumpFrames(tester, count: 12);
             expect(tester.takeException(), isNull);
 
             mode.throwDart(container, const ThrownDart.miss());
             mode.throwDart(container, const ThrownDart.miss());
-            await frames(tester);
+            await pumpFrames(tester, count: 12);
             expect(tester.takeException(), isNull);
           }, variant: TargetPlatformVariant.only(TargetPlatform.windows));
         }
@@ -314,7 +267,7 @@ void main() {
       ) async {
         await openAt(tester, mode, tabS6Lite);
         await board.connect();
-        await frames(tester);
+        await pumpFrames(tester, count: 12);
 
         expect(find.byType(DartKeypad), findsNothing);
         final body = where(tester, find.byKey(const Key('game-body')));
@@ -330,7 +283,7 @@ void main() {
         mode.throwDart(container, mode.scoring);
         mode.throwDart(container, const ThrownDart.miss());
         mode.throwDart(container, const ThrownDart.miss());
-        await frames(tester);
+        await pumpFrames(tester, count: 12);
 
         expect(find.byKey(const Key('turn-result-overlay')), findsOneWidget);
       });
@@ -338,7 +291,7 @@ void main() {
       testWidgets('the ledger keeps a running count mid-turn', (tester) async {
         await openAt(tester, mode, phonePortrait);
         mode.throwDart(container, mode.scoring);
-        await frames(tester);
+        await pumpFrames(tester, count: 12);
 
         expect(
           find.descendant(
@@ -369,15 +322,15 @@ void main() {
           );
         }
         if (mode.awaiting(container)) mode.confirm(container);
-        await frames(tester);
+        await pumpFrames(tester, count: 12);
 
         expect(find.byKey(Key(mode.playAgain)), findsOneWidget);
         expect(find.text('BACK TO SETUP'), findsOneWidget);
 
         await tester.tap(find.text('BACK TO SETUP'));
-        await frames(tester);
-        await frames(tester);
-        await frames(tester);
+        await pumpFrames(tester, count: 12);
+        await pumpFrames(tester, count: 12);
+        await pumpFrames(tester, count: 12);
         expect(find.byWidget(mode.screen), findsNothing);
         expect(find.text('open'), findsOneWidget);
       });
@@ -440,7 +393,7 @@ void main() {
           container.read(trainingProvider.notifier)
             ..addDart(const ThrownDart(Segment(20, Ring.triple)))
             ..addDart(const ThrownDart(Segment(20, Ring.triple)));
-          await frames(tester);
+          await pumpFrames(tester, count: 12);
           expect(tester.takeException(), isNull);
         });
       }
@@ -455,7 +408,7 @@ void main() {
           container.read(trainingProvider.notifier)
             ..addDart(const ThrownDart(Segment(20, Ring.triple)))
             ..addDart(const ThrownDart(Segment(20, Ring.triple)));
-          await frames(tester);
+          await pumpFrames(tester, count: 12);
           expect(tester.takeException(), isNull);
         }, variant: TargetPlatformVariant.only(TargetPlatform.windows));
       }
@@ -470,7 +423,7 @@ void main() {
       await tester.tap(
         find.descendant(of: find.byType(DartKeypad), matching: find.text('19')),
       );
-      await frames(tester);
+      await pumpFrames(tester, count: 12);
 
       expect(find.text('S19'), findsOneWidget);
     });
@@ -478,7 +431,7 @@ void main() {
     testWidgets('the keypad gives way once a board connects', (tester) async {
       await trainAt(tester, TrainingDrill.freePractice, tabS6Lite);
       await board.connect();
-      await frames(tester);
+      await pumpFrames(tester, count: 12);
 
       expect(find.byType(DartKeypad), findsNothing);
       expect(find.byKey(const Key('hero-scoreboard')), findsOneWidget);

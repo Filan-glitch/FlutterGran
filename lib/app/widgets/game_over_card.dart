@@ -1,3 +1,9 @@
+/// [GameOverCard], the end-of-game summary of each player's figures, shown over
+/// the board the game was won on.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 
 import '../l10n_extensions.dart';
@@ -6,9 +12,9 @@ import 'outcome_panel.dart';
 
 /// One player's column of figures on the [GameOverCard].
 ///
-/// [figures] keep their rows whether or not the values are in yet: a value
-/// still being worked out is written `—`, so the card neither jumps nor claims
-/// a total it has not got.
+/// `figures` keep their rows whether or not the values are in yet: a value
+/// still being worked out is written as a dash, so the card neither jumps nor
+/// claims a total it has not got.
 typedef FigureColumn = ({
   String name,
   bool won,

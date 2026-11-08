@@ -1,3 +1,9 @@
+/// [SplashScreen], the opening screen that holds the main menu back until the
+/// database knows whether there is a leg to resume.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

@@ -1,3 +1,9 @@
+/// [AudioPlayersSoundPlayer], the real [SoundPlayer], built on audioplayers
+/// with position polling switched off.
+///
+/// {@category App}
+library;
+
 import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
@@ -14,14 +20,13 @@ import 'sound_controller.dart';
 /// milliseconds.
 class AudioPlayersSoundPlayer implements SoundPlayer {
   AudioPlayersSoundPlayer() {
-    // Nothing here ever reads a playback position, and audioplayers' default
-    // way of reporting one is a leak for this app. It polls the platform every
-    // frame from each `play()`, starts a fresh polling loop on every play
-    // without ending the last, and only stops them all when a sound completes.
-    // The low-latency cue player never completes on Android - a SoundPool has
-    // no completion callback - so each dart left one more loop running for
-    // good, and a long session drowned the platform channel the board's
-    // notifications arrive on. No updater, no polling.
+    // positionUpdater must stay null on both players. Nothing here reads a
+    // playback position, and audioplayers' default polls the platform every
+    // frame, starting a fresh loop on every `play()` and stopping them only
+    // when a sound completes. The low-latency cue player never completes on
+    // Android - a SoundPool has no completion callback - so every dart would
+    // leave one more loop running, and a long session would flood the
+    // platform channel the board's notifications arrive on.
     _cues.positionUpdater = null;
     _speech.positionUpdater = null;
     unawaited(_prepare());
@@ -35,10 +40,10 @@ class AudioPlayersSoundPlayer implements SoundPlayer {
 
   bool _disposed = false;
 
-  /// Cleared once the audio stack has said it cannot serve this device.
+  /// Cleared once the audio stack fails to prepare or to play.
   ///
-  /// Playing into a player that failed to prepare would raise the same error on
-  /// every dart, three times a turn, for the rest of the leg.
+  /// Going silent beats raising the same error on every dart, three times a
+  /// turn, for the rest of the session.
   bool _ready = true;
 
   /// Whether there is any point asking for a sound.
@@ -95,11 +100,8 @@ class AudioPlayersSoundPlayer implements SoundPlayer {
     _fire(_speech, asset);
   }
 
-  /// Plays an asset on the given player, with error recovery.
-  ///
-  /// If the player cannot decode the asset, one failure disables audio for the
-  /// entire session. Going silent is better than raising the same unhandled
-  /// exception on every dart, three times a turn for the rest of the leg.
+  /// Plays [asset] on [player]. One failure clears [_ready] for the rest of
+  /// the session.
   void _fire(AudioPlayer player, String asset) {
     unawaited(
       player.play(AssetSource(asset)).onError((_, _) {

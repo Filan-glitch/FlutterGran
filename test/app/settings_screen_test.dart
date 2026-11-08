@@ -5,8 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/app/providers.dart';
 import 'package:fluttergran/app/screens/settings_screen.dart';
-import 'package:fluttergran/app/theme.dart';
-import 'package:fluttergran/l10n/app_localizations.dart';
+
+import '../support/pump.dart';
 
 void main() {
   late ProviderContainer container;
@@ -20,17 +20,7 @@ void main() {
   tearDown(() => container.dispose());
 
   Future<void> pump(WidgetTester tester) async {
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          theme: buildTheme(),
-          home: const SettingsScreen(),
-        ),
-      ),
-    );
+    await pumpApp(tester, const SettingsScreen(), container: container);
   }
 
   /// The two sound switches, in the order they appear: sound first, then
@@ -119,7 +109,10 @@ void main() {
       tester,
     ) async {
       await pump(tester);
-      expect(lights(tester).map((toggle) => toggle.value), everyElement(isTrue));
+      expect(
+        lights(tester).map((toggle) => toggle.value),
+        everyElement(isTrue),
+      );
 
       await tester.ensureVisible(find.byType(Switch).at(2));
       await tester.tap(find.byType(Switch).at(2));

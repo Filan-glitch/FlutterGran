@@ -1,3 +1,9 @@
+/// Keeps the board connected for the life of the app and announces connection
+/// changes as toasts on the app's one [ScaffoldMessenger].
+///
+/// {@category App}
+library;
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -47,7 +53,8 @@ BoardToast? boardToastFor(
 ///
 /// A manual disconnect stops wanting the board, which is what keeps both the
 /// resume retry and the source's own backoff out of it until the next tap or
-/// launch. The app root keeps this alive by watching it.
+/// launch. Listen-only, watched by `main.dart` - see
+/// [soundControllerProvider].
 final boardLifecycleProvider = Provider<void>((ref) {
   final source = ref.watch(boardSourceProvider);
 

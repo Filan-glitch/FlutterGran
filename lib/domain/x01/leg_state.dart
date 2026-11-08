@@ -1,3 +1,9 @@
+/// [LegState], everything derivable about an x01 leg from its dart log: scores,
+/// completed turns, whose throw it is and the winner.
+///
+/// {@category Domain}
+library;
+
 import 'game_config.dart';
 import 'thrown_dart.dart';
 import 'x01_rules.dart';
@@ -76,8 +82,7 @@ class LegState {
 
   /// Players who have thrown a dart satisfying [GameConfig.inRule].
   ///
-  /// Meaningless under straight-in, where [hasOpened] is always true - kept
-  /// as a plain set of whoever has actually opened under double/master-in.
+  /// Always empty under straight-in; ask [hasOpened] instead.
   final Set<int> openedPlayerIds;
 
   /// Whether [playerId] may score darts yet. Always true under straight-in.

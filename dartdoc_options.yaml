@@ -1,0 +1,49 @@
+# API docs: dart pub global run dartdoc (pinned to 9.0.11 in tool/check.sh
+# and ci.yml). CI runs a full build to a temp dir, and any warning listed
+# under `errors` fails it.
+dartdoc:
+  # The generated localizations: thousands of string getters, no prose.
+  exclude:
+    - app_localizations
+    - app_localizations_de
+    - app_localizations_en
+
+  categories:
+    Domain:
+      markdown: docs/api/domain.md
+    Game modes:
+      markdown: docs/api/game_modes.md
+    Data:
+      markdown: docs/api/data.md
+    App:
+      markdown: docs/api/app.md
+
+  categoryOrder:
+    - Domain
+    - Game modes
+    - Data
+    - App
+
+  # README.md is the site's index page, so its links to docs/ and
+  # CONTRIBUTING.md are absolute GitHub URLs; a relative one is a broken link.
+  errors:
+    - ambiguous-doc-reference
+    - broken-link
+    - ambiguous-reexport
+    - category-order-gives-missing-package-name
+    - deprecated
+    - duplicate-file
+    - invalid-parameter
+    - missing-example-file
+    - missing-example-region
+    - missing-from-search-index
+    - no-canonical-found
+    - no-documentable-libraries
+    - no-library-level-docs
+    - orphaned-file
+    - tool-error
+    - unknown-file
+    - unknown-html-fragment
+    - unknown-macro
+    - unresolved-doc-reference
+

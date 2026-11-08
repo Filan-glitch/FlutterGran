@@ -1,9 +1,14 @@
+/// [TurnResultPanel], the result held after every turn in place of the keypad,
+/// and the [FitOrScroll] it lays out in.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 
 import '../../domain/x01/thrown_dart.dart';
 import '../l10n_extensions.dart';
 import '../theme.dart';
-import 'game_layout.dart';
 
 /// Lays its child out at the height it is given, and scrolls it when that is
 /// not enough.

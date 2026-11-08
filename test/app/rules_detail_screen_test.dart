@@ -3,19 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/app/rules_topic.dart';
 import 'package:fluttergran/app/screens/rules_detail_screen.dart';
-import 'package:fluttergran/app/theme.dart';
 import 'package:fluttergran/app/widgets/rules/rule_board.dart';
 import 'package:fluttergran/domain/atc/atc_stop.dart';
 import 'package:fluttergran/domain/atc/atc_variant.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/x01_rules.dart';
-import 'package:fluttergran/l10n/app_localizations.dart';
 
-/// A phone, upright - the narrow layout, options in a row above the board.
-const phone = Size(411, 923);
-
-/// A tablet on its stand - options beside the board.
-const tabletLandscape = Size(1333, 800);
+import '../support/devices.dart';
+import '../support/pump.dart';
 
 void main() {
   late ProviderContainer container;
@@ -27,31 +22,15 @@ void main() {
   Future<void> pump(
     WidgetTester tester,
     RulesTopic topic, {
-    Size size = phone,
+    Size size = phonePortrait,
   }) async {
-    tester.view.physicalSize = size;
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
+    setViewSize(tester, size);
 
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          theme: buildTheme(),
-          builder: (context, child) {
-            final media = MediaQuery.of(context);
-            return MediaQuery(
-              data: media.copyWith(
-                textScaler: TextScaler.linear(typeScaleFor(media.size)),
-              ),
-              child: child ?? const SizedBox.shrink(),
-            );
-          },
-          home: RulesDetailScreen(topic: topic),
-        ),
-      ),
+    await pumpApp(
+      tester,
+      RulesDetailScreen(topic: topic),
+      container: container,
+      typeScaled: true,
     );
     await tester.pumpAndSettle();
   }
@@ -97,7 +76,7 @@ void main() {
     expect(find.textContaining('Only bulls score'), findsNothing);
   });
 
-  for (final size in [phone, tabletLandscape]) {
+  for (final size in [phonePortrait, tabS6Lite]) {
     testWidgets('the board lights exactly what each X01 rule allows '
         '(${size.width.toInt()} wide)', (tester) async {
       await pump(tester, RulesTopic.x01, size: size);

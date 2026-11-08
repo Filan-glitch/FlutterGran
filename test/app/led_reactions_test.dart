@@ -23,11 +23,9 @@ import 'package:fluttergran/domain/x01/leg_reducer.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
 import 'package:fluttergran/domain/x01/x01_rules.dart';
 
+import '../support/darts.dart';
+
 void main() {
-  ThrownDart t(int n) => ThrownDart(Segment(n, Ring.triple));
-  ThrownDart d(int n) => ThrownDart(Segment(n, Ring.doubleRing));
-  ThrownDart s(int n) => ThrownDart(Segment(n, Ring.outerSingle));
-  const miss = ThrownDart.miss();
   const bull = ThrownDart(Segment.innerBull);
 
   GameConfig config(int startScore, {int players = 2}) => GameConfig(
@@ -53,15 +51,18 @@ void main() {
 
   group('x01 darts', () {
     test('nothing before there is a previous state', () {
-      expect(ledCuesFor(null, at(config(501), [t(20)]), endsMatch: true), isEmpty);
+      expect(
+        ledCuesFor(null, at(config(501), [t(20)]), endsMatch: true),
+        isEmpty,
+      );
     });
 
     test('a hit flashes the number in the thrower\'s seat colour', () {
       expect(throwing(config(501), [t(20)]), [
-        DartLanded(Segment(20, Ring.triple), seat: 0),
+        const DartLanded(Segment(20, Ring.triple), seat: 0),
       ]);
       expect(throwing(config(501), [s(1), s(1), s(1), d(5)]), [
-        DartLanded(Segment(5, Ring.doubleRing), seat: 1),
+        const DartLanded(Segment(5, Ring.doubleRing), seat: 1),
       ]);
     });
 
@@ -145,7 +146,10 @@ void main() {
     });
 
     test('a bull to throw next turns the whole ring turquoise', () {
-      expect(checkoutRing(table.bestFor(50, 1)), RingPaint.all(RingColor.turquoise));
+      expect(
+        checkoutRing(table.bestFor(50, 1)),
+        RingPaint.all(RingColor.turquoise),
+      );
     });
 
     test('is dark with no route, between turns and once the leg is over', () {
@@ -191,7 +195,7 @@ void main() {
 
     test('the target number flashes green, anything else is a miss', () {
       expect(ledCuesForAtc(atc([]), atc([s(1)])), [
-        TargetHit(Segment(1, Ring.outerSingle)),
+        const TargetHit(Segment(1, Ring.outerSingle)),
       ]);
       expect(ledCuesForAtc(atc([]), atc([s(7)])), [const DartMissed()]);
     });

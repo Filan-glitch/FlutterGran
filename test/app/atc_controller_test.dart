@@ -8,10 +8,9 @@ import 'package:fluttergran/domain/atc/atc_variant.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
 
-import 'board_clock.dart';
-
-/// Lets queued stream events reach the controller before assertions run.
-Future<void> settle() => Future<void>.delayed(Duration.zero);
+import '../support/async.dart';
+import '../support/board_clock.dart';
+import '../support/darts.dart';
 
 void main() {
   late FakeBoardSource board;
@@ -37,9 +36,6 @@ void main() {
     container.dispose();
     board.dispose();
   });
-
-  ThrownDart s(int n) => ThrownDart(Segment(n, Ring.outerSingle));
-  ThrownDart t(int n) => ThrownDart(Segment(n, Ring.triple));
 
   group('scoring by hand', () {
     test('a hit on the current number advances the stop', () {
@@ -225,9 +221,11 @@ void main() {
     test('changing the config starts a fresh leg', () {
       controller().addDart(s(1));
 
-      container.read(atcConfigProvider.notifier).update(
-        AtcConfig(playerIds: const [1, 2], variant: AtcVariant.doublesOnly),
-      );
+      container
+          .read(atcConfigProvider.notifier)
+          .update(
+            AtcConfig(playerIds: const [1, 2], variant: AtcVariant.doublesOnly),
+          );
 
       expect(session().leg.config.variant, AtcVariant.doublesOnly);
       expect(session().leg.darts, isEmpty);
@@ -235,9 +233,11 @@ void main() {
   });
 
   test('a variant that requires a double ignores a single', () {
-    container.read(atcConfigProvider.notifier).update(
-      AtcConfig(playerIds: const [1, 2], variant: AtcVariant.doublesOnly),
-    );
+    container
+        .read(atcConfigProvider.notifier)
+        .update(
+          AtcConfig(playerIds: const [1, 2], variant: AtcVariant.doublesOnly),
+        );
     controller().restart();
 
     controller().addDart(t(1));

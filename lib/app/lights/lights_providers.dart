@@ -1,3 +1,9 @@
+/// Riverpod wiring for the board lights: the one [LedScheduler], and a provider
+/// per game mode that feeds it cues and the resting ring.
+///
+/// {@category App}
+library;
+
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,8 +19,8 @@ import 'led_theme.dart';
 /// The one scheduler that owns the ring, for the life of the app.
 ///
 /// Also plays the connect sweep and owns the idle pulse between games: both
-/// belong to the board, not to any game, so the app root keeps this alive by
-/// watching it.
+/// belong to the board, not to any game, so `main.dart` watches this for the
+/// life of the app.
 final ledSchedulerProvider = Provider<LedScheduler>((ref) {
   final source = ref.watch(boardSourceProvider);
   final scheduler = LedScheduler(
@@ -92,7 +98,11 @@ void _drive(
   ref.onDispose(scheduler.leaveGame);
 }
 
-/// Lights for an x01 leg. The game screen keeps it alive by watching it.
+/// Lights for an x01 leg.
+///
+/// Listen-only, watched by the game screen - see [soundControllerProvider].
+/// Auto-disposed when the screen goes, which hands the ring back to the idle
+/// pulse; the other modes' light providers work the same way.
 final x01LightsProvider = Provider.autoDispose<void>((ref) {
   RingPaint ring() {
     final session = ref.read(gameProvider);
@@ -121,6 +131,7 @@ final x01LightsProvider = Provider.autoDispose<void>((ref) {
   );
 });
 
+/// Lights for an Around the Clock leg - see [x01LightsProvider].
 final atcLightsProvider = Provider.autoDispose<void>((ref) {
   _drive(
     ref,
@@ -133,6 +144,7 @@ final atcLightsProvider = Provider.autoDispose<void>((ref) {
   );
 });
 
+/// Lights for a Bulling leg - see [x01LightsProvider].
 final bullingLightsProvider = Provider.autoDispose<void>((ref) {
   _drive(
     ref,
@@ -145,6 +157,7 @@ final bullingLightsProvider = Provider.autoDispose<void>((ref) {
   );
 });
 
+/// Lights for a Higher/Lower leg - see [x01LightsProvider].
 final higherLowerLightsProvider = Provider.autoDispose<void>((ref) {
   _drive(
     ref,
@@ -157,6 +170,8 @@ final higherLowerLightsProvider = Provider.autoDispose<void>((ref) {
   );
 });
 
+/// Lights for a training session - see [x01LightsProvider]. Free practice
+/// has no resting ring.
 final trainingLightsProvider = Provider.autoDispose<void>((ref) {
   RingPaint ring() => switch (ref.read(trainingProvider)) {
     CheckoutPracticeSession(:final leg) => x01Ring(

@@ -1,3 +1,9 @@
+/// The x01 in- and out-rules (straight, double, master) and the checks that
+/// decide whether a dart opens or finishes a leg under them.
+///
+/// {@category Domain}
+library;
+
 import '../segment.dart';
 import 'thrown_dart.dart';
 
@@ -14,14 +20,22 @@ enum X01InRule { straight, double, master }
 /// dart instead of the opening one. See [X01OutRuleChecks.checksOut].
 enum X01OutRule { straight, double, master }
 
+/// The test [X01InRule] and [X01OutRule] share: anything under straight, a
+/// double (or the inner bull) under double, a double or triple under master.
+bool _qualifies(
+  Segment segment, {
+  required bool straight,
+  required bool master,
+}) => straight || segment.isDouble || (master && segment.ring == Ring.triple);
+
 /// What it takes to open a leg under each [X01InRule].
 extension X01InRuleChecks on X01InRule {
   /// Whether [segment] is a legal opening dart under this rule.
-  bool opens(Segment segment) => switch (this) {
-    X01InRule.straight => true,
-    X01InRule.double => segment.isDouble,
-    X01InRule.master => segment.isDouble || segment.ring == Ring.triple,
-  };
+  bool opens(Segment segment) => _qualifies(
+    segment,
+    straight: this == X01InRule.straight,
+    master: this == X01InRule.master,
+  );
 
   /// Short form for the setup screen and the in-game rule badge.
   String get abbreviation => switch (this) {
@@ -41,11 +55,11 @@ extension X01InRuleChecks on X01InRule {
 /// What it takes to finish a leg under each [X01OutRule].
 extension X01OutRuleChecks on X01OutRule {
   /// Whether [segment] may legally finish a leg under this rule.
-  bool checksOut(Segment segment) => switch (this) {
-    X01OutRule.straight => true,
-    X01OutRule.double => segment.isDouble,
-    X01OutRule.master => segment.isDouble || segment.ring == Ring.triple,
-  };
+  bool checksOut(Segment segment) => _qualifies(
+    segment,
+    straight: this == X01OutRule.straight,
+    master: this == X01OutRule.master,
+  );
 
   /// Short form for the setup screen and the in-game rule badge.
   String get abbreviation => switch (this) {

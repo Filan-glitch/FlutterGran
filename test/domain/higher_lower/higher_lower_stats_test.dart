@@ -2,14 +2,11 @@ import 'package:fluttergran/domain/game_mode.dart';
 import 'package:fluttergran/domain/higher_lower/higher_lower_config.dart';
 import 'package:fluttergran/domain/higher_lower/higher_lower_leg_state.dart';
 import 'package:fluttergran/domain/higher_lower/higher_lower_reducer.dart';
-import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/stats/player_stats.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
 import 'package:test/test.dart';
 
-ThrownDart s(int n) => ThrownDart(Segment(n, Ring.outerSingle));
-ThrownDart t(int n) => ThrownDart(Segment(n, Ring.triple));
-const ThrownDart miss = ThrownDart.miss();
+import '../../support/darts.dart';
 
 HigherLowerLegState leg(List<ThrownDart> darts, {int players = 2}) =>
     foldHigherLower(

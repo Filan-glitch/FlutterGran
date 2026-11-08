@@ -1,3 +1,10 @@
+/// The seam between the board's transport and the app: [BoardSource] for raw
+/// bytes and LED writes, and [BoardReader], which frames and decodes them into
+/// [BoardEvent]s.
+///
+/// {@category Data}
+library;
+
 import 'dart:async';
 
 import '../../domain/board_event.dart';
@@ -9,8 +16,6 @@ import 'segment_codec.dart';
 ///
 /// Every state a player could need to tell apart has its own value: "not
 /// trying" is not "Bluetooth is off", and neither is "lost it, trying again".
-/// They used to share `disconnected`, which is how a red icon came to mean
-/// four different things.
 enum BoardConnectionState {
   /// Not trying: never asked to, or the player disconnected.
   disconnected,
@@ -37,27 +42,24 @@ enum BoardConnectionState {
   bool get isWorking =>
       this == BoardConnectionState.scanning ||
       this == BoardConnectionState.connecting;
-
-  /// Stuck on something only the player can fix.
-  bool get needsUser =>
-      this == BoardConnectionState.bluetoothOff ||
-      this == BoardConnectionState.unauthorized ||
-      this == BoardConnectionState.unsupported;
 }
 
 /// A source of raw board notification bytes, and the way back to its LEDs.
 ///
 /// Deliberately the narrowest possible seam: bytes in, connection state out,
-/// LED commands back.
-/// Everything above it - frame assembly, decoding, scoring - is identical
-/// whether the bytes come from Bluetooth or from a fake, which is what lets the
-/// whole app be developed and tested without hardware.
+/// LED commands back. Everything above it - frame assembly, decoding,
+/// scoring - is identical whether the bytes come from Bluetooth or from a
+/// fake, which is what lets the whole app be developed and tested without
+/// hardware.
 abstract class BoardSource {
   /// Raw notification payloads, exactly as delivered. No framing is implied.
   Stream<List<int>> get rawFrames;
 
+  /// Every change of [currentState]. Broadcast, and does not replay the
+  /// current value to a new listener.
   Stream<BoardConnectionState> get connectionState;
 
+  /// Where the connection stands right now.
   BoardConnectionState get currentState;
 
   /// The board's advertised name, once one has been found.
@@ -92,6 +94,8 @@ abstract class BoardSource {
   /// a failed write must never reach the scoring path.
   Future<void> sendLed(LedCommand command);
 
+  /// Drops any connection and closes both streams. The source is unusable
+  /// afterwards.
   Future<void> dispose();
 }
 
@@ -123,6 +127,11 @@ class BoardReader {
 
   BoardConnectionState _lastState = BoardConnectionState.disconnected;
 
+  /// Decoded board events, in arrival order. Broadcast.
+  ///
+  /// Listen to this directly rather than through provider state: repeated
+  /// misses and presses are equal const objects, and state equal to the last
+  /// state is not announced.
   Stream<BoardEvent> get events => _events.stream;
 
   Stream<BoardConnectionState> get connectionState => source.connectionState;

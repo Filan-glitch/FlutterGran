@@ -1,40 +1,17 @@
 name: fluttergran
 description: "Flutter Mobile Application for interacting with a GranBoard 132 Electronic Dartboard"
-# The following line prevents the package from being accidentally published to
-# pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: 'none'
 
-# The following defines the version and build number for your application.
-# A version number is three numbers separated by dots, like 1.2.43
-# followed by an optional build number separated by a +.
-# Both the version and the builder number may be overridden in flutter
-# build by specifying --build-name and --build-number, respectively.
-# In Android, build-name is used as versionName while build-number used as versionCode.
-# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
-# In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
-# Read more about iOS versioning at
-# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-# In Windows, build-name is used as the major, minor, and patch parts
-# of the product and file versions while build-number is used as the build suffix.
+# Owned by release-please - never edit by hand (docs/RELEASING.md).
 version: 1.2.0+3
 
 environment:
   sdk: ^3.13.7
 
-# Dependencies specify other packages that your package needs in order to work.
-# To automatically upgrade your package dependencies to the latest versions
-# consider running `flutter pub upgrade --major-versions`. Alternatively,
-# dependencies can be manually updated by changing the version numbers below to
-# the latest version available on pub.dev. To see which dependencies have newer
-# versions available, run `flutter pub outdated`.
 dependencies:
   flutter:
     sdk: flutter
-  # Built-in Flutter SDK localization support - the AppLocalizations delegates
-  # that make lib/l10n/*.arb usable from MaterialApp. Part of the Flutter tool
-  # itself, not a build_runner/analyzer-based pub package, so it doesn't join
-  # the riverpod_generator/drift_dev analyzer conflict noted below for
-  # dev_dependencies.
+  # The AppLocalizations delegates for lib/l10n/*.arb.
   flutter_localizations:
     sdk: flutter
   intl: ^0.20.3
@@ -69,29 +46,20 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  # The "flutter_lints" package below contains a set of recommended lints to
-  # encourage good coding practices. The lint set provided by the package is
-  # activated in the `analysis_options.yaml` file located at the root of your
-  # package. See that file for information about deactivating specific lint
-  # rules and activating additional ones.
+  # No riverpod_generator or riverpod_lint: both conflict with drift_dev's
+  # analyzer pin or with Riverpod 3 (CONTRIBUTING.md, "Dependency rules").
   flutter_lints: ^6.0.0
   build_runner: ^2.16.1
   drift_dev: ^2.35.2
   test: ^1.31.1
   audioplayers_platform_interface: ^7.2.0
 
-# For information on the generic Dart part of this file, see the
-# following page: https://dart.dev/tools/pub/pubspec
-
-# The following section is specific to Flutter packages.
 flutter:
   uses-material-design: true
 
-  # ARB files live in lib/l10n/ (see l10n.yaml); this triggers Flutter's
-  # built-in gen-l10n tool, which (re)writes AppLocalizations to
-  # lib/l10n/app_localizations*.dart ahead of every run/test/build - committed
-  # alongside the ARB files it comes from, the same convention already used
-  # for drift's lib/data/db/database.g.dart.
+  # Runs gen-l10n (config in l10n.yaml) before every run/test/build. The
+  # generated lib/l10n/app_localizations*.dart files are committed; CI fails
+  # if they are stale.
   generate: true
 
   # Every line the app can speak, rendered once at build time by
@@ -109,8 +77,8 @@ flutter:
 
   # Ubuntu Sans is a variable font: one file carries both a width and a weight
   # axis, so the condensed heavy numerals on the scoreboard and the normal-width
-  # body text come from the same family. The mono is only for raw board frame
-  # codes, where digits must not shift as they change.
+  # body text come from the same family. The mono is for figures that must not
+  # shift width as their digits change.
   # Licensed under the Ubuntu Font Licence 1.0; see the licence beside the files.
   fonts:
     - family: UbuntuSans

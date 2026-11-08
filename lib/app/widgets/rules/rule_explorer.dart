@@ -1,3 +1,9 @@
+/// [RuleExplorer], one rule shown with its settings to switch between and a
+/// board that follows the choice.
+///
+/// {@category App}
+library;
+
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -7,11 +13,11 @@ import '../../theme.dart';
 import '../setup_controls.dart';
 import 'rule_board.dart';
 
-/// Width, in unscaled logical pixels, from which a [RuleExplorer] puts its
-/// board beside the options instead of under them. Multiplied by the text
-/// scale where it is used: a tablet's 1.5x labels need the extra room just as
-/// much as a phone's would.
-const double _sideBySideWidth = 560;
+/// Width, in unscaled logical pixels, from which a rules page sets things
+/// side by side: a [RuleExplorer]'s board beside its options, two examples,
+/// a callout beside its example, the hero at full size. Multiplied by the
+/// text scale where it is used, since larger labels need the room too.
+const double rulesSideBySideWidth = 560;
 
 /// One rule with a few settings - an out rule, an Around the Clock variant -
 /// taught by letting the reader flip between them and watch a [RuleBoard]
@@ -71,7 +77,7 @@ class _RuleExplorerState<T extends Enum> extends State<RuleExplorer<T>> {
       key: Key('rule-explorer-${widget.id}'),
       builder: (context, constraints) {
         final width = constraints.maxWidth;
-        return width >= _sideBySideWidth * scale
+        return width >= rulesSideBySideWidth * scale
             ? _sideBySide(width)
             : _stacked(width);
       },

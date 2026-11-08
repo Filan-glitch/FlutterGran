@@ -1,6 +1,11 @@
+/// [BullseyeValue], what the inner bull is worth in Bulling.
+///
+/// {@category Game modes}
+library;
+
 /// How many points the inner bull (the bullseye) is worth in Bulling.
 ///
-/// The outer bull is always worth 1 point regardless of this — only the
+/// The outer bull is always worth 1 point regardless of this - only the
 /// bullseye's value is a per-leg choice.
 enum BullseyeValue {
   /// The bullseye is worth 2 points.

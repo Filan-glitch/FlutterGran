@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluttergran/app/widgets/board_widget.dart';
 import 'package:fluttergran/domain/segment.dart';
-import 'package:fluttergran/l10n/app_localizations.dart';
+
+import '../support/pump.dart';
 
 /// Puts the board in a box of a given shape, as a real screen would.
 Future<List<Segment>> pumpBoardIn(
@@ -11,23 +12,21 @@ Future<List<Segment>> pumpBoardIn(
   VoidCallback? onMiss,
 }) async {
   final tapped = <Segment>[];
-  await tester.pumpWidget(
-    MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(
-        body: Center(
-          child: SizedBox(
-            width: box.width,
-            height: box.height,
-            child: BoardWidget(
-              onSegmentTapped: tapped.add,
-              onMissTapped: onMiss ?? () {},
-            ),
+  await pumpApp(
+    tester,
+    Scaffold(
+      body: Center(
+        child: SizedBox(
+          width: box.width,
+          height: box.height,
+          child: BoardWidget(
+            onSegmentTapped: tapped.add,
+            onMissTapped: onMiss ?? () {},
           ),
         ),
       ),
     ),
+    themed: false,
   );
   return tapped;
 }
@@ -38,11 +37,7 @@ void main() {
   // hit test on different centres, so taps landed on the wrong segment - which
   // is exactly what a square box prevents.
   group('taps land where the board is drawn', () {
-    for (final box in const [
-      Size(300, 300),
-      Size(400, 280),
-      Size(260, 420),
-    ]) {
+    for (final box in const [Size(300, 300), Size(400, 280), Size(260, 420)]) {
       testWidgets('the centre is the bull in a ${box.width.toInt()}x'
           '${box.height.toInt()} box', (tester) async {
         final tapped = await pumpBoardIn(tester, box);

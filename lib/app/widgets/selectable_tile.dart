@@ -1,3 +1,9 @@
+/// [SelectableTile], one equal-width tile in a row of mutually exclusive
+/// choices on the setup and settings screens.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 
 import '../theme.dart';

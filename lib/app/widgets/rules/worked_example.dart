@@ -1,3 +1,8 @@
+/// [WorkedExample], a turn played out dart by dart to show how a rule scores.
+///
+/// {@category App}
+library;
+
 import 'package:flutter/material.dart';
 
 import '../../../domain/segment.dart';
@@ -6,7 +11,7 @@ import '../../theme.dart';
 /// One dart in a [WorkedExample]: where it landed and what the scoreboard
 /// read after it.
 ///
-/// [counts] false marks the dart the example is about - the single that does
+/// `counts` false marks the dart the example is about - the single that does
 /// not finish, the dart that busts - and draws its figure in
 /// [Palette.doubleBed].
 typedef ExampleDart = ({Segment segment, String after, bool counts});

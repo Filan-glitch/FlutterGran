@@ -1,4 +1,3 @@
-import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,7 +11,9 @@ import 'package:fluttergran/app/theme.dart';
 import 'package:fluttergran/data/board/fake_board_source.dart';
 import 'package:fluttergran/data/db/database.dart';
 import 'package:fluttergran/domain/game_mode.dart';
-import 'package:fluttergran/l10n/app_localizations.dart';
+
+import '../support/database.dart';
+import '../support/pump.dart';
 
 /// [SelectGameModeScreen] itself is a plain [StatelessWidget], but tapping
 /// its one real tile pushes [X01SetupScreen], which watches
@@ -30,7 +31,7 @@ void main() {
   late ProviderContainer container;
 
   setUp(() {
-    database = AppDatabase(NativeDatabase.memory());
+    database = memoryDatabase();
     board = FakeBoardSource();
     container = ProviderContainer(
       overrides: [
@@ -50,16 +51,10 @@ void main() {
     WidgetTester tester, {
     List<GameModeDescriptor> modes = gameModeRegistry,
   }) async {
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          theme: buildTheme(),
-          home: SelectGameModeScreen(modes: modes),
-        ),
-      ),
+    await pumpApp(
+      tester,
+      SelectGameModeScreen(modes: modes),
+      container: container,
     );
     // Tiles stagger in (see `StaggeredEntry`); settle that one-shot entrance
     // before asserting so its timer is never still pending at tear-down.
@@ -91,9 +86,7 @@ void main() {
     expect(find.byType(AtcSetupScreen), findsOneWidget);
   });
 
-  testWidgets('the Bulling tile navigates to its setup screen', (
-    tester,
-  ) async {
+  testWidgets('the Bulling tile navigates to its setup screen', (tester) async {
     await pumpScreen(tester);
 
     expect(find.text('BULLING'), findsOneWidget);

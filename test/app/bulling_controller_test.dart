@@ -8,10 +8,8 @@ import 'package:fluttergran/domain/bulling/bulling_variant.dart';
 import 'package:fluttergran/domain/segment.dart';
 import 'package:fluttergran/domain/x01/thrown_dart.dart';
 
-import 'board_clock.dart';
-
-/// Lets queued stream events reach the controller before assertions run.
-Future<void> settle() => Future<void>.delayed(Duration.zero);
+import '../support/async.dart';
+import '../support/board_clock.dart';
 
 void main() {
   late FakeBoardSource board;
@@ -39,8 +37,8 @@ void main() {
     board.dispose();
   });
 
-  final ThrownDart sbull = ThrownDart(Segment.outerBull);
-  final ThrownDart dbull = ThrownDart(Segment.innerBull);
+  const ThrownDart sbull = ThrownDart(Segment.outerBull);
+  const ThrownDart dbull = ThrownDart(Segment.innerBull);
 
   group('scoring by hand', () {
     test('an outer bull adds a point', () {
@@ -187,7 +185,12 @@ void main() {
         bullseyeValue: BullseyeValue.two,
         target: 99,
       );
-      controller().resume(config, [sbull, sbull, const ThrownDart.miss(), sbull]);
+      controller().resume(config, [
+        sbull,
+        sbull,
+        const ThrownDart.miss(),
+        sbull,
+      ]);
 
       expect(session().leg.score[1], 2);
       expect(session().leg.score[2], 1);
@@ -230,13 +233,15 @@ void main() {
     test('changing the config starts a fresh leg', () {
       controller().addDart(sbull);
 
-      container.read(bullingConfigProvider.notifier).update(
-        BullingConfig(
-          playerIds: const [1, 2],
-          bullseyeValue: BullseyeValue.three,
-          target: 31,
-        ),
-      );
+      container
+          .read(bullingConfigProvider.notifier)
+          .update(
+            BullingConfig(
+              playerIds: const [1, 2],
+              bullseyeValue: BullseyeValue.three,
+              target: 31,
+            ),
+          );
 
       expect(session().leg.config.bullseyeValue, BullseyeValue.three);
       expect(session().leg.darts, isEmpty);
@@ -244,13 +249,15 @@ void main() {
   });
 
   test('reaching the target wins the leg instantly', () {
-    container.read(bullingConfigProvider.notifier).update(
-      BullingConfig(
-        playerIds: const [1, 2],
-        bullseyeValue: BullseyeValue.three,
-        target: 3,
-      ),
-    );
+    container
+        .read(bullingConfigProvider.notifier)
+        .update(
+          BullingConfig(
+            playerIds: const [1, 2],
+            bullseyeValue: BullseyeValue.three,
+            target: 3,
+          ),
+        );
     controller().restart();
 
     controller().addDart(dbull);

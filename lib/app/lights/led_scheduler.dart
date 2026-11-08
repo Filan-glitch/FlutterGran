@@ -1,3 +1,9 @@
+/// [LedScheduler], which decides what the ring shows right now: it plays shows
+/// by priority, then falls back to the resting ring.
+///
+/// {@category App}
+library;
+
 import 'dart:async';
 
 import '../../data/board/led_command.dart';
@@ -53,8 +59,6 @@ class LedScheduler {
 
   /// Whether a show currently owns the ring.
   bool get isShowing => _show != null;
-
-  bool get inGame => _inGame;
 
   LedCommand get _resting => _inGame ? _ambient : idle;
 

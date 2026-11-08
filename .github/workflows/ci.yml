@@ -34,7 +34,24 @@ jobs:
           dart run build_runner build --delete-conflicting-outputs
           git diff --exit-code -- '*.g.dart'
 
+      # The generated l10n files are committed too.
+      - name: Generated l10n code is up to date
+        run: |
+          flutter gen-l10n
+          git diff --exit-code -- lib/l10n
+
+      - name: Formatted
+        run: dart format --output=none --set-exit-if-changed lib test
+
       - run: flutter analyze
+
+      # Pinned past the SDK's bundled dartdoc 9.0.6, which crashes on drift's
+      # inherited @docImport comments. Same version as tool/check.sh. A full
+      # build, because only that checks every library has a library doc.
+      - name: API docs build without warnings
+        run: |
+          dart pub global activate dartdoc 9.0.11
+          dart pub global run dartdoc --output "$RUNNER_TEMP/api"
 
       # Pure-Dart layers, no Flutter (also enforces the domain layering rule).
       - name: Test domain and data
