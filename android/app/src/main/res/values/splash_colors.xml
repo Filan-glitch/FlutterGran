@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Palette.ground, behind the launch screen and the Flutter view. Its own
+     file because tool/make_icon.py regenerates ic_launcher_background.xml. -->
+<resources>
+    <color name="splash_ground">#0E1611</color>
+</resources>
